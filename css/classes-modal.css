@@ -1,0 +1,1590 @@
+/**
+ * SISTEMA DE CLASSES - ESTILOS
+ * Copiado do sistema de raças com adaptações para classes
+ * Usa as mesmas cores de raridade do sistema de raças
+ */
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   VARIÁVEIS E FUNDAÇÕES
+   
+   Nota: Variáveis de raridade (--rarity-*) e transições (--transition-*) foram
+   movidas para variables.css (arquivo centralizado).
+   
+   Mantidas aqui apenas as variáveis específicas do sistema de classes.
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --classe-primary: #1a1f2e;
+  --classe-secondary: #2d3347;
+  --classe-tertiary: #3d4557;
+  --classe-accent: #7c6ba8;
+  --classe-accent-hover: #9681c0;
+  --classe-text-primary: #e8eaed;
+  --classe-text-secondary: #a8adb8;
+  --classe-border: #4a5265;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   MODAL CONTAINER
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.modal-classes {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: var(--transition-smooth);
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+}
+
+.modal-classes.ativo {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-classes.hidden {
+  display: none;
+}
+
+.modal-classes-container {
+  width: 95%;
+  max-width: 1600px;
+  height: 90vh;
+  background: var(--classe-primary);
+  border: 1px solid var(--classe-border);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.8),
+    0 0 100px rgba(124, 107, 168, 0.2);
+  animation: modalAparece 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalAparece {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   HEADER DO MODAL
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.modal-classes-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 24px 32px;
+  border-bottom: 1px solid var(--classe-border);
+  background: linear-gradient(135deg, rgba(61, 69, 87, 0.5) 0%, transparent 100%);
+}
+
+.classes-xp-bar-card {
+  margin: 0 32px 16px;
+  padding: 18px 20px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(124, 107, 168, 0.22);
+  border-radius: 18px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.classes-xp-bar-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.classes-xp-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #f8f9fb;
+}
+
+.classes-xp-subtitle {
+  font-size: 0.82rem;
+  color: rgba(232, 234, 237, 0.75);
+  margin-top: 4px;
+}
+
+.classes-xp-status {
+  font-size: 0.8rem;
+  color: #a3bffa;
+  background: rgba(59, 130, 246, 0.12);
+  border: 1px solid rgba(59, 130, 246, 0.18);
+  padding: 6px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.classes-xp-track {
+  position: relative;
+  width: 100%;
+  height: 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.classes-xp-fill {
+  width: 0%;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.9), rgba(99, 102, 241, 0.9));
+  transition: width 0.4s ease;
+}
+
+.classes-xp-marker {
+  position: absolute;
+  top: -6px;
+  width: 2px;
+  height: calc(100% + 12px);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.classes-xp-marker span {
+  position: absolute;
+  top: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.7rem;
+  color: rgba(232, 234, 237, 0.8);
+  white-space: nowrap;
+}
+
+.classes-xp-marker.ativo {
+  background: rgba(96, 165, 250, 0.95);
+}
+
+.classes-xp-marker-1 {
+  left: calc(100% * 100 / 300);
+}
+
+.classes-xp-marker-2 {
+  left: calc(100% * 200 / 300);
+}
+
+.classes-xp-marker-3 {
+  left: 100%;
+  transform: translateX(-100%);
+}
+
+.classes-xp-labels {
+  display: flex;
+  justify-content: space-between;
+  color: rgba(232, 234, 237, 0.65);
+  font-size: 0.78rem;
+}
+
+.classes-xp-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.85rem;
+  color: rgba(232, 234, 237, 0.8);
+}
+
+.classes-xp-next {
+  color: #a5f3fc;
+}
+
+.modal-classes-header h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--classe-text-primary);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   FILTROS
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.modal-classes-filters {
+  display: flex;
+  gap: 12px;
+  flex: 1;
+  align-items: center;
+}
+
+.modal-filtros {
+  display: flex;
+  gap: 12px;
+  flex: 1;
+  align-items: center;
+}
+
+#filtro-busca-classe,
+#filtro-raridade-classe {
+  padding: 8px 12px;
+  background: rgba(45, 51, 71, 0.6);
+  border: 1px solid var(--classe-border);
+  border-radius: 6px;
+  color: var(--classe-text-primary);
+  font-size: 14px;
+  transition: var(--transition-fast);
+}
+
+#filtro-busca-classe {
+  flex: 1;
+  min-width: 150px;
+}
+
+#filtro-busca-classe::placeholder {
+  color: var(--classe-text-secondary);
+}
+
+#filtro-busca-classe:focus,
+#filtro-raridade-classe:focus {
+  outline: none;
+  border-color: var(--rarity-comum);
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   BOTÕES DO HEADER
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.modal-classes-header-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-voltar-classes,
+.btn-fechar-classes {
+  padding: 8px 12px;
+  background: transparent;
+  border: 1px solid var(--classe-border);
+  border-radius: 6px;
+  color: var(--classe-text-primary);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: var(--transition-fast);
+}
+
+.btn-voltar-classes:hover,
+.btn-fechar-classes:hover {
+  background: rgba(124, 107, 168, 0.2);
+  border-color: var(--classe-accent);
+  color: var(--classe-accent-hover);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   BODY DO MODAL
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.modal-classes-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  gap: 1px;
+  background: var(--classe-border);
+}
+
+.modal-classes-footer {
+  padding: 18px 32px 24px;
+  background: linear-gradient(180deg, rgba(26, 31, 46, 0.95), rgba(26, 31, 46, 1));
+  border-top: 1px solid rgba(100, 116, 139, 0.2);
+}
+
+.modal-classes-footer .classes-xp-bar-card {
+  margin: 0;
+}
+
+.classes-lista {
+  width: 28%;
+  background: var(--classe-secondary);
+  overflow-y: auto;
+  padding: 16px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   PASTA/CATEGORIA DE CLASSES (ACCORDION)
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.rdg-class-folder {
+  margin: 8px 0;
+}
+
+.rdg-class-folder-header {
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+  background: linear-gradient(180deg, rgba(24,28,40,0.6), rgba(29,33,46,0.45));
+  border: 1px solid rgba(255,255,255,0.03);
+  border-radius: 12px;
+  margin: 8px 12px;
+  transition: all 0.28s cubic-bezier(0.2,0,0.2,1);
+  font-weight: 700;
+  color: var(--classe-text-primary);
+  position: relative;
+  align-items: center;
+  padding-right: 76px; /* espaço extra à direita para posicionamento absoluto da badge */
+}
+
+.rdg-class-folder-header:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(6,8,14,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
+  border-color: rgba(255,255,255,0.06);
+}
+
+.rdg-class-folder-icon {
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.rdg-class-folder-avatar {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  line-height: 1;
+  background: linear-gradient(180deg, rgba(0,0,0,0.25), rgba(255,255,255,0.02));
+  border: 3px solid var(--folder-color, rgba(124,107,168,0.9));
+  box-shadow: 0 6px 18px rgba(12,12,18,0.6);
+  overflow: hidden;
+}
+
+.rdg-class-folder-avatar img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.rdg-class-folder-avatar > * {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rdg-class-folder-opened .rdg-class-folder-icon {
+  transform: rotate(0deg);
+}
+
+.rdg-class-folder:not(.rdg-class-folder-opened) .rdg-class-folder-icon {
+  transform: rotate(-90deg);
+}
+
+.rdg-class-folder-name {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--classe-text-primary);
+  letter-spacing: 0.5px;
+}
+
+.rdg-class-folder-count {
+  font-size: 12px;
+  background: linear-gradient(135deg, var(--folder-color, rgba(124,107,168,0.6)), rgba(0,0,0,0.15));
+  padding: 8px 12px;
+  border-radius: 14px;
+  color: #fff;
+  min-width: 40px;
+  text-align: center;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* left color accent for the folder block */
+.rdg-class-folder-header::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  border-radius: 8px 0 0 8px;
+  background: var(--folder-color, rgba(124,107,168,0.9));
+}
+
+/* thin vertical accent on each item inside the folder */
+.rdg-class-folder .classe-item {
+  position: relative;
+  padding-left: 14px;
+}
+
+.rdg-class-folder .classe-item::before {
+  /* Removido visual predefinido para evitar duplicidade com o destaque
+     aplicado quando a classe é selecionada. */
+  display: none;
+}
+
+.rdg-class-folder-content {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform: scaleY(0.95);
+  transform-origin: top;
+}
+
+.rdg-class-folder-content-open {
+  max-height: 2000px;
+  opacity: 1;
+  transform: scaleY(1);
+}
+
+.rdg-class-folder-empty {
+  padding: 24px 16px;
+  text-align: center;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.08) 0%, rgba(100, 70, 150, 0.05) 100%);
+  border: 1px dashed rgba(168, 85, 247, 0.2);
+  border-radius: 8px;
+  margin: 12px 16px;
+  color: rgba(168, 85, 247, 0.6);
+}
+
+.rdg-class-folder-content-open {
+  max-height: 5000px;
+  opacity: 1;
+  transform: scaleY(1);
+}
+
+.rdg-class-folder-empty {
+  padding: 24px 16px;
+  text-align: center;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(100, 116, 139, 0.05) 100%);
+  border: 1px dashed rgba(59, 130, 246, 0.2);
+  border-radius: 8px;
+  margin: 12px 0;
+  color: rgba(59, 130, 246, 0.6);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  backdrop-filter: blur(4px);
+  position: relative;
+  overflow: hidden;
+}
+
+.rdg-class-folder-empty::before {
+  content: '✨';
+  display: block;
+  font-size: 20px;
+  margin-bottom: 8px;
+  animation: sparkle-pulse 2s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   SEÇÕES DE RARIDADE DENTRO DAS PASTAS
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.rdg-raridade-secao {
+  margin: 8px 0;
+  padding: 0;
+}
+
+.rdg-raridade-header {
+  padding: 8px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(100, 116, 139, 0.2);
+  border-left: 3px solid;
+  color: rgba(255, 255, 255, 0.7);
+  margin-left: 8px;
+  margin-right: 0;
+  border-radius: 0 4px 4px 0;
+}
+
+.rdg-raridade-header.comum {
+  border-left-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+.rdg-raridade-header.raro {
+  border-left-color: #8b5cf6;
+  background: rgba(139, 92, 246, 0.1);
+  color: #c4b5fd;
+}
+
+.rdg-raridade-header.epico {
+  border-left-color: #d946ef;
+  background: rgba(217, 70, 239, 0.1);
+  color: #f0abfc;
+}
+
+.rdg-raridade-header.lendario {
+  border-left-color: #eab308;
+  background: rgba(234, 179, 8, 0.1);
+  color: #fef08a;
+}
+
+.rdg-raridade-header.mitico {
+  border-left-color: #f97316;
+  background: rgba(249, 115, 22, 0.1);
+  color: #fed7aa;
+}
+
+.rdg-raridade-count {
+  font-size: 9px;
+  opacity: 0.7;
+}
+
+.rdg-raridade-classes {
+  padding: 0 8px 4px 8px;
+}
+
+.classe-detalhes {
+  width: 75%;
+  background: var(--classe-primary);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 24px 32px;
+  min-width: 760px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+/* CLASSES GERAIS                                                                                 */
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.classe-item {
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  background: rgba(26, 31, 46, 0.6);
+  border: 2px solid rgba(100, 116, 139, 0.3);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  user-select: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.rdg-class-folder-content .classe-item {
+  margin-left: 8px;
+  margin-right: 0;
+  font-size: 13px;
+  padding: 10px 12px;
+}
+
+.classes-secao-itens .classe-item {
+  margin-bottom: 4px;
+  padding: 10px 12px;
+}
+
+.classes-secao-itens .classe-item:last-child {
+  margin-bottom: 0;
+}
+
+.classe-item:hover {
+  background: rgba(26, 31, 46, 0.9);
+  border-color: rgba(100, 116, 139, 0.6);
+  transform: translateX(4px);
+}
+
+.classe-item.ativo {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: #3b82f6;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
+}
+
+.classe-item.classe-bloqueada {
+  position: relative;
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Overlay suave para classe bloqueada na lista */
+.classe-item.classe-bloqueada::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(139, 92, 246, 0.12) 100%);
+  border-radius: 6px;
+  pointer-events: none;
+  z-index: 8;
+}
+
+/* Ícone de cadeado para classe bloqueada - usando pseudo elemento */
+.classe-item.classe-bloqueada::before {
+  content: '🔒';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 28px;
+  z-index: 10;
+  opacity: 0.5;
+  filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.4));
+}
+
+.classe-item.classe-selecionada {
+  /* Usar cor específica da classe se definida via --selection-color; senão fallback para --folder-color */
+  background: rgba(255,255,255,0.02);
+  border-color: var(--selection-color, var(--folder-color, #3b82f6));
+  box-shadow: 0 0 16px rgba(0,0,0,0.12);
+  border-left: 6px solid var(--selection-color, var(--folder-color, #10b981));
+}
+
+.classe-item-nome {
+  font-weight: 600;
+  font-size: 15px;
+  color: #e2e8f0;
+  flex: 1;
+}
+
+.classe-item-raridade {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.classe-item-raridade.comum {
+  background: rgba(59, 130, 246, 0.3);
+  color: #60a5fa;
+  border: 2px solid rgba(59, 130, 246, 0.8);
+}
+
+.classe-item-raridade.raro {
+  background: rgba(16, 185, 129, 0.3);
+  color: #34d399;
+  border: 2px solid rgba(16, 185, 129, 0.8);
+}
+
+.classe-item-raridade.epico {
+  background: rgba(139, 92, 246, 0.3);
+  color: #a78bfa;
+  border: 2px solid rgba(139, 92, 246, 0.8);
+}
+
+.classe-item-raridade.lendario {
+  background: rgba(249, 115, 22, 0.3);
+  color: #fb923c;
+  border: 2px solid rgba(249, 115, 22, 0.8);
+}
+
+.classe-item-raridade.mitico {
+  background: rgba(239, 68, 68, 0.3);
+  color: #f87171;
+  border: 2px solid rgba(239, 68, 68, 0.8);
+}
+
+.classe-item-raridade.celestial {
+  background: rgba(251, 191, 36, 0.3);
+  color: #fcd34d;
+  border: 2px solid rgba(251, 191, 36, 0.8);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   SEÇÕES AGRUPADAS POR RARIDADE
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.classes-secao-raridade {
+  margin-bottom: 24px;
+}
+
+.classes-secao-raridade:last-child {
+  margin-bottom: 0;
+}
+
+.classes-secao-cabecalho {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  background: rgba(100, 116, 139, 0.2);
+  border: 1px solid rgba(100, 116, 139, 0.4);
+  color: #e2e8f0;
+}
+
+.classes-secao-titulo {
+  flex: 1;
+}
+
+.classes-secao-contador {
+  font-size: 11px;
+  opacity: 0.8;
+  padding: 2px 6px;
+  background: rgba(100, 116, 139, 0.3);
+  border-radius: 3px;
+}
+
+/* Cores específicas para cada raridade */
+.classes-secao-cabecalho.comum {
+  background: rgba(59, 130, 246, 0.12);
+  border-color: rgba(59, 130, 246, 0.3);
+  color: #60a5fa;
+}
+
+.classes-secao-cabecalho.raro {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.3);
+  color: #34d399;
+}
+
+.classes-secao-cabecalho.epico {
+  background: rgba(139, 92, 246, 0.12);
+  border-color: rgba(139, 92, 246, 0.3);
+  color: #a78bfa;
+}
+
+.classes-secao-cabecalho.mitico {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #f87171;
+}
+
+.classes-secao-cabecalho.lendario {
+  background: rgba(249, 115, 22, 0.12);
+  border-color: rgba(249, 115, 22, 0.3);
+  color: #fb923c;
+}
+
+.classes-secao-itens {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+/* CLASSE RARIDADE                                                                                 */
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.classe-raridade {
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.classe-raridade.comum {
+  background: rgba(59, 130, 246, 0.3);
+  color: #60a5fa;
+  border: 2px solid rgba(59, 130, 246, 0.8);
+}
+
+.classe-raridade.raro {
+  background: rgba(16, 185, 129, 0.3);
+  color: #34d399;
+  border: 2px solid rgba(16, 185, 129, 0.8);
+}
+
+.classe-raridade.epico {
+  background: rgba(139, 92, 246, 0.3);
+  color: #a78bfa;
+  border: 2px solid rgba(139, 92, 246, 0.8);
+}
+
+.classe-raridade.lendario {
+  background: rgba(249, 115, 22, 0.3);
+  color: #fb923c;
+  border: 2px solid rgba(249, 115, 22, 0.8);
+}
+
+.classe-raridade.mitico {
+  background: rgba(239, 68, 68, 0.3);
+  color: #f87171;
+  border: 2px solid rgba(239, 68, 68, 0.8);
+}
+
+.classe-raridade.celestial {
+  background: rgba(251, 191, 36, 0.3);
+  color: #fcd34d;
+  border: 2px solid rgba(251, 191, 36, 0.8);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+/* CLASSE HEADER                                                                                   */
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.classe-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 16px;
+  border-bottom: 2px solid rgba(100, 116, 139, 0.2);
+  margin-bottom: 16px;
+}
+
+.classe-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.classe-header-right {
+  display: flex;
+  gap: 8px;
+}
+
+.classe-nome {
+  font-size: 28px;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+/* CLASSE SEÇÃO                                                                                    */
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.classe-secao {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: rgba(30, 41, 59, 0.5);
+  border-radius: 8px;
+  border-left: 4px solid rgba(100, 116, 139, 0.4);
+}
+
+.classe-secao-titulo {
+  font-size: 16px;
+  font-weight: 700;
+  color: #93c5fd;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+
+.classe-descricao-texto {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #cbd5e1;
+  margin: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+/* CLASSE IMAGEM - PADRÃO 1160x320 COM RECORTE RESPONSIVO                                           */
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.classe-imagem {
+  width: 100%;
+  max-width: 1160px;
+  height: 380px;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%);
+  border: 2px solid rgba(100, 116, 139, 0.3);
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 0 auto 20px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 
+    inset 0 1px 3px rgba(255, 255, 255, 0.1),
+    0 10px 30px rgba(0, 0, 0, 0.5);
+  min-height: 180px;
+  flex: none;
+}
+
+.classe-imagem img {
+  width: 100%;
+  min-height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.classe-imagem-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 6rem;
+  line-height: 1;
+  color: rgba(226, 232, 240, 0.85);
+  text-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+}
+
+/* Responsivo para telas menores */
+@media (max-width: 1200px) {
+  .classe-imagem {
+    height: 300px;
+  }
+}
+
+@media (max-width: 768px) {
+  .classe-imagem {
+    height: 250px;
+  }
+}
+
+@media (max-width: 480px) {
+  .classe-imagem {
+    height: 180px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+/* CLASSE LIMITE                                                                                   */
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.limite-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 6px;
+}
+
+.limite-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #cbd5e1;
+}
+
+.limite-valor {
+  font-size: 20px;
+  font-weight: 700;
+  color: #3b82f6;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+/* CLASSE ATRIBUTOS                                                                               */
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+#modal-classes .atributos-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+}
+
+.atributo-card {
+  padding: 12px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(100, 116, 139, 0.3);
+  border-radius: 6px;
+  text-align: center;
+}
+
+#modal-classes .atributo-nome {
+  font-size: 12px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+#modal-classes .atributo-valor {
+  font-size: 16px;
+  font-weight: 700;
+  color: #60a5fa;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+/* CLASSE HABILIDADES                                                                             */
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+#modal-classes .habilidades-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  border-bottom: 2px solid rgba(100, 116, 139, 0.2);
+}
+
+#modal-classes .tab-button {
+  padding: 8px 16px;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: #94a3b8;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+#modal-classes .tab-button:hover {
+  color: #cbd5e1;
+}
+
+#modal-classes .tab-button.active {
+  color: #60a5fa;
+  border-bottom-color: #60a5fa;
+}
+
+#modal-classes .habilidades-conteudo {
+  display: flex;
+  flex-direction: column;
+}
+
+#modal-classes .habilidades-painel {
+  display: none;
+  gap: 12px;
+}
+
+#modal-classes .habilidades-painel.active {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+/* HABILIDADE CARD                                                                                */
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+#modal-classes .habilidade-card {
+  padding: 12px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(100, 116, 139, 0.3);
+  border-radius: 8px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  min-height: 200px; /* garante cards com altura uniforme */
+}
+
+#modal-classes .habilidade-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+#modal-classes .habilidade-nome {
+  font-size: 14px;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+#modal-classes .badge-tipo {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+#modal-classes .badge-tipo.tipo-imediata {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+}
+
+#modal-classes .badge-tipo.tipo-duradoura {
+  background: rgba(59, 130, 246, 0.2);
+  color: #3b82f6;
+}
+
+#modal-classes .badge-tipo.tipo-sustentada {
+  background: rgba(249, 115, 22, 0.2);
+  color: #f97316;
+}
+
+#modal-classes .habilidade-descricao {
+  font-size: 13px;
+  color: #cbd5e1;
+  margin-bottom: 8px;
+  line-height: 1.45;
+  word-break: break-word;
+  word-wrap: break-word;
+  white-space: normal;
+  overflow-wrap: break-word;
+  max-height: 5.2em; /* controla texto muito longo */
+  overflow: hidden;
+}
+
+#modal-classes .habilidade-atributos {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+#modal-classes .atributo-linha {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
+}
+
+#modal-classes .atrib {
+  color: #94a3b8;
+  background: rgba(30, 41, 59, 0.5);
+  padding: 2px 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+.habilidade-bonus {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.bonus-item {
+  font-size: 13px;
+  color: #cbd5e1;
+  padding: 6px 10px;
+  background: rgba(15, 23, 42, 0.12);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bonus-item::before {
+  content: '✓';
+  color: #10b981;
+  font-weight: 800;
+  flex: 0 0 auto;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+/* BADGES DE INFORMAÇÃO - CLASSES (Alcance, Alvos, Custo, etc)                                   */
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+#modal-classes .habilidade-badges-classe {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 8px;
+  background: rgba(30, 41, 59, 0.26);
+  border-radius: 6px;
+  align-items: center;
+}
+
+#modal-classes .badge-info-classe {
+  padding: 6px 10px;
+  background: rgba(59, 130, 246, 0.2);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #cbd5e1;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+/* CARD DE HABILIDADE DA CLASSE                                                                  */
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+#modal-classes .habilidade-classe {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(30, 41, 59, 0.2) 100%);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.2s ease;
+  overflow: hidden;
+  position: relative;
+}
+
+#modal-classes .habilidade-classe::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #60a5fa, transparent);
+}
+
+#modal-classes .habilidade-classe:hover {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(30, 41, 59, 0.3) 100%);
+  border-color: #60a5fa;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(96, 165, 250, 0.2);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+/* BOTÕES                                                                                          */
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.btn-escolher,
+.btn-cadeado {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-size: 13px;
+}
+
+.btn-escolher {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.4);
+}
+
+.btn-escolher:hover:not(:disabled) {
+  background: rgba(59, 130, 246, 0.3);
+  border-color: rgba(59, 130, 246, 0.6);
+}
+
+.btn-escolher:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-escolher.btn-selecionada {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+.btn-escolher.btn-bloqueado {
+  background: rgba(102, 102, 102, 0.2);
+  color: #999;
+  border-color: rgba(102, 102, 102, 0.4);
+  cursor: not-allowed !important;
+  position: relative;
+}
+
+.btn-escolher.btn-bloqueado::before {
+  content: '🔒 ';
+  margin-right: 4px;
+}
+
+.btn-cadeado {
+  background: transparent;
+  color: #94a3b8;
+  border: 1px solid rgba(100, 116, 139, 0.3);
+  padding: 6px 8px;
+  font-size: 16px;
+}
+
+.btn-cadeado:hover:not(:disabled) {
+  color: #fbbf24;
+  border-color: rgba(251, 191, 36, 0.4);
+  background: rgba(251, 191, 36, 0.1);
+}
+
+.btn-cadeado:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+/* ESTADOS ESPECIAIS                                                                              */
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.classe-selecionada {
+  border-color: #10b981 !important;
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.2) !important;
+}
+
+.habilidade-bloqueada {
+  opacity: 0.6;
+  position: relative;
+}
+
+#modal-classes .habilidade-bloqueada {
+  opacity: 0.7;
+}
+
+.overlay-bloqueio {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 6px;
+  z-index: 1;
+}
+
+#modal-classes .overlay-bloqueio {
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.habilidade-bloqueio-msg {
+  margin-top: 8px;
+  padding: 8px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 4px;
+  color: #fca5a5;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+
+#modal-classes .habilidade-bloqueio-msg {
+  margin-top: 12px;
+  padding: 10px;
+  background: rgba(239, 68, 68, 0.15);
+  border-left: 3px solid #ef4444;
+  border: none;
+  border-left: 3px solid #ef4444;
+  color: #fca5a5;
+  z-index: 2;
+}
+
+.sem-resultados,
+.sem-habilidades {
+  padding: 24px;
+  text-align: center;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+/* RESPONSIVIDADE                                                                                  */
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .classe-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .classe-header-right {
+    width: 100%;
+    gap: 8px;
+  }
+
+  .btn-escolher,
+  .btn-cadeado {
+    flex: 1;
+  }
+
+  #modal-classes .atributos-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Badges em tablet - 2 por linha */
+  #modal-classes .habilidade-badges-classe {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  /* Badges em mobile - 1 por linha */
+  #modal-classes .habilidade-badges-classe {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   BOTÃO DE SELEÇÃO DE HABILIDADE - ANIMADO E VISÍVEL
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+@keyframes pulse-selection {
+  0% {
+    box-shadow: 0 0 0 0 rgba(var(--selection-color-rgb, 74, 222, 128), 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(var(--selection-color-rgb, 74, 222, 128), 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(var(--selection-color-rgb, 74, 222, 128), 0);
+  }
+}
+
+@keyframes glow-selected {
+  0%, 100% {
+    text-shadow: 
+      0 0 8px rgba(var(--selection-color-rgb, 74, 222, 128), 0.6), 
+      0 0 16px rgba(var(--selection-color-rgb, 74, 222, 128), 0.3);
+    filter: drop-shadow(0 0 4px rgba(var(--selection-color-rgb, 74, 222, 128), 0.4));
+  }
+  50% {
+    text-shadow: 
+      0 0 12px rgba(var(--selection-color-rgb, 74, 222, 128), 0.8), 
+      0 0 24px rgba(var(--selection-color-rgb, 74, 222, 128), 0.5),
+      0 0 32px rgba(var(--selection-color-rgb, 74, 222, 128), 0.3);
+    filter: drop-shadow(0 0 8px rgba(var(--selection-color-rgb, 74, 222, 128), 0.6));
+  }
+}
+
+@keyframes breathing-glow {
+  0%, 100% {
+    box-shadow: 
+      0 0 0 3px rgba(var(--selection-color-rgb, 74, 222, 128), 0.1),
+      0 0 12px rgba(var(--selection-color-rgb, 74, 222, 128), 0.3),
+      inset 0 0 8px rgba(var(--selection-color-rgb, 74, 222, 128), 0.1);
+  }
+  50% {
+    box-shadow: 
+      0 0 0 5px rgba(var(--selection-color-rgb, 74, 222, 128), 0.15),
+      0 0 20px rgba(var(--selection-color-rgb, 74, 222, 128), 0.5),
+      inset 0 0 12px rgba(var(--selection-color-rgb, 74, 222, 128), 0.2);
+  }
+}
+
+@keyframes bounce-scale {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+}
+
+@keyframes color-transition {
+  from {
+    color: #888;
+    background: rgba(107, 114, 128, 0.2);
+    border-color: rgba(107, 114, 128, 0.4);
+  }
+  to {
+    color: var(--selection-color, #4ade80);
+    background: rgba(var(--selection-color-rgb, 74, 222, 128), 0.25);
+    border-color: var(--selection-color, #4ade80);
+  }
+}
+
+.btn-selecionar-habilidade {
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  background: transparent;
+  border: none;
+  font-size: 1.2em;
+  color: #888;
+  cursor: pointer;
+  position: relative;
+  font-weight: bold;
+  padding: 0;
+  z-index: 1;
+}
+
+.btn-selecionar-habilidade::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 6px;
+  background: linear-gradient(135deg, rgba(var(--selection-color-rgb, 74, 222, 128), 0), rgba(var(--selection-color-rgb, 74, 222, 128), 0.1));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+/* Estado: NÃO SELECIONADO (padrão) */
+.btn-selecionar-habilidade:hover:not(.selecionado) {
+  transform: scale(1.15);
+  color: #bbb;
+}
+
+.btn-selecionar-habilidade:active:not(.selecionado) {
+  transform: scale(0.9);
+}
+
+/* Estado: SELECIONADO ✨ - RESPIRAÇÃO CONTÍNUA */
+.btn-selecionar-habilidade.selecionado {
+  color: var(--selection-color, #4ade80) !important;
+  animation: glow-selected 2s ease-in-out infinite;
+  font-size: 1.3em;
+  font-weight: 900;
+  text-shadow: 0 0 4px rgba(var(--selection-color-rgb, 74, 222, 128), 0.5);
+}
+
+.btn-selecionar-habilidade.selecionado::before {
+  opacity: 1;
+  background: transparent;
+}
+
+.btn-selecionar-habilidade.selecionado:hover {
+  animation: bounce-scale 0.6s ease-in-out;
+  text-shadow: 0 0 8px rgba(74, 222, 128, 0.8);
+}
+
+/* Estado: CLICANDO PARA DESSELECIONAR */
+.btn-selecionar-habilidade.selecionado:active {
+  transform: scale(0.92);
+  animation: pulse-selection 0.6s ease-out;
+  box-shadow: 
+    0 0 0 0 rgba(74, 222, 128, 0.7),
+    0 0 12px rgba(74, 222, 128, 0.3);
+}
+
+/* Tooltip - Indicador visual de estado */
+.btn-selecionar-habilidade::after {
+  display: none;
+}
+
+#modal-classes .habilidade-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0 0 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  margin-top: auto; /* empurra o rodapé para o fim do card */
+  gap: 12px;
+}
+
+/* Força consistência entre tipos de habilidade */
+#modal-classes .habilidade-avancada,
+#modal-classes .habilidade-classe,
+#modal-classes .habilidade-extrema {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  min-height: 200px;
+}
+
+
+
+
+
+

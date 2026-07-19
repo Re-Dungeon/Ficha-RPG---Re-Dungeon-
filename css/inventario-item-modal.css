@@ -1,0 +1,1011 @@
+/* ========================================== */
+/* INVENTARIO-ITEM-MODAL.CSS                  */
+/* Estilos do Modal de Criar/Editar Item      */
+/* Tema Dark Fantasy Medieval                 */
+/* ========================================== */
+
+:root {
+    --color-dark-brown: #0a0e14;
+    --color-brown: #0d1219;
+    --color-gold: #d4af37;
+    --color-gold-dark: #3b82f6;
+    --color-gold-light: #f5deb3;
+    --color-gray: #5a5a5a;
+    --color-gray-light: #8a8a8a;
+    --color-text-primary: #e8e8e8;
+    --color-text-secondary: #cbd5e0;
+    --color-border: #4a5568;
+    --color-accent: #e6b800;
+    --color-bg-primary: #0a0e14;
+    --color-bg-secondary: #0d1219;
+    --color-quality-comum: #888888;
+    --color-quality-raro: #2ecc71;
+    --color-quality-epico: #9b59b6;
+    --color-quality-mitico: #e74c3c;
+    --color-quality-lendario: #f39c12;
+    --color-quality-celestial: #3498db;
+}
+
+/* ===== MODAL ITEM FORM ===== */
+
+.modal-item-form {
+    max-width: 700px !important;
+}
+
+/* ===== FORMULÁRIO ITEM ===== */
+
+.item-form-main {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+/* Form Groups */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+@media (max-width: 600px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Labels e Inputs */
+.form-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-gold);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+    padding: 0.7rem 0.9rem;
+    background: rgba(61, 40, 23, 0.8);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    color: var(--color-text-primary);
+    font-size: 0.95rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    transition: all 0.3s ease;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+    outline: none;
+    border-color: var(--color-gold);
+    background: rgba(61, 40, 23, 1);
+    box-shadow: 0 0 12px rgba(212, 175, 85, 0.2);
+}
+
+.form-input::placeholder {
+    color: var(--color-text-secondary);
+    opacity: 0.7;
+}
+
+.form-select {
+    cursor: pointer;
+}
+
+.form-select option {
+    background: var(--color-bg-primary);
+    color: var(--color-text-primary);
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 100px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Espaço Total Display */
+.espaco-total-display {
+    padding: 1rem;
+    background: rgba(42, 24, 16, 0.8);
+    border: 1px solid var(--color-gold-dark);
+    border-radius: 6px;
+    color: var(--color-gold);
+    font-weight: 600;
+    text-align: center;
+    font-size: 1.05rem;
+}
+
+/* ===== UPLOAD DE IMAGEM ===== */
+
+.form-imagem-grupo {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+    background: rgba(42, 24, 16, 0.6);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+}
+
+.form-imagem-preview {
+    width: 100%;
+    height: 150px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 2px dashed var(--color-gold-dark);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+}
+
+.form-imagem-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.form-imagem-placeholder {
+    font-size: 3rem;
+    opacity: 0.5;
+    color: var(--color-gold);
+}
+
+.form-imagem-inputs {
+    display: flex;
+    gap: 0.5rem;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 0.75rem;
+}
+
+.form-imagem-tab {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-imagem-tab input[type="radio"] {
+    cursor: pointer;
+    accent-color: var(--color-gold);
+}
+
+.form-imagem-tab label {
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    transition: color 0.3s ease;
+}
+
+.form-imagem-tab input[type="radio"]:checked + label {
+    color: var(--color-gold);
+}
+
+.form-imagem-input {
+    display: none !important;
+    width: 100% !important;
+}
+
+.form-imagem-input[style*="display: block"] {
+    display: block !important;
+}
+
+#item-imagem-url
+    color: var(--color-accent);
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+/* Divisor */
+.form-divider {
+    height: 1px;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        var(--color-border) 50%, 
+        transparent 100%);
+    margin: 0.5rem 0;
+}
+
+/* ===== ABAS INTERNAS ===== */
+
+.item-abas-interno {
+    border-top: 2px solid var(--color-border);
+    padding-top: 1.2rem;
+}
+
+.item-abas-botoes {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.item-aba-btn {
+    padding: 0.6rem 1.2rem;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: var(--color-text-secondary);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.item-aba-btn:hover:not(.item-aba-btn--ativo) {
+    color: var(--color-gold);
+    border-bottom-color: var(--color-gold-dark);
+}
+
+.item-aba-btn--ativo {
+    color: var(--color-gold);
+    border-bottom-color: var(--color-gold);
+    background: rgba(212, 175, 85, 0.1);
+}
+
+.item-aba-conteudo {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== AVISO DE ESPAÇO ===== */
+
+.item-aviso-espaco {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    background: rgba(231, 76, 60, 0.15);
+    border: 2px solid rgba(231, 76, 60, 0.4);
+    border-radius: 8px;
+    margin-top: 1rem;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.item-aviso-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.item-aviso-texto {
+    flex: 1;
+    color: #ff9999;
+}
+
+.item-aviso-texto strong {
+    display: block;
+    color: #ff6666;
+    margin-bottom: 0.25rem;
+    font-size: 1.05rem;
+}
+
+.item-aviso-texto p {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+/* ========================================== */
+/* CARDS DE ITENS NO INVENTÁRIO               */
+/* ========================================== */
+
+.inventario-items-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    padding: 0;
+}
+
+.inventario-item-card {
+    background: linear-gradient(135deg, 
+        rgba(61, 40, 23, 0.9) 0%,
+        rgba(42, 24, 16, 0.9) 100%);
+    border: 2px solid var(--color-border);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    animation: slideIn 0.4s ease;
+    position: relative;
+}
+
+/* Bordas especiais por qualidade */
+.inventario-item-card.qualidade-comum {
+    border-color: var(--color-quality-comum);
+    border-width: 2px;
+}
+
+.inventario-item-card.qualidade-raro {
+    border-color: var(--color-quality-raro);
+    border-width: 2px;
+    box-shadow: 0 4px 12px rgba(46, 204, 113, 0.15);
+}
+
+.inventario-item-card.qualidade-epico {
+    border-color: var(--color-quality-epico);
+    border-width: 2px;
+    box-shadow: 0 4px 12px rgba(155, 89, 182, 0.15);
+}
+
+.inventario-item-card.qualidade-mitico {
+    border-color: var(--color-quality-mitico);
+    border-width: 2px;
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.15);
+}
+
+.inventario-item-card.qualidade-lendario {
+    border-color: var(--color-quality-lendario);
+    border-width: 2px;
+    box-shadow: 0 4px 12px rgba(243, 156, 18, 0.2);
+}
+
+.inventario-item-card.qualidade-celestial {
+    border-color: var(--color-quality-celestial);
+    border-width: 2px;
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.15);
+}
+
+/* Equipado */
+.inventario-item-card.equipado {
+    border-width: 2px;
+    box-shadow: 0 0 20px rgba(212, 175, 85, 0.4);
+    transform: scale(1.02);
+}
+
+.inventario-item-card:hover:not(.equipado) {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+}
+
+.inventario-item-card.equipado:hover {
+    box-shadow: 0 0 25px rgba(212, 175, 85, 0.6);
+}
+
+/* Badge Equipado */
+.inventario-item-equipado-badge {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-accent) 100%);
+    color: var(--color-bg-primary);
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    z-index: 10;
+}
+
+/* Imagem */
+.inventario-item-imagem {
+    width: 100%;
+    height: 120px;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+}
+
+.inventario-item-imagem img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.inventario-item-card:hover .inventario-item-imagem img {
+    transform: scale(1.08);
+}
+
+.inventario-item-imagem-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, 
+        rgba(212, 175, 85, 0.1) 0%,
+        rgba(61, 40, 23, 0.3) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    opacity: 0.5;
+}
+
+/* Conteúdo do Card */
+.inventario-item-conteudo {
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+/* Nome e Qualidade */
+.inventario-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.inventario-item-nome {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-gold-light);
+    margin: 0;
+    line-height: 1.3;
+    flex: 1;
+}
+
+.inventario-item-qualidade-badge {
+    padding: 0.3rem 0.7rem;
+    border-radius: 16px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.badge-comum {
+    background: var(--color-quality-comum);
+    color: #000;
+}
+
+.badge-raro {
+    background: var(--color-quality-raro);
+    color: #000;
+}
+
+.badge-epico {
+    background: var(--color-quality-epico);
+    color: #fff;
+}
+
+.badge-mitico {
+    background: var(--color-quality-mitico);
+    color: #fff;
+}
+
+.badge-lendario {
+    background: var(--color-quality-lendario);
+    color: #000;
+}
+
+.badge-celestial {
+    background: var(--color-quality-celestial);
+    color: #fff;
+}
+
+/* Blocos de Informação */
+.inventario-item-blocos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem;
+}
+
+.inventario-item-bloco {
+    background: rgba(42, 24, 16, 0.8);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    padding: 0.4rem;
+    text-align: center;
+}
+
+.inventario-item-bloco-label {
+    font-size: 0.65rem;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.1rem;
+}
+
+.inventario-item-bloco-valor {
+    font-size: 0.85rem;
+    color: var(--color-gold);
+    font-weight: 700;
+    font-family: 'Courier New', monospace;
+}
+
+/* Rodapé do Card */
+.inventario-item-rodape {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    border-top: 1px solid rgba(212, 175, 85, 0.2);
+    padding-top: 0.5rem;
+    margin-top: auto;
+}
+
+.inventario-item-quantidade {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    text-align: center;
+}
+
+.inventario-item-quantidade strong {
+    color: var(--color-gold);
+    font-weight: 700;
+}
+
+.inventario-item-espaco-info {
+    display: flex;
+    justify-content: space-around;
+    font-size: 0.7rem;
+    color: var(--color-text-secondary);
+}
+
+.inventario-item-espaco-info span {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.1rem;
+}
+
+.inventario-item-espaco-info .valor {
+    color: var(--color-gold);
+    font-weight: 700;
+}
+
+/* Botões do Card */
+.inventario-item-botoes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.3rem;
+}
+
+.inventario-item-botoes.com-equipar {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.3rem;
+}
+
+.inventario-item-btn {
+    padding: 0.3rem 0.4rem;
+    background: linear-gradient(135deg, 
+        rgba(212, 175, 85, 0.2) 0%,
+        rgba(168, 85, 247, 0.2) 100%);
+    border: 1px solid var(--color-gold-dark);
+    border-radius: 4px;
+    color: var(--color-gold);
+    font-size: 0.65rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.1;
+}
+
+.inventario-item-btn:hover {
+    background: linear-gradient(135deg, 
+        rgba(212, 175, 85, 0.4) 0%,
+        rgba(168, 85, 247, 0.4) 100%);
+    border-color: var(--color-gold);
+    transform: translateY(-1px);
+}
+
+.inventario-item-btn:active {
+    transform: translateY(0);
+}
+
+.inventario-item-btn-equipar {
+    background: linear-gradient(135deg, 
+        rgba(126, 255, 126, 0.2) 0%,
+        rgba(94, 222, 94, 0.2) 100%);
+    border-color: #5ade5e;
+    color: #7eff7e;
+}
+
+.inventario-item-btn-equipar:hover {
+    background: linear-gradient(135deg, 
+        rgba(126, 255, 126, 0.4) 0%,
+        rgba(94, 222, 94, 0.4) 100%);
+}
+
+.inventario-item-btn-deletar {
+    background: linear-gradient(135deg, 
+        rgba(255, 107, 107, 0.2) 0%,
+        rgba(255, 68, 68, 0.2) 100%);
+    border-color: #ff6b6b;
+    color: #ff9999;
+}
+
+.inventario-item-btn-deletar:hover {
+    background: linear-gradient(135deg, 
+        rgba(255, 107, 107, 0.4) 0%,
+        rgba(255, 68, 68, 0.4) 100%);
+}
+
+/* ===== RESPONSIVO ===== */
+
+@media (max-width: 768px) {
+    .inventario-items-list {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .inventario-item-nome {
+        font-size: 0.95rem;
+    }
+
+    .inventario-item-imagem {
+        height: 140px;
+    }
+
+    .inventario-item-conteudo {
+        padding: 0.75rem;
+        gap: 0.6rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .inventario-items-list {
+        grid-template-columns: 1fr;
+    }
+
+    .inventario-item-botoes.com-equipar {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* ========================================== */
+/* MODAL DE DETALHES - POPUP MODERNO          */
+/* ========================================== */
+
+.modal-detalhes-item {
+    max-width: 600px !important;
+}
+
+.modal-detalhes-corpo {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Imagem no Popup */
+.detalhes-imagem-container {
+    width: 100%;
+    height: 300px;
+    background: linear-gradient(135deg, rgba(212, 175, 85, 0.1) 0%, rgba(61, 40, 23, 0.3) 100%);
+    border: 2px solid var(--color-gold-dark);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.detalhes-imagem-placeholder {
+    font-size: 5rem;
+    opacity: 0.4;
+    color: var(--color-gold);
+}
+
+.detalhes-imagem-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.detalhes-imagem-container:hover img {
+    transform: scale(1.05);
+}
+
+/* Grid de Info */
+.detalhes-info-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.8rem;
+    padding: 1.5rem;
+    background: rgba(42, 24, 16, 0.8);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+@media (max-width: 600px) {
+    .detalhes-info-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.detalhes-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.8rem;
+    background: rgba(61, 40, 23, 0.6);
+    border: 1px solid rgba(212, 175, 85, 0.2);
+    border-radius: 6px;
+}
+
+.detalhes-info-item label {
+    font-size: 0.7rem;
+    color: rgba(200, 200, 220, 0.7);
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.detalhes-valor {
+    font-size: 1rem;
+    color: #d4af37;
+    font-weight: 700;
+    font-family: 'Courier New', monospace;
+}
+
+/* Seções de Conteúdo */
+.detalhes-secoes {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.detalhes-secao {
+    padding: 1.2rem;
+    background: rgba(42, 24, 16, 0.8);
+    border: 2px solid var(--color-border);
+    border-left: 5px solid var(--color-gold);
+    border-radius: 8px;
+    animation: slideIn 0.3s ease;
+}
+
+.detalhes-secao-titulo {
+    margin: 0 0 0.8rem 0;
+    font-size: 1.1rem;
+    color: var(--color-gold);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.detalhes-texto {
+    margin: 0;
+    font-size: 0.95rem;
+    color: rgba(232, 232, 232, 0.9);
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+    margin: 0;
+    color: var(--color-text-primary);
+    line-height: 1.6;
+    font-size: 0.95rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* ========================================== */
+/* ARMAZENAMENTO - MODAL FORMULÁRIO           */
+/* ========================================== */
+
+.modal-armazenamento-form {
+    max-width: 600px !important;
+}
+
+.armazenamento-form-main {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.form-textarea {
+    padding: 0.75rem;
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    color: var(--color-text-primary);
+    font-family: 'Arial', sans-serif;
+    font-size: 0.9rem;
+    resize: vertical;
+    min-height: 80px;
+    transition: all 0.3s ease;
+}
+
+.form-textarea:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    background: #2a2420;
+    box-shadow: 0 0 8px rgba(230, 184, 0, 0.3);
+}
+
+/* ========================================== */
+/* ARMAZENAMENTO - CARD DISPLAY (NOVO LAYOUT) */
+/* NOTA: Estilos principais em inventario-novo.css */
+/* ========================================== */
+
+/* Listagem - Não usa mais grid com múltiplas colunas */
+/* Os estilos do card foram movidos para inventario-novo.css */
+
+/* Header do Card */
+.armazenamento-header {
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex-grow: 1;
+}
+
+.armazenamento-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-gold);
+    text-align: center;
+    word-break: break-word;
+    word-wrap: break-word;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+}
+
+.armazenamento-bonus {
+    font-size: 0.85rem;
+    color: var(--color-accent);
+    font-weight: 600;
+}
+
+/* Botões */
+.armazenamento-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem;
+    padding: 0.75rem 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-top: 1px solid var(--color-border);
+}
+
+.armazenamento-actions .btn-ver,
+/* Estilos de botões movidos para inventario-novo.css */
+
+/* Responsividade - comentado, pois os estilos estão em inventario-novo.css */
+/* ARMAZENAMENTO - MODAL DETALHES             */
+/* ========================================== */
+
+.modal-detalhes-armazenamento {
+    max-width: 500px !important;
+}
+
+/* Reutiliza estilos de detalhes de item */
+.modal-detalhes-armazenamento .detalhes-imagem-container {
+    width: 100%;
+    height: 250px;
+    background: linear-gradient(135deg, var(--color-bg-secondary) 0%, var(--color-brown) 100%);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.modal-detalhes-armazenamento .detalhes-imagem-placeholder {
+    font-size: 4rem;
+    opacity: 0.8;
+}
+
+.modal-detalhes-armazenamento #armazenamento-detalhes-imagem {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.modal-detalhes-armazenamento .detalhes-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.modal-detalhes-armazenamento .detalhes-info-item {
+    background: var(--color-bg-secondary);
+    padding: 0.75rem;
+    border-radius: 4px;
+    border: 1px solid var(--color-border);
+}
+
+.modal-detalhes-armazenamento .detalhes-info-item label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--color-gold);
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.modal-detalhes-armazenamento .detalhes-valor {
+    display: block;
+    color: var(--color-text-primary);
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+/* ===== QUALITY BADGES ===== */
+.detalhes-qualidade {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+}
+
+.detalhes-qualidade.quality-comum {
+    background: var(--color-quality-comum);
+    color: white;
+}
+
+.detalhes-qualidade.quality-raro {
+    background: var(--color-quality-raro);
+    color: white;
+}
+
+.detalhes-qualidade.quality-epico {
+    background: var(--color-quality-epico);
+    color: white;
+}
+
+.detalhes-qualidade.quality-mitico {
+    background: var(--color-quality-mitico);
+    color: white;
+}
+
+.detalhes-qualidade.quality-lendario {
+    background: var(--color-quality-lendario);
+    color: white;
+}
+
+.detalhes-qualidade.quality-celestial {
+    background: var(--color-quality-celestial);
+    color: white;
+}
+
+
+
+
+
+

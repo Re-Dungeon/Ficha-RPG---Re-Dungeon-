@@ -1,0 +1,92 @@
+/* ========================================== */
+/* COMPANHEIRO-MODAL-IMAGEM-CENTRAL.CSS      */
+/* Apenas centraliza a caixa de imagem       */
+/* Sem mexer no resto do código              */
+/* ========================================== */
+
+/* Centraliza toda a seção de imagem do companheiro */
+.item-form-main > .form-group:first-child {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+/* Label centralizado */
+.item-form-main > .form-group:first-child .form-label {
+    text-align: center;
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+/* Caixa de imagem com borda e padding - COLUNA */
+.item-form-main > .form-group:first-child .form-imagem-grupo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 2rem;
+    background: rgba(42, 24, 16, 0.6);
+    border: 2px solid #3b82f6;
+    border-radius: 12px;
+    gap: 1.5rem;
+}
+
+/* Preview centralizada e aumentada */
+.item-form-main > .form-group:first-child .form-imagem-preview {
+    width: 280px;
+    height: 280px;
+    border: 3px dashed #3b82f6;
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+
+/* Radios/tabs em LINHA HORIZONTAL abaixo da imagem */
+.item-form-main > .form-group:first-child .form-imagem-inputs {
+    display: flex;
+    flex-direction: row;
+    gap: 2rem;
+    justify-content: center;
+    border-bottom: none !important;
+    padding-bottom: 0 !important;
+    width: 100%;
+    margin-top: 1rem;
+}
+
+/* Tab estilo */
+.item-form-main > .form-group:first-child .form-imagem-tab {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.item-form-main > .form-group:first-child .form-imagem-tab input[type="radio"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.item-form-main > .form-group:first-child .form-imagem-tab label {
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #cbd5e0;
+    font-weight: 500;
+}
+
+/* Input URL/Upload centralizado */
+.item-form-main > .form-group:first-child .form-imagem-input {
+    width: 100%;
+    max-width: 280px;
+    padding: 0.8rem 1rem;
+    background: rgba(61, 40, 23, 0.8);
+    border: 1px solid #4a5568;
+    border-radius: 6px;
+    color: #e8e8e8;
+    font-size: 0.9rem;
+}
+
+
+
+
+

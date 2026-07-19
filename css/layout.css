@@ -1,0 +1,82 @@
+/* ============================================ */
+/* LAYOUT.CSS - Layout Principal da Página      */
+/* ============================================ */
+
+#rpg-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: var(--color-bg-primary);
+}
+
+/* Barra Horizontal no Topo */
+#rpg-horizontal-bar {
+    flex-shrink: 0;
+    background-color: var(--color-dark-brown);
+    border-bottom: 2px solid var(--color-border);
+}
+
+/* Wrapper Principal (Sidebar Left + Content + Sidebar Right) */
+#rpg-main-wrapper {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    height: 100%;
+}
+
+/* Barra Vertical Esquerda (Sidebar) */
+#rpg-vertical-bar-left {
+    flex-shrink: 0;
+    width: 100px;
+    height: 100%;
+    background-color: var(--color-dark-brown);
+    border-right: 2px solid var(--color-border);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Box Central (Conteúdo Principal) */
+#rpg-main-content-box {
+    flex: 1;
+    overflow-y: auto;
+    background-color: var(--color-bg-secondary);
+}
+
+/* Barra Vertical Direita (Sidebar) */
+#rpg-vertical-bar-right {
+    flex-shrink: 0;
+    width: 100px;
+    height: 100%;
+    background-color: var(--color-dark-brown);
+    border-left: 2px solid var(--color-border);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    #rpg-main-wrapper {
+        flex-direction: column;
+    }
+
+    #rpg-vertical-bar-left {
+        width: 100%;
+        height: auto;
+        border-right: none;
+        border-bottom: 2px solid var(--color-border);
+    }
+
+    #rpg-vertical-bar-right {
+        width: 100%;
+        height: auto;
+        border-left: none;
+        border-top: 2px solid var(--color-border);
+    }
+}
+
+
+
+
+

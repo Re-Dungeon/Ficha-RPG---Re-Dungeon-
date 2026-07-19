@@ -1,0 +1,409 @@
+/* ========================================== */
+/* LAYOUT-PADRAO-CENTRAL.CSS                  */
+/* Padrão de Centralização para Componentes   */
+/* Baseado na disposição da Imagem de         */
+/* Armazenamento - Layout Centralizado        */
+/* ========================================== */
+
+:root {
+    --spacing-central: 2rem;
+    --max-width-container: 1200px;
+    --padding-container: 2rem;
+}
+
+/* ===== CONTAINER CENTRAL PRINCIPAL ===== */
+
+.container-central {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-central);
+    width: 100%;
+    max-width: var(--max-width-container);
+    margin: 0 auto;
+    padding: var(--padding-container);
+    box-sizing: border-box;
+}
+
+/* ===== SECÃO CENTRALIZADA COM ESPAÇAMENTO ===== */
+
+.secao-central {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, rgba(26, 20, 16, 0.8) 0%, rgba(36, 27, 21, 0.8) 100%);
+    border: 2px solid var(--color-gold-dark, #3b82f6);
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(212, 175, 85, 0.1);
+}
+
+/* ===== HEADER CENTRALIZADO ===== */
+
+.secao-central__header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    text-align: center;
+    width: 100%;
+}
+
+.secao-central__titulo {
+    font-size: 1.75rem;
+    font-weight: bold;
+    color: var(--color-gold, #d4af37);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin: 0;
+    text-shadow: 0 0 15px rgba(212, 175, 85, 0.3);
+}
+
+.secao-central__subtitulo {
+    font-size: 0.95rem;
+    color: var(--color-text-secondary, #cbd5e0);
+    font-style: italic;
+    letter-spacing: 0.5px;
+    margin: 0;
+}
+
+/* ===== AREA DE CONTEÚDO CENTRALIZADO ===== */
+
+.secao-central__conteudo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    gap: 1rem;
+}
+
+/* ===== GRID CENTRALIZADO (Flexível) ===== */
+
+.grid-central {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    width: 100%;
+    place-items: center;
+}
+
+.grid-central--3-colunas {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.grid-central--4-colunas {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.grid-central--2-colunas {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+/* ===== CARD CENTRALIZADO ===== */
+
+.card-central {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: rgba(61, 40, 23, 0.6);
+    border: 2px solid var(--color-border, #4a5568);
+    border-radius: 10px;
+    text-align: center;
+    width: 100%;
+    aspect-ratio: 1;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+.card-central:hover {
+    border-color: var(--color-gold-dark, #3b82f6);
+    box-shadow: 0 8px 24px rgba(212, 175, 85, 0.2);
+    transform: translateY(-2px);
+}
+
+.card-central__icone {
+    font-size: 2.5rem;
+    line-height: 1;
+}
+
+.card-central__titulo {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-gold, #d4af37);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0;
+}
+
+.card-central__descricao {
+    font-size: 0.85rem;
+    color: var(--color-text-secondary, #cbd5e0);
+    margin: 0;
+}
+
+/* ===== BOTÕES CENTRALIZADOS ===== */
+
+.botoes-central {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+.botao-central {
+    padding: 1rem 2rem;
+    background: linear-gradient(135deg, rgba(212, 175, 85, 0.2) 0%, rgba(168, 85, 247, 0.2) 100%);
+    border: 2px solid var(--color-gold, #d4af37);
+    border-radius: 8px;
+    color: var(--color-gold, #d4af37);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.botao-central:hover {
+    background: linear-gradient(135deg, rgba(212, 175, 85, 0.4) 0%, rgba(168, 85, 247, 0.4) 100%);
+    box-shadow: 0 0 20px rgba(212, 175, 85, 0.4);
+}
+
+.botao-central:active {
+    transform: scale(0.98);
+}
+
+/* ===== IMAGEM CENTRALIZADA COM FRAME ===== */
+
+.imagem-central {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 300px;
+    aspect-ratio: 1;
+}
+
+.imagem-central__frame {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    border: 3px dashed var(--color-gold-dark, #3b82f6);
+    border-radius: 12px;
+    background: radial-gradient(ellipse at center, rgba(212, 175, 85, 0.1) 0%, rgba(26, 20, 16, 0.5) 100%);
+    box-shadow: inset 0 0 30px rgba(212, 175, 85, 0.15);
+    padding: 1rem;
+}
+
+.imagem-central__frame img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 0 15px rgba(212, 175, 85, 0.3));
+}
+
+/* ===== LAYOUT EM COLUNA (Vertical) ===== */
+
+.coluna-central {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    width: 100%;
+}
+
+.coluna-central--espaco {
+    gap: 2.5rem;
+}
+
+/* ===== LAYOUT EM LINHA (Horizontal) ===== */
+
+.linha-central {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+/* ===== SEPARADOR VISUAL ===== */
+
+.separador-central {
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--color-gold-dark, #3b82f6), transparent);
+    margin: 1rem 0;
+}
+
+/* ===== INFO BOX CENTRALIZADO ===== */
+
+.info-box-central {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1.25rem;
+    background: rgba(42, 24, 16, 0.6);
+    border: 1px solid var(--color-border, #4a5568);
+    border-radius: 8px;
+    text-align: center;
+    width: 100%;
+}
+
+.info-box-central__label {
+    font-size: 0.9rem;
+    color: var(--color-gold, #d4af37);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-box-central__valor {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #7eff7e;
+    font-family: 'Courier New', monospace;
+    text-shadow: 0 0 10px rgba(126, 255, 126, 0.3);
+}
+
+/* ===== RESPONSIVIDADE ===== */
+
+@media (max-width: 1024px) {
+    .container-central {
+        max-width: 90%;
+        padding: 1.5rem;
+    }
+
+    .grid-central--3-colunas {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .grid-central--4-colunas {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .linha-central {
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .container-central {
+        max-width: 95%;
+        padding: 1rem;
+        gap: 1.5rem;
+    }
+
+    .secao-central {
+        padding: 1rem;
+        gap: 1rem;
+    }
+
+    .secao-central__titulo {
+        font-size: 1.5rem;
+    }
+
+    .grid-central {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+    }
+
+    .grid-central--3-colunas,
+    .grid-central--4-colunas {
+        grid-template-columns: 1fr;
+    }
+
+    .card-central {
+        padding: 1rem;
+    }
+
+    .linha-central {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .botoes-central {
+        gap: 0.75rem;
+    }
+
+    .botao-central {
+        padding: 0.75rem 1.5rem;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .container-central {
+        max-width: 100%;
+        padding: 0.75rem;
+        gap: 1rem;
+    }
+
+    .secao-central {
+        padding: 0.75rem;
+        gap: 0.75rem;
+        border-width: 1px;
+    }
+
+    .secao-central__titulo {
+        font-size: 1.25rem;
+        letter-spacing: 1px;
+    }
+
+    .secao-central__subtitulo {
+        font-size: 0.8rem;
+    }
+
+    .grid-central {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .card-central {
+        aspect-ratio: auto;
+        min-height: 120px;
+    }
+
+    .card-central__icone {
+        font-size: 2rem;
+    }
+
+    .card-central__titulo {
+        font-size: 1rem;
+    }
+
+    .botao-central {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        font-size: 0.85rem;
+    }
+
+    .imagem-central {
+        max-width: 250px;
+    }
+}
+
+
+
+
+
+

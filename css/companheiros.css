@@ -1,0 +1,571 @@
+/* ============================================================= */
+/* COMPANHEIROS.CSS - Aba de Companheiros do Personagem          */
+/* Baseado no padrão npc-card-lux                                */
+/* ============================================================= */
+
+.companheiros-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-lg);
+}
+
+/* ============================================================= */
+/* PAINEL DE CONTROLE - Topo                                    */
+/* ============================================================= */
+
+.companheiros-control-panel {
+    background: linear-gradient(135deg, rgba(139, 111, 71, 0.2), rgba(184, 134, 11, 0.15));
+    padding: var(--spacing-lg);
+    border-radius: 8px;
+    border: 1px solid rgba(184, 134, 11, 0.4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.companheiros-titulo-premium {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #ffd700;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
+.btn-adicionar {
+    align-self: center;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, #ff8c00, #ff6b35);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(255, 140, 0, 0.3);
+}
+
+.btn-adicionar:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(255, 140, 0, 0.5);
+    background: linear-gradient(135deg, #ff9900, #ff7a45);
+}
+
+.btn-adicionar:active {
+    transform: translateY(0);
+}
+
+/* ============================================================= */
+/* GRID DE COMPANHEIROS                                         */
+/* ============================================================= */
+
+.companheiros-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+    gap: 14px;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.companheiros-empty-message {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #8a6f47;
+    font-size: 1.1rem;
+    opacity: 0.7;
+}
+
+/* ============================================================= */
+/* CARD DO COMPANHEIRO - Baseado em npc-card-lux               */
+/* ============================================================= */
+
+.npc-card-lux {
+    background: linear-gradient(135deg, rgba(30, 25, 15, 0.9), rgba(50, 40, 25, 0.8));
+    border: 1px solid rgba(184, 134, 11, 0.4);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.npc-card-lux:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(184, 134, 11, 0.3);
+    border-color: rgba(184, 134, 11, 0.6);
+}
+
+/* Variantes de card por tipo */
+.npc-card-lux.card--mascote {
+    border-color: rgba(100, 200, 100, 0.5);
+    background: linear-gradient(135deg, rgba(40, 55, 40, 0.9), rgba(30, 45, 30, 0.8));
+}
+
+.npc-card-lux.card--mascote:hover {
+    border-color: rgba(100, 200, 100, 0.8);
+    box-shadow: 0 8px 20px rgba(100, 200, 100, 0.3);
+    transform: translateY(-4px);
+}
+
+.npc-card-lux.card--companheiro {
+    border-color: rgba(100, 150, 255, 0.5);
+    background: linear-gradient(135deg, rgba(40, 50, 75, 0.9), rgba(30, 40, 65, 0.8));
+}
+
+.npc-card-lux.card--companheiro:hover {
+    border-color: rgba(100, 150, 255, 0.8);
+    box-shadow: 0 8px 20px rgba(100, 150, 255, 0.3);
+    transform: translateY(-4px);
+}
+
+.npc-card-lux.card--espirito {
+    border-color: rgba(179, 102, 255, 0.5);
+    background: linear-gradient(135deg, rgba(60, 40, 75, 0.9), rgba(50, 30, 65, 0.8));
+}
+
+.npc-card-lux.card--espirito:hover {
+    border-color: rgba(179, 102, 255, 0.8);
+    box-shadow: 0 8px 20px rgba(179, 102, 255, 0.3);
+    transform: translateY(-4px);
+}
+
+.npc-card-lux.card--invocacao {
+    border-color: rgba(255, 215, 0, 0.5);
+    background: linear-gradient(135deg, rgba(75, 65, 40, 0.9), rgba(65, 55, 30, 0.8));
+}
+
+.npc-card-lux.card--invocacao:hover {
+    border-color: rgba(255, 215, 0, 0.8);
+    box-shadow: 0 8px 20px rgba(255, 215, 0, 0.3);
+    transform: translateY(-4px);
+}
+
+.npc-card-lux.card--pacto {
+    border-color: rgba(255, 107, 157, 0.5);
+    background: linear-gradient(135deg, rgba(75, 40, 55, 0.9), rgba(65, 30, 45, 0.8));
+}
+
+.npc-card-lux.card--pacto:hover {
+    border-color: rgba(255, 107, 157, 0.8);
+    box-shadow: 0 8px 20px rgba(255, 107, 157, 0.3);
+    transform: translateY(-4px);
+}
+
+.npc-card-lux.card--transformacao {
+    border-color: rgba(0, 212, 255, 0.5);
+    background: linear-gradient(135deg, rgba(30, 70, 85, 0.9), rgba(20, 60, 75, 0.8));
+}
+
+.npc-card-lux.card--transformacao:hover {
+    border-color: rgba(0, 212, 255, 0.8);
+    box-shadow: 0 8px 20px rgba(0, 212, 255, 0.3);
+    transform: translateY(-4px);
+}
+
+.npc-card-lux.card--pet {
+    border-color: rgba(100, 200, 100, 0.5);
+    background: linear-gradient(135deg, rgba(40, 55, 40, 0.9), rgba(30, 45, 30, 0.8));
+}
+
+.npc-card-lux.card--pet:hover {
+    border-color: rgba(100, 200, 100, 0.8);
+    box-shadow: 0 8px 20px rgba(100, 200, 100, 0.3);
+    transform: translateY(-4px);
+}
+
+/* Imagem do Card */
+.npc-card-image {
+    width: 100%;
+    height: 200px;
+    background: linear-gradient(135deg, #1a1612, #3a3428);
+    overflow: hidden;
+    position: relative;
+    border-bottom: 1px solid rgba(184, 134, 11, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 0;
+    margin: 0;
+}
+
+.npc-card-image img,
+.npc-card-image-img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: center !important;
+    transition: transform 0.3s ease;
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    max-width: none !important;
+    min-width: 100% !important;
+    min-height: 100% !important;
+}
+
+.npc-card-lux:hover .npc-card-image img,
+.npc-card-lux:hover .npc-card-image-img {
+    transform: scale(1.05);
+}
+
+.npc-card-image-placeholder {
+    color: #8a6f47;
+    font-size: 3rem;
+    opacity: 0.6;
+}
+
+/* Estado morto */
+.npc-card-lux.companheiro-morto .npc-card-image,
+.npc-card-lux.companheiro-morto .npc-card-image img,
+.npc-card-lux.companheiro-morto .npc-card-image-img {
+    filter: grayscale(100%) brightness(0.4);
+    opacity: 0.7;
+}
+
+/* Header do Card */
+.npc-card-header {
+    padding: var(--spacing-md);
+    background: rgba(139, 111, 71, 0.2);
+    border-bottom: 1px solid rgba(184, 134, 11, 0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.npc-card-tipo {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background: rgba(255, 140, 0, 0.8);
+    color: white;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+}
+
+.npc-card-tipo.mascote {
+    background: #64c864;
+    color: white;
+    box-shadow: 0 0 8px rgba(100, 200, 100, 0.4);
+}
+
+.npc-card-tipo.companheiro {
+    background: #6496ff;
+    color: white;
+    box-shadow: 0 0 8px rgba(100, 150, 255, 0.4);
+}
+
+.npc-card-tipo.espirito {
+    background: #b366ff;
+    color: white;
+    box-shadow: 0 0 8px rgba(179, 102, 255, 0.4);
+}
+
+.npc-card-tipo.invocacao {
+    background: #ffd700;
+    color: #0d1219;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+}
+
+.npc-card-tipo.pacto {
+    background: #ff6b9d;
+    color: white;
+    box-shadow: 0 0 8px rgba(255, 107, 157, 0.4);
+}
+
+.npc-card-tipo.transformacao {
+    background: #00d4ff;
+    color: #0d1219;
+    box-shadow: 0 0 8px rgba(0, 212, 255, 0.4);
+}
+
+.npc-card-tipo.pet {
+    background: #64c864;
+    color: white;
+    box-shadow: 0 0 8px rgba(100, 200, 100, 0.4);
+}
+
+.npc-card-status {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    font-size: 0.85rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.npc-card-status:hover {
+    transform: scale(1.05);
+}
+
+.npc-card-status.vivo {
+    color: #48b464;
+    background: rgba(72, 180, 100, 0.1);
+    border: 1px solid rgba(72, 180, 100, 0.3);
+}
+
+.npc-card-status.vivo:hover {
+    background: rgba(72, 180, 100, 0.2);
+    border-color: rgba(72, 180, 100, 0.5);
+}
+
+.npc-card-status.morto {
+    color: #ff6b6b;
+    background: rgba(255, 107, 107, 0.1);
+    border: 1px solid rgba(255, 107, 107, 0.3);
+}
+
+.npc-card-status.morto:hover {
+    background: rgba(255, 107, 107, 0.2);
+    border-color: rgba(255, 107, 107, 0.5);
+}
+
+/* Nome do Companheiro */
+.npc-card-nome {
+    padding: var(--spacing-md);
+    border-bottom: 1px solid rgba(184, 134, 11, 0.2);
+}
+
+.npc-card-nome-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.npc-card-titulo {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #ffd700;
+    margin: 0;
+    flex: 1;
+}
+
+.npc-card-subtitulo {
+    font-size: 0.9rem;
+    color: #a0845c;
+    margin: 0;
+}
+
+.npc-card-nivel {
+    display: inline-block;
+    padding: 0.35rem 0.75rem;
+    background: rgba(255, 140, 0, 0.2);
+    border: 1px solid rgba(255, 140, 0, 0.5);
+    border-radius: 3px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #ffa500;
+    white-space: nowrap;
+}
+
+/* Barras de Status */
+.npc-card-bars {
+    padding: var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.npc-card-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.npc-card-bar-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: #a0845c;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.npc-card-bar-label strong {
+    color: #ffd700;
+}
+
+.npc-card-bar-container {
+    position: relative;
+    height: 16px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    border: 1px solid rgba(139, 111, 71, 0.3);
+    overflow: hidden;
+}
+
+.npc-card-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+    position: relative;
+}
+
+/* Cores das barras */
+.npc-card-bar-fill.hp {
+    background: linear-gradient(90deg, #48b464, #32a14e);
+}
+
+.npc-card-bar-fill.energy {
+    background: linear-gradient(90deg, #4da6ff, #3a82d6);
+}
+
+.npc-card-bar-fill.fatigue {
+    background: linear-gradient(90deg, #ff8c00, #ff6b35);
+}
+
+/* Card com companheiro morto - efeito visual */
+.npc-card-lux.companheiro-morto {
+    position: relative;
+}
+
+.npc-card-lux.companheiro-morto .npc-card-image {
+    filter: grayscale(100%);
+    opacity: 0.6;
+}
+
+.npc-card-lux.companheiro-morto .npc-card-bars {
+    opacity: 0.5;
+}
+
+.npc-card-lux.companheiro-morto .npc-card-bar-fill {
+    background: linear-gradient(90deg, #555, #333) !important;
+}
+
+/* Companheiro morto */
+/* Rodapé com Botões */
+.npc-card-footer {
+    padding: var(--spacing-md);
+    background: rgba(0, 0, 0, 0.2);
+    border-top: 1px solid rgba(184, 134, 11, 0.2);
+    display: flex;
+    gap: var(--spacing-sm);
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: auto;
+}
+
+.npc-card-btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+    border: 1px solid rgba(184, 134, 11, 0.4);
+    background: rgba(184, 134, 11, 0.1);
+    color: #ffd700;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex: 1;
+    min-width: 70px;
+}
+
+.npc-card-btn:hover {
+    background: rgba(184, 134, 11, 0.25);
+    border-color: rgba(184, 134, 11, 0.6);
+    color: #ffed4e;
+}
+
+.npc-card-btn:active {
+    transform: scale(0.98);
+}
+
+.npc-card-btn.btn-ver {
+    background: rgba(72, 180, 100, 0.1);
+    color: #48b464;
+    border-color: rgba(72, 180, 100, 0.4);
+}
+
+.npc-card-btn.btn-ver:hover {
+    background: rgba(72, 180, 100, 0.25);
+    border-color: rgba(72, 180, 100, 0.6);
+    color: #5fc879;
+}
+
+.npc-card-btn.btn-editar {
+    background: rgba(100, 150, 200, 0.1);
+    color: #6496c8;
+    border-color: rgba(100, 150, 200, 0.4);
+}
+
+.npc-card-btn.btn-editar:hover {
+    background: rgba(100, 150, 200, 0.25);
+    border-color: rgba(100, 150, 200, 0.6);
+    color: #7baae5;
+}
+
+.npc-card-btn.btn-deletar {
+    background: rgba(255, 107, 107, 0.1);
+    color: #ff6b6b;
+    border-color: rgba(255, 107, 107, 0.4);
+}
+
+.npc-card-btn.btn-deletar:hover {
+    background: rgba(255, 107, 107, 0.25);
+    border-color: rgba(255, 107, 107, 0.6);
+    color: #ff8787;
+}
+
+/* ============================================================= */
+/* RESPONSIVIDADE                                               */
+/* ============================================================= */
+
+@media (max-width: 768px) {
+    .companheiros-grid {
+        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    }
+
+    .companheiros-titulo-premium {
+        font-size: 1.5rem;
+    }
+
+    .npc-card-footer {
+        flex-direction: column;
+    }
+
+    .npc-card-btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .companheiros-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .companheiros-container {
+        padding: var(--spacing-md);
+    }
+
+    .npc-card-image {
+        height: 150px;
+    }
+}
+
+
+
+
+

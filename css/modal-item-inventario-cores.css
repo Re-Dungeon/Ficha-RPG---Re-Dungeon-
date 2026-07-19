@@ -1,0 +1,174 @@
+/* ========================================== */
+/* MODAL-ITEM-INVENTARIO-CORES.CSS           */
+/* Ajusta cores do modal de criar item       */
+/* Do inventário principal para o padrão     */
+/* ========================================== */
+
+/* ===== MODAL CONTENT - FORÇA CORES MARROM/GOLD ===== */
+#modal-inventario-item .modal-content {
+    background: linear-gradient(135deg, #0a0e14 0%, #0d1219 100%) !important;
+    background-color: #0a0e14 !important;
+    border: 2px solid #3b82f6 !important;
+}
+
+#modal-inventario-item .modal-content.modal-item-form {
+    background: linear-gradient(135deg, #0a0e14 0%, #0d1219 100%) !important;
+}
+
+/* ===== MODAL BODY ===== */
+#modal-inventario-item .modal-body {
+    background: transparent !important;
+}
+
+/* ===== MODAL HEADER ===== */
+#modal-inventario-item .modal-header {
+    border-bottom: 2px solid #4a5568 !important;
+    background: rgba(212, 175, 85, 0.1) !important;
+}
+
+#modal-inventario-item .modal-title {
+    color: #d4af37 !important;
+}
+
+#modal-inventario-item .modal-close-btn {
+    color: #cbd5e0 !important;
+}
+
+#modal-inventario-item .modal-close-btn:hover {
+    color: #d4af37 !important;
+}
+
+/* ===== FORM LABELS ===== */
+#modal-inventario-item .form-label {
+    color: #d4af37 !important;
+}
+
+/* ===== FORM INPUTS ===== */
+#modal-inventario-item .form-input,
+#modal-inventario-item .form-select,
+#modal-inventario-item .form-textarea {
+    background: rgba(61, 40, 23, 0.8) !important;
+    border: 1px solid #4a5568 !important;
+    color: #e8e8e8 !important;
+}
+
+#modal-inventario-item .form-input:focus,
+#modal-inventario-item .form-select:focus,
+#modal-inventario-item .form-textarea:focus {
+    border-color: #d4af37 !important;
+    background: rgba(61, 40, 23, 1) !important;
+    box-shadow: 0 0 12px rgba(212, 175, 85, 0.2) !important;
+}
+
+#modal-inventario-item .form-input::placeholder,
+#modal-inventario-item .form-textarea::placeholder {
+    color: #cbd5e0 !important;
+}
+
+#modal-inventario-item .form-select option {
+    background: #0a0e14 !important;
+    color: #e8e8e8 !important;
+}
+
+/* ===== IMAGEM GRUPO ===== */
+#modal-inventario-item .form-imagem-grupo {
+    background: rgba(42, 24, 16, 0.6) !important;
+    border: 1px solid #4a5568 !important;
+}
+
+#modal-inventario-item .form-imagem-preview {
+    border: 2px dashed #3b82f6 !important;
+}
+
+#modal-inventario-item .form-imagem-placeholder {
+    color: #d4af37 !important;
+}
+
+#modal-inventario-item .form-imagem-tab label {
+    color: #cbd5e0 !important;
+}
+
+#modal-inventario-item .form-imagem-tab input[type="radio"]:checked + label {
+    color: #d4af37 !important;
+}
+
+#modal-inventario-item .form-imagem-tab input[type="radio"] {
+    accent-color: #d4af37 !important;
+}
+
+/* ===== ESPACO DISPLAY ===== */
+#modal-inventario-item .espaco-total-display {
+    background: rgba(42, 24, 16, 0.8) !important;
+    border: 1px solid #3b82f6 !important;
+    color: #d4af37 !important;
+}
+
+/* ===== FORM DIVIDER ===== */
+#modal-inventario-item .form-divider {
+    background: linear-gradient(90deg, transparent, #4a5568, transparent) !important;
+}
+
+/* ===== ABAS ===== */
+#modal-inventario-item .item-aba-btn {
+    color: #cbd5e0 !important;
+}
+
+#modal-inventario-item .item-aba-btn:hover:not(.item-aba-btn--ativo) {
+    color: #d4af37 !important;
+    border-bottom-color: #3b82f6 !important;
+}
+
+#modal-inventario-item .item-aba-btn--ativo {
+    color: #d4af37 !important;
+    border-bottom-color: #d4af37 !important;
+    background: rgba(212, 175, 85, 0.1) !important;
+}
+
+/* ===== AVISO ESPAÇO ===== */
+#modal-inventario-item .item-aviso-espaco {
+    background: rgba(231, 76, 60, 0.15) !important;
+    border: 2px solid rgba(231, 76, 60, 0.4) !important;
+}
+
+#modal-inventario-item .item-aviso-texto strong {
+    color: rgba(231, 76, 60, 0.9) !important;
+}
+
+#modal-inventario-item .item-aviso-texto p {
+    color: rgba(231, 76, 60, 0.8) !important;
+}
+
+/* ===== MODAL FOOTER ===== */
+#modal-inventario-item .modal-footer {
+    border-top: 1px solid #4a5568 !important;
+    background: rgba(42, 24, 16, 0.3) !important;
+}
+
+/* ===== BOTÕES ===== */
+#modal-inventario-item .modal-btn--primary {
+    background: linear-gradient(135deg, rgba(212, 175, 85, 0.3), rgba(168, 85, 247, 0.2)) !important;
+    border: 2px solid #d4af37 !important;
+    color: #d4af37 !important;
+}
+
+#modal-inventario-item .modal-btn--primary:hover {
+    background: linear-gradient(135deg, rgba(212, 175, 85, 0.5), rgba(168, 85, 247, 0.3)) !important;
+    box-shadow: 0 0 15px rgba(212, 175, 85, 0.3) !important;
+}
+
+#modal-inventario-item .modal-btn--secondary {
+    border: 2px solid #cbd5e0 !important;
+    color: #cbd5e0 !important;
+    background: transparent !important;
+}
+
+#modal-inventario-item .modal-btn--secondary:hover {
+    border-color: #d4af37 !important;
+    color: #d4af37 !important;
+}
+
+
+
+
+
+

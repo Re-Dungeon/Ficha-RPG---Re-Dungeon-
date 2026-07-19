@@ -1,0 +1,278 @@
+/* ================================================= */
+/* GAME-CREDITS-PREMIUM.CSS */
+/* Footer Profissional e Premium para a Ficha RPG */
+/* ================================================= */
+
+/* Container Principal */
+.game-credits {
+    margin: 3rem auto 1.5rem;
+    padding: 0;
+    width: min(100%, 1160px);
+    background: rgba(14, 20, 28, 0.95);
+    border: 1px solid rgba(212, 175, 55, 0.15);
+    border-radius: 24px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+    position: relative;
+    overflow: hidden;
+    text-align: left;
+}
+
+/* Efeito de fundo decorativo */
+.game-credits::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, 
+        transparent 0%,
+        #d4af37 50%,
+        transparent 100%);
+    opacity: 0.5;
+}
+
+/* Container Interno */
+.credits-container {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 1.75rem 1.6rem 1.2rem;
+}
+
+/* Divisor */
+.credits-divider {
+    height: 1px;
+    background: linear-gradient(90deg, 
+        transparent 0%,
+        rgba(212, 175, 55, 0.3) 50%,
+        transparent 100%);
+    margin: 0 0 1rem 0;
+}
+
+.credits-divider:last-of-type {
+    margin: 1rem 0 0 0;
+}
+
+/* Grid de Seções */
+.credits-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(220px, 1fr));
+    gap: 1rem;
+    margin: 1.2rem 0;
+    align-items: stretch;
+}
+
+/* Seção Individual */
+.credits-section {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 1rem;
+    padding: 1.1rem 1.2rem;
+    min-height: 132px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 18px;
+    transition: transform 0.25s ease, background 0.25s ease, border-color 0.25s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Efeito hover */
+.credits-section:hover {
+    background: rgba(212, 175, 55, 0.08);
+    border-color: rgba(212, 175, 55, 0.35);
+    transform: translateY(-3px);
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.22);
+}
+
+/* Ícone da Seção */
+.credits-section-icon {
+    font-size: 2rem;
+    min-width: 52px;
+    text-align: center;
+    animation: flutuarIcon 3s ease-in-out infinite;
+}
+
+@keyframes flutuarIcon {
+    0%, 100% {
+        transform: translateY(0px);
+        opacity: 1;
+    }
+    50% {
+        transform: translateY(-8px);
+        opacity: 0.8;
+    }
+}
+
+/* Conteúdo da Seção */
+.credits-section-content {
+    flex: 1;
+}
+
+/* Título da Seção */
+.credits-section-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #d4af37;
+    margin: 0 0 0.3rem 0;
+    letter-spacing: 0.8px;
+}
+
+/* Texto de Autor */
+.credits-author {
+    font-size: 0.95rem;
+    color: #ffd700;
+    font-weight: 600;
+    margin: 0;
+    text-shadow: 0 2px 8px rgba(255, 215, 0, 0.2);
+}
+
+/* Link de Versão */
+.credits-version-link {
+    display: inline-block;
+    font-size: 0.95rem;
+    color: #d4af37;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border-bottom: 2px solid transparent;
+    padding-bottom: 2px;
+}
+
+.credits-version-link:hover {
+    color: #ffd700;
+    border-bottom-color: #ffd700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+/* Data de Versão */
+.credits-version-date {
+    font-size: 0.75rem;
+    color: rgba(212, 175, 55, 0.7);
+    margin: 0.2rem 0 0 0;
+}
+
+/* Link do Discord */
+.discord-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0.8rem;
+    background: linear-gradient(135deg, rgba(88, 101, 242, 0.2) 0%, rgba(88, 101, 242, 0.05) 100%);
+    border: 1px solid rgba(88, 101, 242, 0.3);
+    border-radius: 6px;
+    color: #5865F2;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    min-width: 160px;
+}
+
+.discord-link:hover {
+    background: linear-gradient(135deg, rgba(88, 101, 242, 0.4) 0%, rgba(88, 101, 242, 0.15) 100%);
+    border-color: rgba(88, 101, 242, 0.6);
+    box-shadow: 0 0 15px rgba(88, 101, 242, 0.2);
+    transform: scale(1.05);
+}
+
+.discord-link:active {
+    transform: scale(0.95);
+}
+
+/* Ícone Discord */
+.discord-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Texto do Rodapé */
+.credits-footer-text {
+    text-align: center;
+    padding-top: 0.5rem;
+}
+
+.credits-footer-text p {
+    font-size: 0.8rem;
+    color: rgba(212, 175, 55, 0.8);
+    margin: 0;
+    font-style: italic;
+    letter-spacing: 0.5px;
+}
+
+/* Força override sobre global.css que define game-credits como flex */
+.game-credits {
+    display: block;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+    .credits-container {
+        padding: 1rem;
+    }
+
+    .credits-grid {
+        grid-template-columns: 1fr;
+        gap: 0.8rem;
+    }
+
+    .credits-section {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .credits-section-icon {
+        min-width: auto;
+    }
+
+    .game-credits {
+        margin-top: 1.5rem;
+    }
+}
+
+/* Animação de entrada suave */
+.credits-section {
+    animation: slideInUp 0.6s ease-out backwards;
+}
+
+.credits-section:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.credits-section:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.credits-section:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Efeito de brilho sutil no background */
+.game-credits::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: linear-gradient(180deg, 
+        transparent 0%,
+        rgba(212, 175, 55, 0.05) 100%);
+    pointer-events: none;
+}

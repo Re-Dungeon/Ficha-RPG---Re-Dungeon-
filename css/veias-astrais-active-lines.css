@@ -1,0 +1,540 @@
+/* ============================================================================
+   SISTEMA DE LINHAS ATIVAS - VEIAS ASTRAIS DESBLOQUEADAS
+   Efeitos visuais quando uma constelação é desbloqueada
+   ============================================================================ */
+
+/* TRANSIÇÃO SUAVE ENTRE ESTADOS */
+.astral-link {
+  transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ============================================================================
+   ESTADOS DE ATIVAÇÃO POR CONSTELAÇÃO
+   ============================================================================ */
+
+/* ARTY - Vermelho Caos (quando ativo: pulsa com intensidade) */
+.astral-link.constellation-arty {
+  --active-color: #ff4444;
+  --glow-color: rgba(255, 68, 68, 0.8);
+}
+
+.astral-link.constellation-arty.active {
+  stroke: #ff4444;
+  opacity: 1 !important;
+  filter: drop-shadow(0 0 8px #ff4444) drop-shadow(0 0 16px #ff4444)
+    drop-shadow(0 0 24px #ff4444);
+  animation: line-arty-pulse 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes line-arty-pulse {
+  0% {
+    stroke: #4a4a4a;
+    opacity: 0.1;
+    filter: drop-shadow(0 0 2px rgba(100, 100, 100, 0.2));
+  }
+  30% {
+    opacity: 0.5;
+  }
+  70% {
+    opacity: 1;
+    filter: drop-shadow(0 0 12px #ff4444) drop-shadow(0 0 24px #ff4444);
+  }
+  100% {
+    stroke: #ff4444;
+    opacity: 1;
+    filter: drop-shadow(0 0 8px #ff4444) drop-shadow(0 0 16px #ff4444)
+      drop-shadow(0 0 24px #ff4444);
+  }
+}
+
+/* AUNE - Dourado Destino (quando ativo: brilho contínuo) */
+.astral-link.constellation-aune {
+  --active-color: #ffdd44;
+  --glow-color: rgba(255, 221, 68, 0.8);
+}
+
+.astral-link.constellation-aune.active {
+  stroke: #ffdd44;
+  opacity: 1 !important;
+  filter: drop-shadow(0 0 8px #ffdd44) drop-shadow(0 0 16px #ffdd44)
+    drop-shadow(0 0 24px #ffdd44);
+  animation: line-aune-glow 2s ease-in-out infinite;
+}
+
+@keyframes line-aune-glow {
+  0%,
+  100% {
+    stroke: #ffdd44;
+    opacity: 0.9;
+    filter: drop-shadow(0 0 8px #ffdd44) drop-shadow(0 0 16px #ffdd44);
+  }
+  50% {
+    opacity: 1;
+    filter: drop-shadow(0 0 12px #ffdd44) drop-shadow(0 0 24px #ffdd44)
+      drop-shadow(0 0 32px #ffdd44);
+  }
+}
+
+/* EPHELIAS - Azul Arcano (quando ativo: fluir mágico) */
+.astral-link.constellation-ephelias {
+  --active-color: #4477dd;
+  --glow-color: rgba(68, 119, 221, 0.8);
+}
+
+.astral-link.constellation-ephelias.active {
+  stroke: #4477dd;
+  opacity: 1 !important;
+  filter: drop-shadow(0 0 8px #4477dd) drop-shadow(0 0 16px #4477dd)
+    drop-shadow(0 0 24px #4477dd);
+  animation: line-ephelias-flow 3s linear infinite;
+}
+
+@keyframes line-ephelias-flow {
+  0% {
+    stroke-dashoffset: 0;
+    filter: drop-shadow(0 0 8px #4477dd) drop-shadow(0 0 16px #4477dd);
+  }
+  50% {
+    filter: drop-shadow(0 0 12px #4477dd) drop-shadow(0 0 20px #4477dd)
+      drop-shadow(0 0 28px #4477dd);
+  }
+  100% {
+    stroke-dashoffset: -60;
+    filter: drop-shadow(0 0 8px #4477dd) drop-shadow(0 0 16px #4477dd);
+  }
+}
+
+/* NISHI - Roxo/Índigo Harmônico (quando ativo: vibração suave) */
+.astral-link.constellation-nishi {
+  --active-color: #9966ff;
+  --glow-color: rgba(153, 102, 255, 0.8);
+}
+
+.astral-link.constellation-nishi.active {
+  stroke: #9966ff;
+  opacity: 1 !important;
+  filter: drop-shadow(0 0 8px #9966ff) drop-shadow(0 0 16px #9966ff)
+    drop-shadow(0 0 24px #9966ff);
+  animation: line-nishi-vibrate 1.5s ease-in-out infinite;
+}
+
+@keyframes line-nishi-vibrate {
+  0%,
+  100% {
+    stroke-width: 3;
+    opacity: 1;
+    filter: drop-shadow(0 0 8px #9966ff) drop-shadow(0 0 16px #9966ff);
+  }
+  50% {
+    stroke-width: 4;
+    opacity: 1;
+    filter: drop-shadow(0 0 12px #9966ff) drop-shadow(0 0 20px #9966ff)
+      drop-shadow(0 0 28px #9966ff);
+  }
+}
+
+/* HESTIA - Verde Vital (quando ativo: crescimento) */
+.astral-link.constellation-hestia {
+  --active-color: #66dd66;
+  --glow-color: rgba(102, 221, 102, 0.8);
+}
+
+.astral-link.constellation-hestia.active {
+  stroke: #66dd66;
+  opacity: 1 !important;
+  filter: drop-shadow(0 0 8px #66dd66) drop-shadow(0 0 16px #66dd66)
+    drop-shadow(0 0 24px #66dd66);
+  animation: line-hestia-growth 2.5s ease-in-out infinite;
+}
+
+@keyframes line-hestia-growth {
+  0% {
+    stroke-width: 2;
+    opacity: 0.6;
+    filter: drop-shadow(0 0 4px #66dd66);
+  }
+  50% {
+    stroke-width: 3.5;
+    opacity: 1;
+    filter: drop-shadow(0 0 12px #66dd66) drop-shadow(0 0 20px #66dd66);
+  }
+  100% {
+    stroke-width: 3;
+    opacity: 1;
+    filter: drop-shadow(0 0 8px #66dd66) drop-shadow(0 0 16px #66dd66)
+      drop-shadow(0 0 24px #66dd66);
+  }
+}
+
+/* ============================================================================
+   EFEITO DE ATIVAÇÃO INICIAL (quando desbloqueado)
+   ============================================================================ */
+
+.astral-link.activation-burst {
+  animation: burst-activate 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes burst-activate {
+  0% {
+    stroke-width: 1;
+    opacity: 0;
+    filter: drop-shadow(0 0 0px rgba(255, 255, 255, 0));
+  }
+  30% {
+    stroke-width: 2;
+    opacity: 0.3;
+  }
+  60% {
+    stroke-width: 4;
+    opacity: 0.8;
+    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.6));
+  }
+  100% {
+    stroke-width: 3;
+    opacity: 1;
+  }
+}
+
+/* ============================================================================
+   EFEITO DE CAMINHO INTEIRO (todas as linhas relacionadas se acendem)
+   ============================================================================ */
+
+.astral-link.path-chain {
+  animation: chain-light-up 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes chain-light-up {
+  0% {
+    stroke-width: 1;
+    opacity: 0.05;
+  }
+  50% {
+    stroke-width: 3;
+    opacity: 0.5;
+  }
+  100% {
+    stroke-width: 3;
+    opacity: 1;
+  }
+}
+
+/* ============================================================================
+   VARIAÇÕES DE INTENSIDADE ENERGÉTICA
+   ============================================================================ */
+
+/* Linhas de conexão próximas (alta energia) */
+.astral-link.active.intensity-high {
+  stroke-width: 4 !important;
+  filter: drop-shadow(0 0 12px var(--glow-color))
+    drop-shadow(0 0 20px var(--glow-color))
+    drop-shadow(0 0 32px var(--glow-color));
+}
+
+/* Linhas de conexão média */
+.astral-link.active.intensity-medium {
+  stroke-width: 3 !important;
+  filter: drop-shadow(0 0 8px var(--glow-color))
+    drop-shadow(0 0 16px var(--glow-color))
+    drop-shadow(0 0 24px var(--glow-color));
+}
+
+/* Linhas de conexão fraca (baixa energia) */
+.astral-link.active.intensity-low {
+  stroke-width: 2 !important;
+  filter: drop-shadow(0 0 4px var(--glow-color))
+    drop-shadow(0 0 8px var(--glow-color))
+    drop-shadow(0 0 12px var(--glow-color));
+}
+
+/* ============================================================================
+   EFEITO HOVER PARA LINHAS ATIVAS
+   ============================================================================ */
+
+.astral-link.active:hover {
+  stroke-width: 5 !important;
+  opacity: 1 !important;
+  filter: brightness(1.3) drop-shadow(0 0 16px var(--glow-color))
+    drop-shadow(0 0 24px var(--glow-color))
+    drop-shadow(0 0 32px var(--glow-color)) !important;
+}
+
+/* ============================================================================
+   DESATIVAÇÃO (transição suave para inativo)
+   ============================================================================ */
+
+.astral-link.deactivating {
+  animation: deactivate-fade 0.6s ease-out forwards;
+}
+
+@keyframes deactivate-fade {
+  0% {
+    opacity: 1;
+    stroke-width: 3;
+  }
+  100% {
+    opacity: 0.2;
+    stroke-width: 2;
+    filter: drop-shadow(0 0 2px rgba(100, 100, 100, 0.2)) !important;
+  }
+}
+
+/* ============================================================================
+   EFEITO ONDULAÇÃO (quando múltiplos nós são desbloqueados)
+   ============================================================================ */
+
+.astral-link.wave-effect {
+  animation: wave-propagation 1.5s ease-out forwards;
+}
+
+@keyframes wave-propagation {
+  0% {
+    stroke-width: 1;
+    opacity: 0;
+    filter: drop-shadow(0 0 0px rgba(255, 255, 255, 0));
+  }
+  40% {
+    stroke-width: 4;
+    opacity: 0.8;
+    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.6));
+  }
+  100% {
+    stroke-width: 3;
+    opacity: 1;
+    filter: drop-shadow(0 0 8px var(--glow-color))
+      drop-shadow(0 0 16px var(--glow-color))
+      drop-shadow(0 0 24px var(--glow-color));
+  }
+}
+
+/* ============================================================================
+   SUPORTE PARA LINHA DASHED (conexões laterais)
+   ============================================================================ */
+
+.astral-link.constellation-arty.link-dashed.active {
+  stroke-dasharray: 4, 4;
+  animation: dashed-flow 1.5s linear infinite;
+}
+
+@keyframes dashed-flow {
+  0% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: -8;
+  }
+}
+
+/* ============================================================================
+   FEEDBACK VISUAL DE CLIQUE
+   ============================================================================ */
+
+.astral-link.clicked-feedback {
+  animation: click-pulse 0.4s ease-out forwards;
+}
+
+@keyframes click-pulse {
+  0% {
+    filter: drop-shadow(0 0 0px rgba(255, 255, 255, 0));
+  }
+  50% {
+    filter: drop-shadow(0 0 24px rgba(255, 255, 255, 0.8));
+  }
+  100% {
+    filter: drop-shadow(0 0 8px var(--glow-color))
+      drop-shadow(0 0 16px var(--glow-color));
+  }
+}
+
+/* ============================================================================
+   EFEITO DE CORRENTE ENERGÉTICA - Linhas que conectam a nós filhos
+   ============================================================================ */
+
+.astral-link.energy-chain-active {
+  opacity: 1 !important;
+  stroke-width: 3.5px;
+  filter: brightness(1.3) drop-shadow(0 0 4px rgba(255, 255, 255, 0.6));
+}
+
+/* Constelação Arty - Pulso Explosivo Vermelho */
+.astral-link.energy-chain-active.energy-arty {
+  stroke: #ff4444;
+  filter: brightness(1.5) drop-shadow(0 0 8px #ff4444)
+    drop-shadow(0 0 16px #ff2222) drop-shadow(0 0 24px rgba(255, 68, 68, 0.6));
+  animation: energy-pulse-arty 1.5s ease-in-out infinite;
+}
+
+@keyframes energy-pulse-arty {
+  0% {
+    stroke-width: 3.5px;
+    opacity: 0.7;
+    filter: brightness(1.2) drop-shadow(0 0 4px #ff4444)
+      drop-shadow(0 0 8px #ff2222);
+  }
+  50% {
+    stroke-width: 4.5px;
+    opacity: 1;
+    filter: brightness(1.8) drop-shadow(0 0 12px #ff4444)
+      drop-shadow(0 0 24px #ff2222) drop-shadow(0 0 32px rgba(255, 68, 68, 0.8));
+  }
+  100% {
+    stroke-width: 3.5px;
+    opacity: 0.7;
+    filter: brightness(1.2) drop-shadow(0 0 4px #ff4444)
+      drop-shadow(0 0 8px #ff2222);
+  }
+}
+
+/* Constelação Aune - Brilho Ondulante Dourado */
+.astral-link.energy-chain-active.energy-aune {
+  stroke: #ffdd44;
+  filter: brightness(1.4) drop-shadow(0 0 8px #ffdd44)
+    drop-shadow(0 0 16px #ffbb22) drop-shadow(0 0 20px rgba(255, 221, 68, 0.5));
+  animation: energy-pulse-aune 1.5s ease-in-out infinite;
+}
+
+@keyframes energy-pulse-aune {
+  0% {
+    stroke-width: 3.5px;
+    opacity: 0.8;
+    filter: brightness(1.2) drop-shadow(0 0 6px #ffdd44)
+      drop-shadow(0 0 12px #ffbb22);
+  }
+  25% {
+    stroke-width: 4px;
+    opacity: 0.95;
+    filter: brightness(1.5) drop-shadow(0 0 10px #ffdd44)
+      drop-shadow(0 0 18px #ffbb22)
+      drop-shadow(0 0 24px rgba(255, 221, 68, 0.6));
+  }
+  50% {
+    stroke-width: 4.5px;
+    opacity: 1;
+    filter: brightness(1.8) drop-shadow(0 0 14px #ffdd44)
+      drop-shadow(0 0 24px #ffbb22)
+      drop-shadow(0 0 32px rgba(255, 221, 68, 0.7));
+  }
+  75% {
+    stroke-width: 4px;
+    opacity: 0.95;
+    filter: brightness(1.5) drop-shadow(0 0 10px #ffdd44)
+      drop-shadow(0 0 18px #ffbb22)
+      drop-shadow(0 0 24px rgba(255, 221, 68, 0.6));
+  }
+  100% {
+    stroke-width: 3.5px;
+    opacity: 0.8;
+    filter: brightness(1.2) drop-shadow(0 0 6px #ffdd44)
+      drop-shadow(0 0 12px #ffbb22);
+  }
+}
+
+/* Constelação Ephelias - Fluxo Mágico Azul */
+.astral-link.energy-chain-active.energy-ephelias {
+  stroke: #4477dd;
+  filter: brightness(1.4) drop-shadow(0 0 8px #4477dd)
+    drop-shadow(0 0 16px #2244bb) drop-shadow(0 0 20px rgba(68, 119, 221, 0.5));
+  animation: energy-pulse-ephelias 1.5s ease-in-out infinite;
+}
+
+@keyframes energy-pulse-ephelias {
+  0% {
+    stroke-width: 3.5px;
+    opacity: 0.65;
+    filter: brightness(1) drop-shadow(0 0 4px #4477dd)
+      drop-shadow(0 0 8px #2244bb);
+  }
+  33% {
+    stroke-width: 4px;
+    opacity: 0.85;
+    filter: brightness(1.4) drop-shadow(0 0 10px #4477dd)
+      drop-shadow(0 0 16px #2244bb)
+      drop-shadow(0 0 24px rgba(68, 119, 221, 0.6));
+  }
+  66% {
+    stroke-width: 4.5px;
+    opacity: 1;
+    filter: brightness(1.8) drop-shadow(0 0 14px #4477dd)
+      drop-shadow(0 0 24px #2244bb)
+      drop-shadow(0 0 32px rgba(68, 119, 221, 0.7));
+  }
+  100% {
+    stroke-width: 3.5px;
+    opacity: 0.65;
+    filter: brightness(1) drop-shadow(0 0 4px #4477dd)
+      drop-shadow(0 0 8px #2244bb);
+  }
+}
+
+/* Constelação Nishi - Vibração Suave Roxo/Índigo */
+.astral-link.energy-chain-active.energy-nishi {
+  stroke: #9966ff;
+  filter: brightness(1.3) drop-shadow(0 0 8px #9966ff)
+    drop-shadow(0 0 16px #7722dd) drop-shadow(0 0 20px rgba(153, 102, 255, 0.5));
+  animation: energy-pulse-nishi 1.5s ease-in-out infinite;
+}
+
+@keyframes energy-pulse-nishi {
+  0% {
+    stroke-width: 3.5px;
+    opacity: 0.75;
+    filter: brightness(1.1) drop-shadow(0 0 5px #9966ff)
+      drop-shadow(0 0 10px #7722dd);
+  }
+  25% {
+    stroke-width: 3.8px;
+    opacity: 0.88;
+    filter: brightness(1.3) drop-shadow(0 0 8px #9966ff)
+      drop-shadow(0 0 14px #7722dd)
+      drop-shadow(0 0 20px rgba(153, 102, 255, 0.5));
+  }
+  50% {
+    stroke-width: 4.2px;
+    opacity: 1;
+    filter: brightness(1.6) drop-shadow(0 0 12px #9966ff)
+      drop-shadow(0 0 20px #7722dd)
+      drop-shadow(0 0 28px rgba(153, 102, 255, 0.6));
+  }
+  75% {
+    stroke-width: 3.8px;
+    opacity: 0.88;
+    filter: brightness(1.3) drop-shadow(0 0 8px #9966ff)
+      drop-shadow(0 0 14px #7722dd)
+      drop-shadow(0 0 20px rgba(153, 102, 255, 0.5));
+  }
+  100% {
+    stroke-width: 3.5px;
+    opacity: 0.75;
+    filter: brightness(1.1) drop-shadow(0 0 5px #9966ff)
+      drop-shadow(0 0 10px #7722dd);
+  }
+}
+
+/* Constelação Hestia - Crescimento Progressivo Verde */
+.astral-link.energy-chain-active.energy-hestia {
+  stroke: #66dd66;
+  filter: brightness(1.3) drop-shadow(0 0 8px #66dd66)
+    drop-shadow(0 0 16px #44bb44) drop-shadow(0 0 20px rgba(102, 221, 102, 0.5));
+  animation: energy-pulse-hestia 1.5s ease-in-out infinite;
+}
+
+@keyframes energy-pulse-hestia {
+  0% {
+    stroke-width: 3.5px;
+    opacity: 0.6;
+    filter: brightness(1) drop-shadow(0 0 3px #66dd66)
+      drop-shadow(0 0 6px #44bb44);
+  }
+  50% {
+    stroke-width: 4.8px;
+    opacity: 1;
+    filter: brightness(1.9) drop-shadow(0 0 14px #66dd66)
+      drop-shadow(0 0 24px #44bb44)
+      drop-shadow(0 0 32px rgba(102, 221, 102, 0.8));
+  }
+  100% {
+    stroke-width: 3.5px;
+    opacity: 0.6;
+    filter: brightness(1) drop-shadow(0 0 3px #66dd66)
+      drop-shadow(0 0 6px #44bb44);
+  }
+}

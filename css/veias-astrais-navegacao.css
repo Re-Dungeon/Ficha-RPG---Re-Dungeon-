@@ -1,0 +1,648 @@
+/**
+ * SISTEMA DE VEIAS ASTRAIS - CSS NAVEGAÇÃO
+ * Sistema de drag, zoom e pan para mapa expansivo
+ * Performance otimizada com transform e will-change
+ */
+
+/* ============================================================================
+   1. SISTEMA DE TRANSFORMAÇÃO E NAVEGAÇÃO
+   ============================================================================ */
+
+.astral-map {
+  transform: translate(-50%, -50%) scale(1) translateX(0) translateY(0);
+  transition: none;
+}
+
+.astral-map.with-transition {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Estado de Dragging */
+.astral-viewport.dragging .astral-map {
+  will-change: transform;
+  transition: none;
+}
+
+/* Zoom Indicator */
+.zoom-indicator {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(74, 158, 255, 0.15);
+  border: 1px solid rgba(74, 158, 255, 0.3);
+  color: var(--color-primary);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  pointer-events: none;
+  z-index: 50;
+  animation: fade-in 0.3s ease-out;
+}
+
+/* ============================================================================
+   2. NÚCLEO CENTRAL - CORAÇÃO DO MAPA
+   ============================================================================ */
+
+.astral-core {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  left: 2500px;
+  top: 2500px;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.core-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Cristal Central */
+.core-crystal {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  background: radial-gradient(
+    circle at 40% 40%,
+    #ffffff 0%,
+    #4da6ff 15%,
+    #2563eb 35%,
+    #0f3a7d 60%,
+    transparent 100%
+  );
+  border-radius: 50%;
+  /* OTIMIZADO: Reduzir de 6 sombras para 3, remover inset */
+  box-shadow:
+    0 0 20px rgba(74, 158, 255, 1),
+    0 0 40px rgba(37, 99, 235, 0.6);
+  animation: crystal-shimmer 3s ease-in-out infinite;
+  filter: drop-shadow(0 0 30px rgba(74, 158, 255, 0.6));
+  will-change: box-shadow, filter;
+}
+
+/* Imagem da Esfera Cósmica */
+.core-crystal-image {
+  position: absolute;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  object-fit: contain;
+  filter: drop-shadow(0 0 15px rgba(74, 158, 255, 1))
+    drop-shadow(0 0 30px rgba(74, 158, 255, 0.8)) brightness(1.1) contrast(1.1);
+  animation: cosmic-sphere-glow 2.5s ease-in-out infinite;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.crystal-inner {
+  display: none;
+}
+
+.crystal-glow {
+  display: none;
+}
+
+/* Anéis de Energia */
+.core-energy-rings {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+}
+
+.energy-ring {
+  position: absolute;
+  border: none;
+  border-radius: 50%;
+  animation: ring-rotate 4s linear infinite;
+  display: none;
+}
+
+.ring-1 {
+  width: 150px;
+  height: 150px;
+  animation-duration: 4s;
+  box-shadow: none;
+}
+
+.ring-2 {
+  width: 200px;
+  height: 200px;
+  animation-duration: 6s;
+  animation-direction: reverse;
+  box-shadow: none;
+}
+
+.ring-3 {
+  width: 160px;
+  height: 160px;
+  animation-duration: 5s;
+  box-shadow: none;
+}
+
+/* Runas Centrais */
+.core-runes {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  left: 2500px;
+  top: 2500px;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  color: rgba(255, 255, 255, 0.8);
+  text-shadow:
+    0 0 20px rgba(74, 158, 255, 0.6),
+    0 0 40px rgba(139, 92, 246, 0.4);
+  animation: runes-float 3s ease-in-out infinite;
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* Partículas Orbitais */
+.core-particles {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: radial-gradient(circle, #4a9eff, transparent);
+  border-radius: 50%;
+  box-shadow: 0 0 6px rgba(74, 158, 255, 0.8);
+  animation: orbit 6s linear infinite;
+  /* OTIMIZADO: Ativar GPU acceleration */
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* ============================================================================
+   3. CONTAINER DE NÓS
+   ============================================================================ */
+
+.astral-nodes-container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 2500px;
+  left: 2500px;
+  pointer-events: none;
+}
+
+/* ============================================================================
+   4. ANIMAÇÕES DE NAVEGAÇÃO
+   ============================================================================ */
+
+@keyframes crystal-shimmer {
+  0%,
+  100% {
+    box-shadow:
+      0 0 20px rgba(74, 158, 255, 1),
+      0 0 40px rgba(74, 158, 255, 0.8),
+      0 0 60px rgba(37, 99, 235, 0.6),
+      0 0 80px rgba(15, 58, 125, 0.4),
+      inset -10px -10px 20px rgba(0, 0, 0, 0.5),
+      inset 10px 10px 20px rgba(255, 255, 255, 0.2);
+  }
+  50% {
+    box-shadow:
+      0 0 30px rgba(74, 158, 255, 1),
+      0 0 60px rgba(74, 158, 255, 1),
+      0 0 80px rgba(37, 99, 235, 0.8),
+      0 0 100px rgba(15, 58, 125, 0.6),
+      inset -10px -10px 20px rgba(0, 0, 0, 0.5),
+      inset 10px 10px 20px rgba(255, 255, 255, 0.3);
+  }
+}
+
+@keyframes cosmic-sphere-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 15px rgba(74, 158, 255, 1))
+      drop-shadow(0 0 30px rgba(74, 158, 255, 0.8)) brightness(1.1)
+      contrast(1.1);
+  }
+  50% {
+    filter: drop-shadow(0 0 20px rgba(74, 158, 255, 1.2))
+      drop-shadow(0 0 35px rgba(74, 158, 255, 0.9)) brightness(1.15)
+      contrast(1.15);
+  }
+}
+
+@keyframes core-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 30px rgba(74, 158, 255, 0.8),
+      0 0 60px rgba(74, 158, 255, 0.4),
+      inset -20px -20px 40px rgba(0, 0, 0, 0.5),
+      inset 20px 20px 40px rgba(255, 255, 255, 0.1);
+    filter: drop-shadow(0 0 40px rgba(74, 158, 255, 0.6));
+  }
+  50% {
+    box-shadow:
+      0 0 50px rgba(74, 158, 255, 1),
+      0 0 80px rgba(74, 158, 255, 0.6),
+      inset -20px -20px 40px rgba(0, 0, 0, 0.5),
+      inset 20px 20px 40px rgba(255, 255, 255, 0.15);
+    filter: drop-shadow(0 0 60px rgba(74, 158, 255, 0.8));
+  }
+}
+
+@keyframes crystal-shine {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+@keyframes crystal-glow-pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes ring-rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes runes-float {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translateY(-8px) scale(1.1);
+    opacity: 1;
+  }
+}
+
+@keyframes orbit {
+  0% {
+    transform: rotate(0deg) translateX(80px) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(360deg) translateX(80px) rotate(-360deg);
+    opacity: 0.3;
+  }
+}
+
+/* ============================================================================
+   5. EFEITOS DE ZOOM
+   ============================================================================ */
+
+/* Indicador de Zoom Animado */
+.zoom-indicator {
+  animation: zoom-indicator-pop 0.3s ease-out;
+}
+
+@keyframes zoom-indicator-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ============================================================================
+   6. GRID BACKGROUND ADAPTATIVO
+   ============================================================================ */
+
+.astral-viewport {
+  /* OTIMIZADO: Usar fixed attachment em vez de local */
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(74, 158, 255, 0.015) 0px,
+      rgba(74, 158, 255, 0.015) 1px,
+      transparent 1px,
+      transparent 100px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(74, 158, 255, 0.015) 0px,
+      rgba(74, 158, 255, 0.015) 1px,
+      transparent 1px,
+      transparent 100px
+    );
+  background-size: 100px 100px;
+  background-position: 0 0;
+  background-attachment: fixed;
+  /* Remover transition contínua - será atualizada por JS com throttle */
+}
+
+/* ============================================================================
+   7. CURSOR E FEEDBACK VISUAL
+   ============================================================================ */
+
+.astral-viewport {
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.astral-viewport.dragging {
+  cursor: grabbing;
+}
+
+.astral-core {
+  cursor: pointer;
+}
+
+.astral-core:hover {
+  filter: drop-shadow(0 0 60px rgba(74, 158, 255, 0.8));
+}
+
+/* ============================================================================
+   8. OTIMIZAÇÃO DE PERFORMANCE
+   ============================================================================ */
+
+.astral-map {
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.astral-links-canvas {
+  backface-visibility: hidden;
+}
+
+.astral-nodes-container {
+  backface-visibility: hidden;
+}
+
+/* ============================================================================
+   MODO LOW-PERFORMANCE (para dispositivos fracos)
+   ============================================================================ */
+
+.astral-viewport.performance-mode {
+  /* Simplificar background em modo low-end */
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(74, 158, 255, 0.008) 0px,
+      rgba(74, 158, 255, 0.008) 1px,
+      transparent 1px,
+      transparent 100px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(74, 158, 255, 0.008) 0px,
+      rgba(74, 158, 255, 0.008) 1px,
+      transparent 1px,
+      transparent 100px
+    );
+}
+
+/* Desativar partículas em modo performance */
+.astral-viewport.performance-mode .particle {
+  display: none !important;
+}
+
+/* Simplificar sombras do núcleo */
+.astral-viewport.performance-mode .core-crystal {
+  box-shadow:
+    0 0 15px rgba(74, 158, 255, 1),
+    0 0 25px rgba(37, 99, 235, 0.4);
+  filter: drop-shadow(0 0 15px rgba(74, 158, 255, 0.4));
+}
+
+/* Desativar animações pesadas */
+.astral-viewport.performance-mode .core-crystal {
+  animation: none;
+}
+
+.astral-viewport.performance-mode @keyframes crystal-shimmer {
+  0%, 100% {
+    opacity: 1;
+  }
+}
+
+.astral-viewport.performance-mode .astral-links-canvas {
+  opacity: 0.65;
+  filter: none;
+}
+
+.astral-viewport.performance-mode .astral-node {
+  box-shadow: none !important;
+  filter: none !important;
+  animation: none !important;
+  backdrop-filter: none !important;
+}
+
+.astral-viewport.performance-mode .astral-core {
+  background: rgba(10, 18, 38, 0.85);
+}
+
+.astral-viewport.performance-mode .astral-settings-status {
+  background: rgba(56, 189, 248, 0.16);
+}
+
+/* ============================================================================
+   CORES E ESTILOS DAS DIVINDADES PRIMORDIAIS
+   ============================================================================ */
+
+/* ARTY - Divindade do Caos (Vermelho Escuro) */
+.trees-list-item[data-tree="arty"] {
+  border-left-color: #ff4444;
+  color: #ffaaaa;
+}
+
+.trees-list-item[data-tree="arty"]:hover {
+  background: rgba(139, 26, 26, 0.3);
+  border-left-color: #ff6666;
+}
+
+.trees-list-item[data-tree="arty"].active {
+  background: rgba(139, 26, 26, 0.5);
+  border-left-color: #ff8888;
+}
+
+/* AUNE - Divindade do Destino (Dourado) */
+.trees-list-item[data-tree="aune"] {
+  border-left-color: #ffdd44;
+  color: #ffee99;
+}
+
+.trees-list-item[data-tree="aune"]:hover {
+  background: rgba(218, 165, 32, 0.3);
+  border-left-color: #ffee66;
+}
+
+.trees-list-item[data-tree="aune"].active {
+  background: rgba(218, 165, 32, 0.5);
+  border-left-color: #ffff99;
+}
+
+/* EPHELIAS - Divindade da Compreensão (Azul Profundo) */
+.trees-list-item[data-tree="ephelias"] {
+  border-left-color: #4477dd;
+  color: #8899ff;
+}
+
+.trees-list-item[data-tree="ephelias"]:hover {
+  background: rgba(26, 58, 82, 0.3);
+  border-left-color: #6699ff;
+}
+
+.trees-list-item[data-tree="ephelias"].active {
+  background: rgba(26, 58, 82, 0.5);
+  border-left-color: #88bbff;
+}
+
+/* NISHI - Divindade do Equilíbrio (Roxo/Índigo) */
+.trees-list-item[data-tree="nishi"] {
+  border-left-color: #9966ff;
+  color: #cc99ff;
+}
+
+.trees-list-item[data-tree="nishi"]:hover {
+  background: rgba(120, 80, 200, 0.3);
+  border-left-color: #bb88ff;
+}
+
+.trees-list-item[data-tree="nishi"].active {
+  background: rgba(120, 80, 200, 0.5);
+  border-left-color: #dd99ff;
+}
+
+/* HESTIA - Divindade da Criação (Verde) */
+.trees-list-item[data-tree="hestia"] {
+  border-left-color: #66dd66;
+  color: #99ff99;
+}
+
+.trees-list-item[data-tree="hestia"]:hover {
+  background: rgba(45, 122, 45, 0.3);
+  border-left-color: #88ee88;
+}
+
+.trees-list-item[data-tree="hestia"].active {
+  background: rgba(45, 122, 45, 0.5);
+  border-left-color: #aaffaa;
+}
+
+/* ============================================================================
+   9. DEBUG GRID (opcional, comentado por padrão)
+   ============================================================================ */
+
+/* Descomente para visualizar grid do mapa */
+/*
+.astral-map::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: 
+        repeating-linear-gradient(
+            0deg,
+            rgba(255, 0, 0, 0.03) 0px,
+            rgba(255, 0, 0, 0.03) 1px,
+            transparent 1px,
+            transparent 100px
+        ),
+        repeating-linear-gradient(
+            90deg,
+            rgba(0, 255, 0, 0.03) 0px,
+            rgba(0, 255, 0, 0.03) 1px,
+            transparent 1px,
+            transparent 100px
+        );
+    pointer-events: none;
+    z-index: -1;
+}
+*/
+
+/* Scroll customizado */
+.popup-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.popup-content::-webkit-scrollbar-track {
+  background: rgba(100, 116, 139, 0.1);
+  border-radius: 10px;
+}
+
+.popup-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 215, 0, 0.3);
+  border-radius: 10px;
+}
+
+.popup-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 215, 0, 0.5);
+}
+
+/* ============================================================================
+   ANIMAÇÕES
+   ============================================================================ */
+
+@keyframes shine-premium {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+@keyframes pulse-bonus {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+@keyframes popup-appear {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

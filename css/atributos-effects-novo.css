@@ -1,0 +1,52 @@
+/* ============================================ */
+/* ANIMAÇÕES E EFEITOS VISUAIS                 */
+/* ============================================ */
+
+/* Nenhuma animação - UI estática e sólida */
+
+/* ============================================ */
+/* ANIMAÇÕES DO PERSONAGEM                     */
+/* ============================================ */
+
+.personagem-display {
+    opacity: 1;
+}
+
+.personagem-display__frame {
+    position: relative;
+}
+
+/* ============================================ */
+/* EFEITOS DE PROFUNDIDADE                     */
+/* ============================================ */
+
+.atributo {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.personagem-display__frame {
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+}
+
+/* ============================================ */
+/* TRANSIÇÕES SUAVES PARA HOVER                */
+/* ============================================ */
+
+.atributo {
+    transition: box-shadow 0.2s ease;
+}
+
+.personagem-display__border {
+    transition: box-shadow 0.3s ease;
+}
+
+.personagem-display:hover .personagem-display__border {
+    box-shadow: 
+        0 0 15px rgba(230, 184, 0, 0.4),
+        inset 0 0 15px rgba(230, 184, 0, 0.2);
+}
+
+
+
+
+

@@ -1,0 +1,1125 @@
+/* ============================================
+   SISTEMA DE ARTs (Núcleos/Art's/Variações)
+   ============================================ */
+
+.arts-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, var(--color-bg-primary) 0%, var(--color-bg-secondary) 100%);
+    border-radius: 12px;
+    color: var(--color-text-primary);
+}
+
+/* ============================================
+   PAINEL DE CONTROLE
+   ============================================ */
+
+.arts-control-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px solid var(--color-gold);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(212, 175, 85, 0.15);
+}
+
+.arts-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+}
+
+.arts-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: rgba(20, 20, 40, 0.6);
+    border-left: 3px solid var(--color-gold);
+    border-radius: 4px;
+    text-align: center;
+}
+
+.arts-info-label {
+    font-size: 0.85rem;
+    color: #a0a0a0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+.arts-info-value {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: var(--color-gold);
+    text-shadow: 0 2px 8px rgba(212, 175, 85, 0.4);
+}
+
+.arts-buttons-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+}
+
+.btn-arts-acao,
+.btn-gerenciar-arts,
+.btn-criar-arts-variante {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.btn-arts-acao {
+    background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
+    color: var(--color-bg-primary);
+}
+
+.btn-arts-acao:hover {
+    background: linear-gradient(135deg, #f0c960 0%, #c9a535 100%);
+    box-shadow: 0 6px 12px rgba(212, 175, 85, 0.4);
+    transform: translateY(-2px);
+}
+
+.btn-gerenciar-arts {
+    background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
+    color: var(--color-bg-primary);
+}
+
+.btn-gerenciar-arts:hover {
+    background: linear-gradient(135deg, #f0c960 0%, #c9a535 100%);
+    box-shadow: 0 6px 12px rgba(212, 175, 85, 0.4);
+    transform: translateY(-2px);
+}
+
+.btn-criar-arts-variante {
+    background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
+    color: var(--color-bg-primary);
+}
+
+.btn-criar-arts-variante:hover {
+    background: linear-gradient(135deg, #f0c960 0%, #c9a535 100%);
+    box-shadow: 0 6px 12px rgba(212, 175, 85, 0.4);
+    transform: translateY(-2px);
+}
+
+.btn-arts-acao:active,
+.btn-gerenciar-arts:active,
+.btn-criar-arts-variante:active {
+    transform: translateY(0);
+}
+
+/* ============================================
+   WRAPPER DE BOXES
+   ============================================ */
+
+.arts-boxes-wrapper {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+/* ============================================
+   BOXES INDIVIDUAIS
+   ============================================ */
+
+.arts-box {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: rgba(20, 20, 40, 0.5);
+    border: 2px solid rgba(212, 175, 85, 0.3);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    min-height: 400px;
+    overflow-y: auto;
+}
+
+.arts-box::-webkit-scrollbar {
+    width: 8px;
+}
+
+.arts-box::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+.arts-box::-webkit-scrollbar-thumb {
+    background: rgba(212, 175, 85, 0.4);
+    border-radius: 4px;
+}
+
+.arts-box::-webkit-scrollbar-thumb:hover {
+    background: rgba(212, 175, 85, 0.6);
+}
+
+.arts-box-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--color-gold);
+    text-shadow: 0 2px 4px rgba(212, 175, 85, 0.3);
+    margin: 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid rgba(212, 175, 85, 0.3);
+}
+
+.arts-empty-message {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    font-size: 1rem;
+    color: #666;
+    text-align: center;
+}
+
+/* ============================================
+   LISTA DE NÚCLEOS
+   ============================================ */
+
+.arts-nucleos-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* ============================================
+   ESTILO ANTIGO (DESCONTINUADO - Mantido para compatibilidade)
+   ============================================ */
+
+/* .arts-nucleo-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(30, 144, 255, 0.1));
+    border: 2px solid rgba(139, 92, 246, 0.4);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.arts-nucleo-item:hover {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(30, 144, 255, 0.2));
+    border-color: rgba(139, 92, 246, 0.8);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.arts-nucleo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.arts-nucleo-nome {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #8b5cf6;
+    margin: 0;
+}
+
+.arts-nucleo-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background: rgba(139, 92, 246, 0.3);
+    border: 1px solid rgba(139, 92, 246, 0.6);
+    border-radius: 12px;
+    font-size: 0.75rem;
+    color: #a78bfa;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.arts-nucleo-tipo {
+    font-size: 0.9rem;
+    color: #a0a0a0;
+}
+
+.arts-nucleo-bônus {
+    font-size: 0.85rem;
+    color: var(--color-gold);
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(212, 175, 85, 0.2);
+}
+
+.arts-nucleo-arts-count {
+    display: inline-block;
+    margin-left: 0.5rem;
+    font-size: 0.8rem;
+    background: rgba(212, 175, 85, 0.2);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    color: var(--color-gold);
+}
+*/
+
+/* ============================================
+   LISTA DE ART'S
+   ============================================ */
+
+.arts-dominadas-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.arts-art-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: linear-gradient(135deg, rgba(212, 175, 85, 0.1), rgba(255, 165, 0, 0.1));
+    border: 2px solid rgba(212, 175, 85, 0.4);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.arts-art-item:hover {
+    background: linear-gradient(135deg, rgba(212, 175, 85, 0.2), rgba(255, 165, 0, 0.2));
+    border-color: rgba(212, 175, 85, 0.8);
+    box-shadow: 0 4px 12px rgba(212, 175, 85, 0.3);
+}
+
+.arts-art-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.arts-art-nome {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--color-gold);
+    margin: 0;
+}
+
+.arts-art-dominio {
+    display: inline-block;
+    padding: 0.3rem 0.8rem;
+    background: rgba(212, 175, 85, 0.3);
+    border: 1px solid rgba(212, 175, 85, 0.6);
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: #ffd700;
+    text-transform: uppercase;
+}
+
+.arts-art-tipo {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background: rgba(30, 144, 255, 0.3);
+    border: 1px solid rgba(30, 144, 255, 0.6);
+    border-radius: 12px;
+    font-size: 0.75rem;
+    color: #87ceeb;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.arts-art-detalhe {
+    font-size: 0.85rem;
+    color: #a0a0a0;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(212, 175, 85, 0.2);
+}
+
+.arts-art-custo {
+    display: inline-block;
+    margin-right: 1rem;
+    color: #ff6b6b;
+    font-weight: 600;
+}
+
+.arts-art-alcance {
+    display: inline-block;
+    color: #87ceeb;
+    font-weight: 600;
+}
+
+/* ============================================
+   LISTA DE VARIAÇÕES
+   ============================================ */
+
+.arts-variacoes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.arts-variacao-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.08), rgba(255, 165, 0, 0.08));
+    border: 2px solid rgba(255, 215, 0, 0.3);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.arts-variacao-item::before {
+    content: '✨';
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    font-size: 1rem;
+    opacity: 0.6;
+}
+
+.arts-variacao-item:hover {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 165, 0, 0.15));
+    border-color: rgba(255, 215, 0, 0.8);
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+}
+
+.arts-variacao-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.arts-variacao-nome {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #ffd700;
+    margin: 0;
+}
+
+.arts-variacao-art-original {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background: rgba(212, 175, 85, 0.2);
+    border: 1px solid rgba(212, 175, 85, 0.5);
+    border-radius: 12px;
+    font-size: 0.7rem;
+    color: var(--color-gold);
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.arts-variacao-detalhe {
+    font-size: 0.85rem;
+    color: #a0a0a0;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(255, 215, 0, 0.2);
+}
+
+/* ============================================
+   CARDS DE NÚCLEOS (Sistema Novo - HORIZONTAL)
+   ============================================ */
+
+.arts-card {
+    display: flex;
+    flex-direction: column;
+    background: rgba(20, 20, 40, 0.8);
+    border: 2px solid rgba(212, 175, 85, 0.3);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    cursor: pointer;
+    animation: slideIn 0.4s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+}
+
+.arts-card:hover {
+    border-color: var(--color-gold);
+    box-shadow: 0 6px 16px rgba(212, 175, 85, 0.3);
+    transform: translateY(-2px);
+}
+
+/* ============================================
+   CARD DE NÚCLEO - DESIGN PROFISSIONAL
+   Layout: [Imagem] [Informações] [Ações]
+   ============================================ */
+
+.card-nucleo {
+    display: grid;
+    grid-template-columns: 160px 1fr auto;
+    gap: 2rem;
+    align-items: center;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, rgba(20, 20, 40, 0.9), rgba(30, 25, 50, 0.8));
+    border: 2px solid rgba(212, 175, 85, 0.25);
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 
+        0 8px 24px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(212, 175, 85, 0.1);
+    animation: cardSlideIn 0.4s ease-out;
+}
+
+@keyframes cardSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card-nucleo:hover {
+    border-color: rgba(212, 175, 85, 0.5);
+    box-shadow: 
+        0 12px 32px rgba(212, 175, 85, 0.2),
+        inset 0 1px 0 rgba(212, 175, 85, 0.2);
+    transform: translateY(-3px);
+}
+
+/* Thumbnail - Imagem */
+.card-nucleo__thumb {
+    width: 160px;
+    height: 160px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 3px solid rgba(212, 175, 85, 0.3);
+    background: rgba(0, 0, 0, 0.4);
+    flex-shrink: 0;
+    box-shadow: 
+        0 4px 12px rgba(0, 0, 0, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.card-nucleo__thumb-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.card-nucleo:hover .card-nucleo__thumb-img {
+    transform: scale(1.08);
+}
+
+/* Seção Principal - Informações */
+.card-nucleo__main {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-width: 0;
+}
+
+/* Header do Card */
+.card-nucleo__header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.card-nucleo__title-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 0;
+}
+
+.card-nucleo__title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #d4af37;
+    letter-spacing: 0.5px;
+    line-height: 1.2;
+    word-break: break-word;
+}
+
+.card-nucleo__rank {
+    display: inline-block;
+    padding: 0.4rem 1rem;
+    background: linear-gradient(135deg, rgba(77, 166, 255, 0.2), rgba(100, 180, 255, 0.15));
+    border: 1.5px solid rgba(77, 166, 255, 0.4);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #6db3ff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    width: fit-content;
+    box-shadow: 0 2px 8px rgba(77, 166, 255, 0.1);
+}
+
+/* Divisor Visual */
+.card-nucleo__divider {
+    height: 1px;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(212, 175, 85, 0.2), 
+        transparent);
+    margin: 0.5rem 0;
+}
+
+/* Grid de Informações */
+.card-nucleo__grid {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+.card-nucleo__stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    min-width: 150px;
+}
+
+.card-nucleo__stat-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+.card-nucleo__stat-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #ffd700;
+    letter-spacing: 0.3px;
+}
+
+.card-nucleo__stat-value--long {
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #b8b8b8;
+}
+
+/* Seção de Ações - Direita */
+.card-nucleo__actions {
+    display: flex;
+    gap: 0.8rem;
+    flex-shrink: 0;
+    align-items: center;
+}
+
+.card-nucleo__action-btn {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background: rgba(212, 175, 85, 0.15);
+    border: 2px solid rgba(212, 175, 85, 0.3);
+    border-radius: 6px;
+    color: #d4af37;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.card-nucleo__action-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(212, 175, 85, 0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.4s ease, height 0.4s ease;
+    z-index: 0;
+}
+
+.card-nucleo__action-btn:hover::before {
+    width: 100%;
+    height: 100%;
+}
+
+.card-nucleo__action-btn > * {
+    position: relative;
+    z-index: 1;
+}
+
+.card-nucleo__action-btn:hover {
+    border-color: #d4af37;
+    background: rgba(212, 175, 85, 0.25);
+    transform: translateY(-2px);
+}
+
+.card-nucleo__action-btn--view {
+    color: #6db3ff;
+}
+
+.card-nucleo__action-btn--view:hover {
+    border-color: #6db3ff;
+    background: rgba(77, 166, 255, 0.2);
+    box-shadow: 0 0 12px rgba(77, 166, 255, 0.2);
+}
+
+.card-nucleo__action-btn--edit {
+    color: #ffc800;
+}
+
+.card-nucleo__action-btn--edit:hover {
+    border-color: #ffc800;
+    background: rgba(255, 200, 0, 0.2);
+    box-shadow: 0 0 12px rgba(255, 200, 0, 0.2);
+}
+
+.card-nucleo__action-btn--delete {
+    color: #ff6b6b;
+}
+
+.card-nucleo__action-btn--delete:hover {
+    border-color: #ff6b6b;
+    background: rgba(255, 107, 107, 0.2);
+    box-shadow: 0 0 12px rgba(255, 107, 107, 0.2);
+}
+
+/* ============================================
+   RESPONSIVO
+   ============================================ */
+
+@media (max-width: 1200px) {
+    .card-nucleo {
+        grid-template-columns: 140px 1fr auto;
+        gap: 1.5rem;
+        padding: 1.25rem;
+    }
+    
+    .card-nucleo__thumb {
+        width: 140px;
+        height: 140px;
+    }
+    
+    .card-nucleo__title {
+        font-size: 1.3rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .card-nucleo {
+        grid-template-columns: 120px 1fr;
+        gap: 1.2rem;
+        padding: 1rem;
+    }
+    
+    .card-nucleo__thumb {
+        width: 120px;
+        height: 120px;
+    }
+    
+    .card-nucleo__main {
+        gap: 0.75rem;
+    }
+    
+    .card-nucleo__actions {
+        grid-column: 1 / -1;
+        justify-content: flex-end;
+        margin-top: 0.5rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid rgba(212, 175, 85, 0.15);
+    }
+    
+    .card-nucleo__grid {
+        gap: 1rem;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .card-nucleo {
+        grid-template-columns: 100px 1fr;
+        gap: 1rem;
+        padding: 0.75rem;
+    }
+    
+    .card-nucleo__thumb {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .card-nucleo__title {
+        font-size: 1.1rem;
+    }
+    
+    .card-nucleo__rank {
+        font-size: 0.75rem;
+        padding: 0.3rem 0.8rem;
+    }
+    
+    .card-nucleo__grid {
+        display: none;
+    }
+    
+    .card-nucleo__action-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+}
+
+/* ============================================
+   RESPONSIVIDADE
+   ============================================ */
+
+@media (max-width: 768px) {
+    .arts-container {
+        padding: 1rem;
+        gap: 1.5rem;
+    }
+
+    .arts-boxes-wrapper {
+        grid-template-columns: 1fr;
+    }
+
+    .arts-buttons-group {
+        grid-template-columns: 1fr;
+    }
+
+    .arts-box {
+        min-height: 300px;
+    }
+
+    .arts-info-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .arts-container {
+        padding: 0.75rem;
+        gap: 1rem;
+    }
+
+    .arts-control-panel {
+        padding: 1rem;
+    }
+
+    .arts-buttons-group {
+        gap: 0.75rem;
+    }
+
+    .btn-arts-acao,
+    .btn-gerenciar-arts,
+    .btn-criar-arts-variante {
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .arts-info-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ============================================
+   EFEITOS VISUAIS POR TIPO DE ART
+   ============================================ */
+
+/* OFENSIVA - Vermelho */
+.arts-art-type-ofensiva,
+.arts-art-type-ofensiva {
+  border-color: #FF6B6B !important;
+  background: linear-gradient(135deg, rgba(255, 107, 107, 0.08), rgba(255, 107, 107, 0.05)) !important;
+}
+
+.arts-art-type-ofensiva:hover {
+  box-shadow: 0 8px 20px rgba(255, 107, 107, 0.3) !important;
+  border-color: #ff8888 !important;
+}
+
+/* DEFENSIVA - Ciano */
+.arts-art-type-defensiva {
+  border-color: #4ECDC4 !important;
+  background: linear-gradient(135deg, rgba(78, 205, 196, 0.08), rgba(78, 205, 196, 0.05)) !important;
+}
+
+.arts-art-type-defensiva:hover {
+  box-shadow: 0 8px 20px rgba(78, 205, 196, 0.3) !important;
+  border-color: #6ee0d8 !important;
+}
+
+/* ESTRATÉGICA - Amarelo */
+.arts-art-type-estrategica {
+  border-color: #FFD93D !important;
+  background: linear-gradient(135deg, rgba(255, 217, 61, 0.08), rgba(255, 217, 61, 0.05)) !important;
+}
+
+.arts-art-type-estrategica:hover {
+  box-shadow: 0 8px 20px rgba(255, 217, 61, 0.3) !important;
+  border-color: #ffe066 !important;
+}
+
+/* SUPORTE - Verde Claro */
+.arts-art-type-suporte {
+  border-color: #95E1D3 !important;
+  background: linear-gradient(135deg, rgba(149, 225, 211, 0.08), rgba(149, 225, 211, 0.05)) !important;
+}
+
+.arts-art-type-suporte:hover {
+  box-shadow: 0 8px 20px rgba(149, 225, 211, 0.3) !important;
+  border-color: #b3f0e5 !important;
+}
+
+/* CONTROLE - Roxo */
+.arts-art-type-controle {
+  border-color: #A78BFA !important;
+  background: linear-gradient(135deg, rgba(167, 139, 250, 0.08), rgba(167, 139, 250, 0.05)) !important;
+}
+
+.arts-art-type-controle:hover {
+  box-shadow: 0 8px 20px rgba(167, 139, 250, 0.3) !important;
+  border-color: #cbd5e0 !important;
+}
+
+/* INVOCAÇÃO - Roxo Escuro */
+.arts-art-type-invocacao {
+  border-color: #8B5CF6 !important;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.08), rgba(139, 92, 246, 0.05)) !important;
+}
+
+.arts-art-type-invocacao:hover {
+  box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3) !important;
+  border-color: #a78bfa !important;
+}
+
+/* TRANSFORMAÇÃO - Rosa */
+.arts-art-type-transformacao {
+  border-color: #EC4899 !important;
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.08), rgba(236, 72, 153, 0.05)) !important;
+}
+
+.arts-art-type-transformacao:hover {
+  box-shadow: 0 8px 20px rgba(236, 72, 153, 0.3) !important;
+  border-color: #f472b6 !important;
+}
+
+/* PASSIVA - Cinza */
+.arts-art-type-passiva {
+  border-color: #6B7280 !important;
+  background: linear-gradient(135deg, rgba(107, 114, 128, 0.08), rgba(107, 114, 128, 0.05)) !important;
+}
+
+.arts-art-type-passiva:hover {
+  box-shadow: 0 8px 20px rgba(107, 114, 128, 0.3) !important;
+  border-color: #9ca3af !important;
+}
+
+/* RACIAL - Ouro */
+.arts-art-type-racial {
+  border-color: #D4AF37 !important;
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.08), rgba(212, 175, 55, 0.05)) !important;
+}
+
+.arts-art-type-racial:hover {
+  box-shadow: 0 8px 20px rgba(212, 175, 55, 0.3) !important;
+  border-color: #e6c547 !important;
+}
+
+/* SEM TIPO - Padrão */
+.arts-art-type-sem-tipo {
+  border-color: #d4af37 !important;
+  background: linear-gradient(135deg, rgba(212, 175, 85, 0.08), rgba(212, 175, 85, 0.05)) !important;
+}
+
+.arts-art-type-sem-tipo:hover {
+  box-shadow: 0 8px 20px rgba(212, 175, 85, 0.3) !important;
+  border-color: #e6b800 !important;
+}
+
+/* ============ EFEITOS VISUAIS POR TIPO - CARDS PRINCIPAIS ============ */
+
+/* OFENSIVA - Vermelho/Laranja */
+.arts-core-type-ofensiva,
+.arts-art-card.arts-core-type-ofensiva,
+.arts-variante-card.arts-core-type-ofensiva {
+  border-color: #e74c3c !important;
+  background: linear-gradient(135deg, rgba(231, 76, 60, 0.08), rgba(231, 76, 60, 0.05)) !important;
+}
+
+.arts-core-type-ofensiva:hover,
+.arts-art-card.arts-core-type-ofensiva:hover,
+.arts-variante-card.arts-core-type-ofensiva:hover {
+  box-shadow: 0 8px 20px rgba(231, 76, 60, 0.35) !important;
+  border-color: #ff6b6b !important;
+}
+
+/* DEFENSIVA - Azul */
+.arts-core-type-defensiva,
+.arts-art-card.arts-core-type-defensiva,
+.arts-variante-card.arts-core-type-defensiva {
+  border-color: #3498db !important;
+  background: linear-gradient(135deg, rgba(52, 152, 219, 0.08), rgba(52, 152, 219, 0.05)) !important;
+}
+
+.arts-core-type-defensiva:hover,
+.arts-art-card.arts-core-type-defensiva:hover,
+.arts-variante-card.arts-core-type-defensiva:hover {
+  box-shadow: 0 8px 20px rgba(52, 152, 219, 0.35) !important;
+  border-color: #5dade2 !important;
+}
+
+/* ESTRATÉGICA - Roxo */
+.arts-core-type-estrategica,
+.arts-art-card.arts-core-type-estrategica,
+.arts-variante-card.arts-core-type-estrategica {
+  border-color: #9b59b6 !important;
+  background: linear-gradient(135deg, rgba(155, 89, 182, 0.08), rgba(155, 89, 182, 0.05)) !important;
+}
+
+.arts-core-type-estrategica:hover,
+.arts-art-card.arts-core-type-estrategica:hover,
+.arts-variante-card.arts-core-type-estrategica:hover {
+  box-shadow: 0 8px 20px rgba(155, 89, 182, 0.35) !important;
+  border-color: #c39bd3 !important;
+}
+
+/* SUPORTE - Verde */
+.arts-core-type-suporte,
+.arts-art-card.arts-core-type-suporte,
+.arts-variante-card.arts-core-type-suporte {
+  border-color: #27ae60 !important;
+  background: linear-gradient(135deg, rgba(39, 174, 96, 0.08), rgba(39, 174, 96, 0.05)) !important;
+}
+
+.arts-core-type-suporte:hover,
+.arts-art-card.arts-core-type-suporte:hover,
+.arts-variante-card.arts-core-type-suporte:hover {
+  box-shadow: 0 8px 20px rgba(39, 174, 96, 0.35) !important;
+  border-color: #52be80 !important;
+}
+
+/* CONTROLE - Ciano */
+.arts-core-type-controle,
+.arts-art-card.arts-core-type-controle,
+.arts-variante-card.arts-core-type-controle {
+  border-color: #1abc9c !important;
+  background: linear-gradient(135deg, rgba(26, 188, 156, 0.08), rgba(26, 188, 156, 0.05)) !important;
+}
+
+.arts-core-type-controle:hover,
+.arts-art-card.arts-core-type-controle:hover,
+.arts-variante-card.arts-core-type-controle:hover {
+  box-shadow: 0 8px 20px rgba(26, 188, 156, 0.35) !important;
+  border-color: #48c9b0 !important;
+}
+
+/* INVOCAÇÃO - Rosa/Magenta */
+.arts-core-type-invocacao,
+.arts-art-card.arts-core-type-invocacao,
+.arts-variante-card.arts-core-type-invocacao {
+  border-color: #e91e63 !important;
+  background: linear-gradient(135deg, rgba(233, 30, 99, 0.08), rgba(233, 30, 99, 0.05)) !important;
+}
+
+.arts-core-type-invocacao:hover,
+.arts-art-card.arts-core-type-invocacao:hover,
+.arts-variante-card.arts-core-type-invocacao:hover {
+  box-shadow: 0 8px 20px rgba(233, 30, 99, 0.35) !important;
+  border-color: #f06292 !important;
+}
+
+/* TRANSFORMAÇÃO - Amarelo/Ouro */
+.arts-core-type-transformacao,
+.arts-art-card.arts-core-type-transformacao,
+.arts-variante-card.arts-core-type-transformacao {
+  border-color: #f39c12 !important;
+  background: linear-gradient(135deg, rgba(243, 156, 18, 0.08), rgba(243, 156, 18, 0.05)) !important;
+}
+
+.arts-core-type-transformacao:hover,
+.arts-art-card.arts-core-type-transformacao:hover,
+.arts-variante-card.arts-core-type-transformacao:hover {
+  box-shadow: 0 8px 20px rgba(243, 156, 18, 0.35) !important;
+  border-color: #f8b739 !important;
+}
+
+/* PASSIVA - Cinza */
+.arts-core-type-passiva,
+.arts-art-card.arts-core-type-passiva,
+.arts-variante-card.arts-core-type-passiva {
+  border-color: #95a5a6 !important;
+  background: linear-gradient(135deg, rgba(149, 165, 166, 0.08), rgba(149, 165, 166, 0.05)) !important;
+}
+
+.arts-core-type-passiva:hover,
+.arts-art-card.arts-core-type-passiva:hover,
+.arts-variante-card.arts-core-type-passiva:hover {
+  box-shadow: 0 8px 20px rgba(149, 165, 166, 0.35) !important;
+  border-color: #bdc3c7 !important;
+}
+
+/* RACIAL - Marrom/Bronze */
+.arts-core-type-racial,
+.arts-art-card.arts-core-type-racial,
+.arts-variante-card.arts-core-type-racial {
+  border-color: #d4af37 !important;
+  background: linear-gradient(135deg, rgba(212, 175, 85, 0.12), rgba(212, 175, 85, 0.08)) !important;
+}
+
+.arts-core-type-racial:hover,
+.arts-art-card.arts-core-type-racial:hover,
+.arts-variante-card.arts-core-type-racial:hover {
+  box-shadow: 0 8px 20px rgba(212, 175, 85, 0.4) !important;
+  border-color: #e6b800 !important;
+}
+
+/* SEM TIPO - Padrão (Gold) */
+.arts-core-type-sem-tipo,
+.arts-art-card.arts-core-type-sem-tipo,
+.arts-variante-card.arts-core-type-sem-tipo {
+  border-color: #d4af37 !important;
+  background: linear-gradient(135deg, rgba(212, 175, 85, 0.08), rgba(212, 175, 85, 0.05)) !important;
+}
+
+.arts-core-type-sem-tipo:hover,
+.arts-art-card.arts-core-type-sem-tipo:hover,
+.arts-variante-card.arts-core-type-sem-tipo:hover {
+  box-shadow: 0 8px 20px rgba(212, 175, 85, 0.25) !important;
+  border-color: #e6b800 !important;
+}
+
+
+
+
+
+

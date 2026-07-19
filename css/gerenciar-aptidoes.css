@@ -1,0 +1,1595 @@
+/* ============================================ */
+/* GERENCIAR-APTIDOES.CSS - Modal Novo (v3)    */
+/* Estilos isolados do modal de aptidões       */
+/* ============================================ */
+
+/* ============================================ */
+/* FILTRO DE APTIDÕES                          */
+/* ============================================ */
+
+.modal-filtro-input {
+    padding: 0.6rem 1rem;
+    background: rgba(50, 50, 70, 0.6);
+    border: 1px solid rgba(255, 165, 0, 0.3);
+    border-radius: 6px;
+    color: #fff;
+    font-size: 0.9rem;
+    width: 200px;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.modal-filtro-input::placeholder {
+    color: rgba(200, 200, 220, 0.6);
+}
+
+.modal-filtro-input:focus {
+    background: rgba(50, 50, 70, 0.8);
+    border-color: rgba(255, 165, 0, 0.7);
+    box-shadow: 0 0 10px rgba(255, 165, 0, 0.2);
+}
+
+/* Estilos para card filtrado (hidden) */
+.modal-aptidoes-card.filtrado-oculto {
+    display: none;
+}
+
+/* ============================================ */
+/* GRUPO DE BOTÕES                             */
+/* ============================================ */
+
+/* Grupo de Botões */
+.aptidoes-buttons-group {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr 1fr;
+    gap: 1rem;
+    margin-top: 1rem;
+    width: 100%;
+}
+
+/* Botão de Ação (Ganhar/Remover) */
+.btn-aptidoes-acao {
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.2) 0%, rgba(56, 142, 60, 0.2) 100%);
+    color: #4caf50;
+    border: 2px solid rgba(76, 175, 80, 0.6);
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.2);
+}
+
+.btn-aptidoes-acao:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.3) 0%, rgba(56, 142, 60, 0.3) 100%);
+    border-color: rgba(76, 175, 80, 0.8);
+}
+
+.btn-aptidoes-acao:active {
+    transform: translateY(0);
+}
+
+.btn-aptidoes-acao.btn-remover {
+    background: linear-gradient(135deg, rgba(244, 67, 54, 0.2) 0%, rgba(211, 47, 47, 0.2) 100%);
+    color: #f44336;
+    border-color: rgba(244, 67, 54, 0.6);
+    box-shadow: 0 4px 15px rgba(244, 67, 54, 0.2);
+}
+
+.btn-aptidoes-acao.btn-remover:hover {
+    box-shadow: 0 6px 20px rgba(244, 67, 54, 0.4);
+    background: linear-gradient(135deg, rgba(244, 67, 54, 0.3) 0%, rgba(211, 47, 47, 0.3) 100%);
+    border-color: rgba(244, 67, 54, 0.8);
+}
+
+/* Botão de Gerenciar */
+.btn-gerenciar-aptidoes {
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #ffa500 0%, #ff8c00 100%);
+    color: #1a1a1a;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 15px rgba(255, 165, 0, 0.4);
+    margin-top: 0;
+    width: auto;
+}
+
+.btn-gerenciar-aptidoes:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 165, 0, 0.6);
+    background: linear-gradient(135deg, #ffb520 0%, #ff9c00 100%);
+}
+
+.btn-gerenciar-aptidoes:active {
+    transform: translateY(0);
+}
+
+/* Modal de Aptidões - Estrutura Base */
+#modal-aptidoes {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10000;
+}
+
+#modal-aptidoes.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Info Row - Informações do Modal */
+.modal-info-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: rgba(255, 165, 0, 0.05);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 165, 0, 0.2);
+}
+
+.modal-info-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.modal-info-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: #cbd5e0;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.modal-info-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #ffa500;
+    text-shadow: 0 0 10px rgba(255, 165, 0, 0.5);
+}
+
+/* Lista de Aptidões */
+.modal-aptidoes-list {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid rgba(255, 165, 0, 0.2);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.modal-aptidoes-item {
+    display: grid;
+    grid-template-columns: 1fr 60px auto;
+    gap: 1rem;
+    align-items: center;
+    padding: 0.75rem;
+    background: rgba(255, 165, 0, 0.05);
+    border: 1px solid rgba(255, 165, 0, 0.1);
+    border-radius: 6px;
+    margin-bottom: 0.75rem;
+}
+
+.modal-aptidoes-nome {
+    color: #e0e0e0;
+    font-weight: 500;
+}
+
+.modal-aptidoes-nivel {
+    text-align: center;
+    color: #ffa500;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.modal-aptidoes-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.modal-btn-icon {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid rgba(255, 165, 0, 0.3);
+    background: transparent;
+    color: #ffa500;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+}
+
+.modal-btn-icon:hover {
+    background: rgba(255, 165, 0, 0.2);
+    border-color: rgba(255, 165, 0, 0.6);
+}
+
+.modal-btn-icon:active {
+    transform: scale(0.95);
+}
+
+.modal-btn-add {
+    /* Cor padrão */
+}
+
+.modal-btn-remove {
+    /* Cor padrão */
+}
+
+.modal-btn-delete {
+    border-color: rgba(255, 100, 100, 0.3);
+    color: #ff6464;
+}
+
+.modal-btn-delete:hover {
+    background: rgba(255, 100, 100, 0.2);
+    border-color: rgba(255, 100, 100, 0.6);
+}
+
+/* ============================================ */
+/* POPUP DE NÚMEROS - Grid com botões 1-9      */
+/* ============================================ */
+
+.modal-popup {
+    z-index: 10001;
+}
+
+.modal-popup-content {
+    max-width: 400px;
+    max-height: 500px;
+}
+
+.modal-popup-body {
+    padding: 2rem 1.5rem;
+}
+
+.popup-numbers-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.popup-number-btn {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, rgba(255, 165, 0, 0.1) 0%, rgba(255, 140, 0, 0.1) 100%);
+    border: 2px solid rgba(255, 165, 0, 0.4);
+    border-radius: 12px;
+    color: #ffa500;
+    font-size: 1.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 80px;
+}
+
+.popup-number-btn:hover {
+    background: linear-gradient(135deg, rgba(255, 165, 0, 0.25) 0%, rgba(255, 140, 0, 0.25) 100%);
+    border-color: rgba(255, 165, 0, 0.7);
+    box-shadow: 0 8px 24px rgba(255, 165, 0, 0.3);
+    transform: scale(1.05);
+}
+
+.popup-number-btn:active {
+    transform: scale(0.95);
+    box-shadow: 0 4px 12px rgba(255, 165, 0, 0.2);
+}
+
+/* Mensagem vazia */
+.modal-empty-message {
+    text-align: center;
+    color: #808080;
+    padding: 2rem 1rem;
+    font-size: 0.9rem;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+    .modal-info-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .modal-aptidoes-item {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+
+    .modal-aptidoes-actions {
+        justify-content: flex-start;
+    }
+
+    .btn-gerenciar-aptidoes {
+        padding: 0.65rem 1rem;
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal-info-row {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+        padding: 0.75rem;
+    }
+
+    .modal-info-label {
+        font-size: 0.65rem;
+    }
+
+    .modal-info-value {
+        font-size: 1.3rem;
+    }
+
+    .btn-gerenciar-aptidoes {
+        padding: 0.6rem 0.8rem;
+        font-size: 0.8rem;
+    }
+}
+
+/* ============================================ */
+/* GRID DE APTIDÕES - Para o Modal Gerenciar   */
+/* ============================================ */
+
+/* ============================================ */
+/* GRID DE APTIDÕES - Para o Modal Gerenciar   */
+/* ============================================ */
+
+.modal-aptidoes-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.8rem;
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+.modal-aptidoes-card {
+    padding: 0.6rem;
+    background: rgba(30, 30, 40, 0.8);
+    border: 2px solid rgba(100, 100, 120, 0.4);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    align-items: center;
+    text-align: center;
+    position: relative;
+}
+
+.modal-aptidoes-card:hover {
+    background: rgba(50, 50, 70, 0.9);
+    border-color: rgba(255, 165, 0, 0.5);
+    transform: translateY(-4px);
+    box-shadow: 0 6px 16px rgba(255, 165, 0, 0.2);
+}
+
+/* Estado SELECIONADO */
+.modal-aptidoes-card.selecionada {
+    background: rgba(76, 175, 80, 0.2);
+    border: 2px solid rgba(76, 175, 80, 0.8);
+    box-shadow: 0 0 20px rgba(76, 175, 80, 0.4), inset 0 0 10px rgba(76, 175, 80, 0.1);
+    transform: scale(1.05);
+}
+
+/* Removido ::after duplicado - checkmark já é renderizado em .modal-aptidoes-card-check */
+
+.modal-aptidoes-card.selecionada:hover {
+    background: rgba(76, 175, 80, 0.3);
+    border-color: rgba(76, 175, 80, 1);
+    box-shadow: 0 0 25px rgba(76, 175, 80, 0.6), inset 0 0 15px rgba(76, 175, 80, 0.2);
+}
+
+.modal-aptidoes-card.adquirida {
+    background: rgba(76, 175, 80, 0.15);
+    border-color: rgba(76, 175, 80, 0.5);
+}
+
+.modal-aptidoes-card.adquirida:hover {
+    background: rgba(76, 175, 80, 0.25);
+    border-color: rgba(76, 175, 80, 0.7);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.modal-aptidoes-card-imagem {
+    position: relative;
+    overflow: hidden;
+}
+
+.modal-aptidoes-card-check {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 28px;
+    height: 28px;
+    background: rgba(76, 175, 80, 0.95);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 16px;
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.6);
+    z-index: 10;
+    animation: checkPulse 0.3s ease-out;
+}
+
+@keyframes checkPulse {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.modal-aptidoes-card-imagem {
+    width: 100%;
+    height: 70px;
+    background: rgba(100, 100, 120, 0.2);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin-bottom: 0.2rem;
+}
+
+.modal-aptidoes-card-imagem img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 4px;
+}
+
+.modal-aptidoes-card-nome {
+    font-weight: 700;
+    color: #ffa500;
+    font-size: 0.70rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2px;
+    word-wrap: break-word;
+}
+
+.modal-aptidoes-card-desc {
+    font-size: 0.75rem;
+    color: #c0c0c0;
+    line-height: 1.3;
+    display: none;
+}
+
+.modal-aptidoes-card-nivel {
+    font-size: 0.85rem;
+    color: #4caf50;
+    font-weight: 600;
+    margin-top: 0.25rem;
+}
+
+.modal-aptidoes-card-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: auto;
+    width: 100%;
+}
+
+.modal-btn-small {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.9rem;
+    border: 1px solid rgba(255, 165, 0, 0.4);
+    background: rgba(255, 165, 0, 0.1);
+    color: #ffa500;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex: 1;
+    display: none;
+}
+
+.modal-btn-small:hover {
+    background: rgba(255, 165, 0, 0.2);
+    border-color: rgba(255, 165, 0, 0.7);
+    box-shadow: 0 2px 8px rgba(255, 165, 0, 0.2);
+}
+
+.modal-btn-add {
+    background: rgba(76, 175, 80, 0.1);
+    border-color: rgba(76, 175, 80, 0.4);
+    color: #4caf50;
+}
+
+.modal-btn-add:hover {
+    background: rgba(76, 175, 80, 0.2);
+    border-color: rgba(76, 175, 80, 0.7);
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.2);
+}
+
+.modal-btn-remove {
+    background: rgba(244, 67, 54, 0.1);
+    border-color: rgba(244, 67, 54, 0.4);
+    color: #f44336;
+}
+
+.modal-btn-remove:hover {
+    background: rgba(244, 67, 54, 0.2);
+    border-color: rgba(244, 67, 54, 0.7);
+    box-shadow: 0 2px 8px rgba(244, 67, 54, 0.2);
+}
+
+/* ============================================ */
+/* ESTADOS DOS CARDS                           */
+/* ============================================ */
+
+/* Card ADQUIRIDO (já tem a aptidão) */
+.modal-aptidoes-card.adquirida {
+    background: rgba(76, 175, 80, 0.1);
+    border-color: rgba(76, 175, 80, 0.4);
+    opacity: 0.7;
+}
+
+.modal-aptidoes-card.adquirida:hover {
+    background: rgba(76, 175, 80, 0.15);
+    border-color: rgba(76, 175, 80, 0.5);
+    opacity: 0.8;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Checkmark para aptidão já adquirida */
+.modal-aptidoes-card-adquirida {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 24px;
+    height: 24px;
+    background: rgba(76, 175, 80, 0.7);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+    box-shadow: 0 2px 6px rgba(76, 175, 80, 0.4);
+    z-index: 9;
+    opacity: 0.6;
+}
+
+/* Card BLOQUEADO (atingiu limite) */
+.modal-aptidoes-card.bloqueada {
+    background: rgba(100, 100, 120, 0.2);
+    border-color: rgba(100, 100, 120, 0.3);
+    opacity: 0.5;
+}
+
+.modal-aptidoes-card.bloqueada:hover {
+    background: rgba(100, 100, 120, 0.2);
+    border-color: rgba(100, 100, 120, 0.3);
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Aviso de Limite */
+.modal-aviso-limite {
+    background: rgba(255, 152, 0, 0.15);
+    border: 2px solid rgba(255, 152, 0, 0.5);
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    color: #ffb74d;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+/* ============================================ */
+/* RESPONSIVO - Adaptar Grid em Telas Menores  */
+/* ============================================ */
+
+@media (max-width: 1200px) {
+    .modal-aptidoes-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .modal-aptidoes-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .modal-aptidoes-card-imagem {
+        height: 100px;
+    }
+    
+    .modal-aptidoes-card-nome {
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal-aptidoes-grid {
+        grid-template-columns: 1fr;
+        gap: 0.8rem;
+    }
+    
+    .modal-aptidoes-card {
+        padding: 0.75rem;
+        gap: 0.5rem;
+    }
+    
+    .modal-aptidoes-card-imagem {
+        height: 80px;
+    }
+    
+    .modal-aptidoes-card-nome {
+        font-size: 0.8rem;
+    }
+}
+
+/* ============================================ */
+/* MODAL GERENCIAR APTIDÕES COMPANHEIRO        */
+/* ============================================ */
+
+.modal-gerenciar-aptidoes-comp {
+    z-index: 2001;
+}
+
+.modal-content--gerenciar-aptidoes-comp {
+    max-width: 900px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-body--gerenciar-aptidoes-comp {
+    flex: 1;
+    overflow-y: auto;
+    padding: 2rem;
+}
+
+/* Seção de Estatísticas */
+.comp-stats-section {
+    margin-bottom: 2rem;
+}
+
+.comp-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.stat-card {
+    background: rgba(50, 50, 70, 0.6);
+    border: 2px solid rgba(255, 165, 0, 0.3);
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    border-color: rgba(255, 165, 0, 0.7);
+    background: rgba(50, 50, 70, 0.8);
+    transform: translateY(-2px);
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #FFD700;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: #AAA;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.limit-warning {
+    background: rgba(255, 100, 100, 0.2);
+    border: 1px solid rgba(255, 100, 100, 0.5);
+    border-radius: 6px;
+    padding: 1rem;
+    color: #FFB3B3;
+    text-align: center;
+    margin-top: 1rem;
+    font-weight: 500;
+}
+
+/* Seção de Aptidões */
+.comp-aptidoes-section {
+    margin-bottom: 2rem;
+}
+
+.comp-filter-container {
+    margin-bottom: 1.5rem;
+}
+
+.comp-filter-input {
+    width: 100%;
+    padding: 0.8rem 1.2rem;
+    background: rgba(50, 50, 70, 0.6);
+    border: 2px solid rgba(255, 165, 0, 0.3);
+    border-radius: 6px;
+    color: #fff;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.comp-filter-input::placeholder {
+    color: rgba(200, 200, 220, 0.5);
+}
+
+.comp-filter-input:focus {
+    background: rgba(50, 50, 70, 0.8);
+    border-color: rgba(255, 165, 0, 0.7);
+    box-shadow: 0 0 15px rgba(255, 165, 0, 0.2);
+}
+
+/* Grid de Aptidões */
+.comp-aptidoes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1.2rem;
+}
+
+/* Card de Aptidão */
+.comp-aptidao-card {
+    background: rgba(50, 50, 70, 0.6);
+    border: 2px solid rgba(255, 165, 0, 0.2);
+    border-radius: 8px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.comp-aptidao-card:hover:not(.disabled) {
+    border-color: rgba(255, 165, 0, 0.6);
+    background: rgba(50, 50, 70, 0.8);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(255, 165, 0, 0.2);
+}
+
+.comp-aptidao-card.selected {
+    background: rgba(255, 165, 0, 0.15);
+    border-color: rgba(255, 165, 0, 0.8);
+    box-shadow: 0 0 15px rgba(255, 165, 0, 0.3);
+}
+
+.comp-aptidao-card.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.card-image-container {
+    width: 100%;
+    height: 100px;
+    margin-bottom: 0.8rem;
+    border-radius: 4px;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.card-image-placeholder {
+    font-size: 2rem;
+    color: rgba(255, 165, 0, 0.4);
+}
+
+.card-content {
+    position: relative;
+    width: 100%;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-nome {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #DDD;
+    line-height: 1.2;
+}
+
+.card-checkmark {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #FFD700;
+    color: #333;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
+}
+
+/* Footer */
+.modal-footer--gerenciar-aptidoes-comp {
+    display: flex;
+    gap: 1rem;
+    padding: 1.5rem 2rem;
+    border-top: 1px solid rgba(255, 165, 0, 0.2);
+    background: rgba(20, 20, 40, 0.8);
+}
+
+.btn-comp-cancelar-aptidoes,
+.btn-comp-salvar-aptidoes {
+    flex: 1;
+    padding: 0.8rem 1.5rem;
+    border: 2px solid;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+}
+
+.btn-comp-cancelar-aptidoes {
+    background: rgba(100, 100, 120, 0.5);
+    border-color: rgba(100, 100, 120, 0.7);
+    color: #CCC;
+}
+
+.btn-comp-cancelar-aptidoes:hover {
+    background: rgba(100, 100, 120, 0.8);
+    border-color: rgba(100, 100, 120, 1);
+}
+
+.btn-comp-salvar-aptidoes {
+    background: rgba(255, 165, 0, 0.2);
+    border-color: rgba(255, 165, 0, 0.6);
+    color: #FFD700;
+}
+
+.btn-comp-salvar-aptidoes:hover {
+    background: rgba(255, 165, 0, 0.4);
+    border-color: rgba(255, 165, 0, 0.9);
+    box-shadow: 0 0 15px rgba(255, 165, 0, 0.3);
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+    .modal-content--gerenciar-aptidoes-comp {
+        max-width: 95vw;
+        max-height: 90vh;
+    }
+
+    .comp-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.8rem;
+    }
+
+    .stat-card {
+        padding: 1rem;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+    }
+
+    .comp-aptidoes-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 1rem;
+    }
+
+    .card-image-container {
+        height: 80px;
+    }
+
+    .card-nome {
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal-body--gerenciar-aptidoes-comp {
+        padding: 1rem;
+    }
+
+    .comp-stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .comp-aptidoes-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.8rem;
+    }
+
+    .modal-footer--gerenciar-aptidoes-comp {
+        flex-direction: column;
+        padding: 1rem;
+    }
+}
+
+/* ============================================ */
+/* POPUP SIMPLES - CATÁLOGO DE APTIDÕES        */
+/* ============================================ */
+
+.popup-aptidoes-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999 !important;
+}
+
+.popup-aptidoes-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    cursor: pointer;
+}
+
+.popup-aptidoes-container {
+    position: relative;
+    background: rgba(20, 20, 40, 0.95);
+    border: 2px solid rgba(255, 165, 0, 0.3);
+    border-radius: 12px;
+    width: 92%;
+    max-width: 1200px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 165, 0, 0.2);
+    animation: slideDown 0.3s ease;
+    z-index: 99999 !important;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Header do Popup */
+.popup-aptidoes-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 2px solid rgba(255, 165, 0, 0.3);
+    background: linear-gradient(to bottom, rgba(30, 30, 50, 0.8), rgba(20, 20, 40, 0.8));
+}
+
+.popup-aptidoes-header h2 {
+    margin: 0;
+    color: #FFD700;
+    font-size: 1.3rem;
+    letter-spacing: 1px;
+}
+
+.popup-aptidoes-close {
+    background: rgba(255, 100, 100, 0.2);
+    border: 1px solid rgba(255, 100, 100, 0.5);
+    color: #FFB3B3;
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: all 0.2s ease;
+}
+
+.popup-aptidoes-close:hover {
+    background: rgba(255, 100, 100, 0.4);
+    border-color: rgba(255, 100, 100, 0.8);
+}
+
+/* Estatísticas */
+.popup-stats-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, rgba(30, 30, 50, 0.6) 0%, rgba(25, 25, 45, 0.6) 100%);
+    border-bottom: 1px solid rgba(255, 165, 0, 0.2);
+}
+
+.popup-stat-card {
+    background: linear-gradient(135deg, rgba(50, 50, 80, 0.6) 0%, rgba(40, 40, 70, 0.6) 100%);
+    border: 2px solid rgba(255, 165, 0, 0.3);
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.popup-stat-card:hover {
+    border-color: rgba(255, 165, 0, 0.6);
+    background: linear-gradient(135deg, rgba(60, 60, 90, 0.6) 0%, rgba(50, 50, 80, 0.6) 100%);
+}
+
+.popup-stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #FFD700;
+    margin-bottom: 0.5rem;
+}
+
+.popup-stat-label {
+    font-size: 0.85rem;
+    color: #AAA;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Filtro */
+.popup-aptidoes-filtro {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(255, 165, 0, 0.1);
+}
+
+.popup-filtro-input {
+    width: 100%;
+    padding: 0.8rem 1.2rem;
+    background: rgba(50, 50, 70, 0.6);
+    border: 2px solid rgba(255, 165, 0, 0.3);
+    border-radius: 6px;
+    color: #fff;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.popup-filtro-input::placeholder {
+    color: rgba(200, 200, 220, 0.5);
+}
+
+.popup-filtro-input:focus {
+    background: rgba(50, 50, 70, 0.8);
+    border-color: rgba(255, 165, 0, 0.7);
+    box-shadow: 0 0 15px rgba(255, 165, 0, 0.2);
+}
+
+/* Grid de Aptidões */
+.popup-aptidoes-grid {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1.5rem;
+}
+
+/* Card de Aptidão */
+.popup-aptidao-card {
+    background: rgba(50, 50, 70, 0.6);
+    border: 2px solid rgba(255, 165, 0, 0.2);
+    border-radius: 8px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    overflow: hidden;
+    min-height: 180px;
+}
+
+.popup-aptidao-card:hover {
+    border-color: #FFD700;
+    background: linear-gradient(135deg, #252541 0%, #0d1219 100%);
+    transform: scale(1.08);
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+}
+
+.popup-aptidao-card.selected {
+    background: linear-gradient(135deg, #2a2a4e 0%, #1f1f3e 100%);
+    border-color: #00FF00;
+    box-shadow: 0 0 25px rgba(0, 255, 0, 0.6);
+}
+
+.popup-card-image {
+    width: 100%;
+    height: 100px;
+    margin-bottom: 0.8rem;
+    border-radius: 4px;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.popup-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.popup-card-placeholder {
+    font-size: 2rem;
+    color: rgba(255, 165, 0, 0.4);
+}
+
+.popup-card-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #FFD700;
+    line-height: 1.2;
+    word-wrap: break-word;
+    word-break: break-word;
+    margin-top: auto;
+}
+
+/* Scrollbar customizada */
+.popup-aptidoes-grid::-webkit-scrollbar {
+    width: 8px;
+}
+
+.popup-aptidoes-grid::-webkit-scrollbar-track {
+    background: rgba(50, 50, 70, 0.4);
+    border-radius: 4px;
+}
+
+.popup-aptidoes-grid::-webkit-scrollbar-thumb {
+    background: rgba(255, 165, 0, 0.4);
+    border-radius: 4px;
+}
+
+.popup-aptidoes-grid::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 165, 0, 0.6);
+}
+
+/* Info de Selecionadas */
+.popup-selecionadas-info {
+    padding: 0.8rem 1rem;
+    background: rgba(50, 50, 70, 0.4);
+    border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+    color: #FFD700;
+    font-weight: 600;
+    text-align: center;
+}
+
+#popup-count-selecionadas {
+    color: #00FF00;
+    font-weight: bold;
+    font-size: 1.1em;
+}
+.popup-aptidoes-footer {
+    display: flex;
+    gap: 1rem;
+    padding: 1.5rem 2rem;
+    border-top: 1px solid rgba(255, 165, 0, 0.2);
+    background: linear-gradient(to top, rgba(20, 20, 40, 0.9), rgba(25, 25, 45, 0.8));
+    justify-content: flex-end;
+}
+
+.popup-btn-salvar,
+.popup-btn-cancelar {
+    padding: 0.8rem 2rem;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.popup-btn-salvar {
+    background: linear-gradient(135deg, #FFA500 0%, #FF8C00 100%);
+    color: #000;
+    box-shadow: 0 4px 15px rgba(255, 165, 0, 0.3);
+}
+
+.popup-btn-salvar:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 165, 0, 0.5);
+    background: linear-gradient(135deg, #FFB520 0%, #FF9C00 100%);
+}
+
+.popup-btn-cancelar {
+    background: rgba(100, 100, 120, 0.5);
+    border: 2px solid rgba(100, 100, 120, 0.7);
+    color: #CCC;
+}
+
+.popup-btn-cancelar:hover {
+    background: rgba(100, 100, 120, 0.8);
+    border-color: rgba(100, 100, 120, 1);
+    transform: translateY(-2px);
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+    .popup-aptidoes-container {
+        width: 95%;
+        max-height: 85vh;
+    }
+
+    .popup-aptidoes-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 1rem;
+        padding: 1rem;
+    }
+
+    .popup-card-image {
+        height: 80px;
+    }
+
+    .popup-card-name {
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .popup-aptidoes-container {
+        width: 98%;
+        max-height: 90vh;
+    }
+
+    .popup-aptidoes-header {
+        padding: 1rem;
+    }
+
+    .popup-aptidoes-header h2 {
+        font-size: 1.1rem;
+    }
+
+    .popup-aptidoes-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.8rem;
+        padding: 0.8rem;
+    }
+
+    .popup-card-image {
+        height: 70px;
+        margin-bottom: 0.5rem;
+    }
+
+    .popup-card-name {
+        font-size: 0.7rem;
+    }
+}
+
+/* ============================================ */
+/* ESTILOS PARA APTIDÕES ADQUIRIDAS COMPANHEIRO */
+/* ============================================ */
+
+.comp-aptidoes-personagem-header {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 2fr;
+    gap: 1rem;
+    padding: 0.8rem 1rem;
+    background: linear-gradient(135deg, rgba(255, 165, 0, 0.2), rgba(255, 100, 0, 0.1));
+    border: 1px solid rgba(255, 165, 0, 0.4);
+    border-radius: 4px 4px 0 0;
+    font-weight: 700;
+    color: #FFD700;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.comp-aptidoes-header-col {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.comp-aptidoes-header-col.col-nivel,
+.comp-aptidoes-header-col.col-bonus {
+    justify-content: center;
+}
+
+.comp-aptidoes-header-col.col-acoes {
+    justify-content: flex-end;
+    padding-right: 0.5rem;
+}
+
+.comp-aptidoes-personagem-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 2fr;
+    gap: 1rem;
+    padding: 0.8rem 1rem;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, rgba(30, 30, 50, 0.8), rgba(40, 40, 60, 0.9));
+    border: 1px solid rgba(255, 165, 0, 0.3);
+    border-radius: 4px;
+    align-items: center;
+    transition: all 0.2s;
+}
+
+.comp-aptidoes-personagem-row:hover {
+    background: linear-gradient(135deg, rgba(50, 30, 30, 0.9), rgba(60, 40, 40, 1));
+    border-color: rgba(255, 165, 0, 0.6);
+    box-shadow: 0 4px 12px rgba(255, 165, 0, 0.2);
+}
+
+.comp-aptidoes-col {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    font-size: 0.95rem;
+}
+
+.comp-aptidoes-col.col-nome {
+    color: #FFD700;
+    font-weight: 600;
+}
+
+.comp-aptidoes-col.col-nivel {
+    justify-content: center;
+    color: #00FF00;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.comp-aptidoes-col.col-bonus {
+    justify-content: center;
+    color: #FF6B9D;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.comp-aptidoes-col.col-acoes {
+    justify-content: flex-end;
+    gap: 0.4rem;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.comp-aptidoes-action-btn {
+    background: rgba(255, 165, 0, 0.2);
+    border: 1px solid rgba(255, 165, 0, 0.4);
+    color: #FFD700;
+    cursor: pointer;
+    padding: 0.4rem 0.7rem;
+    border-radius: 3px;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    min-width: 32px;
+    text-align: center;
+}
+
+.comp-aptidoes-action-btn:hover {
+    background: rgba(255, 165, 0, 0.4);
+    box-shadow: 0 0 10px rgba(255, 165, 0, 0.4);
+    transform: scale(1.1);
+}
+
+.comp-aptidoes-action-btn:active {
+    transform: scale(0.95);
+}
+
+/* ============================================ */
+/* ESTILOS PARA VANTAGENS DESBLOQUEADAS        */
+/* ============================================ */
+
+.comp-vantagem-card {
+    padding: 1rem;
+    margin-bottom: 0.8rem;
+    background: linear-gradient(135deg, rgba(0, 100, 0, 0.3), rgba(0, 150, 0, 0.2));
+    border: 1px solid rgba(0, 255, 100, 0.4);
+    border-left: 4px solid rgba(0, 255, 100, 0.8);
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    transition: all 0.2s;
+}
+
+.comp-vantagem-card:hover {
+    background: linear-gradient(135deg, rgba(0, 120, 0, 0.4), rgba(0, 180, 0, 0.3));
+    border-color: rgba(0, 255, 100, 0.7);
+    border-left-color: #00FF00;
+    box-shadow: 0 4px 12px rgba(0, 255, 100, 0.2);
+}
+
+.comp-vantagem-card.bonus {
+    border-left-color: #FFD700;
+}
+
+.comp-vantagem-card.efeito {
+    border-left-color: #FF6B9D;
+}
+
+.comp-vantagem-card.bonus-duplo {
+    border-left-color: #00FFFF;
+}
+
+.comp-vantagem-card.bonus-percentual {
+    border-left-color: #FF00FF;
+}
+
+.comp-vantagem-card.bonus-opcional {
+    border-left-color: #FFB347;
+}
+
+.comp-vantagem-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.comp-vantagem-nome {
+    color: #00FF00;
+    font-weight: 700;
+    flex: 1;
+    font-size: 0.95rem;
+    word-break: break-word;
+}
+
+.comp-vantagem-tipo {
+    color: rgba(0, 255, 100, 0.6);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+}
+
+.comp-vantagem-valor {
+    color: #FFD700;
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 0.4rem 0.6rem;
+    background: rgba(255, 215, 0, 0.1);
+    border-left: 2px solid rgba(255, 215, 0, 0.4);
+    padding-left: 0.8rem;
+    line-height: 1.4;
+}
+
+.comp-vantagem-acoes {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.8rem;
+}
+
+.comp-vantagem-btn-alternar {
+    padding: 0.6rem 1rem;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.4), rgba(118, 75, 162, 0.4));
+    border: 2px solid rgba(102, 126, 234, 0.8);
+    color: #E0AAFF;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 700;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    box-shadow: 0 0 8px rgba(102, 126, 234, 0.3), inset 0 0 4px rgba(102, 126, 234, 0.2);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.comp-vantagem-btn-alternar:hover {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.6), rgba(118, 75, 162, 0.6));
+    box-shadow: 0 0 16px rgba(102, 126, 234, 0.8), inset 0 0 6px rgba(102, 126, 234, 0.4);
+    transform: translateY(-2px);
+    border-color: #667EEA;
+}
+
+.comp-vantagem-btn-alternar:active {
+    transform: translateY(0);
+    box-shadow: 0 0 8px rgba(102, 126, 234, 0.5), inset 0 0 8px rgba(102, 126, 234, 0.3);
+}
+
+/* ✅ NOVO: Estilo para botão de alternância de bônus opcional em companheiros */
+.btn-alternar-bonus-opcional-companheiro {
+    padding: 0.6rem 1rem;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.4), rgba(118, 75, 162, 0.4));
+    border: 2px solid rgba(102, 126, 234, 0.8);
+    color: #E0AAFF;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 700;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    box-shadow: 0 0 8px rgba(102, 126, 234, 0.3), inset 0 0 4px rgba(102, 126, 234, 0.2);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.btn-alternar-bonus-opcional-companheiro:hover {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.6), rgba(118, 75, 162, 0.6));
+    box-shadow: 0 0 16px rgba(102, 126, 234, 0.8), inset 0 0 6px rgba(102, 126, 234, 0.4);
+    transform: translateY(-2px);
+    border-color: #667EEA;
+}
+
+.btn-alternar-bonus-opcional-companheiro:active {
+    transform: translateY(0);
+    box-shadow: 0 0 8px rgba(102, 126, 234, 0.5), inset 0 0 8px rgba(102, 126, 234, 0.3);
+}
+
+.comp-aptidoes-empty-message {
+    color: rgba(255, 165, 0, 0.5);
+    text-align: center;
+    padding: 60px 15px;
+    font-style: italic;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px dashed rgba(255, 165, 0, 0.3);
+    border-radius: 4px;
+    margin: 1rem 0;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 250px;
+    font-size: 1rem;
+}
+
+
+
+
+
+
+
+

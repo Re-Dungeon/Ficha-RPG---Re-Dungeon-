@@ -1,0 +1,580 @@
+/* ============================================ */
+/* APTIDÕES.CSS - Estilo do Sistema de Aptidões */
+/* ============================================ */
+
+/* ============================================
+   CONTAINER PRINCIPAL
+   ============================================ */
+
+.aptidoes-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 2rem;
+    height: 100%;
+    overflow-y: auto;
+    background: transparent;
+    color: #e0e0e0;
+}
+
+/* ============================================
+   PAINEL DE CONTROLE (TOPO)
+   ============================================ */
+
+.aptidoes-control-panel {
+    background: transparent;
+    border: 2px solid rgba(59, 130, 246, 0.3);
+    border-radius: 12px;
+    padding: 1.5rem;
+    backdrop-filter: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+/* Grid de Informações */
+.aptidoes-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1.5rem;
+    flex: 1;
+    min-width: 300px;
+}
+
+.aptidoes-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: transparent;
+    border-radius: 8px;
+    border-left: 4px solid rgba(59, 130, 246, 0.5);
+}
+
+.aptidoes-info-label {
+    font-size: 0.875rem;
+    color: rgba(160, 160, 160, 0.7);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.aptidoes-info-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: rgba(212, 175, 85, 0.8);
+    text-shadow: 0 0 6px rgba(59, 130, 246, 0.2);
+}
+
+/* ============================================
+   CONTAINER DAS BOXES - LAYOUT LADO A LADO
+   ============================================ */
+
+.aptidoes-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.aptidoes-boxes-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    width: 100%;
+}
+
+@media (max-width: 1400px) {
+    .aptidoes-boxes-wrapper {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ============================================
+   BOXES DE CONTEÚDO
+   ============================================ */
+
+.aptidoes-box {
+    background: transparent;
+    border: 2px solid rgba(59, 130, 246, 0.3);
+    border-radius: 12px;
+    padding: 1.5rem;
+    backdrop-filter: none;
+}
+
+.aptidoes-box-title {
+    margin: 0 0 1.5rem 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: rgba(212, 175, 85, 0.7);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid rgba(59, 130, 246, 0.3);
+}
+
+/* ============================================
+   BOX 1 - TABELA DE APTIDÕES
+   ============================================ */
+
+.aptidoes-personagem-table {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    min-height: 200px;
+}
+
+.aptidao-item {
+    display: grid;
+    grid-template-columns: 1fr 100px;
+    gap: 1rem;
+    padding: 1rem;
+    background: transparent;
+    border-left: 4px solid rgba(59, 130, 246, 0.4);
+    border-radius: 8px;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.aptidao-item:hover {
+    background: rgba(59, 130, 246, 0.08);
+    transform: translateX(4px);
+}
+
+.aptidao-nome {
+    font-weight: 600;
+    color: #e0e0e0;
+    font-size: 1rem;
+}
+
+.aptidao-nivel {
+    text-align: center;
+    font-weight: 700;
+    color: rgba(212, 175, 85, 0.7);
+    font-size: 1.1rem;
+}
+
+.aptidoes-personagem-row {
+    display: grid;
+    grid-template-columns: 1fr 80px 80px 120px;
+    gap: 1rem;
+    padding: 1rem;
+    background: transparent;
+    border-left: 4px solid rgba(59, 130, 246, 0.4);
+    border-radius: 8px;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.aptidoes-personagem-row:hover {
+    background: rgba(59, 130, 246, 0.08);
+    transform: translateX(4px);
+}
+
+.aptidoes-personagem-nome {
+    font-weight: 600;
+    color: #e0e0e0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.aptidoes-personagem-nivel {
+    text-align: center;
+    font-weight: 700;
+    color: rgba(212, 175, 85, 0.7);
+    font-size: 1.1rem;
+}
+
+.aptidoes-personagem-bonus {
+    text-align: center;
+    font-weight: 600;
+    color: rgba(212, 175, 85, 0.6);
+    font-size: 1rem;
+}
+
+.aptidoes-personagem-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+.aptidoes-action-btn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    background: transparent;
+    border: 1px solid rgba(59, 130, 246, 0.4);
+    border-radius: 6px;
+    color: rgba(59, 130, 246, 0.7);
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.aptidoes-action-btn:hover {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.6);
+    transform: scale(1.1);
+}
+
+.aptidoes-action-btn:active {
+    transform: scale(0.95);
+}
+
+.aptidoes-personagem-header {
+    display: grid;
+    grid-template-columns: 1fr 80px 80px 120px;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: rgba(59, 130, 246, 0.5);
+    border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.aptidoes-personagem-header-nome {
+    font-weight: 600;
+    color: rgba(59, 130, 246, 0.5);
+}
+
+.aptidoes-personagem-header-nivel {
+    text-align: center;
+    font-weight: 600;
+    color: rgba(59, 130, 246, 0.5);
+}
+
+.aptidoes-personagem-header-bonus {
+    text-align: center;
+    font-weight: 600;
+    color: rgba(59, 130, 246, 0.5);
+}
+
+.aptidoes-personagem-header-actions {
+    text-align: right;
+    font-weight: 600;
+    color: rgba(59, 130, 246, 0.5);
+    padding-right: 0.5rem;
+}
+
+.aptidoes-empty-message {
+    text-align: center;
+    padding: 60px 2rem;
+    color: #707070;
+    font-style: italic;
+    width: 100%;
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 250px;
+    font-size: 1rem;
+}
+
+/* ============================================
+   BOX 2 - TABELA DE VANTAGENS
+   NOTA: Estilos movidos para vantagens-aptidoes.css
+   ============================================ */
+
+/* Estilos removidos para evitar conflitos com vantagens-aptidoes.css */
+
+/* ============================================
+   MODAIS
+   ============================================ */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: none;
+    z-index: 10000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-overlay.active {
+    display: flex;
+    z-index: 10001;
+}
+
+.modal-overlay__backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    position: relative;
+    background: linear-gradient(135deg, #0d1219 0%, #131a28 100%);
+    border: 2px solid rgba(255, 165, 0, 0.3);
+    border-radius: 12px;
+    width: 90%;
+    max-width: 350px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    color: #e0e0e0;
+}
+
+.modal-content--large {
+    max-width: 800px;
+}
+
+.modal-header {
+    padding: 1rem 1.25rem;
+    border-bottom: 2px solid rgba(255, 165, 0, 0.3);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.modal-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #ffa500;
+}
+
+.modal-close-btn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    background: transparent;
+    border: 1px solid rgba(255, 165, 0, 0.3);
+    border-radius: 6px;
+    color: #ffa500;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close-btn:hover {
+    background: rgba(255, 165, 0, 0.15);
+    transform: rotate(90deg);
+}
+
+.modal-body {
+    padding: 1rem 1.25rem;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.modal-footer {
+    padding: 1rem 1.25rem;
+    border-top: 2px solid rgba(255, 165, 0, 0.3);
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+}
+
+.modal-btn {
+    padding: 0.6rem 1.25rem;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+}
+
+.modal-btn--primary {
+    background: linear-gradient(135deg, #ffa500 0%, #ff8c00 100%);
+    color: #1a1a1a;
+    box-shadow: 0 4px 15px rgba(255, 165, 0, 0.4);
+}
+
+.modal-btn--primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 165, 0, 0.6);
+}
+
+.modal-btn--secondary {
+    background: transparent;
+    color: #e0e0e0;
+    border: 1px solid rgba(255, 165, 0, 0.5);
+}
+
+.modal-btn--secondary:hover {
+    background: rgba(255, 165, 0, 0.1);
+}
+
+.modal-description {
+    margin: 0 0 1rem 0;
+    color: #cbd5e0;
+    line-height: 1.6;
+}
+
+/* ============================================
+   MODAL - CRIAR APTIDÃO
+   ============================================ */
+
+.aptidoes-criar-filtro {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    background: transparent;
+    border: 1px solid rgba(255, 165, 0, 0.3);
+    border-radius: 6px;
+    color: #e0e0e0;
+    font-size: 0.9rem;
+    min-width: 200px;
+}
+
+.aptidoes-criar-filtro::placeholder {
+    color: #707070;
+}
+
+.aptidoes-criar-filtro:focus {
+    outline: none;
+    background: rgba(255, 165, 0, 0.1);
+    border-color: rgba(255, 165, 0, 0.6);
+}
+
+.aptidoes-cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 1rem;
+}
+
+.aptidoes-card {
+    padding: 1rem;
+    background: transparent;
+    border: 2px solid rgba(255, 165, 0, 0.3);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    text-align: center;
+}
+
+.aptidoes-card:hover {
+    background: rgba(255, 165, 0, 0.1);
+    transform: translateY(-4px);
+}
+
+.aptidoes-card.selected {
+    background: rgba(255, 165, 0, 0.2);
+    border-color: rgba(255, 165, 0, 0.8);
+    box-shadow: 0 0 15px rgba(255, 165, 0, 0.5);
+}
+
+.aptidoes-card-imagem {
+    width: 60px;
+    height: 60px;
+    border-radius: 6px;
+    object-fit: cover;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.aptidoes-card-nome {
+    font-weight: 600;
+    color: #e0e0e0;
+    font-size: 0.85rem;
+    line-height: 1.3;
+}
+
+/* ============================================
+   MODAL - GANHAR/REMOVER
+   ============================================ */
+
+.aptidoes-ganhar-info,
+.aptidoes-remover-info {
+    background: rgba(255, 165, 0, 0.1);
+    padding: 0.75rem 0.875rem;
+    border-radius: 8px;
+    margin: 0.5rem 0;
+    border-left: 4px solid #ffa500;
+}
+
+.aptidoes-ganhar-info p,
+.aptidoes-remover-info p {
+    margin: 0.35rem 0;
+    color: #cbd5e0;
+    font-size: 0.95rem;
+}
+
+/* ============================================
+   RESPONSIVO
+   ============================================ */
+
+@media (max-width: 768px) {
+    .aptidoes-container {
+        padding: 1rem;
+        gap: 1.5rem;
+    }
+
+    .aptidoes-control-panel {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .aptidoes-info-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .aptidoes-personagem-row {
+        grid-template-columns: 1fr 60px 60px;
+    }
+
+    .aptidoes-personagem-actions {
+        grid-column: 3 / 4;
+    }
+
+    .aptidoes-cards-container {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    }
+
+    .modal-content {
+        max-width: 95%;
+    }
+
+    .aptidoes-modal-options {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .aptidoes-info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .aptidoes-personagem-row {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .aptidoes-personagem-actions {
+        justify-content: flex-start;
+    }
+
+    .aptidoes-cards-container {
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    }
+}
+
+
+
+
+

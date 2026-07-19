@@ -1,0 +1,395 @@
+/* ============================================================================
+   EFEITOS VISUAIS DE NÓS - DESBLOQUEIO E ATIVAÇÃO
+   Efeitos especiais quando um nó é desbloqueado
+   ============================================================================ */
+
+/* ============================================================================
+   ANIMAÇÃO DE DESBLOQUEIO DO NÓ
+   ============================================================================ */
+
+.astral-node.node-unlock-pulse {
+    animation: unlock-pulse-node 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes unlock-pulse-node {
+    0% {
+        transform: translate(-50%, -50%) scale(0.8);
+        filter: drop-shadow(0 0 0px rgba(255, 255, 255, 0));
+        opacity: 0.5;
+    }
+    30% {
+        transform: translate(-50%, -50%) scale(1.1);
+        opacity: 1;
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.3);
+        filter: drop-shadow(0 0 16px rgba(255, 255, 255, 0.8))
+                drop-shadow(0 0 32px rgba(255, 255, 255, 0.5));
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.3));
+        opacity: 1;
+    }
+}
+
+/* ============================================================================
+   ANIMAÇÃO DE ATIVAÇÃO (nó selecionado/clicado)
+   ============================================================================ */
+
+.astral-node.node-active-highlight {
+    animation: activate-node-glow 1s ease-in-out infinite;
+}
+
+@keyframes activate-node-glow {
+    0%, 100% {
+        filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.4))
+                drop-shadow(0 0 16px rgba(255, 255, 255, 0.2));
+        transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+        filter: drop-shadow(0 0 16px rgba(255, 255, 255, 0.8))
+                drop-shadow(0 0 32px rgba(255, 255, 255, 0.5));
+        transform: translate(-50%, -50%) scale(1.05);
+    }
+}
+
+/* ============================================================================
+   ESTADO DE SUCESSO/DESBLOQUEIO
+   ============================================================================ */
+
+.astral-node.unlock-success {
+    animation: unlock-success-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes unlock-success-pop {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0;
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.3);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+}
+
+/* ============================================================================
+   EFEITO ONDA (propagação de ativação)
+   ============================================================================ */
+
+.astral-node.wave-propagation {
+    animation: wave-node-effect 0.8s ease-out;
+}
+
+@keyframes wave-node-effect {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.5;
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.2);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+}
+
+/* ============================================================================
+   EFEITO DE BRILHO CONSTANTE (nó importante)
+   ============================================================================ */
+
+.astral-node.node-glow-constant {
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.6))
+            drop-shadow(0 0 16px rgba(255, 255, 255, 0.4));
+}
+
+/* ============================================================================
+   EFEITOS POR TIPO DE NÓ
+   ============================================================================ */
+
+/* Nós Básicos (pequenos) */
+.astral-node.size-small.node-unlocked {
+    filter: drop-shadow(0 0 4px rgba(200, 200, 200, 0.5));
+}
+
+/* Nós Intermediários (médios) */
+.astral-node.size-medium.node-unlocked {
+    filter: drop-shadow(0 0 6px rgba(220, 220, 220, 0.6));
+}
+
+/* Nós Avançados (grandes) */
+.astral-node.size-large.node-unlocked {
+    filter: drop-shadow(0 0 8px rgba(240, 240, 240, 0.7));
+}
+
+/* Nós Supremos (muito grandes) */
+.astral-node.size-xlarge.node-unlocked {
+    filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.8))
+            drop-shadow(0 0 24px rgba(255, 255, 255, 0.4));
+    animation: supreme-node-divine 3s ease-in-out infinite;
+}
+
+@keyframes supreme-node-divine {
+    0%, 100% {
+        filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.6))
+                drop-shadow(0 0 24px rgba(255, 255, 255, 0.3));
+    }
+    50% {
+        filter: drop-shadow(0 0 16px rgba(255, 255, 255, 0.9))
+                drop-shadow(0 0 32px rgba(255, 255, 255, 0.5));
+    }
+}
+
+/* ============================================================================
+   EFEITOS ESPECÍFICOS POR CONSTELAÇÃO
+   ============================================================================ */
+
+/* ARTY - Vermelho Caos */
+.astral-node.branch-arty.node-unlocked {
+    color: #ff6666;
+    text-shadow: 0 0 8px rgba(255, 68, 68, 0.6),
+                 0 0 16px rgba(255, 68, 68, 0.3);
+}
+
+.astral-node.branch-arty.unlock-success {
+    animation: unlock-arty-burst 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes unlock-arty-burst {
+    0% {
+        transform: translate(-50%, -50%) scale(0.5) rotate(0deg);
+        opacity: 0;
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.3) rotate(180deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1) rotate(360deg);
+        opacity: 1;
+    }
+}
+
+/* AUNE - Dourado Destino */
+.astral-node.branch-aune.node-unlocked {
+    color: #ffee88;
+    text-shadow: 0 0 8px rgba(255, 221, 68, 0.7),
+                 0 0 16px rgba(255, 221, 68, 0.4);
+}
+
+.astral-node.branch-aune.unlock-success {
+    animation: unlock-aune-glow 0.8s ease-in-out;
+}
+
+@keyframes unlock-aune-glow {
+    0% {
+        transform: translate(-50%, -50%) scale(0.8);
+        opacity: 0;
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.2);
+        filter: drop-shadow(0 0 20px rgba(255, 221, 68, 0.8));
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+}
+
+/* EPHELIAS - Azul Arcano */
+.astral-node.branch-ephelias.node-unlocked {
+    color: #6699ff;
+    text-shadow: 0 0 8px rgba(68, 119, 221, 0.6),
+                 0 0 16px rgba(68, 119, 221, 0.3);
+}
+
+.astral-node.branch-ephelias.unlock-success {
+    animation: unlock-ephelias-magic 0.8s ease-in-out;
+}
+
+@keyframes unlock-ephelias-magic {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0;
+    }
+    40% {
+        transform: translate(-50%, -50%) scale(1.3);
+        opacity: 1;
+    }
+    70% {
+        transform: translate(-50%, -50%) scale(0.9);
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+}
+
+/* NISHI - Roxo/Índigo Harmônico */
+.astral-node.branch-nishi.node-unlocked {
+    color: #dd99ff;
+    text-shadow: 0 0 8px rgba(153, 102, 255, 0.6),
+                 0 0 16px rgba(153, 102, 255, 0.3);
+}
+
+.astral-node.branch-nishi.unlock-success {
+    animation: unlock-nishi-harmony 0.8s ease-in-out;
+}
+
+@keyframes unlock-nishi-harmony {
+    0% {
+        transform: translate(-50%, -50%) scaleX(0.3) scaleY(1);
+        opacity: 0;
+    }
+    50% {
+        transform: translate(-50%, -50%) scaleX(1.2) scaleY(1.1);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scaleX(1) scaleY(1);
+        opacity: 1;
+    }
+}
+
+/* HESTIA - Verde Vital */
+.astral-node.branch-hestia.node-unlocked {
+    color: #88ff88;
+    text-shadow: 0 0 8px rgba(102, 221, 102, 0.6),
+                 0 0 16px rgba(102, 221, 102, 0.3);
+}
+
+.astral-node.branch-hestia.unlock-success {
+    animation: unlock-hestia-grow 0.8s ease-in-out;
+}
+
+@keyframes unlock-hestia-grow {
+    0% {
+        transform: translate(-50%, -50%) scale(0.5);
+        opacity: 0;
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.2);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+}
+
+/* ============================================================================
+   EFEITO DE HOVERING (quando passa o mouse)
+   ============================================================================ */
+
+.astral-node:not(.node-locked):hover {
+    transform: translate(-50%, -50%) scale(1.15) !important;
+    filter: brightness(1.3) drop-shadow(0 0 12px rgba(255, 255, 255, 0.6));
+    z-index: 100;
+    cursor: pointer;
+    transition: all 0.3s ease-out;
+}
+
+/* ============================================================================
+   EFEITO DE CLIQUE/SELEÇÃO
+   ============================================================================ */
+
+.astral-node.node-selected {
+    animation: selected-node-pulse 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes selected-node-pulse {
+    0% {
+        filter: drop-shadow(0 0 0px rgba(255, 255, 255, 0));
+    }
+    50% {
+        filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.8));
+        transform: translate(-50%, -50%) scale(1.2);
+    }
+    100% {
+        filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.4));
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+/* ============================================================================
+   EFEITO DE ERRO (quando não pode desbloquear)
+   ============================================================================ */
+
+.astral-node.unlock-failed {
+    animation: unlock-failed-shake 0.4s ease-out;
+}
+
+@keyframes unlock-failed-shake {
+    0%, 100% {
+        transform: translate(-50%, -50%) translateX(0);
+    }
+    25% {
+        transform: translate(-50%, -50%) translateX(-8px);
+    }
+    75% {
+        transform: translate(-50%, -50%) translateX(8px);
+    }
+}
+
+/* ============================================================================
+   COMBINAÇÕES DE EFEITOS (múltiplos + animação)
+   ============================================================================ */
+
+.astral-node.burst-unlock {
+    animation: burst-multi-effect 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes burst-multi-effect {
+    0% {
+        transform: translate(-50%, -50%) scale(0.5);
+        opacity: 0;
+        filter: drop-shadow(0 0 0px rgba(255, 255, 255, 0));
+    }
+    30% {
+        transform: translate(-50%, -50%) scale(1.3);
+        opacity: 1;
+        filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.8));
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+        filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.4));
+    }
+}
+
+/* ============================================================================
+   EFEITO ESPECIAL - NÓ SUPREMO DESBLOQUEADO
+   ============================================================================ */
+
+.astral-node.size-xlarge.unlock-success {
+    animation: supreme-unlock 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes supreme-unlock {
+    0% {
+        transform: translate(-50%, -50%) scale(0.3);
+        opacity: 0;
+    }
+    25% {
+        transform: translate(-50%, -50%) scale(1.2) rotate(45deg);
+        opacity: 1;
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.1) rotate(90deg);
+    }
+    75% {
+        transform: translate(-50%, -50%) scale(1.05) rotate(180deg);
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1) rotate(360deg);
+        opacity: 1;
+        filter: drop-shadow(0 0 16px rgba(255, 255, 255, 0.8))
+                drop-shadow(0 0 32px rgba(255, 255, 255, 0.5));
+    }
+}

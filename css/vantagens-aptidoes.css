@@ -1,0 +1,236 @@
+/* ============================================ */
+/* VANTAGENS-APTIDOES.CSS                      */
+/* Estilos para a renderização de Vantagens    */
+/* ============================================ */
+
+#aptidoes-vantagens-list {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 1rem !important;
+  min-height: 200px !important;
+  width: 100% !important;
+}
+
+.aptidoes-vantagens-table {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 1rem !important;
+    min-height: 200px !important;
+}
+
+/* Estilo para cada vantagem desbloqueada */
+.vantagem-item {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+    padding: 1rem !important;
+    background: rgba(255, 215, 0, 0.08) !important;
+    border-left: 4px solid #ffd700 !important;
+    border-radius: 8px !important;
+    transition: all 0.3s ease !important;
+}
+
+.vantagem-item:hover {
+    background: rgba(255, 215, 0, 0.15) !important;
+    transform: translateX(4px) !important;
+}
+
+.vantagem-item.efeito {
+    border-left-color: #88ccff !important;
+    background: rgba(136, 204, 255, 0.08) !important;
+}
+
+.vantagem-item.efeito:hover {
+    background: rgba(136, 204, 255, 0.15) !important;
+}
+
+.vantagem-item.bonus {
+    border-left-color: #96c864 !important;
+    background: rgba(150, 200, 100, 0.08) !important;
+}
+
+.vantagem-item.bonus:hover {
+    background: rgba(150, 200, 100, 0.15) !important;
+}
+
+.vantagem-item.bonus-duplo {
+    border-left-color: #c89660 !important;
+    background: rgba(200, 150, 100, 0.08) !important;
+}
+
+.vantagem-item.bonus-duplo:hover {
+    background: rgba(200, 150, 100, 0.15) !important;
+}
+
+.vantagem-item.bonus-percentual {
+    border-left-color: #c86464 !important;
+    background: rgba(200, 100, 100, 0.08) !important;
+}
+
+.vantagem-item.bonus-percentual:hover {
+    background: rgba(200, 100, 100, 0.15) !important;
+}
+
+.vantagem-item.bonus-opcional {
+    border-left-color: #9696c8 !important;
+    background: rgba(150, 150, 200, 0.08) !important;
+}
+
+.vantagem-item.bonus-opcional:hover {
+    background: rgba(150, 150, 200, 0.15) !important;
+}
+
+.vantagem-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: baseline !important;
+    gap: 1rem !important;
+}
+
+.vantagem-nome {
+    font-weight: 600 !important;
+    color: #ffd700 !important;
+    font-size: 1rem !important;
+}
+
+.vantagem-nome.efeito {
+    color: #88ccff !important;
+}
+
+.vantagem-nome.bonus {
+    color: #96c864 !important;
+}
+
+.vantagem-nome.bonus-duplo {
+    color: #c89660 !important;
+}
+
+.vantagem-nome.bonus-percentual {
+    color: #c86464 !important;
+}
+
+.vantagem-nome.bonus-opcional {
+    color: #9696c8 !important;
+}
+
+.vantagem-nivel {
+    font-size: 0.85rem !important;
+    color: #999 !important;
+    font-weight: 600 !important;
+}
+
+.vantagem-efeito {
+    font-size: 0.9rem !important;
+    color: #d0d0d0 !important;
+    line-height: 1.4 !important;
+    font-style: italic !important;
+}
+
+.vantagem-acoes {
+    display: flex !important;
+    justify-content: flex-end !important;
+    gap: 0.5rem !important;
+    margin-top: 0.5rem !important;
+}
+
+/* Botão de Alternância */
+.btn-alternar-bonus-opcional {
+    padding: 0.4rem 0.8rem !important;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white !important;
+    border: 1px solid #764ba2 !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+    white-space: nowrap !important;
+}
+
+.btn-alternar-bonus-opcional:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%) !important;
+    box-shadow: 0 0 15px rgba(102, 126, 234, 0.5) !important;
+    transform: translateY(-2px) !important;
+}
+
+.btn-alternar-bonus-opcional:active {
+    transform: translateY(0) !important;
+    box-shadow: 0 0 8px rgba(102, 126, 234, 0.3) !important;
+}
+
+/* Mensagem vazia */
+.aptidoes-empty-message {
+    padding: 60px 1.5rem !important;
+    text-align: center !important;
+    color: #666 !important;
+    font-style: italic !important;
+    background: #1a1a1a !important;
+    border: 1px dashed #333 !important;
+    border-radius: 4px !important;
+    grid-column: 1 / -1 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 250px !important;
+    font-size: 1rem !important;
+}
+
+/* Responsivo */
+@media (max-width: 1024px) {
+    .aptidoes-vantagens-table {
+        gap: 0.8rem !important;
+    }
+
+    .vantagem-item {
+        padding: 0.8rem !important;
+    }
+
+    .btn-alternar-bonus-opcional {
+        padding: 0.3rem 0.6rem !important;
+        font-size: 0.75rem !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .aptidoes-vantagens-table {
+        gap: 0.6rem !important;
+    }
+
+    .vantagem-item {
+        padding: 0.6rem !important;
+        border-left-width: 3px !important;
+    }
+
+    .vantagem-header {
+        flex-direction: column !important;
+        gap: 0.3rem !important;
+    }
+
+    .vantagem-nome {
+        font-size: 0.9rem !important;
+    }
+
+    .vantagem-efeito {
+        font-size: 0.8rem !important;
+    }
+
+    .btn-alternar-bonus-opcional {
+        padding: 0.3rem 0.5rem !important;
+        font-size: 0.7rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    #aptidoes-vantagens-list {
+        grid-template-columns: 1fr !important;
+    }
+
+    .aptidoes-vantagens-table {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+
+
+
+

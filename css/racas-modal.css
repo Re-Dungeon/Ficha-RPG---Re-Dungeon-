@@ -1,0 +1,1812 @@
+/**
+ * SISTEMA DE RAÇAS - ESTILOS
+ * Design profissional dark fantasy RPG
+ * Animações suaves e responsivo
+ */
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   VARIÁVEIS E FUNDAÇÕES
+   
+   Nota: Variáveis de raridade (--rarity-*) e transições (--transition-*) foram
+   movidas para variables.css (arquivo centralizado).
+   
+   Mantidas aqui apenas as variáveis específicas do sistema de raças.
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --raca-primary: #1a1f2e;
+  --raca-secondary: #2d3347;
+  --raca-tertiary: #3d4557;
+  --raca-accent: #7c6ba8;
+  --raca-accent-hover: #9681c0;
+  --raca-text-primary: #e8eaed;
+  --raca-text-secondary: #a8adb8;
+  --raca-border: #4a5265;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   MODAL CONTAINER
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.modal-racas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: var(--transition-smooth);
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+}
+
+.modal-racas.ativo {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-racas-container {
+  width: 90%;
+  max-width: 1400px;
+  height: 80vh;
+  background: var(--raca-primary);
+  border: 1px solid var(--raca-border);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.8),
+    0 0 100px rgba(124, 107, 168, 0.2);
+  animation: modalAparece 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalAparece {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   HEADER DO MODAL
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.modal-racas-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 24px 32px;
+  border-bottom: 1px solid var(--raca-border);
+  background: linear-gradient(135deg, rgba(61, 69, 87, 0.5) 0%, transparent 100%);
+}
+
+.modal-racas-header h2 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--raca-text-primary);
+  letter-spacing: 1px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+}
+
+/* Container dos botões header */
+.modal-racas-header-buttons {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* Botão Voltar */
+.btn-voltar-racas {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--raca-text-primary);
+  font-size: 20px;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.btn-voltar-racas:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.btn-voltar-racas:active {
+  transform: scale(0.95);
+}
+
+/* Botão Fechar */
+.btn-fechar-racas {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--raca-text-primary);
+  font-size: 20px;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.btn-fechar-racas:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.btn-fechar-racas:active {
+  transform: scale(0.95);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   FILTROS DO MODAL
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.modal-filtros {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex: 1;
+  margin: 0 20px;
+}
+
+.filtro-busca {
+  flex: 1;
+  padding: 10px 16px;
+  background: rgba(61, 69, 87, 0.4);
+  border: 1px solid var(--raca-border);
+  border-radius: 8px;
+  color: var(--raca-text-primary);
+  font-size: 13px;
+  transition: var(--transition-fast);
+  min-width: 150px;
+}
+
+.filtro-busca::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.filtro-busca:focus {
+  outline: none;
+  background: rgba(124, 107, 168, 0.2);
+  border-color: var(--raca-accent);
+  box-shadow: 0 0 12px rgba(124, 107, 168, 0.3);
+}
+
+.filtro-raridade {
+  padding: 10px 14px;
+  background: rgba(61, 69, 87, 0.4);
+  border: 1px solid var(--raca-border);
+  border-radius: 8px;
+  color: var(--raca-text-primary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  min-width: 150px;
+}
+
+.filtro-raridade:focus {
+  outline: none;
+  background: rgba(124, 107, 168, 0.2);
+  border-color: var(--raca-accent);
+  box-shadow: 0 0 12px rgba(124, 107, 168, 0.3);
+}
+
+.filtro-raridade option {
+  background: #1a2332;
+  color: #e8eaed;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   BODY DO MODAL - LAYOUT PRINCIPAL
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.modal-racas-body {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  flex: 1;
+  overflow: hidden;
+  gap: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   LISTA DE RAÇAS (SIDEBAR)
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.racas-lista {
+  background: linear-gradient(180deg, rgba(45, 51, 71, 0.6) 0%, rgba(29, 33, 46, 0.8) 100%);
+  border-right: 1px solid var(--raca-border);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 16px 0;
+
+  /* Scroll customizado */
+  scrollbar-width: thin;
+  scrollbar-color: var(--raca-accent) transparent;
+}
+
+.racas-lista::-webkit-scrollbar {
+  width: 6px;
+}
+
+.racas-lista::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.racas-lista::-webkit-scrollbar-thumb {
+  background: var(--raca-accent);
+  border-radius: 3px;
+}
+
+.racas-lista::-webkit-scrollbar-thumb:hover {
+  background: var(--raca-accent-hover);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   PASTA/CATEGORIA DE RAÇAS (ACCORDION)
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.rdg-race-folder {
+  margin: 8px 0;
+}
+
+.rdg-race-folder-header {
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+  background: linear-gradient(180deg, rgba(24,28,40,0.6), rgba(29,33,46,0.45));
+  border: 1px solid rgba(255,255,255,0.03);
+  border-radius: 12px;
+  margin: 8px 12px;
+  transition: all 0.28s cubic-bezier(0.2,0,0.2,1);
+  font-weight: 700;
+  color: var(--raca-text-primary);
+  position: relative;
+  align-items: center;
+  /* espaço extra à direita para posicionamento absoluto da badge */
+  padding-right: 76px;
+}
+
+.rdg-race-folder-header:hover {
+  /* remover deslocamento para manter o card estático */
+  transform: none;
+  box-shadow: 0 12px 30px rgba(6,8,14,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
+  border-color: rgba(255,255,255,0.06);
+}
+
+.rdg-race-folder-icon {
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.rdg-race-folder-avatar {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  line-height: 1;
+  background: linear-gradient(180deg, rgba(0,0,0,0.25), rgba(255,255,255,0.02));
+  border: 3px solid var(--folder-color, rgba(124,107,168,0.9));
+  box-shadow: 0 6px 18px rgba(12,12,18,0.6);
+  overflow: hidden;
+}
+
+.rdg-race-folder-avatar img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.rdg-race-folder-avatar > * {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rdg-race-folder-opened .rdg-race-folder-icon {
+  transform: rotate(0deg);
+}
+
+.rdg-race-folder:not(.rdg-race-folder-opened) .rdg-race-folder-icon {
+  transform: rotate(-90deg);
+}
+
+.rdg-race-folder-name {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--raca-text-primary);
+  letter-spacing: 0.5px;
+}
+
+.rdg-race-folder-count {
+  font-size: 12px;
+  background: linear-gradient(135deg, var(--folder-color, rgba(124,107,168,0.6)), rgba(0,0,0,0.15));
+  padding: 8px 12px;
+  border-radius: 14px;
+  color: #fff;
+  min-width: 40px;
+  text-align: center;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* left color accent for the folder block */
+.rdg-race-folder-header::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  border-radius: 8px 0 0 8px;
+  background: var(--folder-color, rgba(124,107,168,0.9));
+}
+
+/* thin vertical accent on each item inside the folder */
+.rdg-race-folder .raca-item {
+  position: relative;
+  padding: 12px 16px;
+  margin: 6px 16px;
+  background: rgba(61, 69, 87, 0.3);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  border-left: 3px solid transparent;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+}
+
+.rdg-race-folder .raca-item::before {
+  /* Removido: antes era uma listra colorida no início de cada card.
+     Mantemos a marca de cor apenas no header da pasta. */
+  display: none;
+}
+
+/* garantir conteúdo acima do acento de cor */
+.raca-item > * {
+  position: relative;
+  z-index: 1;
+}
+
+.rdg-race-folder-content {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform: scaleY(0.95);
+  transform-origin: top;
+}
+
+.rdg-race-folder-content-open {
+  max-height: 2000px;
+  opacity: 1;
+  transform: scaleY(1);
+}
+
+.rdg-race-folder-empty {
+  padding: 24px 16px;
+  text-align: center;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.08) 0%, rgba(100, 70, 150, 0.05) 100%);
+  border: 1px dashed rgba(168, 85, 247, 0.2);
+  border-radius: 8px;
+  margin: 12px 16px;
+  color: rgba(168, 85, 247, 0.6);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  backdrop-filter: blur(4px);
+  position: relative;
+  overflow: hidden;
+}
+
+.rdg-race-folder-empty::before {
+  content: '✨';
+  display: block;
+  font-size: 20px;
+  margin-bottom: 8px;
+  animation: sparkle-pulse 2s ease-in-out infinite;
+}
+
+@keyframes sparkle-pulse {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   ITEM DE RAÇA NA LISTA
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.raca-item {
+  position: relative;
+  overflow: hidden;
+  padding: 12px 16px;
+  margin: 6px 16px;
+  background: rgba(61, 69, 87, 0.3);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  border-left: 3px solid transparent;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Listra lateral para a raça selecionada (diferencia visualmente das demais) */
+.raca-item.raca-selecionada {
+  /* Usar a cor da pasta/tipo quando disponível */
+  border-left: 6px solid var(--folder-color, #10b981);
+  background: rgba(255, 255, 255, 0.02);
+  box-shadow: 0 0 18px rgba(0, 0, 0, 0.12);
+}
+
+/* Forçar a cor da borda quando a classe for aplicada ao container de detalhes */
+.raca-selecionada {
+  border-color: var(--folder-color, #10b981) !important;
+}
+
+.rdg-race-folder-content .raca-item {
+  /* Ajuste de espaçamento após remoção da listra */
+  margin-left: 16px;
+  margin-right: 12px;
+  font-size: 13px;
+}
+
+.raca-item:hover {
+  background: rgba(61, 69, 87, 0.6);
+  border-color: var(--raca-accent);
+  transform: none; /* evitar que o item se mova */
+}
+
+.raca-item.ativo {
+  background: rgba(124, 107, 168, 0.3);
+  border-color: var(--raca-accent);
+  border-left-color: var(--raca-accent);
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.25);
+  transform: none; /* garantir que não há escala/transform no estado ativo */
+}
+
+.raca-item-nome {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--raca-text-primary);
+}
+
+.raca-item-raridade {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+.sem-resultados {
+  padding: 24px 16px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+  font-style: italic;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   BADGES DE RARIDADE
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.raca-raridade {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  width: fit-content;
+}
+
+.raca-raridade.comum {
+  background: rgba(59, 130, 246, 0.2);
+  color: #93c5fd;
+  border: 1px solid rgba(59, 130, 246, 0.5);
+}
+
+.raca-raridade.raro {
+  background: rgba(16, 185, 129, 0.2);
+  color: #6ee7b7;
+  border: 1px solid rgba(16, 185, 129, 0.5);
+}
+
+.raca-raridade.epico {
+  background: rgba(139, 92, 246, 0.2);
+  color: #e9d5ff;
+  border: 1px solid rgba(139, 92, 246, 0.5);
+}
+
+.raca-raridade.lendario {
+  background: rgba(249, 115, 22, 0.2);
+  color: #fdba74;
+  border: 1px solid rgba(249, 115, 22, 0.5);
+}
+
+.raca-raridade.mitico {
+  background: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.5);
+}
+
+.raca-raridade.celestial {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fcd34d;
+  border: 1px solid rgba(251, 191, 36, 0.5);
+  text-shadow: 0 0 10px rgba(251, 191, 36, 0.4);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   PAINEL DE DETALHES
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.raca-detalhes {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 32px;
+  background: linear-gradient(135deg, rgba(26, 31, 46, 0.5) 0%, transparent 100%);
+
+  /* Scroll customizado */
+  scrollbar-width: thin;
+  scrollbar-color: var(--raca-accent) transparent;
+}
+
+.raca-detalhes::-webkit-scrollbar {
+  width: 8px;
+}
+
+.raca-detalhes::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.raca-detalhes::-webkit-scrollbar-thumb {
+  background: var(--raca-accent);
+  border-radius: 4px;
+}
+
+.raca-detalhes::-webkit-scrollbar-thumb:hover {
+  background: var(--raca-accent-hover);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   HEADER DA RAÇA
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.raca-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--raca-border);
+  gap: 20px;
+}
+
+.raca-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+}
+
+.raca-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* ✨ SISTEMA DE SELEÇÃO - BOTÕES */
+
+.btn-escolher {
+  padding: 10px 24px;
+  background: linear-gradient(135deg, #7c6ba8 0%, #9681c0 100%);
+  border: 1px solid rgba(150, 129, 192, 0.5);
+  border-radius: 8px;
+  color: var(--raca-text-primary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  white-space: nowrap;
+  box-shadow: 0 4px 15px rgba(124, 107, 168, 0.3);
+}
+
+.btn-escolher:hover:not(:disabled) {
+  background: linear-gradient(135deg, #9681c0 0%, #b09ad8 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(124, 107, 168, 0.5);
+}
+
+.btn-escolher:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(124, 107, 168, 0.3);
+}
+
+.btn-escolher:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-escolher.btn-selecionada {
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  border-color: rgba(16, 185, 129, 0.5);
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+}
+
+.btn-cadeado {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(124, 107, 168, 0.15);
+  border: 1px solid var(--raca-border);
+  border-radius: 8px;
+  color: var(--raca-text-primary);
+  font-size: 20px;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  padding: 0;
+}
+
+.btn-cadeado:hover:not(:disabled) {
+  background: rgba(124, 107, 168, 0.3);
+  transform: scale(1.1);
+}
+
+.btn-cadeado:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* ✨ SISTEMA DE SELEÇÃO - CLASSES DE ESTADO */
+
+.raca-selecionada {
+  position: relative;
+}
+
+/* Manter o acento colorido também quando uma raça está selecionada.
+   A regra anterior removia o ::before e fazia o risco encolher/ desaparecer
+   ao selecionar a raça. Removemos essa sobrescrita para preservar o visual.
+*/
+
+.raca-bloqueada {
+  position: relative;
+}
+
+/* Overlay suave para raça bloqueada */
+.raca-bloqueada::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(124, 107, 168, 0.08) 0%, rgba(124, 107, 168, 0.12) 100%);
+  border-radius: 10px;
+  pointer-events: none;
+  z-index: 8;
+}
+
+/* Ícone de cadeado para raça bloqueada - usando pseudo elemento */
+.raca-bloqueada::before {
+  content: '🔒';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 32px;
+  z-index: 10;
+  opacity: 0.35;
+  filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.4));
+}
+
+.overlay-bloqueado {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  cursor: not-allowed;
+  z-index: 5;
+}
+
+/* ✨ BADGES DESATIVADAS */
+.raca-bloqueada .raca-raridade {
+  opacity: 0.5;
+  filter: grayscale(100%);
+}
+
+/* ✨ NOME DA RAÇA */
+.raca-nome {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--raca-text-primary);
+  letter-spacing: 1px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  text-transform: uppercase;
+}
+
+/* ✨ BADGES DESATIVADAS EM RAÇAS BLOQUEADAS */
+.raca-bloqueada .raca-raridade {
+  opacity: 0.5;
+  filter: grayscale(100%);
+}
+
+/* Nome centralizado na lista */
+.raca-item-nome {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--raca-text-primary);
+  text-transform: uppercase;
+  text-align: center;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   IMAGEM DA RAÇA
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.raca-imagem {
+  width: 100%;
+  height: 370px;
+  margin-bottom: 28px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 2px solid var(--raca-border);
+  background: linear-gradient(135deg, rgba(124, 107, 168, 0.1) 0%, transparent 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.raca-imagem img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s ease-out;
+}
+
+.raca-imagem:hover img {
+  transform: scale(1.05);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   SEÇÕES DE CONTEÚDO
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.raca-secao {
+  margin-bottom: 32px;
+}
+
+.raca-secao-titulo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--raca-text-primary);
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--raca-accent);
+  letter-spacing: 0.5px;
+}
+
+.raca-secao-titulo::before {
+  content: '';
+  width: 4px;
+  height: 20px;
+  background: var(--raca-accent);
+  border-radius: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   DESCRIÇÃO
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.raca-descricao-texto {
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--raca-text-secondary);
+  font-style: italic;
+  padding: 16px;
+  background: rgba(61, 69, 87, 0.2);
+  border-left: 3px solid var(--raca-accent);
+  border-radius: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   ATRIBUTOS
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+#modal-racas .atributos-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+#modal-racas .atributo-card {
+  background: rgba(61, 69, 87, 0.3);
+  border: 1px solid var(--raca-border);
+  border-radius: 8px;
+  padding: 16px;
+  transition: var(--transition-fast);
+}
+
+#modal-racas .atributo-card:hover {
+  background: rgba(124, 107, 168, 0.15);
+  border-color: var(--raca-accent);
+  transform: translateY(-2px);
+}
+
+#modal-racas .atributo-nome {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--raca-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+#modal-racas .atributo-valor {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--raca-text-primary);
+  font-family: 'Courier New', monospace;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   LIMITE DE ATRIBUTO
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.limite-container {
+  background: rgba(61, 69, 87, 0.3);
+  border: 2px solid var(--raca-accent);
+  border-radius: 8px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.limite-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--raca-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.limite-valor {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--raca-accent);
+  font-family: 'Courier New', monospace;
+  text-shadow: 0 0 20px rgba(124, 107, 168, 0.3);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   HABILIDADES
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.habilidades-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+#modal-racas .habilidade-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: linear-gradient(180deg, rgba(26,31,46,0.6) 0%, rgba(45,51,71,0.35) 100%);
+  border: 1px solid rgba(74,82,101,0.6);
+  border-radius: 12px;
+  padding: 22px;
+  transition: transform 0.28s cubic-bezier(0.2,0,0.2,1), box-shadow 0.28s;
+  overflow: hidden;
+  position: relative;
+  min-height: 220px;
+  box-shadow: 0 6px 20px rgba(10,12,18,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
+}
+
+/* thin top accent + subtle left stripe for premium look */
+#modal-racas .habilidade-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, rgba(124,107,168,0.95), rgba(150,129,192,0.6));
+}
+
+#modal-racas .habilidade-card::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  bottom: 8px;
+  width: 6px;
+  background: linear-gradient(180deg, rgba(124,107,168,0.9), rgba(124,107,168,0.45));
+  border-radius: 4px;
+  opacity: 0.95;
+}
+
+#modal-racas .habilidade-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--raca-accent);
+  box-shadow: 0 18px 50px rgba(20,18,40,0.5), inset 0 0 30px rgba(124,107,168,0.03);
+}
+
+#modal-racas .habilidade-nome {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--raca-text-primary);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#modal-racas .habilidade-nome::before {
+  content: '✦';
+  color: var(--raca-accent);
+  font-size: 16px;
+  display: inline-block;
+  transform: translateY(-1px);
+}
+
+#modal-racas .habilidade-descricao {
+  font-size: 13px;
+  color: var(--raca-text-secondary);
+  margin-bottom: 12px;
+  font-style: normal;
+  line-height: 1.55;
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+
+#modal-racas .habilidade-bonus {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+#modal-racas .bonus-item {
+  font-size: 13px;
+  color: var(--raca-text-primary);
+  padding: 10px 12px 10px 36px;
+  position: relative;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border-left: 3px solid rgba(124,107,168,0.12);
+  border-radius: 8px;
+}
+
+#modal-racas .bonus-item::before {
+  content: '→';
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--raca-accent);
+  font-weight: 800;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   SISTEMA DE ABAS DE HABILIDADES
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+#modal-racas .habilidades-tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--raca-border);
+  padding-bottom: 12px;
+}
+
+#modal-racas .tab-button {
+  padding: 10px 20px;
+  background: transparent;
+  border: none;
+  color: var(--raca-text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+#modal-racas .tab-button::after {
+  content: '';
+  position: absolute;
+  bottom: -12px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--raca-accent);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+#modal-racas .tab-button:hover {
+  color: var(--raca-text-primary);
+}
+
+#modal-racas .tab-button.active {
+  color: var(--raca-accent);
+}
+
+#modal-racas .tab-button.active::after {
+  transform: scaleX(1);
+}
+
+/* Conteúdo das Abas */
+#modal-racas .habilidades-conteudo {
+  position: relative;
+}
+
+#modal-racas .habilidades-painel {
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+
+#modal-racas .habilidades-painel.active {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+/* Grid para habilidades avançadas - 2 colunas */
+#modal-racas .habilidades-painel[data-painel="avancadas"].active {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+/* Forçar 2 cards por linha apenas no painel de Habilidades BÁSICAS (desktop) */
+#modal-racas .habilidades-painel[data-painel="basicas"].active .habilidades-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   HABILIDADES AVANÇADAS
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+#modal-racas .habilidade-avancada {
+  background: linear-gradient(135deg, rgba(200, 120, 50, 0.15) 0%, rgba(124, 107, 168, 0.15) 100%);
+  border: 2px solid rgba(200, 120, 50, 0.6);
+  box-shadow: 
+    0 0 15px rgba(200, 120, 50, 0.2),
+    inset 0 0 20px rgba(200, 120, 50, 0.05);
+}
+
+#modal-racas .habilidade-avancada::before {
+  background: linear-gradient(90deg, rgba(200, 120, 50, 0.8), transparent);
+}
+
+#modal-racas .habilidade-avancada:hover {
+  background: linear-gradient(135deg, rgba(200, 120, 50, 0.25) 0%, rgba(124, 107, 168, 0.2) 100%);
+  border-color: rgba(200, 120, 50, 0.9);
+  box-shadow: 
+    0 8px 24px rgba(200, 120, 50, 0.3),
+    inset 0 0 20px rgba(200, 120, 50, 0.08);
+}
+
+#modal-racas .habilidade-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+#modal-racas .habilidade-header {
+  align-items: center;
+}
+
+#modal-racas .badge-requisito {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+#modal-racas .badge-requisito.desbloqueado {
+  background: rgba(76, 175, 80, 0.3);
+  color: #4caf50;
+  border: 1px solid rgba(76, 175, 80, 0.5);
+}
+
+#modal-racas .badge-requisito.bloqueado {
+  background: rgba(244, 67, 54, 0.3);
+  color: #f44336;
+  border: 1px solid rgba(244, 67, 54, 0.5);
+}
+
+#modal-racas .habilidade-custo {
+  font-size: 12px;
+  color: #ffb300;
+  font-weight: 600;
+  margin-bottom: 8px;
+  padding: 6px 10px;
+  background: rgba(255, 179, 0, 0.15);
+  border-radius: 4px;
+  display: inline-block;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   BADGES DE INFORMAÇÃO (Alcance, Alvos, Custo, etc)
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+#modal-racas .habilidade-badges {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 8px;
+  background: rgba(61, 69, 87, 0.2);
+  border-radius: 6px;
+}
+
+#modal-racas .badge-info {
+  padding: 6px 10px;
+  background: rgba(124, 107, 168, 0.25);
+  border: 1px solid rgba(124, 107, 168, 0.4);
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--raca-text-secondary);
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+/* Estado Bloqueado */
+#modal-racas .habilidade-bloqueada {
+  position: relative;
+  opacity: 0.7;
+}
+
+#modal-racas .overlay-bloqueio {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 8px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#modal-racas .habilidade-bloqueio-msg {
+  margin-top: 12px;
+  padding: 10px;
+  background: rgba(244, 67, 54, 0.15);
+  border-left: 3px solid #f44336;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #ffb3b3;
+  font-weight: 600;
+  text-align: center;
+}
+
+#modal-racas .habilidade-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+#modal-racas .btn-selecionar-habilidade {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, rgba(124,107,168,1), rgba(150,129,192,0.95));
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(124,107,168,0.18);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+#modal-racas .btn-selecionar-habilidade:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(124,107,168,0.28);
+}
+
+#modal-racas .habilidade-adicional {
+  font-size: 13px;
+  color: var(--raca-text-secondary);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   BADGES DE TIPO DE HABILIDADE
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+#modal-racas .badge-tipo {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  border: 1px solid;
+}
+
+#modal-racas .badge-tipo.tipo-imediata {
+  background: rgba(76, 175, 80, 0.2);
+  color: #4caf50;
+  border-color: rgba(76, 175, 80, 0.5);
+}
+
+#modal-racas .badge-tipo.tipo-duradoura {
+  background: rgba(255, 193, 7, 0.2);
+  color: #ffc107;
+  border-color: rgba(255, 193, 7, 0.5);
+}
+
+#modal-racas .badge-tipo.tipo-sustentada {
+  background: rgba(33, 150, 243, 0.2);
+  color: #2196f3;
+  border-color: rgba(33, 150, 243, 0.5);
+}
+
+#modal-racas .badge-tipo.tipo-padrao {
+  background: rgba(156, 39, 176, 0.2);
+  color: #9c27b0;
+  border-color: rgba(156, 39, 176, 0.5);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   ATRIBUTOS DE HABILIDADE
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+#modal-racas .habilidade-atributos {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 10px;
+  background: rgba(61, 69, 87, 0.3);
+  border-radius: 6px;
+  border-left: 3px solid rgba(200, 120, 50, 0.6);
+}
+
+#modal-racas .atributo-linha {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+#modal-racas .atrib {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--raca-text-primary);
+  font-weight: 600;
+  padding: 4px 8px;
+  background: rgba(124, 107, 168, 0.2);
+  border-radius: 4px;
+  flex: 1;
+  min-width: 80px;
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   RESPONSIVIDADE
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 1200px) {
+  .modal-racas-container {
+    max-width: 95%;
+    height: 85vh;
+  }
+
+  .raca-detalhes {
+    padding: 24px;
+  }
+
+  #modal-racas .atributos-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .habilidades-container {
+    grid-template-columns: 1fr;
+  }
+
+  /* Ajuste responsivo: habilidades básicas ficam 1 por linha em telas menores */
+  #modal-racas .habilidades-painel[data-painel="basicas"].active {
+    grid-template-columns: 1fr;
+    display: block;
+  }
+
+  /* Habilidades avançadas em tablet - manter 2 colunas */
+  #modal-racas .habilidades-painel[data-painel="avancadas"].active {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Habilidades básicas: 2 cards por linha em desktop */
+  #modal-racas .habilidades-painel[data-painel="basicas"].active {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  /* Badges em tablet - 2 por linha */
+  #modal-racas .habilidade-badges {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .modal-racas-header {
+    flex-wrap: wrap;
+    padding: 16px 20px;
+  }
+
+  .modal-racas-header h2 {
+    font-size: 24px;
+    flex-basis: 100%;
+  }
+
+  .modal-filtros {
+    flex-basis: 100%;
+    gap: 8px;
+  }
+
+  .filtro-busca,
+  .filtro-raridade {
+    flex: 1;
+    min-width: 100px;
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+
+  .modal-racas-body {
+    grid-template-columns: 1fr;
+    max-height: none;
+  }
+
+  .racas-lista {
+    border-right: none;
+    border-bottom: 1px solid var(--raca-border);
+    max-height: 150px;
+    padding: 12px 0;
+  }
+
+  .raca-item {
+    margin: 4px 8px;
+    padding: 8px 12px;
+  }
+
+  .raca-imagem {
+    height: 330px;
+  }
+
+  .raca-nome {
+    font-size: 24px;
+  }
+
+  #modal-racas .atributos-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .habilidades-container {
+    grid-template-columns: 1fr;
+  }
+
+  /* Habilidades avançadas em tablet pequeno - manter 2 colunas */
+  #modal-racas .habilidades-painel[data-painel="avancadas"].active {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Badges em tablet pequeno - 1 por linha */
+  #modal-racas .habilidade-badges {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-racas-container {
+    width: 95%;
+    height: 90vh;
+    border-radius: 8px;
+  }
+
+  .modal-racas-header {
+    padding: 16px;
+  }
+
+  .modal-racas-header h2 {
+    font-size: 20px;
+  }
+
+  .raca-detalhes {
+    padding: 16px;
+  }
+
+  .raca-nome {
+    font-size: 20px;
+  }
+
+  .raca-imagem {
+    height: 264px;
+    margin-bottom: 16px;
+  }
+
+  #modal-racas .atributos-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .racas-lista {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    max-height: none;
+  }
+
+  .raca-item {
+    min-width: fit-content;
+    margin: 4px;
+  }
+
+  /* Abas responsivas em mobile */
+  .habilidades-tabs {
+    flex-wrap: wrap;
+  }
+
+  .tab-button {
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+
+  #modal-racas .habilidades-painel.active {
+    grid-template-columns: 1fr;
+  }
+
+  /* Badges em mobile - 1 por linha */
+  #modal-racas .habilidade-badges {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   ESTADOS ESPECIAIS
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.modal-racas.hidden {
+  display: none;
+}
+
+.racas-lista::-webkit-scrollbar-thumb {
+  background: var(--raca-accent);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   SISTEMA DE SELEÇÃO DE HABILIDADES BÁSICAS
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+/* Contador Visual X/Y */
+.badge-contador {
+  display: inline-block;
+  margin-left: 12px;
+  padding: 4px 10px;
+  background: linear-gradient(135deg, rgba(124, 107, 168, 0.3) 0%, rgba(61, 69, 87, 0.5) 100%);
+  border: 1px solid var(--raca-accent);
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--raca-accent);
+  white-space: nowrap;
+  animation: badgeAparece 0.3s ease-out;
+}
+
+@keyframes badgeAparece {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Container de Controles */
+.habilidade-controles {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(124, 107, 168, 0.2);
+  align-items: center;
+  justify-content: flex-start;
+}
+
+/* Animação de Pulso para Botão Ativo */
+@keyframes pulse-ativo {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+  50% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+/* Animação de Brilho ao Clicar */
+@keyframes shine-click {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+/* Animação de Rotação para Ativar */
+@keyframes rotate-activate {
+  0% { transform: rotateY(0deg); }
+  50% { transform: rotateY(90deg); }
+  100% { transform: rotateY(0deg); }
+}
+
+/* Botão de Ativar/Desativar */
+.btn-ativar-habilidade {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(124, 107, 168, 0.15) 0%, rgba(61, 69, 87, 0.25) 100%);
+  border: 2px solid rgba(124, 107, 168, 0.5);
+  border-radius: 8px;
+  color: var(--raca-accent);
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(4px);
+  user-select: none;
+}
+
+.btn-ativar-habilidade::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s ease;
+  z-index: 0;
+}
+
+.btn-ativar-habilidade:hover {
+  border-color: var(--raca-accent);
+  color: var(--raca-accent);
+  box-shadow: 0 0 16px rgba(124, 107, 168, 0.5), inset 0 0 8px rgba(124, 107, 168, 0.1);
+  transform: translateY(-2px);
+}
+
+.btn-ativar-habilidade:hover::before {
+  left: 100%;
+}
+
+.btn-ativar-habilidade:active {
+  transform: scale(0.92) translateY(0);
+  animation: rotate-activate 0.4s ease-out;
+}
+
+/* Estado: Habilidade Ativa */
+.habilidade-card.habilidade-ativa .btn-ativar-habilidade {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(5, 150, 105, 0.15) 100%);
+  border-color: #10b981;
+  color: #10b981;
+  animation: pulse-ativo 2s infinite;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+}
+
+/* Botão de Travar/Destravar */
+.btn-travar-habilidade {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 2px solid rgba(124, 107, 168, 0.3);
+  border-radius: 6px;
+  color: var(--raca-accent);
+  font-size: 16px;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  position: relative;
+}
+
+.btn-travar-habilidade:hover {
+  background: rgba(124, 107, 168, 0.1);
+  border-color: var(--raca-accent-hover);
+  box-shadow: 0 0 8px rgba(124, 107, 168, 0.3);
+}
+
+.btn-travar-habilidade:active {
+  transform: scale(0.95);
+}
+
+/* Estado: Habilidade Ativa */
+.habilidade-card.habilidade-ativa {
+  background: linear-gradient(135deg, rgba(124, 107, 168, 0.3) 0%, rgba(61, 69, 87, 0.3) 100%);
+  border-color: var(--raca-accent);
+  box-shadow: 0 0 16px rgba(124, 107, 168, 0.3), inset 0 0 12px rgba(124, 107, 168, 0.1);
+}
+
+.habilidade-card.habilidade-ativa::before {
+  background: linear-gradient(90deg, var(--raca-accent), transparent);
+  height: 4px;
+  box-shadow: 0 0 12px var(--raca-accent);
+}
+
+/* Estado: Habilidade Travada */
+.habilidade-card.habilidade-travada {
+  position: relative;
+}
+
+.habilidade-card.habilidade-travada::after {
+  content: '🔒';
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 16px;
+  opacity: 0.8;
+  animation: pulseIcon 1.5s ease-in-out infinite;
+}
+
+@keyframes pulseIcon {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+/* Estado: Habilidade Apagada (limite atingido) */
+.habilidade-card.habilidade-apagada {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.habilidade-card.habilidade-apagada .btn-ativar-habilidade {
+  cursor: not-allowed;
+  opacity: 0.5;
+  border-color: rgba(124, 107, 168, 0.2);
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.habilidade-card.habilidade-apagada .btn-ativar-habilidade:hover {
+  box-shadow: none;
+  border-color: rgba(124, 107, 168, 0.2);
+}
+
+/* Melhorias visuais para interação */
+.habilidade-card .habilidade-controles {
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition: var(--transition-fast);
+}
+
+.habilidade-card:hover .habilidade-controles,
+.habilidade-card.habilidade-ativa .habilidade-controles {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .habilidade-controles {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .btn-ativar-habilidade,
+  .btn-travar-habilidade {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+
+  .badge-contador {
+    margin-left: 8px;
+    padding: 3px 8px;
+    font-size: 11px;
+  }
+}
+
+
+
+
+
+

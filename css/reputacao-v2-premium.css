@@ -1,0 +1,861 @@
+/**
+ * 🏆 REPUTAÇÃO V2 - CSS PREMIUM
+ * 
+ * Sistema visual dual-axis com:
+ * - Barras animadas com glow
+ * - Gradientes dinâmicos
+ * - Efeito de aura baseado no status
+ * - Design imersivo para RPG
+ */
+
+/* ================================================== */
+/* OVERLAY - Fundo com blur */
+/* ================================================== */
+
+.rep-overlay-v2 {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+    animation: rep-fadeIn-v2 0.3s ease;
+}
+
+.rep-overlay-v2.rep-active-v2 {
+    display: flex;
+}
+
+@keyframes rep-fadeIn-v2 {
+    from {
+        opacity: 0;
+        backdrop-filter: blur(0px);
+    }
+    to {
+        opacity: 1;
+        backdrop-filter: blur(8px);
+    }
+}
+
+/* ================================================== */
+/* MODAL PRINCIPAL */
+/* ================================================== */
+
+.rep-modal-v2 {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2a1f2e 50%, #1a1a1a 100%);
+    border: 2px solid #d4af37;
+    border-radius: 16px;
+    padding: 2rem;
+    width: 95%;
+    max-width: 900px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.95),
+        0 0 40px rgba(212, 175, 55, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    animation: rep-slideUp-v2 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes rep-slideUp-v2 {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* ================================================== */
+/* HEADER */
+/* ================================================== */
+
+.rep-header-v2 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.rep-titulo-v2 {
+    font-size: 2.2rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    background: linear-gradient(135deg, #d4af37 0%, #f4e4c1 50%, #d4af37 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0;
+    text-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+}
+
+.rep-close-v2 {
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    color: #d4af37;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.rep-close-v2:hover {
+    transform: rotate(90deg);
+    color: #ff6b6b;
+    text-shadow: 0 0 10px rgba(255, 107, 107, 0.8);
+}
+
+/* ================================================== */
+/* DIVISOR */
+/* ================================================== */
+
+.rep-divider-v2 {
+    height: 2px;
+    background: linear-gradient(90deg, transparent 0%, #d4af37 20%, #d4af37 80%, transparent 100%);
+    margin: 1.5rem 0;
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+}
+
+/* ================================================== */
+/* SEÇÃO - VISÃO GERAL */
+/* ================================================== */
+
+.rep-section-visao-v2 {
+    margin-bottom: 1.5rem;
+}
+
+.rep-section-title-v2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #d4af37;
+    margin-bottom: 1rem;
+    letter-spacing: 2px;
+}
+
+.rep-status-atual-v2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+/* ================================================== */
+/* STATUS BOX */
+/* ================================================== */
+
+.rep-status-box-v2 {
+    background: rgba(212, 175, 55, 0.05);
+    border: 2px solid rgba(212, 175, 55, 0.3);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Estados da aura baseado no status */
+.rep-status-box-v2::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.1) 0%, transparent 70%);
+    pointer-events: none;
+    animation: rep-glow-pulse-v2 3s ease-in-out infinite;
+}
+
+@keyframes rep-glow-pulse-v2 {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+/* Herói - Aura Dourada */
+.rep-status-heroi-v2,
+.rep-status-heroi-supremo-v2 {
+    border-color: #ffd700;
+    background: rgba(255, 215, 0, 0.04);
+    box-shadow: 0 0 6px rgba(255, 215, 0, 0.12);
+}
+
+/* Tirano - Aura Sombria */
+.rep-status-tirano-v2,
+.rep-status-tirano-supremo-v2 {
+    border-color: #8b0000;
+    background: rgba(139, 0, 0, 0.04);
+    box-shadow: 0 0 6px rgba(139, 0, 0, 0.15);
+}
+
+/* Lenda Ambígua - Aura Mista */
+.rep-status-ambiguo-v2 {
+    border-color: #9370db;
+    background: rgba(147, 112, 219, 0.04);
+    box-shadow: 0 0 6px rgba(147, 112, 219, 0.15);
+}
+
+/* Paradoxo Vivo - Aura Violeta Intensa */
+.rep-status-paradoxo-v2 {
+    border-color: #a855f7;
+    background: rgba(168, 85, 247, 0.04);
+    box-shadow: 0 0 10px rgba(168, 85, 247, 0.18);
+}
+
+/* Entidade Lendária - Aura Caótica Multicolor */
+.rep-status-entidade-lendaria-v2 {
+    border-color: #ff006e;
+    background: linear-gradient(135deg, rgba(255, 0, 110, 0.04) 0%, rgba(168, 85, 247, 0.04) 100%);
+    box-shadow: 0 0 12px rgba(255, 0, 110, 0.18), 0 0 8px rgba(168, 85, 247, 0.12);
+    animation: rep-glow-entidade-v2 2s ease-in-out infinite;
+}
+
+@keyframes rep-glow-entidade-v2 {
+    0%, 100% { 
+        box-shadow: 0 0 12px rgba(255, 0, 110, 0.18), 0 0 8px rgba(168, 85, 247, 0.12);
+    }
+    50% { 
+        box-shadow: 0 0 18px rgba(255, 0, 110, 0.25), 0 0 12px rgba(168, 85, 247, 0.18);
+    }
+}
+
+/* ================================================== */
+/* ESTADOS HÍBRIDOS NOVOS */
+/* ================================================== */
+
+/* Equilíbrio Instável - Aura Azul Instável */
+.rep-status-equilibrio-instavel-v2 {
+    border-color: #4da6ff;
+    background: rgba(77, 166, 255, 0.04);
+    box-shadow: 0 0 6px rgba(77, 166, 255, 0.12);
+}
+
+/* Nome Dividido - Aura Prateada Dual */
+.rep-status-nome-dividido-v2 {
+    border-color: #c0c0c0;
+    background: rgba(192, 192, 192, 0.04);
+    box-shadow: 0 0 6px rgba(192, 192, 192, 0.12);
+}
+
+/* Eco Contraditório - Aura Índigo */
+.rep-status-eco-contraditorio-v2 {
+    border-color: #6a5acd;
+    background: rgba(106, 90, 205, 0.04);
+    box-shadow: 0 0 6px rgba(106, 90, 205, 0.12);
+}
+
+/* Glória Sombria - Aura Carmim */
+.rep-status-gloria-sombria-v2 {
+    border-color: #dc143c;
+    background: rgba(220, 20, 60, 0.04);
+    box-shadow: 0 0 6px rgba(220, 20, 60, 0.12);
+}
+
+/* Figura Controversa - Aura Laranja Queimada */
+.rep-status-figura-controversa-v2 {
+    border-color: #ff8c00;
+    background: rgba(255, 140, 0, 0.04);
+    box-shadow: 0 0 6px rgba(255, 140, 0, 0.12);
+}
+
+/* Salvador Temido - Aura Carmesim */
+.rep-status-salvador-temido-v2 {
+    border-color: #b22222;
+    background: rgba(178, 34, 34, 0.04);
+    box-shadow: 0 0 6px rgba(178, 34, 34, 0.12);
+}
+
+/* Juiz Implacável - Aura Escarlate */
+.rep-status-juiz-implacavel-v2 {
+    border-color: #ff0000;
+    background: rgba(255, 0, 0, 0.04);
+    box-shadow: 0 0 8px rgba(255, 0, 0, 0.15);
+}
+
+/* Arauto do Caos - Aura Verde Elétrica */
+.rep-status-arauto-caos-v2 {
+    border-color: #39ff14;
+    background: rgba(57, 255, 20, 0.04);
+    box-shadow: 0 0 8px rgba(57, 255, 20, 0.15);
+}
+
+/* Lenda Fragmentada - Aura Cósmica */
+.rep-status-lenda-fragmentada-v2 {
+    border-color: #9d4edd;
+    background: linear-gradient(135deg, rgba(157, 78, 221, 0.04) 0%, rgba(139, 69, 255, 0.04) 100%);
+    box-shadow: 0 0 10px rgba(157, 78, 221, 0.15);
+    animation: rep-glow-cosmica-v2 2s ease-in-out infinite;
+}
+
+@keyframes rep-glow-cosmica-v2 {
+    0%, 100% { 
+        box-shadow: 0 0 10px rgba(157, 78, 221, 0.15);
+    }
+    50% { 
+        box-shadow: 0 0 15px rgba(157, 78, 221, 0.25);
+    }
+}
+
+/* Desconhecido */
+.rep-status-desconhecido-v2 {
+    border-color: rgba(212, 175, 55, 0.3);
+    background: rgba(212, 175, 55, 0.05);
+}
+
+/* Neutro */
+.rep-status-neutro-v2 {
+    border-color: rgba(100, 150, 200, 0.5);
+    background: rgba(100, 150, 200, 0.05);
+}
+
+.rep-status-tipo-v2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #d4af37;
+    margin: 0 0 0.5rem 0;
+    letter-spacing: 1px;
+}
+
+.rep-status-nome-v2 {
+    font-size: 1.3rem;
+    font-weight: 900;
+    color: #f4e4c1;
+    margin: 0.5rem 0 1.2rem 0;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+/* ================================================== */
+/* BARRAS DUPLAS */
+/* ================================================== */
+
+.rep-bars-container-v2 {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.rep-bar-wrapper-v2 {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.rep-bar-label-v2 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #d4af37;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.rep-bar-v2 {
+    position: relative;
+    width: 100%;
+    height: 24px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(212, 175, 55, 0.4);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.rep-bar-fill-v2 {
+    height: 100%;
+    transition: width 0.4s ease;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 0.5rem;
+    position: relative;
+}
+
+/* Barra de Fama - Azul/Dourado (Suave) */
+.rep-bar-fama-v2 .rep-bar-fill-v2 {
+    background: linear-gradient(90deg, #7b9fd4 0%, #a8d8ff 50%, #dcc875 100%);
+    box-shadow: 0 0 8px rgba(123, 159, 212, 0.4), inset 0 1px 3px rgba(255, 255, 255, 0.2);
+}
+
+/* Barra de Temor - Roxo/Vermelho (Suave) */
+.rep-bar-temor-v2 .rep-bar-fill-v2 {
+    background: linear-gradient(90deg, #a67070 0%, #b399d4 50%, #d48080 100%);
+    box-shadow: 0 0 8px rgba(166, 112, 112, 0.4), inset 0 1px 3px rgba(255, 255, 255, 0.15);
+}
+
+.rep-bar-value-v2 {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+    z-index: 1;
+}
+
+/* ================================================== */
+/* SEÇÃO - CONTROLE (INPUTS) */
+/* ================================================== */
+
+.rep-section-controle-v2 {
+    margin-bottom: 1.5rem;
+}
+
+.rep-inputs-grid-v2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.rep-input-group-v2 {
+    background: rgba(212, 175, 55, 0.03);
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    border-radius: 10px;
+    padding: 1.2rem;
+}
+
+.rep-input-label-v2 {
+    font-size: 1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #d4af37;
+    margin-bottom: 1rem;
+    display: block;
+    letter-spacing: 1px;
+}
+
+.rep-input-pair-v2 {
+    display: flex;
+    gap: 1rem;
+}
+
+.rep-input-field-v2 {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.rep-input-field-v2 label {
+    font-size: 0.85rem;
+    color: #b8860b;
+    margin-bottom: 0.4rem;
+    font-weight: 600;
+}
+
+.rep-input-v2 {
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(212, 175, 55, 0.4);
+    border-radius: 6px;
+    padding: 0.6rem 0.8rem;
+    color: #f4e4c1;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.rep-input-v2:focus {
+    outline: none;
+    border-color: #d4af37;
+    background: rgba(0, 0, 0, 0.8);
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+}
+
+.rep-input-v2::-webkit-outer-spin-button,
+.rep-input-v2::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.rep-input-v2[type=number] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+/* ================================================== */
+/* SEÇÃO - IMPACTO (EFEITOS) */
+/* ================================================== */
+
+.rep-section-impacto-v2 {
+    margin-bottom: 1.5rem;
+}
+
+.rep-efeitos-container-v2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.rep-efeitos-box-v2 {
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.05) 0%, rgba(212, 175, 55, 0.02) 100%);
+    border: 2px solid rgba(212, 175, 55, 0.3);
+    border-radius: 10px;
+    padding: 1.2rem;
+}
+
+.rep-efeitos-title-v2 {
+    font-size: 1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #d4af37;
+    margin: 0 0 0.8rem 0;
+    letter-spacing: 1px;
+}
+
+.rep-efeitos-list-v2 {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.rep-efeito-item-v2 {
+    font-size: 0.9rem;
+    color: #f4e4c1;
+    padding: 0.6rem 0.8rem;
+    background: rgba(212, 175, 55, 0.1);
+    border-left: 3px solid #d4af37;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.rep-efeito-item-v2:hover {
+    background: rgba(212, 175, 55, 0.2);
+    transform: translateX(4px);
+}
+
+.rep-efeito-vazio-v2 {
+    font-size: 0.85rem;
+    color: #888;
+    padding: 0.6rem 0.8rem;
+    font-style: italic;
+}
+
+/* ================================================== */
+/* FOOTER */
+/* ================================================== */
+
+.rep-footer-v2 {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.rep-btn-cancel-v2,
+.rep-btn-save-v2 {
+    padding: 0.8rem 2rem;
+    font-size: 1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.rep-btn-cancel-v2 {
+    background: rgba(139, 69, 19, 0.6);
+    color: #d4af37;
+    border: 1px solid #d4af37;
+}
+
+.rep-btn-cancel-v2:hover {
+    background: rgba(139, 69, 19, 0.9);
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+}
+
+.rep-btn-save-v2 {
+    background: linear-gradient(135deg, #d4af37 0%, #f4e4c1 100%);
+    color: #1a1a1a;
+}
+
+.rep-btn-save-v2:hover {
+    background: linear-gradient(135deg, #f4e4c1 0%, #d4af37 100%);
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.6);
+    transform: translateY(-2px);
+}
+
+.rep-btn-save-v2:active {
+    transform: translateY(0);
+}
+
+/* ================================================== */
+/* RESPONSIVO */
+/* ================================================== */
+
+@media (max-width: 768px) {
+    .rep-modal-v2 {
+        padding: 1.5rem;
+        max-height: 95vh;
+    }
+
+    .rep-titulo-v2 {
+        font-size: 1.6rem;
+    }
+
+    .rep-status-atual-v2,
+    .rep-inputs-grid-v2,
+    .rep-efeitos-container-v2 {
+        grid-template-columns: 1fr;
+    }
+
+    .rep-footer-v2 {
+        flex-direction: column-reverse;
+    }
+
+    .rep-btn-cancel-v2,
+    .rep-btn-save-v2 {
+        width: 100%;
+    }
+}
+
+/* ================================================== */
+/* SCROLLBAR CUSTOMIZADO */
+/* ================================================== */
+
+.rep-modal-v2::-webkit-scrollbar {
+    width: 8px;
+}
+
+.rep-modal-v2::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+}
+
+.rep-modal-v2::-webkit-scrollbar-thumb {
+    background: rgba(212, 175, 55, 0.6);
+    border-radius: 10px;
+}
+
+.rep-modal-v2::-webkit-scrollbar-thumb:hover {
+    background: rgba(212, 175, 55, 0.9);
+}
+
+/* ================================================== */
+/* ANIMAÇÕES EXTRAS */
+/* ================================================== */
+
+@keyframes rep-shimmer-v2 {
+    0%, 100% {
+        background-position: -1000px 0;
+    }
+    50% {
+        background-position: 1000px 0;
+    }
+}
+
+/* Pulso suave para barras */
+@keyframes rep-pulse-bar-v2 {
+    0%, 100% {
+        box-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(212, 175, 55, 0.8);
+    }
+}
+
+.rep-bar-fill-v2 {
+    animation: rep-pulse-bar-v2 2s ease-in-out infinite;
+}
+
+/* ================================================== */
+/* NÍVEIS GRANULARES DE FAMA */
+/* ================================================== */
+
+/* Nível 1: Desconhecido (0-5) */
+.rep-status-fama-0-v2 {
+    border: 2px solid #666;
+    background: rgba(60, 60, 60, 0.1);
+    box-shadow: 0 0 4px rgba(100, 100, 100, 0.15);
+}
+
+/* Nível 2: Notado (6-10) */
+.rep-status-fama-6-v2 {
+    border: 2px solid #888;
+    background: rgba(80, 80, 80, 0.1);
+    box-shadow: 0 0 6px rgba(136, 136, 136, 0.18);
+}
+
+/* Nível 3: Reconhecido (11-20) */
+.rep-status-fama-11-v2 {
+    border: 2px solid #b8860b;
+    background: rgba(184, 134, 11, 0.08);
+    box-shadow: 0 0 6px rgba(218, 165, 32, 0.18);
+}
+
+/* Nível 4: Respeitado (21-30) */
+.rep-status-fama-21-v2 {
+    border: 2px solid #daa520;
+    background: rgba(218, 165, 32, 0.09);
+    box-shadow: 0 0 8px rgba(218, 165, 32, 0.22);
+}
+
+/* Nível 5: Famoso (31-45) */
+.rep-status-fama-31-v2 {
+    border: 2px solid #ffd700;
+    background: rgba(255, 215, 0, 0.1);
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.28);
+}
+
+/* Nível 6: Influente (46-60) */
+.rep-status-fama-46-v2 {
+    border: 2px solid #ffd700;
+    background: rgba(255, 215, 0, 0.12);
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.32);
+    animation: rep-glow-intense-v2 2s ease-in-out infinite;
+}
+
+/* Nível 7: Lendário (61-75) */
+.rep-status-fama-61-v2 {
+    border: 2px solid #ffed4e;
+    background: rgba(255, 237, 78, 0.13);
+    box-shadow: 0 0 14px rgba(255, 237, 78, 0.36);
+    animation: rep-glow-intense-v2 1.5s ease-in-out infinite;
+}
+
+/* Nível 8: Mítico (76-90) */
+.rep-status-fama-76-v2 {
+    border: 2px solid #ffff99;
+    background: rgba(255, 255, 153, 0.15);
+    box-shadow: 0 0 16px rgba(255, 255, 153, 0.4);
+    animation: rep-glow-intense-v2 1s ease-in-out infinite;
+}
+
+/* Nível 9: Ícone Divino (91-100) */
+.rep-status-fama-91-v2 {
+    border: 3px solid #ffff00;
+    background: rgba(255, 255, 0, 0.15);
+    box-shadow: 0 0 20px rgba(255, 255, 0, 0.4), 0 0 28px rgba(255, 215, 0, 0.25);
+    animation: rep-glow-divino-v2 1s ease-in-out infinite;
+}
+
+/* ================================================== */
+/* NÍVEIS GRANULARES DE TEMOR */
+/* ================================================== */
+
+/* Nível 1: Desconhecido (0-5) */
+.rep-status-temor-0-v2 {
+    border: 2px solid #666;
+    background: rgba(60, 60, 60, 0.1);
+    box-shadow: 0 0 4px rgba(100, 100, 100, 0.15);
+}
+
+/* Nível 2: Suspeito (6-10) */
+.rep-status-temor-6-v2 {
+    border: 2px solid #8b4513;
+    background: rgba(139, 69, 19, 0.08);
+    box-shadow: 0 0 6px rgba(139, 69, 19, 0.18);
+}
+
+/* Nível 3: Perigoso (11-20) */
+.rep-status-temor-11-v2 {
+    border: 2px solid #cd5c5c;
+    background: rgba(205, 92, 92, 0.09);
+    box-shadow: 0 0 6px rgba(205, 92, 92, 0.18);
+}
+
+/* Nível 4: Temido (21-30) */
+.rep-status-temor-21-v2 {
+    border: 2px solid #ff4500;
+    background: rgba(255, 69, 0, 0.09);
+    box-shadow: 0 0 8px rgba(255, 69, 0, 0.22);
+}
+
+/* Nível 5: Ameaça (31-45) */
+.rep-status-temor-31-v2 {
+    border: 2px solid #dc143c;
+    background: rgba(220, 20, 60, 0.1);
+    box-shadow: 0 0 10px rgba(220, 20, 60, 0.28);
+}
+
+/* Nível 6: Terror (46-60) */
+.rep-status-temor-46-v2 {
+    border: 2px solid #8b0000;
+    background: rgba(139, 0, 0, 0.11);
+    box-shadow: 0 0 12px rgba(139, 0, 0, 0.32);
+    animation: rep-glow-terror-v2 2s ease-in-out infinite;
+}
+
+/* Nível 7: Flagelo (61-75) */
+.rep-status-temor-61-v2 {
+    border: 2px solid #660000;
+    background: rgba(102, 0, 0, 0.12);
+    box-shadow: 0 0 14px rgba(139, 0, 0, 0.36);
+    animation: rep-glow-terror-v2 1.5s ease-in-out infinite;
+}
+
+/* Nível 8: Cataclismo (76-90) */
+.rep-status-temor-76-v2 {
+    border: 2px solid #330000;
+    background: rgba(51, 0, 0, 0.14);
+    box-shadow: 0 0 16px rgba(100, 0, 0, 0.4);
+    animation: rep-glow-terror-v2 1s ease-in-out infinite;
+}
+
+/* Nível 9: Entidade do Caos (91-100) */
+.rep-status-temor-91-v2 {
+    border: 3px solid #ff0000;
+    background: rgba(255, 0, 0, 0.15);
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.4), 0 0 28px rgba(139, 0, 0, 0.25);
+    animation: rep-glow-caos-v2 0.8s ease-in-out infinite;
+}
+
+/* ================================================== */
+/* ANIMAÇÕES PARA NÍVEIS ALTOS */
+/* ================================================== */
+
+@keyframes rep-glow-intense-v2 {
+    0%, 100% {
+        box-shadow: 0 0 12px rgba(255, 215, 0, 0.28);
+        text-shadow: 0 0 6px rgba(255, 215, 0, 0.22);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+        text-shadow: 0 0 12px rgba(255, 215, 0, 0.35);
+    }
+}
+
+@keyframes rep-glow-divino-v2 {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(255, 255, 0, 0.4), 0 0 28px rgba(255, 215, 0, 0.25);
+        text-shadow: 0 0 8px rgba(255, 255, 0, 0.35);
+    }
+    50% {
+        box-shadow: 0 0 28px rgba(255, 255, 0, 0.5), 0 0 40px rgba(255, 215, 0, 0.35);
+        text-shadow: 0 0 14px rgba(255, 255, 0, 0.5);
+    }
+}
+
+@keyframes rep-glow-terror-v2 {
+    0%, 100% {
+        box-shadow: 0 0 12px rgba(139, 0, 0, 0.28);
+        text-shadow: 0 0 6px rgba(255, 0, 0, 0.22);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(139, 0, 0, 0.4);
+        text-shadow: 0 0 12px rgba(255, 0, 0, 0.35);
+    }
+}
+
+@keyframes rep-glow-caos-v2 {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(255, 0, 0, 0.4), 0 0 28px rgba(139, 0, 0, 0.25);
+        text-shadow: 0 0 8px rgba(255, 0, 0, 0.35);
+    }
+    50% {
+        box-shadow: 0 0 28px rgba(255, 0, 0, 0.5), 0 0 40px rgba(139, 0, 0, 0.35);
+        text-shadow: 0 0 14px rgba(255, 0, 0, 0.5);
+    }
+}

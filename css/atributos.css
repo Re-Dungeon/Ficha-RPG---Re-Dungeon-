@@ -1,0 +1,654 @@
+/* ================================================= */
+/* ATRIBUTOS.CSS - Aba de Atributos com Background Map */
+/* Layout 3 colunas: Primários | Personagem | Secundários */
+/* ================================================= */
+
+/* ========================================== */
+/* CONTAINER PRINCIPAL */
+/* ========================================== */
+
+.atributos-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5rem;
+    padding: 2.5rem;
+    min-height: 700px;
+    width: 100%;
+    margin-top: -1rem;
+    flex-wrap: nowrap;
+}
+
+/* ========================================== */
+/* CÍRCULO DE ATRIBUTOS - Container com Background */
+/* ========================================== */
+
+.atributos-circulo {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+    aspect-ratio: 1;
+    background-image: url("https://i.imgur.com/gTtQjXy.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    flex: 1 1 auto;
+    min-width: 280px;
+}
+
+/* ========================================== */
+/* ITEM DE ATRIBUTO - Positioned Absolute */
+/* ========================================== */
+
+.atributo {
+    position: absolute;
+    width: 10%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background-image: url('https://i.imgur.com/xCgEvHK.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    color: #ffffff;
+    font-weight: bold;
+    text-align: center;
+    line-height: 1.2;
+    box-shadow: none;
+    font-size: clamp(0.6rem, 2vw, 1.2rem);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.atributo:hover {
+    transform: none;
+    box-shadow: none;
+    background-image: url('https://i.imgur.com/xCgEvHK.png');
+    background-size: cover;
+    background-position: center;
+    filter: brightness(1.2);
+    color: #00ffff;
+    text-shadow: 0 0 8px rgba(0, 212, 255, 0.8);
+}
+
+.atributo:active {
+    transform: scale(0.98) translateY(1px);
+}
+
+.atributo span {
+    display: block;
+    font-size: clamp(0.3rem, 1vw, 0.5rem);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-top: -3px;
+}
+
+/* ========================================== */
+/* POSIÇÕES DOS ATRIBUTOS PRIMÁRIOS */
+/* ========================================== */
+
+.atributos-circulo.primarios .forca {
+    top: 19.35%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.atributos-circulo.primarios .vitalidade {
+    top: 34.9%;
+    right: 24%;
+    transform: translate(50%, -50%);
+}
+
+.atributos-circulo.primarios .agilidade {
+    top: 66.5%;
+    right: 24%;
+    transform: translate(50%, -50%);
+}
+
+.atributos-circulo.primarios .inteligencia {
+    top: 82%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.atributos-circulo.primarios .percepcao {
+    top: 66.5%;
+    left: 24%;
+    transform: translate(-50%, -50%);
+}
+
+.atributos-circulo.primarios .sorte {
+    top: 34.9%;
+    left: 24%;
+    transform: translate(-50%, -50%);
+}
+
+/* ========================================== */
+/* POSIÇÕES DOS ATRIBUTOS SECUNDÁRIOS */
+/* ========================================== */
+
+.atributos-circulo.secundarios .prontidao {
+    top: 19.35%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.atributos-circulo.secundarios .ataque {
+    top: 34.9%;
+    right: 24%;
+    transform: translate(50%, -50%);
+}
+
+.atributos-circulo.secundarios .defesa {
+    top: 66.5%;
+    right: 24%;
+    transform: translate(50%, -50%);
+}
+
+.atributos-circulo.secundarios .reacao {
+    top: 82%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.atributos-circulo.secundarios .precisao {
+    top: 66.5%;
+    left: 24%;
+    transform: translate(-50%, -50%);
+}
+
+.atributos-circulo.secundarios .evasao {
+    top: 34.9%;
+    left: 24%;
+    transform: translate(-50%, -50%);
+}
+
+/* ========================================== */
+/* COLUNA CENTRAL - PERSONAGEM */
+/* ========================================== */
+
+.personagem-coluna {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.7rem;
+    flex: 0 0 auto;
+    min-width: 350px;
+}
+
+.personagem-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+/* Frame da imagem do personagem */
+.personagem-frame {
+    position: relative;
+    width: auto;
+    height: auto;
+    border: none;
+    overflow: visible;
+    box-shadow: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Borda decorativa por cima */
+.personagem-frame::after {
+    content: '';
+    position: absolute;
+    top: -20px;
+    left: -20px;
+    right: -20px;
+    bottom: -20px;
+    background-image: url('https://i.imgur.com/vqlMwXh.png');
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: 2;
+    pointer-events: none;
+}
+
+/* Garante que a imagem do personagem fica por trás da borda */
+.personagem-imagem {
+    position: relative;
+    z-index: 1;
+    width: 280px;
+    height: 400px;
+    object-fit: contain;
+    object-position: center;
+}
+
+/* Informações do personagem */
+.personagem-info {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    background: linear-gradient(135deg, rgba(26, 20, 16, 0.95) 0%, rgba(40, 30, 20, 1) 100%) !important;
+    border: 2px solid #d4af37 !important;
+    border-radius: 16px;
+    padding: 1.5rem 1.2rem;
+    box-shadow: 
+        0 0 30px rgba(212, 175, 55, 0.3),
+        0 0 60px rgba(212, 175, 55, 0.1),
+        inset 0 0 20px rgba(212, 175, 55, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+    position: relative;
+    overflow: visible !important;
+    min-width: 320px !important;
+    width: fit-content !important;
+    max-width: 520px !important;
+    height: auto !important;
+    min-height: 100px !important;
+    backdrop-filter: blur(8px);
+}
+
+/* Decoração superior premium */
+.personagem-info::before {
+    content: '✦' !important;
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 28px;
+    color: #ffd700;
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+    z-index: 10;
+    animation: flutuarDecoracao 3s ease-in-out infinite;
+}
+
+/* Decoração lateral esquerda */
+.personagem-info::after {
+    content: '◆' !important;
+    position: absolute;
+    left: -15px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 20px;
+    color: #d4af37;
+    opacity: 0.6;
+    z-index: 1;
+}
+
+@keyframes flutuarDecoracao {
+    0%, 100% {
+        transform: translateX(-50%) translateY(0px);
+    }
+    50% {
+        transform: translateX(-50%) translateY(-5px);
+    }
+}
+
+.personagem-nome {
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: #ffd700;
+    margin: 0.4rem 0 0.2rem 0;
+    text-shadow: 
+        0 0 15px rgba(255, 215, 0, 0.5),
+        0 2px 8px rgba(0, 0, 0, 0.9),
+        2px 2px 4px rgba(212, 175, 55, 0.3) !important;
+    letter-spacing: 1px;
+    position: relative;
+    z-index: 2;
+    font-family: 'Georgia', serif;
+    text-transform: uppercase;
+}
+
+.personagem-titulo {
+    font-size: 0.95rem;
+    color: #e6c200;
+    margin: 0.1rem 0 0.3rem 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    opacity: 1;
+    position: relative;
+    z-index: 2;
+    font-style: italic;
+    font-family: 'Georgia', serif;
+}
+
+.personagem-classe {
+    font-size: 0.75rem;
+    color: #00ffff;
+    margin: 0.3rem 0 0;
+    text-shadow: 
+        0 1px 3px rgba(0, 0, 0, 0.7),
+        0 0 8px rgba(0, 212, 255, 0.4) !important;
+    transition: all 0.3s ease;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    opacity: 1;
+    position: relative;
+    z-index: 2;
+    background: linear-gradient(90deg, rgba(0, 212, 255, 0.15) 0%, rgba(0, 212, 255, 0.08) 100%);
+    padding: 0.3rem 0.8rem;
+    border-radius: 6px;
+    border-left: 3px solid #00ffff;
+    border-right: 1px solid rgba(0, 212, 255, 0.3);
+    box-shadow: 0 0 12px rgba(0, 212, 255, 0.1);
+}
+
+.personagem-classe.atualizado {
+    animation: pulsarClasse 0.5s ease-in-out;
+    color: #00ff88;
+    text-shadow: 0 0 8px rgba(0, 255, 136, 0.6);
+}
+
+@keyframes pulsarClasse {
+    0% {
+        transform: scale(1);
+        color: #00d4ff;
+    }
+    50% {
+        transform: scale(1.05);
+        color: #00ff88;
+    }
+    100% {
+        transform: scale(1);
+        color: #00d4ff;
+    }
+}
+
+.personagem-classe, .personagem-raca {
+    font-size: 0.75rem;
+    color: #00d4ff;
+    margin: 0.1rem 0 0;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    transition: all 0.3s ease;
+    font-weight: 700;
+    position: relative;
+    z-index: 2;
+    letter-spacing: 0.5px;
+    position: relative;
+    z-index: 2;
+}
+
+.personagem-classe.atualizado, .personagem-raca.atualizado {
+    animation: pulsarRaca 0.5s ease-in-out;
+    color: #00ff88;
+    text-shadow: 0 0 8px rgba(0, 255, 136, 0.6);
+}
+
+@keyframes pulsarRaca {
+    0% {
+        transform: scale(1);
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    }
+    50% {
+        transform: scale(1.05);
+        text-shadow: 0 0 12px rgba(255, 215, 0, 0.8);
+    }
+    100% {
+        transform: scale(1);
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    }
+}
+
+.personagem-nivel {
+    font-size: 0.95rem;
+    color: #d4af37;
+    margin: 0.25rem 0 0;
+    font-weight: 700;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+    letter-spacing: 0.3px;
+    position: relative;
+    z-index: 2;
+}
+
+/* ========================================== */
+/* BOTÃO CENTRAL DOS ATRIBUTOS */
+/* ========================================== */
+
+.atributos-centro-botao {
+    position: relative;
+    top: 50%;
+    left: 50%;
+    width: 16.7%;
+    aspect-ratio: 1;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    z-index: 5;
+    margin: 0;
+    transform: translate(-50%, -50%);
+}
+
+.atributos-centro-botao img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    border-radius: 50%;
+}
+
+.atributos-centro-botao:hover {
+    transform: scale(1.08) translateY(-3px);
+    filter: brightness(1.1) drop-shadow(0 0 5px rgba(255, 200, 100, 0.6));
+}
+
+.atributos-centro-botao:active {
+    transform: scale(0.98) translateY(1px);
+}
+
+.atributos-centro-botao:disabled,
+.atributos-centro-botao[disabled] {
+    cursor: not-allowed;
+    opacity: 1;
+    pointer-events: none;
+}
+
+.atributos-centro-botao:disabled:hover,
+.atributos-centro-botao[disabled]:hover {
+    transform: none;
+    filter: none;
+}
+
+/* ========================================== */
+/* DOIS MODOS: TELA FULL vs TELA METADE */
+/* ========================================== */
+
+/* MODO FULL - Sidebar Fechada (Tela Inteira) */
+#rpg-content-atributos.modo-full .atributos-circulo {
+    width: 420px;
+    height: 420px;
+}
+
+#rpg-content-atributos.modo-full .atributo {
+    width: 64px;
+    height: 64px;
+    padding-top: 12px;
+    font-size: 0.85rem;
+}
+
+/* Posições dos Atributos PRIMÁRIOS em Modo FULL */
+#rpg-content-atributos.modo-full .atributos-circulo.primarios .forca {
+    top: 13px;
+    left: 100%;
+    transform: translateX(-50%);
+}
+
+#rpg-content-atributos.modo-full .atributos-circulo.primarios .vitalidade {
+    top: 90px;
+    right: 25px;
+}
+
+#rpg-content-atributos.modo-full .atributos-circulo.primarios .agilidade {
+    bottom: 90px;
+    right: 24.5px;
+}
+
+#rpg-content-atributos.modo-full .atributos-circulo.primarios .inteligencia {
+    bottom: 13px;
+    left: 49.85%;
+    transform: translateX(-50%);
+}
+
+#rpg-content-atributos.modo-full .atributos-circulo.primarios .percepcao {
+    bottom: 90px;
+    left: 24.5px;
+}
+
+#rpg-content-atributos.modo-full .atributos-circulo.primarios .sorte {
+    top: 81.5px;
+    left: 25px;
+}
+
+/* Posições dos Atributos SECUNDÁRIOS em Modo FULL */
+#rpg-content-atributos.modo-full .atributos-circulo.secundarios .prontidao {
+    top: 11px;
+    left: 49.8%;
+    transform: translateX(-50%);
+}
+
+#rpg-content-atributos.modo-full .atributos-circulo.secundarios .ataque {
+    top: 81.5px;
+    right: 25px;
+}
+
+#rpg-content-atributos.modo-full .atributos-circulo.secundarios .defesa {
+    bottom: 90px;
+    right: 24.5px;
+}
+
+#rpg-content-atributos.modo-full .atributos-circulo.secundarios .reacao {
+    bottom: 13px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+#rpg-content-atributos.modo-full .atributos-circulo.secundarios .precisao {
+    bottom: 90px;
+    left: 24.5px;
+}
+
+#rpg-content-atributos.modo-full .atributos-circulo.secundarios .evasao {
+    top: 81.5px;
+    left: 25px;
+}
+
+/* MODO METADE - Sidebar Aberta (Tela Dividida) */
+#rpg-content-atributos.modo-metade .atributos-circulo {
+    width: 340px;
+    height: 340px;
+}
+
+#rpg-content-atributos.modo-metade .atributo {
+    width: 52px;
+    height: 52px;
+    padding-top: 10px;
+    font-size: 0.78rem;
+}
+
+/* ========================================== */
+/* RESPONSIVIDADE */
+/* ========================================== */
+
+/* ========================================== */
+/* RESPONSIVIDADE - Mantém proporções com aspect-ratio */
+/* ========================================== */
+
+@media (max-width: 1400px) {
+    .atributos-container {
+        gap: 2rem;
+    }
+}
+
+@media (max-width: 1024px) {
+    .atributos-container {
+        flex-wrap: wrap;
+        gap: 2rem;
+    }
+    
+    .personagem-coluna {
+        order: -1;
+    }
+}
+
+@media (max-width: 768px) {
+    .atributos-container {
+        flex-direction: column;
+        gap: 2rem;
+        padding: 1rem;
+    }
+    
+    .personagem-frame {
+        width: 180px;
+        height: 240px;
+    }
+    
+    .personagem-classe {
+        font-size: 0.95rem;
+    }
+    
+    .personagem-raca {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .atributos-container {
+        gap: 1.5rem;
+        padding: 0.75rem;
+    }
+    
+    .personagem-frame {
+        width: 160px;
+        height: 220px;
+    }
+    
+    .personagem-nome {
+        font-size: 1.1rem;
+    }
+    
+    .personagem-titulo {
+        font-size: 0.85rem;
+    }
+    
+    .personagem-classe, .personagem-raca {
+        font-size: 0.8rem;
+    }
+}
+
+/* ================================================= */
+/* ANIMAÇÃO DO TOTAL DE ATRIBUTOS */
+/* ================================================= */
+
+@keyframes atributos-total-fade {
+    0% {
+        opacity: 0.6;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+
+
+
+
+

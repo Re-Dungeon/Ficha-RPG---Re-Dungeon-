@@ -1,0 +1,142 @@
+/* ============================================ */
+/* MAIN-CONTENT.CSS - Estilo da Área de        */
+/* Conteúdo Principal                          */
+/* ============================================ */
+
+.main-content {
+    padding: 0 var(--spacing-xl) var(--spacing-xl);
+    background-color: var(--color-bg-secondary);
+}
+
+/* Sections de Conteúdo */
+.content-section {
+    display: none;
+    animation: fadeIn var(--transition-standard) ease-in-out;
+}
+
+/* Section Ativa */
+.content-section--active {
+    display: block;
+}
+
+/* Animação de Fade In */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Título da Section */
+.content-section__title {
+    font-family: var(--font-family-heading);
+    font-size: 28px;
+    color: var(--color-gold);
+    margin-bottom: var(--spacing-lg);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: relative;
+    padding-bottom: var(--spacing-md);
+    border-bottom: 2px solid var(--color-border);
+}
+
+.content-section__title::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 60px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--color-accent), transparent);
+}
+
+/* Placeholder de Conteúdo */
+.content-section__placeholder {
+    color: var(--color-text-secondary);
+    font-style: italic;
+    padding: var(--spacing-lg);
+    border: 1px dashed var(--color-border);
+    border-radius: var(--border-radius);
+    background-color: rgba(212, 175, 85, 0.05);
+    text-align: center;
+}
+
+/* Cards de Conteúdo (Para Uso Futuro) */
+.content-card {
+    background-color: var(--color-dark-brown);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+    box-shadow: var(--box-shadow-subtle);
+    transition: all var(--transition-standard);
+}
+
+.content-card:hover {
+    border-color: var(--color-gold-dark);
+    box-shadow: var(--box-shadow-medium);
+}
+
+.content-card__title {
+    color: var(--color-gold);
+    margin-bottom: var(--spacing-md);
+    font-size: 16px;
+}
+
+.content-card__description {
+    color: var(--color-text-secondary);
+    font-size: 14px;
+}
+
+/* Grid para Múltiplos Cards */
+.content-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--spacing-lg);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .main-content {
+        padding: var(--spacing-lg);
+    }
+
+    .content-section__title {
+        font-size: 22px;
+    }
+
+    .content-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: var(--spacing-md);
+    }
+}
+
+@media (max-width: 480px) {
+    .main-content {
+        padding: var(--spacing-md);
+    }
+
+    .content-section__title {
+        font-size: 18px;
+        margin-bottom: var(--spacing-md);
+    }
+
+    .content-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .content-card {
+        padding: var(--spacing-md);
+        margin-bottom: var(--spacing-md);
+    }
+}
+
+
+
+
+
+

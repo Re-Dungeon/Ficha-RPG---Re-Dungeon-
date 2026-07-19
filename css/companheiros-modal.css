@@ -1,0 +1,459 @@
+/* ============================================================= */
+/* COMPANHEIROS-MODAL.CSS - Estilos do Modal de Companheiros    */
+/* ============================================================= */
+
+/* Modal Overlay */
+#modalNovoCompanheiro.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+}
+
+#modalNovoCompanheiro.modal-overlay {
+    display: none;
+}
+
+/* Backdrop */
+.modal-overlay__backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    cursor: pointer;
+}
+
+/* Content */
+.modal-companheiro-form {
+    position: relative;
+    z-index: 10001;
+    background: linear-gradient(135deg, rgba(30, 25, 15, 0.95), rgba(50, 40, 25, 0.9));
+    border: 2px solid rgba(184, 134, 11, 0.4);
+    border-radius: 12px;
+    max-width: 700px;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Header */
+.modal-companheiro-form .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-lg);
+    border-bottom: 1px solid rgba(184, 134, 11, 0.3);
+    background: rgba(139, 111, 71, 0.2);
+}
+
+.modal-companheiro-form .modal-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #ffd700;
+    margin: 0;
+}
+
+.modal-voltar-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    color: #a0845c;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    margin-right: auto;
+}
+
+.modal-voltar-btn:hover {
+    color: #ffd700;
+}
+
+.modal-close-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    color: #a0845c;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.modal-close-btn:hover {
+    color: #ff6b6b;
+}
+
+/* Body */
+.modal-companheiro-form .modal-body {
+    padding: 1.5rem;
+    max-height: 75vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* Scrollbar estilizada */
+.modal-companheiro-form .modal-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-companheiro-form .modal-body::-webkit-scrollbar-track {
+    background: rgba(50, 50, 70, 0.3);
+    border-radius: 4px;
+}
+
+.modal-companheiro-form .modal-body::-webkit-scrollbar-thumb {
+    background: #6496ff;
+    border-radius: 4px;
+}
+
+.modal-companheiro-form .modal-body::-webkit-scrollbar-thumb:hover {
+    background: #64b8ff;
+}
+
+/* Sistema de Abas */
+.modal-abas-interno {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.modal-abas-botoes {
+    display: flex;
+    gap: var(--spacing-sm);
+    border-bottom: 2px solid rgba(184, 134, 11, 0.2);
+    padding-bottom: var(--spacing-md);
+    flex-wrap: wrap;
+}
+
+.modal-aba-btn {
+    padding: 0.75rem 1.5rem;
+    background: rgba(139, 111, 71, 0.1);
+    border: 1px solid rgba(184, 134, 11, 0.3);
+    color: #a0845c;
+    border-radius: 6px 6px 0 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.modal-aba-btn:hover {
+    background: rgba(184, 134, 11, 0.15);
+    color: #ffd700;
+}
+
+.modal-aba-btn--ativo {
+    background: rgba(184, 134, 11, 0.3);
+    color: #ffd700;
+    border-color: rgba(184, 134, 11, 0.6);
+}
+
+.modal-aba-conteudo {
+    animation: fadeIn 0.2s ease;
+    display: none;
+}
+
+/* A primeira aba (características) é visível por padrão */
+.modal-aba-conteudo[data-aba="caracteristicas"] {
+    display: block;
+}
+
+/* Formulário */
+.form-group {
+    margin-bottom: var(--spacing-lg);
+}
+
+.form-label {
+    display: block;
+    margin-bottom: var(--spacing-sm);
+    color: #ffd700;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+    width: 100%;
+    padding: 0.75rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(184, 134, 11, 0.3);
+    color: #e0e0e0;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+    outline: none;
+    background: rgba(0, 0, 0, 0.5);
+    border-color: rgba(184, 134, 11, 0.6);
+    box-shadow: 0 0 8px rgba(184, 134, 11, 0.3);
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* Row de Formulário */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-md);
+}
+
+@media (max-width: 600px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Imagem Group */
+.form-imagem-grupo {
+    display: flex;
+    gap: var(--spacing-md);
+}
+
+.form-imagem-preview {
+    width: 150px;
+    height: 150px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 2px dashed rgba(184, 134, 11, 0.3);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.form-imagem-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.form-imagem-placeholder {
+    font-size: 3rem;
+    opacity: 0.5;
+}
+
+.form-imagem-inputs {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.form-imagem-tab {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-imagem-tab input[type="radio"] {
+    cursor: pointer;
+}
+
+.form-imagem-tab label {
+    cursor: pointer;
+    color: #a0845c;
+}
+
+.form-imagem-input {
+    margin-top: auto;
+}
+
+/* Atributos Grid */
+.atributos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: var(--spacing-md);
+}
+
+.atributo-input-grupo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.atributo-input-grupo label {
+    color: #a0845c;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Barras de Status */
+.barra-status-grupo {
+    background: rgba(0, 0, 0, 0.2);
+    padding: var(--spacing-md);
+    border-radius: 6px;
+    margin-bottom: var(--spacing-md);
+}
+
+.barra-status-grupo label {
+    display: block;
+    margin-bottom: var(--spacing-sm);
+    color: #ffd700;
+    font-weight: 600;
+}
+
+.barra-inputs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-sm);
+}
+
+.barra-inputs > div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.barra-inputs label {
+    color: #a0845c;
+    font-size: 0.85rem;
+}
+
+/* Divisor */
+.form-divider {
+    height: 1px;
+    background: rgba(184, 134, 11, 0.2);
+    margin: var(--spacing-lg) 0;
+}
+
+/* Listas (Aptidões e Habilidades) */
+.aptidoes-lista-modal,
+.habilidades-lista-modal {
+    min-height: 150px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(184, 134, 11, 0.2);
+    border-radius: 6px;
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+}
+
+.empty-message {
+    color: #8a6f47;
+    text-align: center;
+    padding: 2rem 1rem;
+    font-size: 0.95rem;
+}
+
+/* Botões */
+.btn-acao {
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, rgba(72, 180, 100, 0.8), rgba(56, 150, 80, 0.8));
+    color: white;
+    border: 1px solid rgba(72, 180, 100, 0.6);
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.btn-acao:hover {
+    background: linear-gradient(135deg, rgba(85, 200, 115, 0.9), rgba(70, 170, 95, 0.9));
+    transform: translateY(-2px);
+}
+
+.btn-principal {
+    width: 100%;
+}
+
+/* Footer */
+.modal-companheiro-form .modal-footer {
+    display: flex;
+    gap: var(--spacing-md);
+    justify-content: flex-end;
+    padding: var(--spacing-lg);
+    border-top: 1px solid rgba(184, 134, 11, 0.3);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.modal-btn {
+    padding: 0.75rem 1.5rem;
+    border: 1px solid rgba(184, 134, 11, 0.4);
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.modal-btn--primary {
+    background: linear-gradient(135deg, #ff8c00, #ff6b35);
+    color: white;
+    border-color: #ff8c00;
+}
+
+.modal-btn--primary:hover {
+    background: linear-gradient(135deg, #ff9900, #ff7a45);
+    transform: translateY(-2px);
+}
+
+.modal-btn--secondary {
+    background: rgba(139, 111, 71, 0.2);
+    color: #a0845c;
+    border-color: rgba(184, 134, 11, 0.4);
+}
+
+.modal-btn--secondary:hover {
+    background: rgba(139, 111, 71, 0.35);
+    color: #ffd700;
+}
+
+/* Responsividade */
+@media (max-width: 600px) {
+    .modal-companheiro-form {
+        max-width: 95%;
+        max-height: 90vh;
+    }
+
+    .form-imagem-grupo {
+        flex-direction: column;
+    }
+
+    .form-imagem-preview {
+        width: 100%;
+        height: 200px;
+    }
+
+    .atributos-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .modal-footer {
+        flex-direction: column;
+    }
+
+    .modal-btn {
+        width: 100%;
+    }
+}
+
+
+
+
+

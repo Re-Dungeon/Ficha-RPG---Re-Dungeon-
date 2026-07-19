@@ -1,0 +1,1840 @@
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   CULTIVAÇÃO - SISTEMA MODULAR PROFISSIONAL
+   
+   Sistema avançado de Cultivação Espiritual para três mundos diferentes.
+   Estrutura modular, escalável e dark fantasy.
+   
+   Organização:
+   1. Variáveis e Tokens de Design
+   2. Overlay e Container Global
+   3. Header Principal
+   4. Sistema de Abas
+   5. Seção Universal
+   6. Seções Específicas por Mundo
+   7. Animações e Efeitos Especiais
+   8. Responsivo
+   
+   Data: 27 de fevereiro de 2026
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   1. VARIÁVEIS E TOKENS DE DESIGN
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+:root {
+    /* 🎨 Paleta de Cores - Dark Fantasy */
+    --cult-bg-primary: #0f1419;
+    --cult-bg-secondary: #1a1f2e;
+    --cult-bg-tertiary: #242d3d;
+    --cult-border: #3a4556;
+    --cult-border-light: #4a5568;
+    
+    /* 🌟 Cores Específicas por Mundo */
+    --cult-elder-gods: #c084fc;     /* Purple */
+    --cult-boreal-line: #38bdf8;    /* Cyan/Blue */
+    --cult-murim: #84cc16;          /* Lime/Green */
+    
+    /* 💫 Efeitos de Energia */
+    --cult-energy-glow: #1e3a8a;
+    --cult-energy-highlight: #a78bfa;
+    
+    /* 📊 Barras e Progresso */
+    --cult-bar-bg: rgba(255, 255, 255, 0.05);
+    --cult-bar-border: rgba(255, 255, 255, 0.1);
+    
+    /* 📐 Espaçamentos */
+    --cult-spacing-xs: 0.25rem;
+    --cult-spacing-sm: 0.5rem;
+    --cult-spacing-md: 1rem;
+    --cult-spacing-lg: 1.5rem;
+    --cult-spacing-xl: 2rem;
+    
+    /* 🎭 Tipografia */
+    --cult-font-size-xs: 0.75rem;
+    --cult-font-size-sm: 0.875rem;
+    --cult-font-size-base: 1rem;
+    --cult-font-size-lg: 1.125rem;
+    --cult-font-size-xl: 1.25rem;
+    --cult-font-size-2xl: 1.5rem;
+    --cult-font-size-3xl: 1.875rem;
+    
+    /* ⏱️ Transições */
+    --cult-transition-fast: 0.15s ease-out;
+    --cult-transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --cult-transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   2. OVERLAY E CONTAINER GLOBAL
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.cultivacao-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--cult-transition-normal), visibility var(--cult-transition-normal);
+}
+
+.cultivacao-overlay.ativo {
+    opacity: 1;
+    visibility: visible;
+}
+
+.cultivacao-container {
+    position: relative;
+    width: 90%;
+    max-width: 1200px;
+    height: 85vh;
+    max-height: 800px;
+    background: linear-gradient(135deg, var(--cult-bg-primary) 0%, var(--cult-bg-secondary) 50%, var(--cult-bg-primary) 100%);
+    border: 1px solid var(--cult-border);
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: cultivacao-slide-in var(--cult-transition-slow);
+}
+
+@keyframes cultivacao-slide-in {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.cultivacao-container.risco-alto {
+    animation: cultivacao-pulse-danger 2s infinite;
+    border-color: #ef4444;
+}
+
+@keyframes cultivacao-pulse-danger {
+    0%, 100% { box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 0 20px rgba(239, 68, 68, 0.2); }
+    50% { box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 0 40px rgba(239, 68, 68, 0.4); }
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   3. HEADER PRINCIPAL
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.cultivacao-header {
+    padding: var(--cult-spacing-xl);
+    border-bottom: 1px solid var(--cult-border);
+    background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, rgba(0, 0, 0, 0) 100%);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--cult-spacing-lg);
+    flex-wrap: wrap;
+}
+
+.cultivacao-titulo {
+    display: flex;
+    align-items: center;
+    gap: var(--cult-spacing-md);
+    flex: 1;
+    min-width: 200px;
+}
+
+.cultivacao-titulo-icone {
+    font-size: var(--cult-font-size-3xl);
+    filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.6));
+}
+
+.cultivacao-titulo h2 {
+    font-size: var(--cult-font-size-xl);
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+    letter-spacing: 0.5px;
+    background: linear-gradient(90deg, #a78bfa 0%, #c084fc 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.cultivacao-header-info {
+    display: flex;
+    gap: var(--cult-spacing-xl);
+    align-items: center;
+}
+
+.cultivacao-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cult-spacing-xs);
+}
+
+.cultivacao-info-label {
+    font-size: var(--cult-font-size-xs);
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+.cultivacao-info-valor {
+    font-size: var(--cult-font-size-lg);
+    color: #e2e8f0;
+    font-weight: 600;
+}
+
+.cultivacao-mundo-badge {
+    padding: var(--cult-spacing-sm) var(--cult-spacing-md);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--cult-border-light);
+    border-radius: 6px;
+    color: var(--cult-elder-gods);
+    font-size: var(--cult-font-size-sm);
+    font-weight: 600;
+}
+
+.cultivacao-fechar-btn {
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--cult-border-light);
+    border-radius: 6px;
+    color: #cbd5e1;
+    font-size: var(--cult-font-size-lg);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--cult-transition-fast);
+    flex-shrink: 0;
+}
+
+.cultivacao-fechar-btn:hover {
+    background: rgba(255, 59, 48, 0.2);
+    border-color: #ff3b30;
+    color: #ff3b30;
+}
+
+.cultivacao-header-buttons {
+    display: flex;
+    gap: var(--cult-spacing-sm);
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.cultivacao-voltar-btn {
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--cult-border-light);
+    border-radius: 6px;
+    color: #cbd5e1;
+    font-size: var(--cult-font-size-lg);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--cult-transition-fast);
+    flex-shrink: 0;
+}
+
+.cultivacao-voltar-btn:hover {
+    background: rgba(100, 150, 255, 0.2);
+    border-color: #6496ff;
+    color: #6496ff;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   4. SISTEMA DE ABAS
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.cultivacao-abas-container {
+    display: flex;
+    gap: var(--cult-spacing-xs);
+    padding: var(--cult-spacing-md) var(--cult-spacing-xl);
+    border-bottom: 1px solid var(--cult-border);
+    background: rgba(0, 0, 0, 0.2);
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.cultivacao-aba {
+    padding: var(--cult-spacing-md) var(--cult-spacing-lg);
+    background: transparent;
+    border: 1px solid transparent;
+    border-bottom: 2px solid transparent;
+    color: #94a3b8;
+    font-size: var(--cult-font-size-sm);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--cult-transition-normal);
+    display: flex;
+    align-items: center;
+    gap: var(--cult-spacing-sm);
+    white-space: nowrap;
+    position: relative;
+}
+
+.cultivacao-aba:hover {
+    color: #cbd5e1;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.cultivacao-aba.ativo {
+    color: var(--cult-elder-gods);
+    border-bottom-color: var(--cult-elder-gods);
+}
+
+.cultivacao-aba[data-mundo="boreal-line"].ativo {
+    color: var(--cult-boreal-line);
+    border-bottom-color: var(--cult-boreal-line);
+}
+
+.cultivacao-aba[data-mundo="murim"].ativo {
+    color: var(--cult-murim);
+    border-bottom-color: var(--cult-murim);
+}
+
+.cultivacao-aba-icone {
+    font-size: var(--cult-font-size-lg);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   5. CORPO PRINCIPAL COM SCROLL
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.cultivacao-corpo {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: var(--cult-spacing-xl);
+    scroll-behavior: smooth;
+}
+
+.cultivacao-corpo::-webkit-scrollbar {
+    width: 8px;
+}
+
+.cultivacao-corpo::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.cultivacao-corpo::-webkit-scrollbar-thumb {
+    background: rgba(59, 130, 246, 0.3);
+    border-radius: 4px;
+}
+
+.cultivacao-corpo::-webkit-scrollbar-thumb:hover {
+    background: rgba(59, 130, 246, 0.5);
+}
+
+.cultivacao-mundo {
+    display: none;
+    animation: mundo-fade-in var(--cult-transition-normal);
+}
+
+.cultivacao-mundo.ativo {
+    display: block;
+}
+
+@keyframes mundo-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   5. SEÇÃO UNIVERSAL (Presente em todos os mundos)
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.cultivacao-universal-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cult-spacing-xl);
+    margin-bottom: var(--cult-spacing-xl);
+}
+
+.cultivacao-section-titulo {
+    display: flex;
+    align-items: center;
+    gap: var(--cult-spacing-md);
+    font-size: var(--cult-font-size-lg);
+    font-weight: 700;
+    color: #e2e8f0;
+    margin-bottom: var(--cult-spacing-md);
+}
+
+.cultivacao-section-titulo-icone {
+    font-size: var(--cult-font-size-xl);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   5.1 BARRA ANIMADA
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.cultivacao-bar-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cult-spacing-sm);
+    background: rgba(255, 255, 255, 0.02);
+    padding: var(--cult-spacing-lg);
+    border-radius: 8px;
+    border: 1px solid var(--cult-border);
+}
+
+.cultivacao-bar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cultivacao-bar-label {
+    font-size: var(--cult-font-size-sm);
+    font-weight: 600;
+    color: #cbd5e1;
+}
+
+.cultivacao-bar-stat {
+    font-size: var(--cult-font-size-sm);
+    color: #94a3b8;
+}
+
+.cultivacao-bar-container {
+    position: relative;
+    height: 28px;
+    background: var(--cult-bar-bg);
+    border: 1px solid var(--cult-bar-border);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.cultivacao-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--cult-energy-highlight) 0%, var(--cult-energy-glow) 100%);
+    position: relative;
+    transition: width var(--cult-transition-normal);
+    box-shadow: 0 0 12px rgba(59, 130, 246, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.cultivacao-bar-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: cultivacao-shimmer 2s infinite;
+}
+
+@keyframes cultivacao-shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.cultivacao-bar-valor {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: var(--cult-font-size-xs);
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+    pointer-events: none;
+    z-index: 2;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   5.2 TÉCNICA DE CULTIVO
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.cultivacao-clickable {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.cultivacao-clickable:hover {
+    transform: translateY(-2px);
+    border-color: var(--cult-energy-glow);
+    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.2);
+}
+
+.cultivacao-tecnica-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--cult-border);
+    border-radius: 8px;
+    padding: var(--cult-spacing-lg);
+    overflow: hidden;
+}
+
+.cultivacao-tecnica-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--cult-spacing-md);
+    cursor: pointer;
+    user-select: none;
+}
+
+.cultivacao-tecnica-titulo {
+    display: flex;
+    align-items: center;
+    gap: var(--cult-spacing-md);
+    font-size: var(--cult-font-size-lg);
+    font-weight: 600;
+    color: #e2e8f0;
+}
+
+.cultivacao-tecnica-expandir {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--cult-energy-glow);
+    transition: transform var(--cult-transition-fast);
+}
+
+.cultivacao-tecnica-expandir.expandido {
+    transform: rotate(180deg);
+}
+
+.cultivacao-tecnica-conteudo {
+    display: none;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height var(--cult-transition-normal);
+}
+
+.cultivacao-tecnica-conteudo.visivel {
+    display: block;
+    max-height: 1000px;
+}
+
+.cultivacao-tecnica-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cult-spacing-md);
+}
+
+.cultivacao-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cult-spacing-sm);
+}
+
+.cultivacao-form-label {
+    font-size: var(--cult-font-size-sm);
+    font-weight: 600;
+    color: #cbd5e1;
+}
+
+.cultivacao-form-input,
+.cultivacao-form-textarea {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--cult-border);
+    border-radius: 6px;
+    padding: var(--cult-spacing-md);
+    color: #e2e8f0;
+    font-size: var(--cult-font-size-sm);
+    font-family: inherit;
+    transition: all var(--cult-transition-fast);
+}
+
+.cultivacao-form-input:focus,
+.cultivacao-form-textarea:focus {
+    outline: none;
+    border-color: var(--cult-energy-glow);
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
+}
+
+.cultivacao-form-textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.cultivacao-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: var(--cult-spacing-lg);
+    margin-top: var(--cult-spacing-lg);
+    padding: var(--cult-spacing-lg) var(--cult-spacing-xl);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 12px;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(59, 130, 246, 0.1);
+    backdrop-filter: blur(4px);
+}
+
+.cultivacao-input-wrapper .cultivacao-form-label {
+    min-width: 70px;
+    margin: 0;
+    font-weight: 700;
+    color: #a78bfa;
+    font-size: var(--cult-font-size-base);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.cultivacao-input-wrapper .cultivacao-form-input {
+    flex: 0 1 100px;
+    padding: var(--cult-spacing-md) var(--cult-spacing-lg);
+    background: linear-gradient(135deg, rgba(192, 132, 252, 0.1) 0%, rgba(167, 139, 250, 0.05) 100%);
+    border: 2px solid rgba(167, 139, 250, 0.3);
+    border-radius: 8px;
+    color: #e2e8f0;
+    font-weight: 600;
+    font-size: var(--cult-font-size-base);
+    text-align: center;
+    transition: all var(--cult-transition-fast);
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.15);
+}
+
+.cultivacao-input-wrapper .cultivacao-form-input::placeholder {
+    color: rgba(226, 232, 240, 0.5);
+    font-weight: 500;
+}
+
+.cultivacao-input-wrapper .cultivacao-form-input:hover {
+    border-color: rgba(167, 139, 250, 0.6);
+    background: linear-gradient(135deg, rgba(192, 132, 252, 0.15) 0%, rgba(167, 139, 250, 0.1) 100%);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+}
+
+.cultivacao-input-wrapper .cultivacao-form-input:focus {
+    outline: none;
+    border-color: rgba(167, 139, 250, 0.8);
+    background: linear-gradient(135deg, rgba(192, 132, 252, 0.2) 0%, rgba(167, 139, 250, 0.15) 100%);
+    animation: input-glow 2s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   5.3 MAR ESPIRITUAL
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.cultivacao-mar-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--cult-border);
+    border-radius: 8px;
+    padding: var(--cult-spacing-lg);
+    position: relative;
+    overflow: hidden;
+}
+
+.cultivacao-mar-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="water" patternUnits="userSpaceOnUse" width="100" height="100"><path d="M0 50 Q 25 40, 50 50 T 100 50" fill="none" stroke="rgba(124,58,237,0.1)" stroke-width="2"/></pattern></defs><rect fill="url(%23water)" width="100" height="100"/></svg>') repeat;
+    animation: cultivacao-water-flow 10s linear infinite;
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+@keyframes cultivacao-water-flow {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(100%); }
+}
+
+.cultivacao-mar-conteudo {
+    position: relative;
+    z-index: 1;
+}
+
+.cultivacao-mar-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: var(--cult-spacing-md);
+}
+
+.cultivacao-mar-item {
+    background: rgba(255, 255, 255, 0.05);
+    padding: var(--cult-spacing-md);
+    border-radius: 6px;
+    border: 1px solid var(--cult-border);
+    text-align: center;
+}
+
+.cultivacao-mar-label {
+    font-size: var(--cult-font-size-xs);
+    color: #94a3b8;
+    margin-bottom: var(--cult-spacing-sm);
+}
+
+.cultivacao-mar-valor {
+    font-size: var(--cult-font-size-lg);
+    font-weight: 700;
+    color: #a78bfa;
+}
+
+.cultivacao-mar-descricao {
+    margin-top: var(--cult-spacing-lg);
+    padding-top: var(--cult-spacing-lg);
+    border-top: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.cultivacao-mar-descricao-label {
+    font-size: var(--cult-font-size-xs);
+    color: #94a3b8;
+    margin-bottom: var(--cult-spacing-sm);
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.cultivacao-mar-descricao-valor {
+    font-size: var(--cult-font-size-sm);
+    color: #cbd5e1;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* ═════════════════════════════════════════════════════════════════════════════════════════════════
+   6. MUNDOS ESPECÍFICOS
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+/* 🟣 THE ELDER GODS */
+
+.cultivacao-mundo-elder-gods {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cult-spacing-xl);
+}
+
+.elder-gods-rank-card {
+    background: linear-gradient(135deg, rgba(192, 132, 252, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%);
+    border: 1px solid rgba(192, 132, 252, 0.3);
+    border-radius: 8px;
+    padding: var(--cult-spacing-lg);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--cult-spacing-lg);
+}
+
+.elder-gods-rank-info {
+    flex: 1;
+}
+
+.elder-gods-rank-nome {
+    font-size: var(--cult-font-size-lg);
+    font-weight: 700;
+    color: var(--cult-elder-gods);
+    margin-bottom: var(--cult-spacing-sm);
+}
+
+.elder-gods-nivel {
+    font-size: var(--cult-font-size-sm);
+    color: #cbd5e1;
+}
+
+.elder-gods-rank-stats {
+    display: flex;
+    gap: var(--cult-spacing-lg);
+    align-items: center;
+}
+
+.elder-gods-stat-item {
+    text-align: center;
+}
+
+.elder-gods-stat-label {
+    font-size: var(--cult-font-size-xs);
+    color: #94a3b8;
+    margin-bottom: var(--cult-spacing-xs);
+}
+
+.elder-gods-stat-valor {
+    font-size: var(--cult-font-size-xl);
+    font-weight: 700;
+    color: var(--cult-elder-gods);
+}
+
+.elder-gods-progresso {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cult-spacing-lg);
+}
+
+.elder-gods-tabela {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--cult-border);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.elder-gods-tabela-header {
+    display: grid;
+    grid-template-columns: 0.8fr 2fr 1fr 1.2fr 1.2fr;
+    background: rgba(192, 132, 252, 0.1);
+    border-bottom: 1px solid var(--cult-border);
+    padding: var(--cult-spacing-md) var(--cult-spacing-lg);
+    font-weight: 600;
+    font-size: var(--cult-font-size-sm);
+    color: var(--cult-elder-gods);
+}
+
+.elder-gods-tabela-linha {
+    display: grid;
+    grid-template-columns: 0.8fr 2fr 1fr 1.2fr 1.2fr;
+    padding: var(--cult-spacing-md) var(--cult-spacing-lg);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    align-items: center;
+    transition: background var(--cult-transition-fast);
+}
+
+.elder-gods-tabela-linha:hover {
+    background: rgba(192, 132, 252, 0.1);
+}
+
+.elder-gods-tabela-linha:last-child {
+    border-bottom: none;
+}
+
+.elder-gods-tabela-celula {
+    font-size: var(--cult-font-size-sm);
+    color: #cbd5e1;
+}
+
+.elder-gods-tabela-max {
+    color: #a78bfa;
+    font-weight: 500;
+}
+
+/* Tabela Boreal Line */
+.boreal-line-tabela {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--cult-border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: var(--cult-spacing-lg);
+}
+
+.boreal-line-tabela-header {
+    display: grid;
+    grid-template-columns: 0.8fr 2fr 1.2fr 1fr;
+    background: rgba(100, 180, 220, 0.1);
+    border-bottom: 1px solid var(--cult-border);
+    padding: var(--cult-spacing-md) var(--cult-spacing-lg);
+    font-weight: 600;
+    font-size: var(--cult-font-size-sm);
+    color: #64b4dc;
+}
+
+.boreal-line-tabela-linha {
+    display: grid;
+    grid-template-columns: 0.8fr 2fr 1.2fr 1fr;
+    padding: var(--cult-spacing-md) var(--cult-spacing-lg);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    align-items: center;
+    transition: background var(--cult-transition-fast);
+}
+
+.boreal-line-tabela-linha:hover {
+    background: rgba(100, 180, 220, 0.1);
+}
+
+.boreal-line-tabela-linha:last-child {
+    border-bottom: none;
+}
+
+.boreal-line-tabela-celula {
+    font-size: var(--cult-font-size-sm);
+    color: #cbd5e1;
+}
+
+/* Tabela Murim */
+.murim-tabela {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--cult-border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: var(--cult-spacing-lg);
+}
+
+.murim-tabela-header {
+    display: grid;
+    grid-template-columns: 0.8fr 2fr 1fr 2fr;
+    background: rgba(100, 200, 150, 0.1);
+    border-bottom: 1px solid var(--cult-border);
+    padding: var(--cult-spacing-md) var(--cult-spacing-lg);
+    font-weight: 600;
+    font-size: var(--cult-font-size-sm);
+    color: var(--cult-murim);
+}
+
+.murim-tabela-linha {
+    display: grid;
+    grid-template-columns: 0.8fr 2fr 1fr 2fr;
+    padding: var(--cult-spacing-md) var(--cult-spacing-lg);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    align-items: center;
+    transition: background var(--cult-transition-fast);
+}
+
+.murim-tabela-linha:hover {
+    background: rgba(100, 200, 150, 0.1);
+}
+
+.murim-tabela-linha:last-child {
+    border-bottom: none;
+}
+
+.murim-tabela-celula {
+    font-size: var(--cult-font-size-sm);
+    color: #cbd5e1;
+}
+
+.elder-gods-acoes {
+    display: flex;
+    gap: var(--cult-spacing-md);
+}
+
+.cultivacao-btn {
+    padding: var(--cult-spacing-md) var(--cult-spacing-lg);
+    border: 1px solid var(--cult-border);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    color: #cbd5e1;
+    font-size: var(--cult-font-size-sm);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--cult-transition-fast);
+    display: flex;
+    align-items: center;
+    gap: var(--cult-spacing-sm);
+}
+
+.cultivacao-btn:hover:not(:disabled) {
+    background: rgba(192, 132, 252, 0.15);
+    border-color: var(--cult-elder-gods);
+    color: var(--cult-elder-gods);
+}
+
+.cultivacao-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.cultivacao-btn-primary {
+    background: linear-gradient(135deg, var(--cult-elder-gods) 0%, rgba(192, 132, 252, 0.8) 100%);
+    border-color: var(--cult-elder-gods);
+    color: #fff;
+}
+
+.cultivacao-btn-primary:hover:not(:disabled) {
+    box-shadow: 0 0 20px rgba(192, 132, 252, 0.4);
+}
+
+/* 🔵 BOREAL LINE */
+
+.cultivacao-mundo-boreal-line {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cult-spacing-xl);
+}
+
+.boreal-line-rank-card {
+    background: linear-gradient(135deg, rgba(56, 189, 248, 0.1) 0%, rgba(6, 182, 212, 0.05) 100%);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    border-radius: 8px;
+    padding: var(--cult-spacing-lg);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--cult-spacing-lg);
+}
+
+.boreal-line-rank-info {
+    flex: 1;
+}
+
+.boreal-line-rank-nome {
+    font-size: var(--cult-font-size-lg);
+    font-weight: 700;
+    color: var(--cult-boreal-line);
+    margin-bottom: var(--cult-spacing-sm);
+}
+
+.boreal-line-sub-rank-nome {
+    font-size: var(--cult-font-size-sm);
+    color: #64b4dc;
+    font-weight: 600;
+    margin-top: var(--cult-spacing-xs);
+    padding: var(--cult-spacing-xs) var(--cult-spacing-sm);
+    background: rgba(100, 180, 220, 0.15);
+    border-left: 3px solid #64b4dc;
+    border-radius: 4px;
+}
+
+.boreal-line-cristais {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--cult-spacing-lg);
+}
+
+.boreal-line-cristal-card {
+    background: linear-gradient(135deg, rgba(56, 189, 248, 0.1) 0%, rgba(6, 182, 212, 0.05) 100%);
+    border: 2px solid rgba(56, 189, 248, 0.2);
+    border-radius: 8px;
+    padding: var(--cult-spacing-lg);
+    position: relative;
+    overflow: hidden;
+}
+
+.boreal-line-cristal-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(56, 189, 248, 0.1) 0%, transparent 80%);
+    opacity: 0;
+    transition: opacity var(--cult-transition-fast);
+    pointer-events: none;
+}
+
+.boreal-line-cristal-card:hover::before {
+    opacity: 1;
+}
+
+.boreal-line-cristal-nome {
+    font-size: var(--cult-font-size-lg);
+    font-weight: 700;
+    color: var(--cult-boreal-line);
+    margin-bottom: var(--cult-spacing-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--cult-spacing-md);
+}
+
+.boreal-line-cristal-stats {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cult-spacing-md);
+    position: relative;
+    z-index: 1;
+}
+
+.boreal-line-cristal-stat {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cult-spacing-sm);
+}
+
+.boreal-line-cristal-stat-label {
+    font-size: var(--cult-font-size-sm);
+    color: #cbd5e1;
+    font-weight: 600;
+}
+
+.boreal-line-estado {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--cult-spacing-sm);
+    padding: var(--cult-spacing-sm) var(--cult-spacing-md);
+    background: rgba(56, 189, 248, 0.1);
+    border-radius: 4px;
+    font-size: var(--cult-font-size-xs);
+    color: var(--cult-boreal-line);
+    font-weight: 600;
+}
+
+.boreal-line-estado::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: var(--cult-boreal-line);
+    border-radius: 50%;
+    animation: cultivacao-pulse 2s infinite;
+}
+
+@keyframes cultivacao-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* 🟢 LEGENDS OF MURIM */
+
+.cultivacao-mundo-murim {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cult-spacing-xl);
+}
+
+.murim-rank-card {
+    background: linear-gradient(135deg, rgba(132, 204, 22, 0.1) 0%, rgba(34, 197, 94, 0.05) 100%);
+    border: 1px solid rgba(132, 204, 22, 0.3);
+    border-radius: 8px;
+    padding: var(--cult-spacing-lg);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--cult-spacing-lg);
+}
+
+.murim-rank-info {
+    flex: 1;
+}
+
+.murim-rank-nome {
+    font-size: var(--cult-font-size-lg);
+    font-weight: 700;
+    color: var(--cult-murim);
+    margin-bottom: var(--cult-spacing-sm);
+}
+
+.murim-petalas {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: var(--cult-spacing-lg);
+}
+
+.murim-petala-card {
+    background: linear-gradient(135deg, rgba(132, 204, 22, 0.1) 0%, rgba(34, 197, 94, 0.05) 100%);
+    border: 1px solid rgba(132, 204, 22, 0.2);
+    border-radius: 8px;
+    padding: var(--cult-spacing-lg);
+    text-align: center;
+    position: relative;
+    transition: transform var(--cult-transition-normal);
+}
+
+.murim-petala-card:hover {
+    transform: translateY(-4px);
+}
+
+.murim-petala-icone {
+    font-size: 3rem;
+    margin-bottom: var(--cult-spacing-md);
+    filter: drop-shadow(0 0 8px rgba(132, 204, 22, 0.4));
+}
+
+.murim-petala-nome {
+    font-size: var(--cult-font-size-lg);
+    font-weight: 700;
+    color: var(--cult-murim);
+    margin-bottom: var(--cult-spacing-sm);
+}
+
+.murim-petala-descricao {
+    font-size: var(--cult-font-size-sm);
+    color: #cbd5e1;
+    line-height: 1.6;
+}
+
+.murim-fragmentos {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--cult-border);
+    border-radius: 8px;
+    padding: var(--cult-spacing-lg);
+}
+
+.murim-fragmentos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: var(--cult-spacing-md);
+}
+
+.murim-fragmento-item {
+    background: rgba(255, 255, 255, 0.05);
+    padding: var(--cult-spacing-md);
+    border-radius: 6px;
+    border: 1px solid var(--cult-border);
+    text-align: center;
+}
+
+.murim-fragmento-label {
+    font-size: var(--cult-font-size-xs);
+    color: #94a3b8;
+    margin-bottom: var(--cult-spacing-sm);
+}
+
+.murim-fragmento-valor {
+    font-size: var(--cult-font-size-lg);
+    font-weight: 700;
+    color: var(--cult-murim);
+}
+
+/* Barra de XP da Lótus do Céu Imortal */
+.murim-xp-bar-section {
+    background: rgba(100, 200, 150, 0.08);
+    border: 1px solid rgba(100, 200, 150, 0.3);
+    border-radius: 8px;
+    padding: var(--cult-spacing-lg);
+    margin-bottom: var(--cult-spacing-lg);
+}
+
+.murim-xp-info {
+    margin-bottom: var(--cult-spacing-md);
+}
+
+.murim-xp-text {
+    font-size: var(--cult-font-size-sm);
+    color: #a0aec0;
+    font-weight: 600;
+}
+
+.murim-xp-bar-container {
+    width: 100%;
+    height: 28px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(100, 200, 150, 0.4);
+    border-radius: 6px;
+    overflow: hidden;
+    margin: var(--cult-spacing-md) 0;
+    position: relative;
+}
+
+.murim-xp-bar-background {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, rgba(100, 200, 150, 0.1), rgba(100, 200, 150, 0.05));
+    position: relative;
+}
+
+.murim-xp-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #64c896 0%, #84e6b8 100%);
+    transition: width 0.6s ease-in-out;
+    box-shadow: 0 0 15px rgba(100, 200, 150, 0.8), inset 0 0 8px rgba(255, 255, 255, 0.3);
+    border-right: 2px solid rgba(255, 255, 255, 0.5);
+    position: relative;
+}
+
+.murim-xp-bar-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    animation: murim-xp-shimmer 2s infinite;
+}
+
+.murim-xp-label {
+    font-size: var(--cult-font-size-xs);
+    color: #94a3b8;
+    text-align: center;
+    margin-top: var(--cult-spacing-sm);
+    font-style: italic;
+}
+
+@keyframes murim-xp-shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* Barra de XP da Mana Corporal (Boreal Line) */
+.boreal-line-xp-bar-section {
+    background: rgba(100, 180, 220, 0.08);
+    border: 1px solid rgba(100, 180, 220, 0.3);
+    border-radius: 8px;
+    padding: var(--cult-spacing-lg);
+    margin-bottom: var(--cult-spacing-lg);
+}
+
+.boreal-line-xp-info {
+    margin-bottom: var(--cult-spacing-md);
+}
+
+.boreal-line-xp-text {
+    font-size: var(--cult-font-size-sm);
+    color: #a0aec0;
+    font-weight: 600;
+}
+
+.boreal-line-xp-bar-container {
+    width: 100%;
+    height: 28px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(100, 180, 220, 0.4);
+    border-radius: 6px;
+    overflow: hidden;
+    margin: var(--cult-spacing-md) 0;
+    position: relative;
+}
+
+.boreal-line-xp-bar-background {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, rgba(100, 180, 220, 0.1), rgba(100, 180, 220, 0.05));
+    position: relative;
+}
+
+.boreal-line-xp-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #64b4dc 0%, #84d4f5 100%);
+    transition: width 0.6s ease-in-out;
+    box-shadow: 0 0 15px rgba(100, 180, 220, 0.8), inset 0 0 8px rgba(255, 255, 255, 0.3);
+    border-right: 2px solid rgba(255, 255, 255, 0.5);
+    position: relative;
+}
+
+.boreal-line-xp-bar-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    animation: boreal-line-xp-shimmer 2s infinite;
+}
+
+.boreal-line-xp-label {
+    font-size: var(--cult-font-size-xs);
+    color: #94a3b8;
+    text-align: center;
+    margin-top: var(--cult-spacing-sm);
+    font-style: italic;
+}
+
+/* Cards de Mana (similar aos de Lótus) */
+.boreal-line-mana-container {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: var(--cult-spacing-md);
+    margin-bottom: var(--cult-spacing-lg);
+}
+
+.boreal-line-mana-card {
+    background: linear-gradient(135deg, rgba(100, 180, 220, 0.15), rgba(132, 204, 220, 0.05));
+    border: 1px solid rgba(100, 180, 220, 0.4);
+    border-radius: 8px;
+    padding: var(--cult-spacing-md);
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.boreal-line-mana-card:hover {
+    border-color: rgba(100, 180, 220, 0.8);
+    box-shadow: 0 0 12px rgba(100, 180, 220, 0.5);
+    transform: translateY(-2px);
+}
+
+.boreal-line-mana-icone {
+    font-size: 28px;
+    margin-bottom: var(--cult-spacing-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 50px;
+}
+
+.boreal-line-mana-nucleo-img {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+    filter: brightness(1.2) drop-shadow(0 0 6px rgba(100, 180, 220, 0.8));
+}
+
+.boreal-line-mana-nome {
+    font-size: var(--cult-font-size-sm);
+    font-weight: 700;
+    color: #64b4dc;
+    margin-bottom: var(--cult-spacing-xs);
+}
+
+.boreal-line-mana-descricao {
+    font-size: var(--cult-font-size-xs);
+    color: #cbd5e1;
+    line-height: 1.6;
+}
+
+/* Card de Mana Corporal reformulado */
+.boreal-line-mana-corporal-card {
+    background: linear-gradient(135deg, rgba(100, 180, 220, 0.15), rgba(132, 204, 220, 0.08));
+    border: 2px solid rgba(100, 180, 220, 0.4);
+    border-radius: 12px;
+    padding: var(--cult-spacing-lg);
+    margin-bottom: var(--cult-spacing-lg);
+    backdrop-filter: blur(5px);
+}
+
+.boreal-line-mana-corporal-header {
+    display: flex;
+    gap: var(--cult-spacing-lg);
+    align-items: flex-start;
+    margin-bottom: var(--cult-spacing-lg);
+}
+
+.boreal-line-mana-corporal-imagem {
+    flex-shrink: 0;
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, rgba(100, 180, 220, 0.2), rgba(100, 180, 220, 0.1));
+    border: 2px solid rgba(100, 180, 220, 0.5);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.boreal-line-mana-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(1.1) drop-shadow(0 0 8px rgba(100, 180, 220, 0.6));
+}
+
+.boreal-line-mana-corporal-info {
+    flex: 1;
+}
+
+.boreal-line-mana-corporal-info .cultivacao-section-titulo {
+    margin-bottom: var(--cult-spacing-md);
+    gap: var(--cult-spacing-sm);
+}
+
+.boreal-line-mana-corporal-info .cultivacao-section-titulo-icone {
+    font-size: 20px;
+}
+
+@keyframes boreal-line-xp-shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   7. ANIMAÇÕES E EFEITOS ESPECIAIS
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.cultivacao-glow {
+    animation: cultivacao-glow-pulse 2s ease-in-out infinite;
+}
+
+@keyframes cultivacao-glow-pulse {
+    0%, 100% {
+        filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.3));
+    }
+    50% {
+        filter: drop-shadow(0 0 12px rgba(59, 130, 246, 0.6));
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   8. RESPONSIVO
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 1024px) {
+    .cultivacao-container {
+        max-width: 95%;
+        height: 90vh;
+    }
+
+    .elder-gods-tabela-header,
+    .elder-gods-tabela-linha {
+        grid-template-columns: 1fr;
+        gap: var(--cult-spacing-md);
+    }
+
+    .boreal-line-cristais {
+        grid-template-columns: 1fr;
+    }
+
+    .murim-petalas {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .cultivacao-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .cultivacao-header-info {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .cultivacao-titulo h2 {
+        font-size: var(--cult-font-size-lg);
+    }
+
+    .cultivacao-corpo {
+        padding: var(--cult-spacing-lg);
+    }
+
+    .cultivacao-abas-container {
+        gap: 0;
+    }
+
+    .cultivacao-aba {
+        flex: 1;
+        justify-content: center;
+        padding: var(--cult-spacing-md);
+    }
+
+    .cultivacao-bar-wrapper,
+    .cultivacao-tecnica-card,
+    .cultivacao-mar-card {
+        padding: var(--cult-spacing-md);
+    }
+
+    .cultivacao-mar-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .cultivacao-container {
+        max-width: 100%;
+        height: 100vh;
+        border-radius: 0;
+        max-height: none;
+    }
+
+    .cultivacao-titulo h2 {
+        font-size: var(--cult-font-size-base);
+    }
+
+    .cultivacao-aba-icone {
+        font-size: var(--cult-font-size-base);
+    }
+
+    .cultivacao-mar-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .cultivacao-header-info {
+        gap: var(--cult-spacing-md);
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   POPUP MODALS - DANTIAN E MERIDIANOS
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.cultivacao-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.95);
+    background: linear-gradient(135deg, #1a1f2e 0%, #242d3d 100%);
+    border: 2px solid var(--cult-border-light);
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    z-index: 10001;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    min-width: 320px;
+    max-width: 450px;
+    backdrop-filter: blur(4px);
+}
+
+/* Variante para Mar Espiritual - mais quadrado */
+.cultivacao-popup-mar {
+    max-width: 700px;
+    width: 90vw;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.cultivacao-popup.ativo {
+    opacity: 1;
+    pointer-events: all;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.cultivacao-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 10000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    backdrop-filter: blur(2px);
+}
+
+.cultivacao-popup-overlay.ativo {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.cultivacao-popup-conteudo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cult-spacing-lg);
+    padding: var(--cult-spacing-lg);
+    max-height: calc(90vh - 60px);
+    overflow-y: auto;
+}
+
+.cultivacao-popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--cult-spacing-md);
+    padding-bottom: var(--cult-spacing-md);
+    border-bottom: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.cultivacao-popup-titulo {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #e8eef7;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.cultivacao-popup-header-buttons {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.cultivacao-popup-voltar {
+    background: none;
+    border: none;
+    color: #a78bfa;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.cultivacao-popup-voltar:hover {
+    background: rgba(59, 130, 246, 0.1);
+    color: #e8eef7;
+    transform: rotate(-90deg);
+}
+
+.cultivacao-popup-fechar {
+    background: none;
+    border: none;
+    color: #a78bfa;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.cultivacao-popup-fechar:hover {
+    background: rgba(59, 130, 246, 0.1);
+    color: #e8eef7;
+    transform: rotate(90deg);
+}
+
+.cultivacao-popup-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cult-spacing-md);
+}
+
+/* Layout em grid 2 colunas para Mar Espiritual */
+.cultivacao-popup-body-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--cult-spacing-md);
+    grid-auto-rows: max-content;
+}
+
+.cultivacao-popup-input-group-full {
+    grid-column: 1 / -1;
+}
+
+.cultivacao-popup-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cult-spacing-sm);
+}
+
+.cultivacao-popup-label {
+    font-size: 0.875rem;
+    color: #d4af37;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+.cultivacao-popup-input {
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px solid var(--cult-border);
+    border-radius: 8px;
+    padding: var(--cult-spacing-md) var(--cult-spacing-lg);
+    color: #e8eef7;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    font-family: 'Courier New', monospace;
+}
+
+.cultivacao-popup-select {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23a78bfa' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right var(--cult-spacing-lg) center;
+    padding-right: 2.5rem;
+    cursor: pointer;
+}
+
+.cultivacao-popup-select option {
+    background: #1a1f2e;
+    color: #e8eef7;
+    padding: var(--cult-spacing-md);
+}
+
+.cultivacao-popup-select option:checked {
+    background: rgba(59, 130, 246, 0.5);
+    color: #e8eef7;
+}
+
+.cultivacao-popup-select optgroup {
+    background: #242d3d;
+    color: #a78bfa;
+    font-weight: 600;
+}
+
+.cultivacao-popup-input:focus {
+    outline: none;
+    background: rgba(59, 130, 246, 0.1);
+    border-color: #a78bfa;
+    box-shadow: 0 0 16px rgba(59, 130, 246, 0.4), inset 0 0 8px rgba(59, 130, 246, 0.1);
+}
+
+.cultivacao-popup-input::placeholder {
+    color: rgba(217, 119, 255, 0.4);
+}
+
+.cultivacao-popup-footer {
+    display: flex;
+    gap: var(--cult-spacing-md);
+    margin-top: var(--cult-spacing-lg);
+    padding-top: var(--cult-spacing-md);
+    border-top: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.cultivacao-popup-button {
+    flex: 1;
+    padding: var(--cult-spacing-md) var(--cult-spacing-lg);
+    border: 1px solid var(--cult-border);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.cultivacao-popup-button-cancelar {
+    background: rgba(75, 85, 104, 0.2);
+    color: #a78bfa;
+    border-color: rgba(167, 139, 250, 0.3);
+}
+
+.cultivacao-popup-button-cancelar:hover {
+    background: rgba(75, 85, 104, 0.4);
+    border-color: #a78bfa;
+    box-shadow: 0 0 12px rgba(167, 139, 250, 0.2);
+}
+
+.cultivacao-popup-button-salvar {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.5) 0%, rgba(168, 85, 247, 0.3) 100%);
+    color: #e8eef7;
+    border-color: #a78bfa;
+    box-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
+}
+
+.cultivacao-popup-button-salvar:hover {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.7) 0%, rgba(168, 85, 247, 0.5) 100%);
+    border-color: #d4af37;
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+    transform: translateY(-2px);
+}
+
+.cultivacao-popup-button-avancado {
+    background: linear-gradient(135deg, rgba(255, 176, 0, 0.5) 0%, rgba(255, 144, 0, 0.3) 100%);
+    color: #fff8e1;
+    border-color: #ffd54f;
+    box-shadow: 0 0 12px rgba(255, 176, 0, 0.3);
+}
+
+.cultivacao-popup-button-avancado:hover {
+    background: linear-gradient(135deg, rgba(255, 176, 0, 0.7) 0%, rgba(255, 144, 0, 0.5) 100%);
+    border-color: #ffeb3b;
+    box-shadow: 0 0 20px rgba(255, 176, 0, 0.5);
+    transform: translateY(-2px);
+}
+
+.cultivacao-popup-button:active {
+    transform: translateY(0);
+}
+
+.cultivacao-popup-info-avancado {
+    background: linear-gradient(135deg, rgba(255, 176, 0, 0.1), rgba(255, 144, 0, 0.05));
+    border-left: 3px solid rgba(255, 176, 0, 0.5);
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 4px;
+}
+
+.cultivacao-popup-textarea {
+    resize: vertical;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+    line-height: 1.4;
+    min-height: 60px;
+    max-height: 100px;
+}
+
+.cultivacao-popup-textarea:focus {
+    outline: none;
+    background: rgba(59, 130, 246, 0.1);
+    border-color: #a78bfa;
+    box-shadow: 0 0 16px rgba(59, 130, 246, 0.4), inset 0 0 8px rgba(59, 130, 246, 0.1);
+}
+
+
+
+
+
+

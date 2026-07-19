@@ -1,0 +1,1512 @@
+/* ================================================= */
+/* COMPANHEIRO-INVENTARIO-NOVO.CSS                  */
+/* Estilos do Inventário Isolado do Companheiro     */
+/* ================================================= */
+
+.companheiro-inventario-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+    padding: 0;
+}
+
+/* ===== 1. PAINEL DE ESPAÇO (4 CARDS) ===== */
+
+.companheiro-espaco-panel {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.companheiro-espaco-card {
+    background: linear-gradient(135deg, rgba(233, 69, 96, 0.05) 0%, rgba(10, 10, 20, 0.5) 100%);
+    border: 2px solid rgba(233, 69, 96, 0.3);
+    border-radius: 0.75rem;
+    padding: 1.5rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.companheiro-espaco-card:hover {
+    background: linear-gradient(135deg, rgba(233, 69, 96, 0.15) 0%, rgba(10, 10, 20, 0.6) 100%);
+    border-color: rgba(233, 69, 96, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(233, 69, 96, 0.2);
+}
+
+.companheiro-espaco-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: rgba(200, 200, 220, 0.8);
+    text-transform: uppercase;
+}
+
+.companheiro-espaco-valor {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+    font-family: 'Courier New', monospace;
+}
+
+.companheiro-espaco-livre {
+    color: #00ff88;
+}
+
+.companheiro-espaco-status {
+    color: #00ff88;
+    font-size: 1.25rem;
+}
+
+/* ===== BARRA DE ESPAÇO ===== */
+
+.companheiro-espaco-barra-container {
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(233, 69, 96, 0.3);
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.companheiro-espaco-barra {
+    width: 100%;
+    height: 16px;
+    background: rgba(50, 50, 60, 0.5);
+    border-radius: 0.25rem;
+    overflow: hidden;
+    position: relative;
+}
+
+.companheiro-espaco-barra-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #e94560 0%, #ff6b7a 50%, #e94560 100%);
+    width: 0%;
+    transition: width 0.3s ease;
+    box-shadow: 0 0 10px rgba(233, 69, 96, 0.5);
+}
+
+/* ===== 2. SEÇÃO DE ITENS ===== */
+
+.companheiro-secao-itens,
+.companheiro-secao-armazenamentos {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.companheiro-secao-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.companheiro-secao-titulo {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #ffd700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.companheiro-secao-controles {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.companheiro-filtro-input {
+    flex: 1;
+    min-width: 180px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(100, 100, 120, 0.4);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    color: #fff;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+.companheiro-filtro-input:focus {
+    outline: none;
+    border-color: rgba(233, 69, 96, 0.6);
+    background: rgba(233, 69, 96, 0.1);
+    box-shadow: 0 0 8px rgba(233, 69, 96, 0.2);
+}
+
+.companheiro-filtro-input::placeholder {
+    color: rgba(150, 150, 170, 0.6);
+}
+
+.companheiro-filtro-qualidade {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(100, 100, 120, 0.4);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    color: #fff;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1.2em 1.2em;
+    padding-right: 2.5rem;
+    flex: 0 0 auto;
+    min-width: 160px;
+    max-width: 220px;
+}
+
+.companheiro-filtro-qualidade:hover:not(:disabled) {
+    border-color: rgba(233, 69, 96, 0.6);
+    box-shadow: 0 0 8px rgba(233, 69, 96, 0.2);
+}
+
+.companheiro-filtro-qualidade:focus {
+    outline: none;
+    border-color: rgba(233, 69, 96, 0.6);
+    background: rgba(233, 69, 96, 0.1), url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") no-repeat right 0.75rem center;
+    background-size: auto, 1.2em 1.2em;
+    box-shadow: 0 0 8px rgba(233, 69, 96, 0.2);
+}
+
+.companheiro-filtro-qualidade option {
+    background: #0d1219;
+    color: #fff;
+    border: none;
+    padding: 0.5rem;
+    font-weight: 500;
+}
+
+.companheiro-filtro-qualidade option:hover {
+    background: #e9456099;
+    color: #fff;
+}
+
+.companheiro-btn-adicionar-item,
+.companheiro-btn-adicionar-armazenamento {
+    background: linear-gradient(135deg, #00cc88 0%, #00aa66 100%);
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0, 204, 136, 0.2);
+}
+
+.companheiro-btn-adicionar-item:hover,
+.companheiro-btn-adicionar-armazenamento:hover {
+    background: linear-gradient(135deg, #00dd99 0%, #00bb77 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 204, 136, 0.3);
+}
+
+.companheiro-btn-adicionar-item:active,
+.companheiro-btn-adicionar-armazenamento:active {
+    transform: translateY(0);
+}
+
+/* ===== LISTAS DE ITENS E ARMAZENAMENTOS ===== */
+
+.companheiro-itens-lista,
+.companheiro-armazenamentos-lista {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    min-height: 80px;
+    padding: 0;
+}
+
+.companheiro-empty-state {
+    grid-column: 1 / -1;
+    padding: 3rem 2rem;
+    background: rgba(0, 0, 0, 0.2);
+    border: 2px dashed rgba(150, 150, 170, 0.3);
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(150, 150, 170, 0.6);
+    font-size: 1rem;
+    font-style: italic;
+    text-align: center;
+}
+
+/* ===== CORES E VARIÁVEIS ===== */
+
+:root {
+    --color-dark-brown: #0a0e14;
+    --color-brown: #0d1219;
+    --color-gold: #d4af37;
+    --color-gold-dark: #3b82f6;
+    --color-gold-light: #f5deb3;
+    --color-text-primary: #e8e8e8;
+    --color-text-secondary: #cbd5e0;
+    --color-border: #4a5568;
+    --color-accent: #e6b800;
+    --color-bg-primary: #0a0e14;
+    --color-quality-comum: #888888;
+    --color-quality-raro: #2ecc71;
+    --color-quality-epico: #9b59b6;
+    --color-quality-mitico: #e74c3c;
+    --color-quality-lendario: #f39c12;
+    --color-quality-celestial: #3498db;
+}
+
+/* ===== ANIMAÇÕES ===== */
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== CARD DE ITEM (IGUAL AO INVENTÁRIO PRINCIPAL) ===== */
+
+.inventario-item-card {
+    background: linear-gradient(135deg, 
+        rgba(61, 40, 23, 0.9) 0%,
+        rgba(42, 24, 16, 0.9) 100%);
+    border: 2px solid var(--color-border);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    animation: slideIn 0.4s ease;
+    position: relative;
+}
+
+/* Bordas especiais por qualidade */
+.inventario-item-card.qualidade-comum {
+    border-color: var(--color-quality-comum);
+    border-width: 2px;
+}
+
+.inventario-item-card.qualidade-raro {
+    border-color: var(--color-quality-raro);
+    border-width: 2px;
+    box-shadow: 0 4px 12px rgba(46, 204, 113, 0.15);
+}
+
+.inventario-item-card.qualidade-epico {
+    border-color: var(--color-quality-epico);
+    border-width: 2px;
+    box-shadow: 0 4px 12px rgba(155, 89, 182, 0.15);
+}
+
+.inventario-item-card.qualidade-mitico {
+    border-color: var(--color-quality-mitico);
+    border-width: 2px;
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.15);
+}
+
+.inventario-item-card.qualidade-lendario {
+    border-color: var(--color-quality-lendario);
+    border-width: 2px;
+    box-shadow: 0 4px 12px rgba(243, 156, 18, 0.2);
+}
+
+.inventario-item-card.qualidade-celestial {
+    border-color: var(--color-quality-celestial);
+    border-width: 2px;
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.15);
+}
+
+/* Equipado */
+.inventario-item-card.equipado {
+    border-width: 2px;
+    box-shadow: 0 0 20px rgba(212, 175, 85, 0.4);
+    transform: scale(1.02);
+}
+
+.inventario-item-card:hover:not(.equipado) {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+}
+
+.inventario-item-card.equipado:hover {
+    box-shadow: 0 0 25px rgba(212, 175, 85, 0.6);
+}
+
+/* Badge Equipado */
+.inventario-item-equipado-badge {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-accent) 100%);
+    color: var(--color-bg-primary);
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    z-index: 10;
+}
+
+/* Imagem */
+.inventario-item-imagem {
+    width: 100%;
+    height: 180px;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+}
+
+.inventario-item-imagem img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.inventario-item-card:hover .inventario-item-imagem img {
+    transform: scale(1.08);
+}
+
+.inventario-item-imagem-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, 
+        rgba(212, 175, 85, 0.1) 0%,
+        rgba(61, 40, 23, 0.3) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    opacity: 0.5;
+}
+
+/* Conteúdo do Card */
+.inventario-item-conteudo {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    flex: 1;
+}
+
+/* Nome e Qualidade */
+.inventario-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.inventario-item-nome {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--color-gold-light);
+    margin: 0;
+    line-height: 1.3;
+    flex: 1;
+}
+
+.inventario-item-qualidade-badge {
+    padding: 0.3rem 0.7rem;
+    border-radius: 16px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.badge-comum {
+    background: var(--color-quality-comum);
+    color: #000;
+}
+
+.badge-raro {
+    background: var(--color-quality-raro);
+    color: #000;
+}
+
+.badge-epico {
+    background: var(--color-quality-epico);
+    color: #fff;
+}
+
+.badge-mitico {
+    background: var(--color-quality-mitico);
+    color: #fff;
+}
+
+.badge-lendario {
+    background: var(--color-quality-lendario);
+    color: #000;
+}
+
+.badge-celestial {
+    background: var(--color-quality-celestial);
+    color: #fff;
+}
+
+/* Blocos de Informação */
+.inventario-item-blocos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+}
+
+.inventario-item-bloco {
+    background: rgba(42, 24, 16, 0.8);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    padding: 0.6rem;
+    text-align: center;
+}
+
+.inventario-item-bloco-label {
+    font-size: 0.7rem;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.2rem;
+}
+
+.inventario-item-bloco-valor {
+    font-size: 0.95rem;
+    color: var(--color-gold);
+    font-weight: 700;
+    font-family: 'Courier New', monospace;
+}
+
+/* Rodapé do Card */
+.inventario-item-rodape {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    border-top: 1px solid rgba(212, 175, 85, 0.2);
+    padding-top: 0.8rem;
+    margin-top: auto;
+}
+
+.inventario-item-quantidade {
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    text-align: center;
+}
+
+.inventario-item-quantidade strong {
+    color: var(--color-gold);
+    font-weight: 700;
+}
+
+.inventario-item-espaco-info {
+    display: flex;
+    justify-content: space-around;
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+}
+
+.inventario-item-espaco-info span {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+}
+
+.inventario-item-espaco-info .valor {
+    color: var(--color-gold);
+    font-weight: 700;
+}
+
+/* Botões do Card */
+.inventario-item-botoes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+}
+
+.inventario-item-botoes.com-equipar {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem;
+}
+
+.inventario-item-btn {
+    padding: 0.4rem 0.5rem;
+    background: linear-gradient(135deg, 
+        rgba(212, 175, 85, 0.2) 0%,
+        rgba(168, 85, 247, 0.2) 100%);
+    border: 1px solid var(--color-gold-dark);
+    border-radius: 4px;
+    color: var(--color-gold);
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+}
+
+.inventario-item-btn:hover {
+    background: linear-gradient(135deg, 
+        rgba(212, 175, 85, 0.4) 0%,
+        rgba(168, 85, 247, 0.4) 100%);
+    border-color: var(--color-gold);
+    transform: translateY(-1px);
+}
+
+.inventario-item-btn:active {
+    transform: translateY(0);
+}
+
+.inventario-item-btn-equipar {
+    background: linear-gradient(135deg, 
+        rgba(126, 255, 126, 0.2) 0%,
+        rgba(94, 222, 94, 0.2) 100%);
+    border-color: #5ade5e;
+    color: #7eff7e;
+}
+
+.inventario-item-btn-equipar:hover {
+    background: linear-gradient(135deg, 
+        rgba(126, 255, 126, 0.4) 0%,
+        rgba(94, 222, 94, 0.4) 100%);
+}
+
+.inventario-item-btn-deletar {
+    background: linear-gradient(135deg, 
+        rgba(255, 107, 107, 0.2) 0%,
+        rgba(255, 68, 68, 0.2) 100%);
+    border-color: #ff6b6b;
+    color: #ff9999;
+}
+
+.inventario-item-btn-deletar:hover {
+    background: linear-gradient(135deg, 
+        rgba(255, 107, 107, 0.4) 0%,
+        rgba(255, 68, 68, 0.4) 100%);
+}
+
+/* ===== CARD DE ARMAZENAMENTO ===== */
+
+.companheiro-armazenamento-card {
+    background: linear-gradient(135deg, rgba(40, 40, 70, 0.8) 0%, rgba(30, 30, 50, 0.6) 100%);
+    border: 1px solid rgba(100, 150, 200, 0.3);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1rem;
+    align-items: start;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.companheiro-armazenamento-card:hover {
+    background: linear-gradient(135deg, rgba(50, 50, 90, 0.9) 0%, rgba(40, 40, 70, 0.7) 100%);
+    border-color: rgba(100, 150, 200, 0.6);
+    box-shadow: 0 4px 12px rgba(100, 150, 200, 0.15);
+    transform: translateX(4px);
+}
+
+.companheiro-armazenamento-imagem {
+    width: 60px;
+    height: 60px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(100, 100, 120, 0.3);
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.companheiro-armazenamento-imagem img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.companheiro-armazenamento-conteudo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.companheiro-armazenamento-nome {
+    font-weight: 700;
+    color: #fff;
+    font-size: 1rem;
+}
+
+.companheiro-armazenamento-bonus {
+    font-size: 0.85rem;
+    color: rgba(200, 200, 220, 0.8);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.companheiro-armazenamento-bonus-valor {
+    color: #ffd700;
+    font-weight: 700;
+}
+
+/* ===== RESPONSIVIDADE ===== */
+
+@media (max-width: 1024px) {
+    .companheiro-espaco-panel {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .companheiro-secao-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .companheiro-secao-controles {
+        width: 100%;
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .companheiro-inventario-wrapper {
+        gap: 1.5rem;
+    }
+    
+    .companheiro-espaco-panel {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+    
+    .companheiro-espaco-card {
+        padding: 1rem 0.75rem;
+    }
+    
+    .companheiro-espaco-valor {
+        font-size: 1.25rem;
+    }
+    
+    .companheiro-secao-controles {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .companheiro-filtro-input {
+        width: 100%;
+    }
+    
+    .companheiro-item-card,
+    .companheiro-armazenamento-card {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .companheiro-item-imagem,
+    .companheiro-armazenamento-imagem {
+        width: 50px;
+        height: 50px;
+    }
+}
+
+@media (max-width: 480px) {
+    .companheiro-espaco-panel {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+    }
+    
+    .companheiro-espaco-card {
+        padding: 0.75rem 0.5rem;
+    }
+    
+    .companheiro-espaco-label {
+        font-size: 0.65rem;
+    }
+    
+    .companheiro-espaco-valor {
+        font-size: 1.1rem;
+    }
+    
+    .companheiro-secao-titulo {
+        font-size: 1.1rem;
+    }
+    
+    .companheiro-btn-adicionar-item,
+    .companheiro-btn-adicionar-armazenamento {
+        padding: 0.6rem 1rem;
+        font-size: 0.8rem;
+    }
+    
+    .companheiro-item-detalhes {
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+}
+
+/* ===== PAINEL DE ESPAÇO ===== */
+
+.companheiro-inventario-espaco-panel {
+    background: linear-gradient(135deg, #0f3460 0%, #131a28 100%);
+    padding: 2rem;
+    border-radius: 0.75rem;
+    border: 2px solid rgba(233, 69, 96, 0.2);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.companheiro-espaco-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.companheiro-espaco-info-item {
+    background: rgba(233, 69, 96, 0.1);
+    padding: 1.25rem;
+    border-radius: 0.5rem;
+    border-left: 4px solid #e94560;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.companheiro-espaco-info-item:hover {
+    background: rgba(233, 69, 96, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(233, 69, 96, 0.2);
+}
+
+.companheiro-espaco-info-item label {
+    font-size: 0.85rem;
+    color: #a8a8a8;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.companheiro-espaco-info-item span {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.companheiro-espaco-ok {
+    color: #4ade80;
+}
+
+.companheiro-espaco-alerta {
+    color: #ef4444;
+}
+
+.companheiro-status-ok {
+    color: #4ade80;
+    font-weight: 700;
+}
+
+.companheiro-status-alerta {
+    color: #ef4444;
+    font-weight: 700;
+}
+
+/* Barra Visual de Espaço */
+
+.companheiro-espaco-barra-container {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    overflow: hidden;
+    border: 1px solid rgba(233, 69, 96, 0.3);
+}
+
+.companheiro-espaco-barra {
+    width: 100%;
+    height: 30px;
+    background: rgba(50, 50, 70, 0.5);
+    border-radius: 0.4rem;
+    overflow: hidden;
+    position: relative;
+}
+
+.companheiro-espaco-barra-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4ade80 0%, #22c55e 100%);
+    transition: width 0.5s ease;
+    border-radius: 0.4rem;
+    box-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
+}
+
+.companheiro-barra-ok {
+    background: linear-gradient(90deg, #4ade80 0%, #22c55e 100%);
+}
+
+.companheiro-barra-alerta {
+    background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.6);
+}
+
+.companheiro-barra-moderado {
+    background: linear-gradient(90deg, #64b5f6 0%, #42a5f5 100%);
+    box-shadow: 0 0 10px rgba(100, 181, 246, 0.5);
+}
+
+.companheiro-barra-sobrecarga {
+    background: linear-gradient(90deg, #ff4444 0%, #ff0000 100%);
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.7);
+}
+
+.companheiro-espaco-sobrecarga {
+    color: #ef4444;
+}
+
+/* ===== SEÇÕES GERAIS ===== */
+
+.companheiro-inventario-secao {
+    background: rgba(15, 52, 96, 0.5);
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(233, 69, 96, 0.15);
+}
+
+.companheiro-inventario-secao h2 {
+    font-size: 1.25rem;
+    color: #fff;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.companheiro-inventario-secao-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.companheiro-inventario-filtro-grupo {
+    display: flex;
+    gap: 0.75rem;
+    flex: 1;
+    min-width: 250px;
+}
+
+.companheiro-inventario-filtro-input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(233, 69, 96, 0.3);
+    border-radius: 0.4rem;
+    color: #fff;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.companheiro-inventario-filtro-input:focus {
+    outline: none;
+    background: rgba(0, 0, 0, 0.3);
+    border-color: #e94560;
+    box-shadow: 0 0 10px rgba(233, 69, 96, 0.3);
+}
+
+.companheiro-inventario-filtro-input::placeholder {
+    color: #666;
+}
+
+/* ===== BOTÕES ===== */
+
+.companheiro-btn-acao,
+.companheiro-btn-principal {
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #e94560 0%, #ff6b7a 100%);
+    color: #fff;
+    border: none;
+    border-radius: 0.4rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.companheiro-btn-acao:hover,
+.companheiro-btn-principal:hover {
+    background: linear-gradient(135deg, #ff6b7a 0%, #e94560 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(233, 69, 96, 0.4);
+}
+
+.companheiro-btn-acao:active,
+.companheiro-btn-principal:active {
+    transform: translateY(0);
+}
+
+/* Botões pequenos dos cards */
+
+.companheiro-btn-pequeno {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+    background: rgba(233, 69, 96, 0.2);
+    color: #e0e0e0;
+    border: 1px solid rgba(233, 69, 96, 0.4);
+    border-radius: 0.3rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.companheiro-btn-pequeno:hover {
+    background: rgba(233, 69, 96, 0.3);
+    color: #fff;
+    border-color: rgba(233, 69, 96, 0.6);
+    transform: translateY(-1px);
+}
+
+.companheiro-btn-editar:hover {
+    background: rgba(59, 130, 246, 0.3);
+    border-color: #3b82f6;
+    color: #60a5fa;
+}
+
+.companheiro-btn-ver:hover {
+    background: rgba(168, 85, 247, 0.3);
+    border-color: #3b82f6;
+    color: #d4af37;
+}
+
+.companheiro-btn-deletar:hover {
+    background: rgba(239, 68, 68, 0.3);
+    border-color: #ef4444;
+    color: #fca5a5;
+}
+
+/* ===== LISTAS ===== */
+
+.companheiro-inventario-items-list,
+.companheiro-inventario-armazenamentos-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    min-height: 80px;
+}
+
+.companheiro-inventario-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem 2rem;
+    color: #999;
+    font-style: italic;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 0.5rem;
+    border: 1px dashed rgba(233, 69, 96, 0.2);
+}
+
+/* ===== CARDS DE ITENS ===== */
+
+.companheiro-item-card {
+    display: flex;
+    gap: 1.25rem;
+    padding: 1.25rem;
+    background: linear-gradient(135deg, rgba(15, 52, 96, 0.6), rgba(22, 33, 62, 0.6));
+    border-radius: 0.75rem;
+    border-left: 4px solid #999;
+    border: 1px solid rgba(233, 69, 96, 0.1);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.companheiro-item-card:hover {
+    background: linear-gradient(135deg, rgba(15, 52, 96, 0.8), rgba(22, 33, 62, 0.8));
+    border-color: rgba(233, 69, 96, 0.3);
+    box-shadow: 0 8px 20px rgba(233, 69, 96, 0.2);
+    transform: translateY(-2px);
+}
+
+/* Qualidades */
+.companheiro-badge-comum { border-left-color: #999; }
+.companheiro-badge-raro { border-left-color: #0088ff; }
+.companheiro-badge-epico { border-left-color: #a335ee; }
+.companheiro-badge-mitico { border-left-color: #ff8000; }
+.companheiro-badge-lendario { border-left-color: #ff0000; }
+.companheiro-badge-celestial { border-left-color: #fff000; }
+
+/* Imagem do item */
+
+.companheiro-item-imagem {
+    flex-shrink: 0;
+    width: 100px;
+    height: 100px;
+    border-radius: 0.5rem;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 1px solid rgba(233, 69, 96, 0.2);
+}
+
+.companheiro-item-imagem img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.companheiro-item-emoji {
+    font-size: 2.5rem;
+}
+
+/* Conteúdo do item */
+
+.companheiro-item-conteudo {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.companheiro-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.companheiro-item-header h3 {
+    font-size: 1.1rem;
+    color: #fff;
+    margin: 0;
+    word-break: break-word;
+}
+
+.companheiro-badge-qualidade {
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.companheiro-badge-qualidade.companheiro-badge-comum {
+    background: rgba(153, 153, 153, 0.3);
+    color: #999;
+}
+
+.companheiro-badge-qualidade.companheiro-badge-raro {
+    background: rgba(0, 136, 255, 0.3);
+    color: #0088ff;
+}
+
+.companheiro-badge-qualidade.companheiro-badge-epico {
+    background: rgba(163, 53, 238, 0.3);
+    color: #a335ee;
+}
+
+.companheiro-badge-qualidade.companheiro-badge-mitico {
+    background: rgba(255, 128, 0, 0.3);
+    color: #ff8000;
+}
+
+.companheiro-badge-qualidade.companheiro-badge-lendario {
+    background: rgba(255, 0, 0, 0.3);
+    color: #ff0000;
+}
+
+.companheiro-badge-qualidade.companheiro-badge-celestial {
+    background: rgba(255, 240, 0, 0.3);
+    color: #fff000;
+}
+
+/* Blocos de informação */
+
+.companheiro-item-blocos {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    font-size: 0.9rem;
+    color: #a0a0a0;
+}
+
+.companheiro-item-blocos div {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 0.5rem;
+    border-radius: 0.3rem;
+}
+
+.companheiro-item-blocos strong {
+    color: #e0e0e0;
+    font-weight: 600;
+}
+
+/* Rodapé do card */
+
+.companheiro-item-rodape {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(233, 69, 96, 0.1);
+    flex-wrap: wrap;
+}
+
+.companheiro-item-espaco {
+    font-size: 0.85rem;
+    color: #808080;
+    font-weight: 600;
+}
+
+.companheiro-item-botoes {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* ===== CARDS DE ARMAZENAMENTOS (NOVO DESIGN) ===== */
+
+/* Card Container com Layout em Coluna */
+.companheiro-armazenamento-card-novo {
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(135deg, 
+        rgba(61, 40, 23, 0.9) 0%,
+        rgba(42, 24, 16, 0.9) 100%);
+    border: 2px solid rgba(212, 175, 85, 0.4);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    animation: slideIn 0.4s ease;
+    position: relative;
+    height: 100%;
+}
+
+.companheiro-armazenamento-card-novo:hover {
+    transform: translateY(-4px);
+    border-color: rgba(212, 175, 85, 0.7);
+    box-shadow: 0 8px 20px rgba(212, 175, 85, 0.2);
+}
+
+/* Imagem em Destaque (Topo do Card) */
+.companheiro-armazenamento-imagem-destaque {
+    width: 100%;
+    height: 160px;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    border-bottom: 2px solid rgba(212, 175, 85, 0.2);
+}
+
+.companheiro-armazenamento-imagem-destaque img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.companheiro-armazenamento-card-novo:hover .companheiro-armazenamento-imagem-destaque img {
+    transform: scale(1.08);
+}
+
+.companheiro-armazenamento-emoji {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, 
+        rgba(212, 175, 85, 0.1) 0%,
+        rgba(61, 40, 23, 0.3) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+    opacity: 0.8;
+}
+
+/* Conteúdo Principal (Meio do Card) */
+.companheiro-armazenamento-conteudo-novo {
+    padding: 1rem 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.companheiro-armazenamento-nome {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #f5deb3;
+    margin: 0;
+    line-height: 1.3;
+    word-break: break-word;
+}
+
+/* Bônus de Espaço - Destaque Especial */
+.companheiro-armazenamento-bonus {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.75rem;
+    background: linear-gradient(135deg, 
+        rgba(212, 175, 85, 0.15) 0%,
+        rgba(255, 215, 0, 0.1) 100%);
+    border: 2px solid rgba(212, 175, 85, 0.3);
+    border-radius: 0.5rem;
+    margin: 0;
+}
+
+.companheiro-armazenamento-bonus-label {
+    color: rgba(212, 175, 85, 0.7);
+    font-weight: 600;
+    font-size: 0.7rem;
+}
+
+.companheiro-armazenamento-bonus-valor {
+    color: #ffd700;
+    font-weight: 700;
+    font-size: 1.1rem;
+    font-family: 'Courier New', monospace;
+}
+
+/* Descrição do Armazenamento */
+.companheiro-armazenamento-descricao {
+    font-size: 0.75rem;
+    color: rgba(200, 200, 220, 0.7);
+    margin: 0;
+    line-height: 1.3;
+    flex: 0;
+    display: none;
+}
+
+/* Rodapé com Botões (Base do Card) */
+.companheiro-armazenamento-rodape {
+    display: flex;
+    gap: 0.4rem;
+    padding: 0.7rem 0.8rem;
+    border-top: 1px solid rgba(212, 175, 85, 0.2);
+    background: linear-gradient(135deg, 
+        rgba(0, 0, 0, 0.2) 0%,
+        rgba(61, 40, 23, 0.1) 100%);
+    flex-shrink: 0;
+}
+
+/* Botões do Card */
+.companheiro-armazenamento-btn {
+    flex: 1;
+    padding: 0.4rem 0.5rem;
+    border: 1px solid rgba(212, 175, 85, 0.3);
+    border-radius: 0.4rem;
+    background: rgba(212, 175, 85, 0.1);
+    color: #d4af37;
+    font-weight: 600;
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.companheiro-armazenamento-btn:hover {
+    background: rgba(212, 175, 85, 0.2);
+    border-color: rgba(212, 175, 85, 0.6);
+    color: #f5deb3;
+    transform: translateY(-1px);
+}
+
+.companheiro-armazenamento-btn-editar {
+    background: rgba(163, 53, 238, 0.15);
+    border-color: rgba(163, 53, 238, 0.4);
+    color: #d4af37;
+}
+
+.companheiro-armazenamento-btn-editar:hover {
+    background: rgba(163, 53, 238, 0.25);
+    border-color: rgba(163, 53, 238, 0.6);
+    color: #f0e7fe;
+}
+
+.companheiro-armazenamento-btn-info {
+    background: rgba(59, 130, 246, 0.15);
+    border-color: rgba(59, 130, 246, 0.4);
+    color: #bfdbfe;
+}
+
+.companheiro-armazenamento-btn-info:hover {
+    background: rgba(59, 130, 246, 0.25);
+    border-color: rgba(59, 130, 246, 0.6);
+    color: #dbeafe;
+}
+
+.companheiro-armazenamento-btn-deletar {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #fca5a5;
+}
+
+.companheiro-armazenamento-btn-deletar:hover {
+    background: rgba(239, 68, 68, 0.25);
+    border-color: rgba(239, 68, 68, 0.6);
+    color: #fff;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+    .companheiro-armazenamento-card-novo {
+        min-height: auto;
+    }
+
+    .companheiro-armazenamento-imagem-destaque {
+        height: 150px;
+    }
+
+    .companheiro-armazenamento-conteudo-novo {
+        padding: 0.6rem 0.6rem;
+    }
+
+    .companheiro-armazenamento-nome {
+        font-size: 0.85rem;
+    }
+
+    .companheiro-armazenamento-bonus {
+        padding: 0.35rem 0.5rem;
+    }
+
+    .companheiro-armazenamento-bonus-label {
+        font-size: 0.65rem;
+    }
+
+    .companheiro-armazenamento-bonus-valor {
+        font-size: 0.85rem;
+    }
+
+    .companheiro-armazenamento-btn {
+        padding: 0.35rem 0.4rem;
+        font-size: 0.65rem;
+    }
+
+    .companheiro-armazenamento-rodape {
+        gap: 0.3rem;
+        padding: 0.5rem 0.5rem;
+    }
+}
+
+/* ===== RESPONSIVO ===== */
+
+@media (max-width: 768px) {
+    .companheiro-inventario-container {
+        padding: 1rem;
+        gap: 1.5rem;
+    }
+
+    .companheiro-espaco-info-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .companheiro-inventario-secao-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .companheiro-inventario-filtro-grupo {
+        min-width: 100%;
+    }
+
+    .companheiro-item-card {
+        flex-direction: column;
+    }
+
+    .companheiro-item-blocos {
+        grid-template-columns: 1fr;
+    }
+
+    .companheiro-item-rodape {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .companheiro-item-botoes {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .companheiro-btn-pequeno {
+        flex: 1;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .companheiro-inventario-container {
+        padding: 0.75rem;
+        gap: 1rem;
+    }
+
+    .companheiro-espaco-info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .companheiro-btn-acao,
+    .companheiro-btn-principal {
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .companheiro-item-card {
+        padding: 0.75rem;
+    }
+
+    .companheiro-item-imagem {
+        width: 80px;
+        height: 80px;
+    }
+
+    .companheiro-item-header {
+        flex-direction: column;
+    }
+
+    .companheiro-badge-qualidade {
+        font-size: 0.65rem;
+        padding: 0.2rem 0.5rem;
+    }
+}
+
+
+
+
+
+

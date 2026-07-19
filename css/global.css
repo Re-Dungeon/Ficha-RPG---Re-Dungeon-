@@ -1,0 +1,272 @@
+/* ============================================ */
+/* GLOBAL.CSS - Estilos Globais e Reset        */
+/* ============================================ */
+
+:root {
+    /* Cores - Paleta Roxo/Cyan Dark Fantasy UNIFICADA */
+    --color-dark-brown: #0a0e14;
+    --color-brown: #13171f;
+    --color-gold: #d8b4fe;
+    --color-gold-dark: #a855f7;
+    --color-gray: #6b7280;
+    --color-gray-light: #9ca3af;
+    --color-text-primary: #e9d5ff;
+    --color-text-secondary: #c4b5fd;
+    --color-border: #4a5568;
+    --color-accent: #0ea5e9;
+    --color-bg-primary: #0a0e14;
+    --color-bg-secondary: #13171f;
+
+    /* Tipografia */
+    --font-family-base: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    --font-family-heading: Georgia, 'Times New Roman', serif;
+    --font-size-base: 14px;
+    --font-size-small: 12px;
+    --font-size-large: 16px;
+    --font-size-heading: 24px;
+
+    /* Espaçamento */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+
+    /* Bordas e Sombras */
+    --border-radius: 4px;
+    --border-width: 1px;
+    --box-shadow-subtle: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --box-shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.5);
+
+    /* Transições */
+    --transition-fast: 150ms ease-in-out;
+    --transition-standard: 300ms ease-in-out;
+}
+
+/* Reset CSS */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px;
+    scroll-behavior: smooth;
+}
+
+body {
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-base);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Tipografia Base */
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-family-heading);
+    font-weight: 600;
+    line-height: 1.3;
+    margin-bottom: var(--spacing-md);
+}
+
+h2 {
+    font-size: var(--font-size-heading);
+    color: var(--color-gold);
+}
+
+h3 {
+    font-size: 18px;
+    color: var(--color-gold);
+}
+
+p {
+    margin-bottom: var(--spacing-md);
+}
+
+/* Links */
+a {
+    color: var(--color-accent);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+
+a:hover {
+    color: var(--color-gold);
+    text-decoration: underline;
+}
+
+/* Botões Base */
+button {
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-family: inherit;
+    font-size: inherit;
+}
+
+button:focus {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+/* Input Base */
+input, textarea, select {
+    background-color: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+    border: var(--border-width) solid var(--color-border);
+    padding: var(--spacing-sm);
+    border-radius: var(--border-radius);
+    font-family: inherit;
+    font-size: inherit;
+}
+
+input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 4px rgba(230, 184, 0, 0.3);
+}
+
+/* Imagens */
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* 🔥 Override para imagens em cards de companheiro */
+.npc-card-image img,
+.npc-card-image-img {
+    height: 100% !important;
+    max-width: none !important;
+}
+
+/* Scrollbar Estilizada */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background-color: var(--color-bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: var(--color-gold-dark);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-gold);
+}
+
+/* ============================================ */
+/* CRÉDITOS E VERSÃO                           */
+/* ============================================ */
+
+#game-credits {
+    text-align: center;
+    margin-top: 2rem;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.credits-title {
+    font-size: 12px;
+    color: #ffffff;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    opacity: 0.9;
+}
+
+.credits-author {
+    font-size: 11px;
+    color: #d4af37;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    margin: 0;
+    font-family: Georgia, 'Times New Roman', serif;
+    opacity: 0.85;
+}
+
+.credits-version {
+    font-size: 11px;
+    color: #ffffff;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    margin: 0.2rem 0 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    opacity: 0.8;
+}
+
+.credits-version-link {
+    font-size: 11px;
+    color: #ffffff;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    margin: 0.2rem 0 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    opacity: 0.8;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-bottom: 1px solid transparent;
+}
+
+.credits-version-link:hover {
+    opacity: 1;
+    border-bottom: 1px solid #ffffff;
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+}
+
+.credits-note {
+    font-size: 9px;
+    color: #999999;
+    font-weight: 400;
+    letter-spacing: 0.1px;
+    margin: 0.3rem 0 0;
+    font-style: italic;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    opacity: 0.6;
+}
+
+.credits-social {
+    margin-top: 0.8rem;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.discord-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    opacity: 0.8;
+}
+
+.discord-link:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.discord-link img {
+    width: 52px;
+    height: 52px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+
+
+
+

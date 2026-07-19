@@ -1,0 +1,74 @@
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   VARIABLES.CSS - VARIÁVEIS CENTRALIZADAS
+   
+   Arquivo central para armazenar todas as variáveis CSS compartilhadas entre múltiplos
+   arquivos, evitando duplicação e facilitando manutenção.
+
+   PALETA UNIFICADA: Roxo/Cyan Dark Fantasy
+   Data de Criação: 27 de fevereiro de 2026
+   Atualizado: 1 de março de 2026 (Padronização Visual Completa)
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+:root {
+    /* ═══════════════════════════════════════════════════════════════════════════════════════════
+       CORES PRINCIPAIS - PALETA ROXO/CYAN DARK FANTASY
+       
+       Tema unificado para todo o sistema com cores vibrantes sobre fundo muito escuro
+       ═══════════════════════════════════════════════════════════════════════════════════════════ */
+    
+    /* Fundos */
+    --color-bg-primary: #0a0e14;
+    --color-bg-secondary: #13171f;
+    --color-bg-tertiary: #1a202e;
+    --color-bg-card: #161b28;
+    
+    /* Cores Principais da Paleta */
+    --color-primary: #7c3aed;           /* Roxo profundo */
+    --color-primary-light: #a855f7;     /* Roxo vibrante */
+    --color-primary-lighter: #d8b4fe;   /* Roxo claro */
+    
+    --color-secondary: #0ea5e9;         /* Cyan vibrante */
+    --color-secondary-light: #06b6d4;   /* Cyan médio */
+    --color-secondary-lighter: #22d3ee; /* Cyan claro */
+    
+    /* Texto */
+    --color-text-primary: #e9d5ff;      /* Lilás muito claro */
+    --color-text-secondary: #c4b5fd;    /* Lilás médio */
+    --color-text-muted: #a8b2c1;        /* Texto suave */
+    
+    /* Bordas */
+    --color-border: #4a5568;
+    --color-border-light: #6b7280;
+    
+    /* Cores Accent (Raridade) */
+    --rarity-comum: #3b82f6;            /* Azul */
+    --rarity-raro: #10b981;             /* Verde */
+    --rarity-epico: #a855f7;            /* Roxo */
+    --rarity-lendario: #f97316;         /* Laranja */
+    --rarity-mitico: #ef4444;           /* Vermelho */
+    --rarity-celestial: #fbbf24;        /* Dourado */
+    
+    /* Cores Situacionais */
+    --color-success: #10b981;           /* Verde */
+    --color-warning: #f59e0b;           /* Âmbar */
+    --color-danger: #ef4444;            /* Vermelho */
+    --color-info: #3b82f6;              /* Azul */
+    
+    /* Glow e Efeitos */
+    --glow-purple: #7c3aed;
+    --glow-cyan: #0ea5e9;
+    --glow-intensity: 0.4;
+
+    /* ═══════════════════════════════════════════════════════════════════════════════════════════
+       TRANSIÇÕES PADRÃO - EASING FUNCTIONS
+       
+       Transições reutilizáveis para animações suaves e consistentes
+       ═══════════════════════════════════════════════════════════════════════════════════════════ */
+    
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+
+
+

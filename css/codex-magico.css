@@ -1,0 +1,395 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   📚 CÓDEX MÁGICO - POPUP DE DICAS
+   Sistema completamente isolado com prefixo rd-codex-
+═══════════════════════════════════════════════════════════════════════════════ */
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   OVERLAY E CONTAINER PRINCIPAL
+───────────────────────────────────────────────────────────────────────────────── */
+
+#rd-codex-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 9998;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+#rd-codex-overlay.rd-codex-active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   POPUP CONTAINER
+───────────────────────────────────────────────────────────────────────────────── */
+
+#rd-codex-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.95);
+    width: 90%;
+    max-width: 700px;
+    max-height: 80vh;
+    background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0d1628 100%);
+    border: 2px solid #d4af37;
+    border-radius: 8px;
+    box-shadow: 
+        0 0 30px rgba(212, 175, 55, 0.3),
+        inset 0 0 20px rgba(212, 175, 55, 0.1),
+        0 10px 40px rgba(0, 0, 0, 0.8);
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+#rd-codex-popup.rd-codex-active {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   HEADER DO CÓDEX
+───────────────────────────────────────────────────────────────────────────────── */
+
+#rd-codex-header {
+    padding: 20px 25px;
+    border-bottom: 2px solid #d4af37;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(90deg, rgba(212, 175, 55, 0.1) 0%, transparent 100%);
+    flex-shrink: 0;
+}
+
+#rd-codex-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #d4af37;
+    text-shadow: 
+        0 0 10px rgba(212, 175, 55, 0.5),
+        2px 2px 4px rgba(0, 0, 0, 0.8);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+#rd-codex-title::before {
+    content: "📖";
+    font-size: 28px;
+    filter: drop-shadow(0 0 5px rgba(212, 175, 55, 0.5));
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   BOTÃO VOLTAR
+───────────────────────────────────────────────────────────────────────────────── */
+
+#rd-codex-back {
+    background: none;
+    border: none;
+    color: #d4af37;
+    font-size: 28px;
+    cursor: pointer;
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+#rd-codex-back:hover {
+    background-color: rgba(212, 175, 55, 0.15);
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.8);
+    transform: scale(1.1);
+}
+
+#rd-codex-back:active {
+    transform: scale(0.95);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   BOTÃO FECHAR
+───────────────────────────────────────────────────────────────────────────────── */
+
+#rd-codex-close {
+    background: none;
+    border: none;
+    color: #d4af37;
+    font-size: 28px;
+    cursor: pointer;
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+#rd-codex-close:hover {
+    background-color: rgba(212, 175, 55, 0.15);
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.8);
+    transform: scale(1.1);
+}
+
+#rd-codex-close:active {
+    transform: scale(0.95);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   ÁREA DE CONTEÚDO COM SCROLL
+───────────────────────────────────────────────────────────────────────────────── */
+
+#rd-codex-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 25px;
+    background: linear-gradient(180deg, rgba(10, 14, 39, 0.5) 0%, rgba(26, 31, 58, 0.5) 100%);
+}
+
+/* Scroll suave personalizado */
+#rd-codex-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+#rd-codex-content::-webkit-scrollbar-track {
+    background: rgba(212, 175, 55, 0.05);
+    border-radius: 4px;
+}
+
+#rd-codex-content::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #d4af37, #a68d28);
+    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+}
+
+#rd-codex-content::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #e6c547, #b89d35);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   SISTEMA DE ACORDEÃO - SEÇÕES
+───────────────────────────────────────────────────────────────────────────────── */
+
+.rd-codex-section {
+    margin-bottom: 15px;
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    border-radius: 4px;
+    overflow: hidden;
+    background: rgba(13, 22, 40, 0.6);
+    transition: all 0.3s ease;
+}
+
+.rd-codex-section:hover {
+    border-color: rgba(212, 175, 55, 0.6);
+    background: rgba(13, 22, 40, 0.8);
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.15);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   BOTÃO DO ACORDEÃO (HEADER DA SEÇÃO)
+───────────────────────────────────────────────────────────────────────────────── */
+
+.rd-codex-section-btn {
+    width: 100%;
+    padding: 15px 20px;
+    background: linear-gradient(90deg, rgba(212, 175, 55, 0.1) 0%, transparent 100%);
+    border: none;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+    color: #d4af37;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s ease;
+    text-shadow: 0 0 8px rgba(212, 175, 55, 0.3);
+}
+
+.rd-codex-section-btn:hover {
+    background: linear-gradient(90deg, rgba(212, 175, 55, 0.2) 0%, transparent 100%);
+    text-shadow: 0 0 12px rgba(212, 175, 55, 0.8);
+}
+
+.rd-codex-section-btn:active {
+    transform: scale(0.99);
+}
+
+/* Ícone do acordeão */
+.rd-codex-section-icon {
+    display: inline-block;
+    transition: transform 0.3s ease;
+    font-size: 18px;
+    margin-right: 8px;
+}
+
+/* Seta do acordeão */
+.rd-codex-section-arrow {
+    display: inline-block;
+    transition: transform 0.3s ease;
+    font-size: 18px;
+    color: #d4af37;
+}
+
+/* Estado expandido */
+.rd-codex-section.rd-codex-expanded .rd-codex-section-arrow {
+    transform: rotate(180deg);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   CONTEÚDO DA SEÇÃO
+───────────────────────────────────────────────────────────────────────────────── */
+
+.rd-codex-section-content {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.4s ease, opacity 0.4s ease, padding 0.4s ease;
+}
+
+.rd-codex-section.rd-codex-expanded .rd-codex-section-content {
+    opacity: 1;
+    padding: 15px 20px;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+/* Scroll suave personalizado dentro das seções */
+.rd-codex-section-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.rd-codex-section-content::-webkit-scrollbar-track {
+    background: rgba(212, 175, 55, 0.05);
+    border-radius: 3px;
+}
+
+.rd-codex-section-content::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #d4af37, #a68d28);
+    border-radius: 3px;
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+}
+
+.rd-codex-section-content::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #e6c547, #b89d35);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   TEXTO DO CONTEÚDO
+───────────────────────────────────────────────────────────────────────────────── */
+
+.rd-codex-text {
+    color: #c0c0c0;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+/* Separadores visivos dentro do conteúdo */
+.rd-codex-text::before {
+    content: "";
+    display: block;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #d4af37, transparent);
+    margin-bottom: 12px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   EFEITO DE BRILHO/GLOW
+───────────────────────────────────────────────────────────────────────────────── */
+
+@keyframes rd-codex-glow {
+    0%, 100% {
+        box-shadow: 
+            0 0 30px rgba(212, 175, 55, 0.3),
+            inset 0 0 20px rgba(212, 175, 55, 0.1);
+    }
+    50% {
+        box-shadow: 
+            0 0 40px rgba(212, 175, 55, 0.4),
+            inset 0 0 25px rgba(212, 175, 55, 0.15);
+    }
+}
+
+#rd-codex-popup {
+    animation: rd-codex-glow 4s ease-in-out infinite;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   RESPONSIVIDADE
+───────────────────────────────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+    #rd-codex-popup {
+        max-width: 95%;
+        max-height: 85vh;
+    }
+
+    #rd-codex-header {
+        padding: 15px 20px;
+    }
+
+    #rd-codex-content {
+        padding: 15px 20px;
+    }
+
+    #rd-codex-title {
+        font-size: 20px;
+    }
+
+    .rd-codex-section-btn {
+        padding: 12px 15px;
+        font-size: 14px;
+    }
+
+    .rd-codex-text {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    #rd-codex-popup {
+        max-width: 100%;
+        width: 96vw;
+        max-height: 90vh;
+        border-radius: 4px;
+    }
+
+    #rd-codex-title {
+        font-size: 18px;
+    }
+
+    .rd-codex-section-btn {
+        padding: 12px 12px;
+        font-size: 13px;
+    }
+
+    .rd-codex-text {
+        font-size: 12px;
+        line-height: 1.5;
+    }
+}
+
+
+
+
+

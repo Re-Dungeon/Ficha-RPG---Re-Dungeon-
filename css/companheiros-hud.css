@@ -1,0 +1,265 @@
+/* ============================================================= */
+/* COMPANHEIROS-HUD.CSS - HUD Principal de Companheiros         */
+/* ============================================================= */
+
+/* ============================================
+   HUD PRINCIPAL
+   ============================================ */
+
+.companheiros-hud-principal {
+    background: linear-gradient(135deg, var(--color-bg-primary) 0%, var(--color-bg-secondary) 100%);
+    border: 2px solid var(--color-secondary);
+    border-radius: 16px;
+    padding: 32px 28px;
+    margin-bottom: 32px;
+    box-shadow: 0 0 40px rgba(14, 165, 233, 0.3), inset 0 0 20px rgba(14, 165, 233, 0.05);
+    backdrop-filter: blur(2px);
+    animation: slideDown 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================
+   HUD HEADER
+   ============================================ */
+
+.companheiros-hud-header {
+    text-align: center;
+    margin-bottom: 28px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid rgba(14, 165, 233, 0.2);
+}
+
+.companheiros-hud-titulo {
+    margin: 0 0 8px 0;
+    font-size: 2.2rem;
+    font-weight: bold;
+    background: linear-gradient(135deg, var(--color-secondary-lighter) 0%, var(--color-secondary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 0 20px rgba(14, 165, 233, 0.4);
+    letter-spacing: 1px;
+}
+
+.companheiros-hud-subtitulo {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--color-text-secondary);
+    font-style: italic;
+    letter-spacing: 0.3px;
+}
+
+/* ============================================
+   BOTÕES DE AÇÃO
+   ============================================ */
+
+.companheiros-hud-buttons {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.companheiros-btn-acao {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 18px 48px;
+    flex: 1;
+    min-width: 220px;
+    max-width: 280px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: 2px solid;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Efeito de brilho de fundo */
+.companheiros-btn-acao::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s ease;
+    z-index: 1;
+}
+
+.companheiros-btn-acao:hover::before {
+    left: 100%;
+}
+
+.companheiros-btn-icone {
+    font-size: 1.6em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease;
+}
+
+.companheiros-btn-texto {
+    display: inline;
+    transition: all 0.3s ease;
+}
+
+/* Botão Adicionar */
+.companheiros-btn-adicionar {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.3) 0%, rgba(16, 185, 129, 0.2) 100%);
+    border-color: rgba(34, 197, 94, 0.7);
+    color: #4ade80;
+}
+
+.companheiros-btn-adicionar:hover {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.6) 0%, rgba(16, 185, 129, 0.45) 100%);
+    border-color: #4ade80;
+    transform: translateY(-4px);
+    box-shadow: 0 12px 35px rgba(34, 197, 94, 0.5), 0 0 25px rgba(34, 197, 94, 0.3);
+}
+
+.companheiros-btn-adicionar:active {
+    transform: translateY(-1px);
+}
+
+.companheiros-btn-adicionar:hover .companheiros-btn-icone {
+    transform: scale(1.25) rotate(-8deg);
+}
+
+/* Botão Clonar */
+.companheiros-btn-clonar {
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.3) 0%, rgba(6, 182, 212, 0.2) 100%);
+    border-color: rgba(14, 165, 233, 0.7);
+    color: #22d3ee;
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+.companheiros-btn-clonar:hover {
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.6) 0%, rgba(6, 182, 212, 0.45) 100%);
+    border-color: #22d3ee;
+    transform: translateY(-4px);
+    box-shadow: 0 12px 35px rgba(14, 165, 233, 0.5), 0 0 25px rgba(14, 165, 233, 0.3);
+}
+
+.companheiros-btn-clonar:active {
+    transform: translateY(-1px);
+}
+
+.companheiros-btn-clonar:hover .companheiros-btn-icone {
+    transform: scale(1.25) rotate(20deg);
+}
+
+/* ============================================
+   CONTAINER
+   ============================================ */
+
+.companheiros-container {
+    padding: 16px;
+}
+
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================
+   MENSAGEM VAZIA
+   ============================================ */
+
+.companheiros-empty-message {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--color-text-muted);
+    font-size: 1.1rem;
+    font-style: italic;
+}
+
+/* ============================================
+   RESPONSIVIDADE
+   ============================================ */
+
+@media (max-width: 768px) {
+    .companheiros-hud-principal {
+        padding: 24px 20px;
+        margin-bottom: 24px;
+    }
+
+    .companheiros-hud-titulo {
+        font-size: 1.8rem;
+    }
+
+    .companheiros-hud-buttons {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .companheiros-btn-acao {
+        width: 100%;
+        min-width: unset;
+        padding: 12px 24px;
+    }
+
+    .companheiros-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .companheiros-hud-principal {
+        padding: 20px 16px;
+        border-radius: 12px;
+    }
+
+    .companheiros-hud-titulo {
+        font-size: 1.5rem;
+    }
+
+    .companheiros-hud-subtitulo {
+        font-size: 0.85rem;
+    }
+
+    .companheiros-btn-acao {
+        padding: 10px 20px;
+        font-size: 0.85rem;
+        gap: 8px;
+    }
+
+    .companheiros-btn-icone {
+        font-size: 1.1em;
+    }
+
+    .companheiros-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 12px;
+        padding: 12px;
+    }
+}

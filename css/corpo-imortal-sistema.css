@@ -1,0 +1,1564 @@
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   CORPO IMORTAL - SISTEMA COMPLETO
+   
+   Sistema de fundação espiritual dividido em 4 funções interconectadas.
+   Design Dark Fantasy Espiritual com animações fluidas.
+   
+   Organização:
+   1. Variáveis de Design
+   2. Overlay e Container Global
+   3. Header Principal
+   4. Seção de Pontos Disponíveis
+   5. Grid de Funções
+   6. Cards de Função Individual
+   7. Seção de Melhorias
+   8. Animações e Efeitos
+   9. Estados Especiais (Fundação Perfeita)
+   10. Responsivo
+   
+   Data: 1 de março de 2026
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   1. VARIÁVEIS DE DESIGN
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+:root {
+    /* 🎨 Paleta de Cores - Dark Fantasy Espiritual */
+    --ci-bg-primary: #0a0e14;
+    --ci-bg-secondary: #0d1219;
+    --ci-bg-tertiary: #131a28;
+    --ci-border: #2a3544;
+    --ci-border-light: #3a4556;
+    
+    /* 🌟 Cores das Funções */
+    --ci-dantian: #3b82f6;           /* Azul puro */
+    --ci-dantian-glow: #60a5fa;      /* Azul claro */
+    --ci-meridianos: #10b981;        /* Verde esmeralda */
+    --ci-meridianos-glow: #34d399;   /* Verde claro */
+    --ci-refino: #ef4444;            /* Vermelho vivo */
+    --ci-refino-glow: #f87171;       /* Vermelho claro */
+    --ci-mar: #3b82f6;               /* Roxo profundo */
+    --ci-mar-glow: #d4af37;          /* Roxo claro */
+    
+    /* 💫 Efeitos Especiais */
+    --ci-gold: #fcd34d;              /* Ouro para perfeição */
+    --ci-gold-glow: #fde047;
+    --ci-success: #22c55e;
+    --ci-warning: #f59e0b;
+    --ci-danger: #ef4444;
+    
+    /* 📊 Fundos */
+    --ci-bar-bg: rgba(255, 255, 255, 0.03);
+    --ci-bar-border: rgba(255, 255, 255, 0.08);
+    --ci-overlay: rgba(0, 0, 0, 0.6);
+    
+    /* 📐 Espaçamentos */
+    --ci-spacing-xs: 0.25rem;
+    --ci-spacing-sm: 0.5rem;
+    --ci-spacing-md: 1rem;
+    --ci-spacing-lg: 1.5rem;
+    --ci-spacing-xl: 2rem;
+    --ci-spacing-2xl: 3rem;
+    
+    /* 🎭 Tipografia */
+    --ci-font-size-xs: 0.75rem;
+    --ci-font-size-sm: 0.875rem;
+    --ci-font-size-base: 1rem;
+    --ci-font-size-lg: 1.125rem;
+    --ci-font-size-xl: 1.25rem;
+    --ci-font-size-2xl: 1.5rem;
+    --ci-font-size-3xl: 1.875rem;
+    
+    /* 🏛️ Z-indexes */
+    --ci-zindex-overlay: 1100;
+    --ci-zindex-popup: 1101;
+    
+    /* ⏱️ Transições */
+    --ci-transition-fast: 0.15s ease-out;
+    --ci-transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --ci-transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   2. OVERLAY E CONTAINER GLOBAL
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.corpo-imortal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--ci-overlay);
+    backdrop-filter: blur(3px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: var(--ci-zindex-overlay);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--ci-transition-normal), visibility var(--ci-transition-normal);
+}
+
+.corpo-imortal-overlay.ativo {
+    opacity: 1;
+    visibility: visible;
+}
+
+.corpo-imortal-popup,
+#popup-corpo-imortal {
+    position: relative;
+    width: 90%;
+    max-width: 1300px;
+    max-height: 90vh;
+    background: linear-gradient(135deg, var(--ci-bg-primary) 0%, var(--ci-bg-secondary) 50%, var(--ci-bg-primary) 100%);
+    border: 2px solid var(--ci-border);
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    opacity: 1 !important;
+    transform: scale(1) translateY(0) !important;
+    animation: corpo-imortal-fade-in var(--ci-transition-slow) ease-out forwards !important;
+}
+
+@keyframes corpo-imortal-fade-in {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   3. HEADER PRINCIPAL
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.corpo-imortal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--ci-spacing-xl);
+    border-bottom: 1px solid var(--ci-border);
+    background: linear-gradient(90deg, 
+        rgba(59, 130, 246, 0.1) 0%,
+        rgba(16, 185, 129, 0.1) 25%,
+        rgba(239, 68, 68, 0.1) 50%,
+        rgba(168, 85, 247, 0.1) 100%
+    );
+}
+
+.corpo-imortal-header h2 {
+    margin: 0;
+    font-size: var(--ci-font-size-3xl);
+    font-weight: 700;
+    background: linear-gradient(90deg,
+        var(--ci-dantian) 0%,
+        var(--ci-meridianos) 33%,
+        var(--ci-refino) 66%,
+        var(--ci-mar) 100%
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 2px;
+    text-shadow: 0 0 20px rgba(100, 150, 255, 0.3);
+}
+
+.corpo-imortal-header-subtitle {
+    font-size: var(--ci-font-size-sm);
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.corpo-imortal-header-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+/* Botão Codex - Corpo Imortal */
+.btn-codex-corpo-imortal {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1.3rem;
+    cursor: pointer;
+    transition: all var(--ci-transition-normal);
+}
+
+.btn-codex-corpo-imortal:hover {
+    color: rgba(255, 255, 255, 0.95);
+    filter: drop-shadow(0 0 8px rgba(100, 150, 255, 0.6));
+    transform: scale(1.15);
+}
+
+.btn-codex-corpo-imortal:active {
+    transform: scale(0.95);
+}
+
+/* Botão Voltar - Corpo Imortal */
+.btn-voltar-corpo-imortal {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1.3rem;
+    cursor: pointer;
+    transition: all var(--ci-transition-normal);
+}
+
+.btn-voltar-corpo-imortal:hover {
+    color: rgba(255, 255, 255, 0.95);
+    filter: drop-shadow(0 0 8px rgba(255, 200, 0, 0.6));
+    transform: scale(1.15);
+}
+
+.btn-voltar-corpo-imortal:active {
+    transform: scale(0.95);
+}
+
+/* Botão Fechar - Corpo Imortal */
+.btn-fechar-corpo-imortal {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1.3rem;
+    cursor: pointer;
+    transition: all var(--ci-transition-normal);
+}
+
+.btn-fechar-corpo-imortal:hover {
+    color: rgba(255, 255, 255, 0.95);
+    filter: drop-shadow(0 0 8px rgba(255, 50, 50, 0.6));
+    transform: scale(1.15);
+}
+
+.btn-fechar-corpo-imortal:active {
+    transform: scale(0.95);
+}
+    font-style: italic;
+    margin-top: 0.5rem;
+}
+
+.corpo-imortal-close-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.8);
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    font-size: var(--ci-font-size-lg);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--ci-transition-fast);
+}
+
+.corpo-imortal-close-btn:hover {
+    background: rgba(239, 68, 68, 0.8);
+    border-color: var(--ci-danger);
+    color: white;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   4. SEÇÃO DE PONTOS DISPONÍVEIS
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+#corpo-imortal-pontos-disponiveis {
+    padding: var(--ci-spacing-xl);
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(168, 85, 247, 0.08) 100%);
+    border-bottom: 1px solid var(--ci-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--ci-spacing-lg);
+}
+
+.corpo-imortal-pontos-label {
+    font-size: var(--ci-font-size-lg);
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 600;
+}
+
+.corpo-imortal-pontos-valor {
+    font-size: var(--ci-font-size-3xl);
+    font-weight: 800;
+    background: linear-gradient(90deg, var(--ci-dantian-glow), var(--ci-mar-glow));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    min-width: 60px;
+    text-align: center;
+}
+
+.corpo-imortal-pontos-info {
+    font-size: var(--ci-font-size-sm);
+    color: rgba(255, 255, 255, 0.5);
+    font-style: italic;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   5. CONTEÚDO PRINCIPAL (Scroll Container)
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.corpo-imortal-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--ci-spacing-xl);
+    background: var(--ci-bg-primary);
+}
+
+/* Scrollbar customizado */
+.corpo-imortal-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.corpo-imortal-content::-webkit-scrollbar-track {
+    background: var(--ci-bg-secondary);
+}
+
+.corpo-imortal-content::-webkit-scrollbar-thumb {
+    background: var(--ci-border-light);
+    border-radius: 4px;
+}
+
+.corpo-imortal-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 150, 255, 0.6);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   6. SEÇÃO TÍTULOS
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.corpo-imortal-section-title {
+    font-size: var(--ci-font-size-2xl);
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.9);
+    margin: var(--ci-spacing-xl) 0 var(--ci-spacing-lg) 0;
+    padding-bottom: var(--ci-spacing-md);
+    border-bottom: 2px solid var(--ci-border);
+    letter-spacing: 1px;
+}
+
+.corpo-imortal-section-title:first-child {
+    margin-top: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   7. GRID DE FUNÇÕES
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.corpo-imortal-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--ci-spacing-lg);
+    margin-bottom: var(--ci-spacing-2xl);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   8. CARDS DE FUNÇÃO INDIVIDUAL
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.corpo-imortal-card {
+    position: relative;
+    background: var(--ci-bg-secondary);
+    border: 2px solid var(--ci-border);
+    border-radius: 12px;
+    padding: var(--ci-spacing-lg);
+    transition: all var(--ci-transition-normal);
+    overflow: hidden;
+}
+
+.corpo-imortal-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--ci-dantian-glow), transparent);
+    opacity: 0;
+    transition: opacity var(--ci-transition-normal);
+}
+
+.corpo-imortal-card:hover {
+    border-color: var(--ci-border-light);
+    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.15);
+    transform: translateY(-4px);
+}
+
+.corpo-imortal-card:hover::before {
+    opacity: 1;
+}
+
+/* Estilos específicos por função */
+
+.corpo-imortal-card.dantian {
+    --ci-funcao-cor: var(--ci-dantian);
+    --ci-funcao-glow: var(--ci-dantian-glow);
+}
+
+.corpo-imortal-card.dantian::before {
+    background: linear-gradient(90deg, transparent, var(--ci-dantian-glow), transparent);
+}
+
+.corpo-imortal-card.dantian:hover {
+    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.25), inset 0 0 20px rgba(59, 130, 246, 0.1);
+}
+
+.corpo-imortal-card.meridianos {
+    --ci-funcao-cor: var(--ci-meridianos);
+    --ci-funcao-glow: var(--ci-meridianos-glow);
+}
+
+.corpo-imortal-card.meridianos::before {
+    background: linear-gradient(90deg, transparent, var(--ci-meridianos-glow), transparent);
+}
+
+.corpo-imortal-card.meridianos:hover {
+    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.25), inset 0 0 20px rgba(16, 185, 129, 0.1);
+}
+
+.corpo-imortal-card.refino {
+    --ci-funcao-cor: var(--ci-refino);
+    --ci-funcao-glow: var(--ci-refino-glow);
+}
+
+.corpo-imortal-card.refino::before {
+    background: linear-gradient(90deg, transparent, var(--ci-refino-glow), transparent);
+}
+
+.corpo-imortal-card.refino:hover {
+    box-shadow: 0 8px 24px rgba(239, 68, 68, 0.25), inset 0 0 20px rgba(239, 68, 68, 0.1);
+}
+
+.corpo-imortal-card.mar {
+    --ci-funcao-cor: var(--ci-mar);
+    --ci-funcao-glow: var(--ci-mar-glow);
+}
+
+.corpo-imortal-card.mar::before {
+    background: linear-gradient(90deg, transparent, var(--ci-mar-glow), transparent);
+}
+
+.corpo-imortal-card.mar:hover {
+    box-shadow: 0 8px 24px rgba(168, 85, 247, 0.25), inset 0 0 20px rgba(168, 85, 247, 0.1);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   9. CONTEÚDO DO CARD
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.corpo-imortal-card-icon {
+    font-size: var(--ci-font-size-3xl);
+    margin-bottom: var(--ci-spacing-md);
+    display: block;
+}
+
+.corpo-imortal-card-title {
+    font-size: var(--ci-font-size-lg);
+    font-weight: 700;
+    color: var(--ci-funcao-cor);
+    margin: 0 0 var(--ci-spacing-sm) 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.corpo-imortal-card-nivel {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: var(--ci-spacing-md) 0;
+    padding: var(--ci-spacing-md);
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    border: 1px solid var(--ci-border);
+}
+
+.corpo-imortal-card-nivel-label {
+    font-size: var(--ci-font-size-sm);
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.corpo-imortal-card-nivel-valor {
+    font-size: var(--ci-font-size-2xl);
+    font-weight: 800;
+    color: var(--ci-funcao-glow);
+    min-width: 50px;
+    text-align: right;
+}
+
+.corpo-imortal-card-nivel-valor::after {
+    content: ' / 6';
+    font-size: var(--ci-font-size-base);
+    color: rgba(255, 255, 255, 0.5);
+    margin-left: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   10. BARRA DE PROGRESSO
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.corpo-imortal-card-bar {
+    position: relative;
+    width: 100%;
+    height: 20px;
+    background: var(--ci-bar-bg);
+    border: 1px solid var(--ci-bar-border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: var(--ci-spacing-md) 0;
+}
+
+.corpo-imortal-card-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--ci-funcao-cor), var(--ci-funcao-glow));
+    border-radius: 10px;
+    transition: width var(--ci-transition-slow);
+    position: relative;
+    overflow: hidden;
+}
+
+.corpo-imortal-card-bar-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, 
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+    );
+    animation: corpo-imortal-shimmer 2s infinite;
+}
+
+@keyframes corpo-imortal-shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   11. BOTÃO DE UPGRADE
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.corpo-imortal-upgrade-btn {
+    width: 100%;
+    padding: var(--ci-spacing-md) var(--ci-spacing-lg);
+    margin-top: var(--ci-spacing-md);
+    background: linear-gradient(135deg, var(--ci-funcao-cor), var(--ci-funcao-glow));
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-weight: 700;
+    font-size: var(--ci-font-size-base);
+    cursor: pointer;
+    transition: all var(--ci-transition-normal);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: relative;
+    overflow: hidden;
+}
+
+.corpo-imortal-upgrade-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left var(--ci-transition-normal);
+}
+
+.corpo-imortal-upgrade-btn:hover:not(:disabled) {
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5), 
+                0 0 15px var(--ci-funcao-cor);
+}
+
+.corpo-imortal-upgrade-btn:hover:not(:disabled)::before {
+    left: 100%;
+}
+
+.corpo-imortal-upgrade-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: linear-gradient(135deg, rgba(100, 100, 100, 0.5), rgba(150, 150, 150, 0.5));
+}
+
+.corpo-imortal-upgrade-btn:active:not(:disabled) {
+    transform: scale(0.95);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   11.5 CONTAINER E BOTÃO VISUALIZAR
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.corpo-imortal-card-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--ci-spacing-sm);
+    margin-top: var(--ci-spacing-md);
+}
+
+.corpo-imortal-upgrade-btn {
+    padding: 0.6rem 1rem !important;
+    font-size: 0.85rem !important;
+    margin-top: 0 !important;
+}
+
+.corpo-imortal-visualizar-btn {
+    padding: 0.6rem 0.8rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1.5px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all var(--ci-transition-normal);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
+}
+
+.corpo-imortal-visualizar-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    transition: left var(--ci-transition-normal);
+}
+
+.corpo-imortal-visualizar-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.5);
+    color: white;
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.corpo-imortal-visualizar-btn:hover::before {
+    left: 100%;
+}
+
+.corpo-imortal-visualizar-btn:active {
+    transform: translateY(0);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   12. MODAL DE UPGRADES
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.corpo-imortal-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    animation: fadeIn 0.3s ease-out forwards;
+    backdrop-filter: blur(5px);
+}
+
+.corpo-imortal-modal-content {
+    background: linear-gradient(135deg, var(--ci-bg-primary) 0%, var(--ci-bg-secondary) 50%, var(--ci-bg-primary) 100%);
+    border: 2px solid var(--ci-border);
+    border-radius: 16px;
+    padding: 2.5rem;
+    max-width: 900px;
+    width: 90%;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    animation: slideUp 0.3s ease-out forwards;
+}
+
+.corpo-imortal-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.corpo-imortal-modal-header h3 {
+    margin: 0;
+    font-size: 1.6rem;
+    color: white;
+    font-weight: 700;
+}
+
+.corpo-imortal-modal-header-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.corpo-imortal-codex-btn {
+    background: none;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    cursor: pointer;
+    padding: 6px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--ci-transition-normal);
+}
+
+.corpo-imortal-codex-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.6);
+    transform: scale(1.1);
+}
+
+.corpo-imortal-codex-btn:active {
+    transform: scale(0.95);
+}
+
+.corpo-imortal-modal-close {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all var(--ci-transition-normal);
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.corpo-imortal-modal-close:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.corpo-imortal-modal-body {
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 1.05rem;
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
+}
+
+.corpo-imortal-modal-footer {
+    display: flex;
+    gap: var(--ci-spacing-md);
+    justify-content: flex-end;
+}
+
+.corpo-imortal-modal-btn {
+    padding: var(--ci-spacing-md) var(--ci-spacing-lg);
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.8), rgba(99, 102, 241, 0.8));
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: white;
+    font-weight: 600;
+    font-size: var(--ci-font-size-sm);
+    cursor: pointer;
+    transition: all var(--ci-transition-normal);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.corpo-imortal-modal-btn:hover {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 1), rgba(99, 102, 241, 1));
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    transform: translateY(-2px);
+}
+
+.corpo-imortal-modal-btn:active {
+    transform: translateY(0);
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   19. LISTA DE UPGRADES PARA COMPRAR
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.upgrade-info-header {
+    padding: var(--ci-spacing-lg);
+    background: linear-gradient(135deg, rgba(100, 150, 255, 0.1), rgba(168, 85, 247, 0.1));
+    border-left: 3px solid #60a5fa;
+    border-radius: 6px;
+    margin-bottom: var(--ci-spacing-lg);
+}
+
+.upgrade-info-header h4 {
+    margin: 0 0 var(--ci-spacing-sm) 0;
+    color: #60a5fa;
+    font-size: var(--ci-font-size-lg);
+    font-weight: 700;
+}
+
+.upgrade-info-header p {
+    margin: 0.5rem 0;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: var(--ci-font-size-sm);
+}
+
+.upgrades-lista {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ci-spacing-lg);
+    max-height: 60vh;
+    overflow-y: auto;
+    padding-right: var(--ci-spacing-md);
+}
+
+.upgrade-item {
+    padding: var(--ci-spacing-lg);
+    background: rgba(10, 10, 20, 0.6);
+    border: 1px solid var(--ci-border);
+    border-radius: 8px;
+    transition: all var(--ci-transition-fast);
+    display: flex;
+    flex-direction: column;
+    gap: var(--ci-spacing-md);
+}
+
+.upgrade-item:hover {
+    background: rgba(10, 10, 20, 0.9);
+    border-color: #60a5fa;
+    box-shadow: 0 0 15px rgba(96, 165, 250, 0.3);
+    transform: translateX(4px);
+}
+
+.upgrade-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--ci-spacing-md);
+}
+
+.upgrade-item-header h5 {
+    margin: 0;
+    color: #e0e7ff;
+    font-size: var(--ci-font-size-base);
+    font-weight: 700;
+    flex: 1;
+}
+
+.upgrade-item-descricao {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: var(--ci-font-size-sm);
+    line-height: 1.5;
+}
+
+.btn-comprar-upgrade {
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    border: 1px solid #f59e0b;
+    color: #000;
+    border-radius: 6px;
+    font-size: var(--ci-font-size-sm);
+    font-weight: 700;
+    cursor: pointer;
+    transition: all var(--ci-transition-fast);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    align-self: flex-start;
+}
+
+.btn-comprar-upgrade:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.6);
+    filter: brightness(1.1);
+}
+
+.btn-comprar-upgrade:active {
+    transform: scale(0.95);
+}
+
+/* Scrollbar customizado para upgrades-lista */
+.upgrades-lista::-webkit-scrollbar {
+    width: 6px;
+}
+
+.upgrades-lista::-webkit-scrollbar-track {
+    background: rgba(100, 150, 255, 0.05);
+    border-radius: 3px;
+}
+
+.upgrades-lista::-webkit-scrollbar-thumb {
+    background: rgba(100, 150, 255, 0.3);
+    border-radius: 3px;
+}
+
+.upgrades-lista::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 150, 255, 0.5);
+}
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   13. ESTADO FUNDAÇÃO PERFEITA
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.corpo-imortal-card.perfeito {
+    border-color: var(--ci-gold);
+    background: linear-gradient(135deg, 
+        rgba(252, 211, 77, 0.05) 0%,
+        rgba(253, 224, 71, 0.05) 100%
+    );
+}
+
+.corpo-imortal-card.perfeito::before {
+    background: linear-gradient(90deg, transparent, var(--ci-gold-glow), transparent) !important;
+    opacity: 1;
+}
+
+.corpo-imortal-card.perfeito::after {
+    content: '✨ Fundação Perfeita ✨';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(90deg, 
+        transparent,
+        rgba(252, 211, 77, 0.3),
+        transparent
+    );
+    color: var(--ci-gold);
+    font-weight: 700;
+    font-size: var(--ci-font-size-sm);
+    letter-spacing: 1px;
+    animation: corpo-imortal-pulse-gold 1.5s infinite;
+}
+
+@keyframes corpo-imortal-pulse-gold {
+    0%, 100% {
+        opacity: 0.6;
+        text-shadow: 0 0 10px rgba(252, 211, 77, 0.5);
+    }
+    50% {
+        opacity: 1;
+        text-shadow: 0 0 20px rgba(252, 211, 77, 0.8);
+    }
+}
+
+.corpo-imortal-card.perfeito .corpo-imortal-upgrade-btn {
+    display: none;
+}
+
+.corpo-imortal-card.perfeito .corpo-imortal-card-nivel-valor {
+    color: var(--ci-gold);
+    text-shadow: 0 0 10px rgba(252, 211, 77, 0.6);
+}
+
+.corpo-imortal-card.perfeito .corpo-imortal-card-title {
+    color: var(--ci-gold);
+    text-shadow: 0 0 10px rgba(252, 211, 77, 0.4);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   13. SEÇÃO DE MELHORIAS
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.corpo-imortal-melhorias {
+    margin-top: var(--ci-spacing-2xl);
+    padding-top: var(--ci-spacing-xl);
+    border-top: 2px solid var(--ci-border);
+}
+
+.corpo-imortal-melhorias-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--ci-spacing-lg);
+    list-style: none;
+    padding: 0;
+    margin: var(--ci-spacing-lg) 0;
+}
+
+.corpo-imortal-melhorias-item {
+    padding: var(--ci-spacing-md);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--ci-border);
+    border-left: 3px solid var(--ci-funcao-cor, var(--ci-dantian));
+    border-radius: 8px;
+    transition: all var(--ci-transition-fast);
+}
+
+.corpo-imortal-melhorias-item.desbloqueado {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: var(--ci-funcao-cor);
+    box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.05);
+}
+
+.corpo-imortal-melhorias-item.bloqueado {
+    opacity: 0.6;
+}
+
+.corpo-imortal-melhorias-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.corpo-imortal-melhorias-funcao {
+    font-size: var(--ci-font-size-sm);
+    font-weight: 700;
+    color: var(--ci-funcao-cor, var(--ci-dantian));
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.25rem;
+}
+
+.corpo-imortal-melhorias-descricao {
+    font-size: var(--ci-font-size-sm);
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.5;
+}
+
+.corpo-imortal-melhorias-descricao strong {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.corpo-imortal-melhorias-ponto {
+    display: inline-block;
+    margin-top: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    background: linear-gradient(135deg, 
+        var(--ci-funcao-cor),
+        var(--ci-funcao-glow)
+    );
+    color: white;
+    border-radius: 4px;
+    font-size: var(--ci-font-size-xs);
+    font-weight: 700;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   14. ANIMAÇÕES DE PONTO GASTO
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+@keyframes corpo-imortal-pontilho-brilho {
+    0% {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        transform: scale(1.8);
+    }
+}
+
+@keyframes corpo-imortal-particula-subir {
+    0% {
+        opacity: 1;
+        transform: translateY(0) translateX(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-30px) translateX(var(--tx, 0px));
+    }
+}
+
+.corpo-imortal-particula {
+    position: fixed;
+    pointer-events: none;
+    font-weight: 700;
+    font-size: var(--ci-font-size-lg);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   15. FOOTER COM BOTÕES
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.corpo-imortal-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--ci-spacing-lg) var(--ci-spacing-xl);
+    border-top: 1px solid var(--ci-border);
+    background: var(--ci-bg-secondary);
+    gap: var(--ci-spacing-md);
+}
+
+.corpo-imortal-reset-btn {
+    padding: 0.5rem 1rem;
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(239, 68, 68, 0.5);
+    color: rgba(239, 68, 68, 0.8);
+    border-radius: 6px;
+    font-size: var(--ci-font-size-sm);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--ci-transition-fast);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.corpo-imortal-reset-btn:hover {
+    background: rgba(239, 68, 68, 0.4);
+    border-color: rgba(239, 68, 68, 0.8);
+    color: rgba(239, 68, 68, 1);
+}
+
+.corpo-imortal-footer-info {
+    font-size: var(--ci-font-size-xs);
+    color: rgba(255, 255, 255, 0.5);
+    text-align: right;
+    flex: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   16. RESPONSIVO
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+    #popup-corpo-imortal {
+        width: 95%;
+        max-height: 95vh;
+    }
+
+    .corpo-imortal-header {
+        padding: var(--ci-spacing-lg);
+    }
+
+    .corpo-imortal-header h2 {
+        font-size: var(--ci-font-size-2xl);
+    }
+
+    .corpo-imortal-content {
+        padding: var(--ci-spacing-lg);
+    }
+
+    .corpo-imortal-grid {
+        grid-template-columns: 1fr;
+        gap: var(--ci-spacing-md);
+    }
+
+    .corpo-imortal-melhorias-list {
+        grid-template-columns: 1fr;
+    }
+
+    .corpo-imortal-footer {
+        flex-direction: column;
+        gap: var(--ci-spacing-lg);
+    }
+
+    .corpo-imortal-footer-info {
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .corpo-imortal-header h2 {
+        font-size: var(--ci-font-size-xl);
+    }
+
+    .corpo-imortal-pontos-valor {
+        font-size: var(--ci-font-size-2xl);
+    }
+
+    .corpo-imortal-card {
+        padding: var(--ci-spacing-md);
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   17. MELHORIAS DETALHADAS - STYLING
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.corpo-imortal-melhorias-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ci-spacing-lg);
+}
+
+.corpo-imortal-melhorias-secao {
+    padding: var(--ci-spacing-lg);
+    border-radius: 8px;
+    border-left: 4px solid var(--ci-border);
+    background: rgba(100, 150, 255, 0.05);
+    transition: all var(--ci-transition-normal);
+}
+
+.corpo-imortal-melhorias-secao.desbloqueado {
+    background: rgba(100, 150, 255, 0.1);
+    border-left-color: #60a5fa;
+    box-shadow: 0 0 15px rgba(96, 165, 250, 0.2);
+}
+
+.corpo-imortal-melhorias-secao.bloqueado {
+    opacity: 0.6;
+    border-left-color: rgba(100, 150, 255, 0.3);
+}
+
+.corpo-imortal-melhorias-titulo {
+    font-size: var(--ci-font-size-lg);
+    font-weight: 600;
+    margin-bottom: var(--ci-spacing-md);
+    color: #e0e7ff;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.corpo-imortal-melhorias-lista {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--ci-spacing-md);
+}
+
+.corpo-imortal-melhorias-lista li {
+    padding: var(--ci-spacing-md);
+    background: rgba(10, 10, 20, 0.6);
+    border-radius: 6px;
+    border: 1px solid var(--ci-border);
+    transition: all var(--ci-transition-fast);
+}
+
+.corpo-imortal-melhorias-lista li:hover {
+    background: rgba(10, 10, 20, 0.8);
+    border-color: #60a5fa;
+    transform: translateX(4px);
+    box-shadow: 0 0 10px rgba(96, 165, 250, 0.3);
+}
+
+.corpo-imortal-melhorias-lista strong {
+    color: #fbbf24;
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: var(--ci-font-size-base);
+}
+
+.corpo-imortal-melhorias-lista .corpo-imortal-melhorias-descricao {
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.corpo-imortal-melhorias-lista .corpo-imortal-melhorias-efeito {
+    color: #fbbf24;
+    font-size: 0.8rem;
+    margin-bottom: 0.25rem;
+}
+
+/* Responsive para Melhorias */
+@media (max-width: 768px) {
+    .corpo-imortal-melhorias-secao {
+        padding: var(--ci-spacing-md);
+    }
+
+    .corpo-imortal-melhorias-lista li {
+        padding: var(--ci-spacing-sm);
+    }
+
+    .corpo-imortal-melhorias-titulo {
+        font-size: var(--ci-font-size-base);
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   18. MODAL DE CONFIRMAÇÃO DE UPGRADE
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.corpo-imortal-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: calc(var(--ci-zindex-overlay) + 10);
+    animation: fadeIn 0.2s ease-out forwards;
+}
+
+.corpo-imortal-modal-content {
+    position: relative;
+    width: 90%;
+    max-width: 800px;
+    background: linear-gradient(135deg, var(--ci-bg-primary) 0%, var(--ci-bg-secondary) 100%);
+    border: 2px solid var(--ci-border);
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
+    overflow: hidden;
+    animation: slideUp 0.3s ease-out forwards;
+}
+
+.corpo-imortal-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--ci-spacing-lg);
+    border-bottom: 1px solid var(--ci-border);
+    background: linear-gradient(90deg, 
+        rgba(100, 150, 255, 0.1) 0%,
+        rgba(168, 85, 247, 0.1) 100%
+    );
+}
+
+.corpo-imortal-modal-header h3 {
+    margin: 0;
+    font-size: var(--ci-font-size-xl);
+    color: #fff;
+}
+
+.btn-fechar-modal {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--ci-transition-fast);
+    opacity: 0.7;
+}
+
+.btn-fechar-modal:hover {
+    opacity: 1;
+    transform: rotate(90deg);
+}
+
+.corpo-imortal-modal-body {
+    padding: var(--ci-spacing-lg);
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.upgrade-confirmacao {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ci-spacing-lg);
+}
+
+.upgrade-info {
+    padding: var(--ci-spacing-md);
+    background: rgba(100, 150, 255, 0.1);
+    border-left: 3px solid #60a5fa;
+    border-radius: 6px;
+}
+
+.upgrade-info h4 {
+    margin: 0 0 var(--ci-spacing-sm) 0;
+    color: #60a5fa;
+    font-size: var(--ci-font-size-lg);
+}
+
+.upgrade-info p {
+    margin: 0.25rem 0;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: var(--ci-font-size-sm);
+}
+
+.melhoria-confirmacao {
+    padding: var(--ci-spacing-md);
+    background: rgba(168, 85, 247, 0.1);
+    border: 1px solid rgba(168, 85, 247, 0.3);
+    border-radius: 6px;
+}
+
+.melhoria-confirmacao h5 {
+    margin: 0 0 var(--ci-spacing-sm) 0;
+    color: #cbd5e0;
+    font-size: var(--ci-font-size-base);
+}
+
+.melhoria-confirmacao p {
+    margin: 0.5rem 0;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: var(--ci-font-size-sm);
+    line-height: 1.5;
+}
+
+.melhoria-tipo {
+    display: inline-block;
+    margin-top: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    background: rgba(168, 85, 247, 0.3);
+    border-radius: 4px;
+    font-size: var(--ci-font-size-xs);
+    color: #cbd5e0;
+    font-weight: 600;
+}
+
+.upgrade-custo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--ci-spacing-md);
+    background: rgba(252, 211, 77, 0.1);
+    border-left: 3px solid #fcd34d;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.custo-valor {
+    color: #fcd34d;
+    font-size: var(--ci-font-size-lg);
+}
+
+.upgrade-saldo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--ci-spacing-md);
+    background: rgba(34, 197, 94, 0.1);
+    border-left: 3px solid #22c55e;
+    border-radius: 6px;
+}
+
+.saldo-valor {
+    color: #22c55e;
+    font-size: var(--ci-font-size-lg);
+    font-weight: 600;
+}
+
+.corpo-imortal-modal-footer {
+    display: flex;
+    gap: var(--ci-spacing-md);
+    padding: var(--ci-spacing-lg);
+    border-top: 1px solid var(--ci-border);
+    background: var(--ci-bg-secondary);
+}
+
+.btn-cancelar,
+.btn-confirmar-upgrade {
+    flex: 1;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    font-size: var(--ci-font-size-base);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--ci-transition-fast);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn-cancelar {
+    background: rgba(100, 150, 255, 0.2);
+    color: #60a5fa;
+    border: 1px solid #60a5fa;
+}
+
+.btn-cancelar:hover {
+    background: rgba(100, 150, 255, 0.3);
+    box-shadow: 0 0 15px rgba(96, 165, 250, 0.5);
+}
+
+.btn-confirmar-upgrade {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: #000;
+    border: 1px solid #f59e0b;
+    font-weight: 700;
+}
+
+.btn-confirmar-upgrade:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.6);
+    filter: brightness(1.1);
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+
+
+
+

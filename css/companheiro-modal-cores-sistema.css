@@ -1,0 +1,166 @@
+/* ========================================== */
+/* COMPANHEIRO-MODAL-CORES-SISTEMA.CSS       */
+/* Ajusta cores dos modais do companheiro    */
+/* Para corresponder ao sistema principal    */
+/* ========================================== */
+
+/* Colors do sistema - Roxo & Cyan */
+:root {
+    --companheiro-color-dark-brown: #0a0e14;
+    --companheiro-color-brown: #0d1219;
+    --companheiro-color-gold: #d4af37;
+    --companheiro-color-gold-dark: #3b82f6;
+    --companheiro-color-text-primary: #e8eef7;
+    --companheiro-color-text-secondary: #cbd5e0;
+    --companheiro-color-border: #4a5568;
+    --companheiro-color-bg-primary: #0a0e14;
+    --companheiro-color-bg-secondary: #0d1219;
+}
+
+/* ===== MODAL CONTENT - BACKGROUND ===== */
+.companheiro-modal-content {
+    background: linear-gradient(135deg, #0a0e14 0%, #0d1219 100%) !important;
+    border: 2px solid #3b82f6 !important;
+}
+
+/* ===== MODAL HEADER ===== */
+.companheiro-modal-header {
+    border-bottom: 2px solid #4a5568 !important;
+    background: rgba(168, 85, 247, 0.1) !important;
+}
+
+.companheiro-modal-title {
+    color: #d4af37 !important;
+}
+
+.companheiro-modal-close-btn {
+    color: #cbd5e0 !important;
+}
+
+.companheiro-modal-close-btn:hover {
+    color: #d4af37 !important;
+}
+
+/* ===== FORM LABELS ===== */
+.companheiro-form-label {
+    color: #d4af37 !important;
+}
+
+/* ===== FORM INPUTS ===== */
+.companheiro-form-input,
+.companheiro-form-select,
+.companheiro-form-textarea {
+    background: rgba(13, 14, 20, 0.8) !important;
+    border: 1px solid #4a5568 !important;
+    color: #e8eef7 !important;
+}
+
+.companheiro-form-input:focus,
+.companheiro-form-select:focus,
+.companheiro-form-textarea:focus {
+    border-color: #d4af37 !important;
+    background: rgba(61, 40, 23, 1) !important;
+    box-shadow: 0 0 12px rgba(212, 175, 85, 0.2) !important;
+}
+
+.companheiro-form-input::placeholder {
+    color: #cbd5e0 !important;
+}
+
+.companheiro-form-select option {
+    background: #0a0e14 !important;
+    color: #e8e8e8 !important;
+}
+
+/* ===== IMAGEM GRUPO ===== */
+.companheiro-form-imagem-grupo {
+    background: rgba(42, 24, 16, 0.6) !important;
+    border: 1px solid #4a5568 !important;
+}
+
+.companheiro-form-imagem-preview {
+    border: 2px dashed #3b82f6 !important;
+}
+
+.companheiro-form-imagem-placeholder {
+    color: #d4af37 !important;
+}
+
+.companheiro-form-imagem-tab label {
+    color: #cbd5e0 !important;
+}
+
+.companheiro-form-imagem-tab input[type="radio"]:checked + label {
+    color: #d4af37 !important;
+}
+
+/* ===== BOTÕES ===== */
+.companheiro-btn {
+    border: 2px solid #d4af37 !important;
+    color: #d4af37 !important;
+    background: rgba(212, 175, 85, 0.1) !important;
+    transition: all 0.3s ease !important;
+}
+
+.companheiro-btn:hover {
+    background: rgba(212, 175, 85, 0.2) !important;
+    box-shadow: 0 0 15px rgba(212, 175, 85, 0.3) !important;
+}
+
+.companheiro-btn-primary {
+    background: linear-gradient(135deg, rgba(212, 175, 85, 0.3), rgba(168, 85, 247, 0.2)) !important;
+    border-color: #d4af37 !important;
+    color: #d4af37 !important;
+}
+
+.companheiro-btn-primary:hover {
+    background: linear-gradient(135deg, rgba(212, 175, 85, 0.5), rgba(168, 85, 247, 0.3)) !important;
+}
+
+.companheiro-btn-secondary {
+    border-color: #cbd5e0 !important;
+    color: #cbd5e0 !important;
+}
+
+.companheiro-btn-secondary:hover {
+    border-color: #d4af37 !important;
+    color: #d4af37 !important;
+}
+
+.companheiro-btn-deletar {
+    border-color: #e74c3c !important;
+    color: #e74c3c !important;
+}
+
+.companheiro-btn-deletar:hover {
+    background: rgba(231, 76, 60, 0.15) !important;
+    box-shadow: 0 0 15px rgba(231, 76, 60, 0.3) !important;
+}
+
+/* ===== FOOTER ===== */
+.companheiro-modal-footer {
+    border-top: 1px solid #4a5568 !important;
+    background: rgba(42, 24, 16, 0.3) !important;
+}
+
+/* ===== DETALHES DO ITEM ===== */
+.companheiro-modal-detalhes {
+    background: linear-gradient(135deg, #0a0e14 0%, #0d1219 100%) !important;
+}
+
+/* ===== INFO BOXES ===== */
+.companheiro-form-info-box {
+    background: rgba(42, 24, 16, 0.8) !important;
+    border: 1px solid #4a5568 !important;
+}
+
+/* ===== DIVIDER ===== */
+.companheiro-form-divider {
+    background: linear-gradient(90deg, transparent, #4a5568, transparent) !important;
+}
+
+
+
+
+
+
