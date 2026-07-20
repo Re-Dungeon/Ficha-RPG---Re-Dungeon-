@@ -6,6 +6,7 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 import { getRegrasPorUniverso } from 'service/storage';
+import { getNome } from 'common/utils/resolveNome';
 
 import { SectionTitle, StatusValueRow } from '../styles';
 
@@ -38,7 +39,7 @@ const CodexTab = ({ personagem }) => {
 
       {!personagem.universo && (
         <StatusValueRow style={{ display: 'block', marginTop: 8 }}>
-          Selecione um Universo na aba Progressão para ver as regras deste universo.
+          Selecione um Universo no menu lateral Info para ver as regras deste universo.
         </StatusValueRow>
       )}
 
@@ -60,7 +61,7 @@ const CodexTab = ({ personagem }) => {
             }}
           >
             <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ color: 'var(--text-secondary)' }} />}>
-              {regra.Nome}
+              {getNome(regra)}
             </AccordionSummary>
             <AccordionDetails style={{ whiteSpace: 'pre-wrap' }}>
               <StatusValueRow style={{ display: 'block', color: 'var(--text-secondary)' }}>

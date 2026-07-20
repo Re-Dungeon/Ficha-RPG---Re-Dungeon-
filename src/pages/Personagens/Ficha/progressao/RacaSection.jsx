@@ -9,6 +9,7 @@ import TextField from '@mui/material/TextField';
 
 import { getRacasPorUniverso } from 'service/storage';
 import { calcularLimiteHabilidadesBasicas } from 'common/utils/formulas';
+import { getNome } from 'common/utils/resolveNome';
 
 import { AtributoCardWrapper, CardTitle, SectionTitle, StatusValueRow } from '../styles';
 
@@ -63,7 +64,7 @@ const RacaSection = ({ personagem, onSave }) => {
   );
 
   const racasFiltradas = racas.filter(item =>
-    (item.Nome ?? '').toLowerCase().includes(busca.toLowerCase()),
+    getNome(item).toLowerCase().includes(busca.toLowerCase()),
   );
 
   return (
@@ -82,13 +83,13 @@ const RacaSection = ({ personagem, onSave }) => {
 
       {!personagem.universo && (
         <StatusValueRow style={{ display: 'block', marginTop: 8 }}>
-          Selecione um Universo primeiro.
+          Selecione um Universo no menu lateral Info primeiro.
         </StatusValueRow>
       )}
 
       {racaSelecionada && (
         <AtributoCardWrapper style={{ marginTop: 12, alignItems: 'flex-start' }}>
-          <CardTitle>{racaSelecionada.Nome}</CardTitle>
+          <CardTitle>{getNome(racaSelecionada)}</CardTitle>
           {racaSelecionada.raridade && (
             <StatusValueRow>Raridade: {racaSelecionada.raridade}</StatusValueRow>
           )}
@@ -165,7 +166,7 @@ const RacaSection = ({ personagem, onSave }) => {
                 }}
               >
                 <span>
-                  {item.Nome} {item.raridade ? `· ${item.raridade}` : ''}
+                  {getNome(item)} {item.raridade ? `· ${item.raridade}` : ''}
                 </span>
                 <Button size="small" onClick={() => handleEscolher(item.id)}>
                   Escolher

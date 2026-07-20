@@ -6,6 +6,7 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 
 import { getUniverso } from 'service/storage';
+import { getNome } from 'common/utils/resolveNome';
 
 const UniversoSelect = ({ personagem, onSave }) => {
   const [opcoes, setOpcoes] = useState([]);
@@ -37,7 +38,7 @@ const UniversoSelect = ({ personagem, onSave }) => {
         </MenuItem>
         {opcoes.map(item => (
           <MenuItem key={item.id} value={item.id}>
-            {item.Nome}
+            {getNome(item)}
           </MenuItem>
         ))}
       </Select>

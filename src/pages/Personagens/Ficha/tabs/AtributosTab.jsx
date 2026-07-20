@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Formik } from 'formik';
 import Button from '@mui/material/Button';
+import ShieldIcon from '@mui/icons-material/Shield';
 import PropTypes from 'prop-types';
 
 import {
@@ -15,7 +16,17 @@ import DraftBanner from 'components/DraftBanner/DraftBanner';
 import AtributoCard from '../AtributoCard';
 import StatusCard from '../StatusCard';
 import { PRIMARIOS_LABELS, SECUNDARIOS_LABELS, STATUS_LABELS, buildInitialValues } from '../constants';
-import { AttributesGrid, PowerCombatBadge, SectionTitle, StatusGrid } from '../styles';
+import {
+  AttributesGrid,
+  PowerCombatBadge,
+  SectionTitle,
+  StatusPainelEmblema,
+  StatusPainelWrapper,
+  StatusParRow,
+} from '../styles';
+
+const [[STATUS_PRINCIPAL_CHAVE, STATUS_PRINCIPAL_LABEL], ...STATUS_SECUNDARIOS] =
+  Object.entries(STATUS_LABELS);
 
 // Componente próprio (não uma função inline dentro do children do Formik) só
 // para poder chamar useEffect com segurança — hooks dentro do render-prop do
@@ -79,20 +90,39 @@ const AtributosFormBody = ({ formik, salvarRascunho, rascunho, onRestaurar, onDe
       </AttributesGrid>
 
       <SectionTitle style={{ marginTop: '24px' }}>Status</SectionTitle>
-      <StatusGrid>
-        {Object.entries(STATUS_LABELS).map(([chave, label]) => (
-          <StatusCard
-            key={chave}
-            label={label}
-            maximo={statusMaximos[chave]}
-            atual={values.status[chave]?.atual ?? 0}
-            atualName={`status.${chave}.atual`}
-            baseName={`status.${chave}.base`}
-            extraName={`status.${chave}.extra`}
-            bonusName={`status.${chave}.bonus`}
-          />
-        ))}
-      </StatusGrid>
+      <StatusPainelWrapper>
+        <StatusPainelEmblema>
+          <ShieldIcon />
+        </StatusPainelEmblema>
+
+        <StatusCard
+          grande
+          label={STATUS_PRINCIPAL_LABEL}
+          variante={STATUS_PRINCIPAL_CHAVE}
+          maximo={statusMaximos[STATUS_PRINCIPAL_CHAVE]}
+          atual={values.status[STATUS_PRINCIPAL_CHAVE]?.atual ?? 0}
+          atualName={`status.${STATUS_PRINCIPAL_CHAVE}.atual`}
+          baseName={`status.${STATUS_PRINCIPAL_CHAVE}.base`}
+          extraName={`status.${STATUS_PRINCIPAL_CHAVE}.extra`}
+          bonusName={`status.${STATUS_PRINCIPAL_CHAVE}.bonus`}
+        />
+
+        <StatusParRow>
+          {STATUS_SECUNDARIOS.map(([chave, label]) => (
+            <StatusCard
+              key={chave}
+              label={label}
+              variante={chave}
+              maximo={statusMaximos[chave]}
+              atual={values.status[chave]?.atual ?? 0}
+              atualName={`status.${chave}.atual`}
+              baseName={`status.${chave}.base`}
+              extraName={`status.${chave}.extra`}
+              bonusName={`status.${chave}.bonus`}
+            />
+          ))}
+        </StatusParRow>
+      </StatusPainelWrapper>
 
       <Button
         type="submit"

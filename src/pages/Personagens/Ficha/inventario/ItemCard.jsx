@@ -5,12 +5,14 @@ import IconButton from '@mui/material/IconButton';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 
+import { getNome } from 'common/utils/resolveNome';
+
 import { AtributoCardWrapper, CardTitle, StatusValueRow } from '../styles';
 
 const ItemCard = ({ item, onAlterarQuantidade, onToggleEquipado, onRemover }) => (
   <AtributoCardWrapper style={{ alignItems: 'flex-start' }}>
     <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
-      <CardTitle>{item.Nome ?? 'Item desconhecido'}</CardTitle>
+      <CardTitle>{getNome(item) || 'Item desconhecido'}</CardTitle>
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         <Button size="small" variant={item.equipado ? 'contained' : 'outlined'} onClick={onToggleEquipado}>
           {item.equipado ? 'Equipado' : 'Equipar'}

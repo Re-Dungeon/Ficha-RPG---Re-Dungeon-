@@ -14,6 +14,7 @@ import Tab from '@mui/material/Tab';
 
 import { getArtesPorUniverso, getFirestoreItem } from 'service/storage';
 import { campoCurtoSchema, descricaoSchema, nomeSchema } from 'common/utils/yupSchemas';
+import { getNome } from 'common/utils/resolveNome';
 
 import { StatusValueRow } from '../styles';
 import { ART_AUTORAL_INICIAL, DOMINIO_LABELS, TIPO_ACAO_OPTIONS, TIPO_ART_OPTIONS } from './constants';
@@ -89,14 +90,14 @@ const CriarArtDialog = ({ open, onClose, personagem, onCreate }) => {
 
   const handeEscolherDoCatalogo = useCallback(
     async item => {
-      await onCreate({ origem: 'catalogo', arteId: item.id, nome: item.Nome, ativa: true });
+      await onCreate({ origem: 'catalogo', arteId: item.id, nome: getNome(item), ativa: true });
       onClose();
     },
     [onCreate, onClose],
   );
 
   const artesFiltradas = catalogoArtes.filter(item =>
-    (item.Nome ?? '').toLowerCase().includes(busca.toLowerCase()),
+    getNome(item).toLowerCase().includes(busca.toLowerCase()),
   );
 
   return (
@@ -219,13 +220,13 @@ const CriarArtDialog = ({ open, onClose, personagem, onCreate }) => {
           <DialogContent>
             {(personagem.classes ?? []).length === 0 && (
               <StatusValueRow>
-                Este personagem ainda não tem classes escolhidas (aba Progressão).
+                Este personagem ainda não tem classes escolhidas (menu lateral Classe).
               </StatusValueRow>
             )}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {classesDetalhes.map(classe => (
                 <div key={classe.id}>
-                  <StatusValueRow style={{ display: 'block', fontWeight: 600 }}>{classe.Nome}</StatusValueRow>
+                  <StatusValueRow style={{ display: 'block', fontWeight: 600 }}>{getNome(classe)}</StatusValueRow>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
                     {[...(classe.habilidadesBasicas ?? []), ...(classe.habilidadesAvancadas ?? [])].length === 0 && (
                       <StatusValueRow>Nenhuma habilidade cadastrada para esta classe.</StatusValueRow>
@@ -280,7 +281,7 @@ const CriarArtDialog = ({ open, onClose, personagem, onCreate }) => {
                   key={item.id}
                   style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', border: '1px solid var(--border-primary)', borderRadius: 8 }}
                 >
-                  <span>{item.Nome}</span>
+                  <span>{getNome(item)}</span>
                   <Button size="small" onClick={() => handeEscolherDoCatalogo(item)}>
                     Escolher
                   </Button>
@@ -288,7 +289,7 @@ const CriarArtDialog = ({ open, onClose, personagem, onCreate }) => {
               ))}
               {artesFiltradas.length === 0 && (
                 <StatusValueRow>
-                  {personagem.universo ? 'Nenhuma Art encontrada.' : 'Selecione um Universo na aba Progressão primeiro.'}
+                  {personagem.universo ? 'Nenhuma Art encontrada.' : 'Selecione um Universo no menu lateral Info primeiro.'}
                 </StatusValueRow>
               )}
             </div>

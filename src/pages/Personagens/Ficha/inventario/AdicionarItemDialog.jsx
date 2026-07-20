@@ -8,6 +8,8 @@ import DialogActions from '@mui/material/DialogActions';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
 
+import { getNome } from 'common/utils/resolveNome';
+
 import { StatusValueRow } from '../styles';
 
 const QUALIDADES = ['Comum', 'Raro', 'Épico', 'Lendário', 'Mítico', 'Celestial'];
@@ -29,7 +31,7 @@ const AdicionarItemDialog = ({ open, onClose, catalogo, espacoLivre, onAdicionar
 
   const filtrados = catalogo.filter(
     item =>
-      (item.Nome ?? '').toLowerCase().includes(busca.toLowerCase()) &&
+      getNome(item).toLowerCase().includes(busca.toLowerCase()) &&
       (!qualidade || item.qualidade === qualidade),
   );
 
@@ -74,7 +76,7 @@ const AdicionarItemDialog = ({ open, onClose, catalogo, espacoLivre, onAdicionar
                   style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', border: '1px solid var(--border-primary)', borderRadius: 8 }}
                 >
                   <span>
-                    {item.Nome} {item.qualidade ? `· ${item.qualidade}` : ''}
+                    {getNome(item)} {item.qualidade ? `· ${item.qualidade}` : ''}
                   </span>
                   <Button size="small" onClick={() => setSelecionado(item)}>
                     Escolher
@@ -83,7 +85,9 @@ const AdicionarItemDialog = ({ open, onClose, catalogo, espacoLivre, onAdicionar
               ))}
               {filtrados.length === 0 && (
                 <StatusValueRow>
-                  {catalogo.length === 0 ? 'Selecione um Universo primeiro.' : 'Nenhum item encontrado.'}
+                  {catalogo.length === 0
+                    ? 'Selecione um Universo no menu lateral Info primeiro.'
+                    : 'Nenhum item encontrado.'}
                 </StatusValueRow>
               )}
             </div>
@@ -92,7 +96,7 @@ const AdicionarItemDialog = ({ open, onClose, catalogo, espacoLivre, onAdicionar
 
         {selecionado && (
           <div>
-            <StatusValueRow style={{ display: 'block', fontWeight: 600 }}>{selecionado.Nome}</StatusValueRow>
+            <StatusValueRow style={{ display: 'block', fontWeight: 600 }}>{getNome(selecionado)}</StatusValueRow>
             <TextField
               type="number"
               label="Quantidade"

@@ -1,6 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+import { getNome } from 'common/utils/resolveNome';
+
 import NoChip from './NoChip';
 import { AtributoCardWrapper, CardTitle, StatusValueRow } from '../styles';
 
@@ -14,7 +16,7 @@ const ConstelacaoCard = ({ constelacao, divindadeNome, idsDesbloqueados, onSelec
     <AtributoCardWrapper style={{ alignItems: 'flex-start', width: '100%' }}>
       <CardTitle>
         {maximizada ? '👑 ' : ''}
-        {constelacao.Nome ?? constelacao.nome}
+        {getNome(constelacao)}
         {divindadeNome ? ` — ${divindadeNome}` : ''}
       </CardTitle>
       <StatusValueRow>

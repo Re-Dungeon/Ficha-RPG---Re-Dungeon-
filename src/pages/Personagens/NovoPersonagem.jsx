@@ -13,6 +13,7 @@ import FormHelperText from '@mui/material/FormHelperText';
 import { useAuth } from 'context/AuthContext';
 import { addPersonagem, getUniverso } from 'service/storage';
 import { nomeSchema } from 'common/utils/yupSchemas';
+import { getNome } from 'common/utils/resolveNome';
 
 import { FormWrapper, PageTitle, PageWrapper } from './styles';
 
@@ -77,7 +78,7 @@ const NovoPersonagem = () => {
               >
                 {universos.map(item => (
                   <MenuItem key={item.id} value={item.id}>
-                    {item.Nome}
+                    {getNome(item)}
                   </MenuItem>
                 ))}
               </Select>

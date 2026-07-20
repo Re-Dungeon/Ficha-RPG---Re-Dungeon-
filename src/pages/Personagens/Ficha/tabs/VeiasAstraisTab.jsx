@@ -9,6 +9,7 @@ import {
   calcularPrimariosTotais,
   calcularSecundarios,
 } from 'common/utils/formulas';
+import { getNome } from 'common/utils/resolveNome';
 
 import ConstelacaoCard from '../veiasAstrais/ConstelacaoCard';
 import DesbloquearNoDialog from '../veiasAstrais/DesbloquearNoDialog';
@@ -86,7 +87,7 @@ const VeiasAstraisTab = ({ personagem, onSave }) => {
     setSelecao(null);
   }, [selecaoInfo, personagem.atributosBonus, pcGasto, idsDesbloqueados, onSave]);
 
-  const nomeDivindade = divindadeId => divindades.find(item => item.id === divindadeId)?.Nome;
+  const nomeDivindade = divindadeId => getNome(divindades.find(item => item.id === divindadeId));
 
   return (
     <div>
@@ -109,7 +110,7 @@ const VeiasAstraisTab = ({ personagem, onSave }) => {
 
       {!personagem.universo && (
         <StatusValueRow style={{ display: 'block', marginTop: 16 }}>
-          Selecione um Universo na aba Progressão primeiro.
+          Selecione um Universo no menu lateral Info primeiro.
         </StatusValueRow>
       )}
 

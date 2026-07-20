@@ -13,6 +13,7 @@ import {
   calcularPrimariosTotais,
   calcularProximoAptidaoEm,
 } from 'common/utils/formulas';
+import { getNome } from 'common/utils/resolveNome';
 
 import AjusteGanhasDialog from '../aptidoes/AjusteGanhasDialog';
 import GerenciarAptidoesDialog from '../aptidoes/GerenciarAptidoesDialog';
@@ -150,7 +151,7 @@ const AptidoesTab = ({ personagem, onSave }) => {
 
       {!personagem.universo && (
         <StatusValueRow style={{ display: 'block', marginTop: 8 }}>
-          Selecione um Universo na aba Progressão para gerenciar aptidões.
+          Selecione um Universo no menu lateral Info para gerenciar aptidões.
         </StatusValueRow>
       )}
 
@@ -165,7 +166,7 @@ const AptidoesTab = ({ personagem, onSave }) => {
           return (
             <AptidaoRow
               key={item.id}
-              nome={aptidao?.Nome ?? 'Aptidão'}
+              nome={getNome(aptidao) || 'Aptidão'}
               nivel={item.nivel ?? 0}
               nivelMaximo={nivelMaximo}
               vantagens={aptidao?.vantagens ?? []}

@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import Avatar from '@mui/material/Avatar';
 
 import { getFirestoreItem } from 'service/storage';
+import { getNome } from 'common/utils/resolveNome';
 
 import { PersonagemCard, PersonagemDetail, PersonagemInfo, PersonagemNome } from './styles';
 
@@ -12,7 +13,7 @@ const PersonagemCardItem = ({ personagem, onClick }) => {
 
   useEffect(() => {
     if (personagem.raca) {
-      getFirestoreItem('racas', personagem.raca).then(item => setRacaNome(item?.Nome ?? ''));
+      getFirestoreItem('racas', personagem.raca).then(item => setRacaNome(getNome(item)));
     } else {
       setRacaNome('');
     }
@@ -20,7 +21,7 @@ const PersonagemCardItem = ({ personagem, onClick }) => {
 
   useEffect(() => {
     Promise.all((personagem.classes ?? []).map(id => getFirestoreItem('classes', id))).then(itens =>
-      setClassesNomes(itens.filter(Boolean).map(item => item.Nome)),
+      setClassesNomes(itens.filter(Boolean).map(getNome)),
     );
   }, [personagem.classes]);
 

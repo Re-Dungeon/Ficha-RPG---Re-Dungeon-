@@ -6,6 +6,7 @@ import LinearProgress from '@mui/material/LinearProgress';
 
 import { getItensPorUniverso } from 'service/storage';
 import { calcularEspacoInventario, calcularPrimariosTotais } from 'common/utils/formulas';
+import { getNome } from 'common/utils/resolveNome';
 
 import ItemCard from '../inventario/ItemCard';
 import AdicionarItemDialog from '../inventario/AdicionarItemDialog';
@@ -94,7 +95,7 @@ const InventarioTab = ({ personagem, onSave }) => {
   );
 
   const itensFiltrados = inventarioResolvido.filter(entrada =>
-    (entrada.Nome ?? '').toLowerCase().includes(busca.toLowerCase()),
+    getNome(entrada).toLowerCase().includes(busca.toLowerCase()),
   );
 
   const percentualUsado = espaco.espacoTotal > 0 ? Math.min(100, (espaco.espacoUsado / espaco.espacoTotal) * 100) : 0;
@@ -115,7 +116,7 @@ const InventarioTab = ({ personagem, onSave }) => {
 
       {!personagem.universo && (
         <StatusValueRow style={{ display: 'block', marginTop: 8 }}>
-          Selecione um Universo na aba Progressão primeiro.
+          Selecione um Universo no menu lateral Info primeiro.
         </StatusValueRow>
       )}
 

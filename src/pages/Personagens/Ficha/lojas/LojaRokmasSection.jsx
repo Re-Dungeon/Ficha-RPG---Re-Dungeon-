@@ -5,6 +5,7 @@ import TextField from '@mui/material/TextField';
 
 import { getItensPorUniverso } from 'service/storage';
 import { calcularEspacoInventario, calcularPrimariosTotais } from 'common/utils/formulas';
+import { getNome } from 'common/utils/resolveNome';
 
 import { SectionTitle, StatusValueRow } from '../styles';
 
@@ -63,7 +64,7 @@ const LojaRokmasSection = ({ personagem, onSave }) => {
         : [...inventario, { itemId: item.id, quantidade: 1, equipado: false }];
 
       const novoHistorico = [
-        { tipo: 'compra', itemNome: item.Nome, valor: -preco, data: new Date().toISOString() },
+        { tipo: 'compra', itemNome: getNome(item), valor: -preco, data: new Date().toISOString() },
         ...historicoCompras,
       ].slice(0, 20);
 
@@ -87,7 +88,7 @@ const LojaRokmasSection = ({ personagem, onSave }) => {
         .filter(item2 => item2.quantidade > 0);
 
       const novoHistorico = [
-        { tipo: 'venda', itemNome: item?.Nome ?? 'Item', valor: valorVenda, data: new Date().toISOString() },
+        { tipo: 'venda', itemNome: getNome(item) || 'Item', valor: valorVenda, data: new Date().toISOString() },
         ...historicoCompras,
       ].slice(0, 20);
 
@@ -100,7 +101,7 @@ const LojaRokmasSection = ({ personagem, onSave }) => {
   );
 
   const catalogoFiltrado = catalogo.filter(item =>
-    (item.Nome ?? '').toLowerCase().includes(busca.toLowerCase()),
+    getNome(item).toLowerCase().includes(busca.toLowerCase()),
   );
   const itensPossuidos = inventario.filter(entrada => entrada.quantidade > 0);
 
@@ -131,7 +132,7 @@ const LojaRokmasSection = ({ personagem, onSave }) => {
             >
               <div>
                 <div style={{ fontWeight: 600 }}>
-                  {item.Nome} — {item.preco ?? 0} Rokmas
+                  {getNome(item)} — {item.preco ?? 0} Rokmas
                 </div>
                 <StatusValueRow>
                   {[item.qualidade, item.tipo, item.espaco != null && `${item.espaco} espaço`]
@@ -147,7 +148,7 @@ const LojaRokmasSection = ({ personagem, onSave }) => {
         })}
         {catalogoFiltrado.length === 0 && (
           <StatusValueRow>
-            {personagem.universo ? 'Nenhum item encontrado.' : 'Selecione um Universo primeiro.'}
+            {personagem.universo ? 'Nenhum item encontrado.' : 'Selecione um Universo no menu lateral Info primeiro.'}
           </StatusValueRow>
         )}
       </div>
@@ -164,7 +165,7 @@ const LojaRokmasSection = ({ personagem, onSave }) => {
               style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', border: '1px solid var(--border-primary)', borderRadius: 8 }}
             >
               <span>
-                {item?.Nome ?? 'Item'} (x{entrada.quantidade})
+                {getNome(item) || 'Item'} (x{entrada.quantidade})
               </span>
               <Button size="small" variant="outlined" onClick={() => handleVender(entrada)}>
                 Vender por {valorVenda}

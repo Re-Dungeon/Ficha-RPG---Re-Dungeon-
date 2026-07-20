@@ -4,11 +4,11 @@ import * as yup from 'yup';
 import PropTypes from 'prop-types';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
-import Button from '@mui/material/Button';
 import Avatar from '@mui/material/Avatar';
 
 import { getFirestoreItem, getOrigens } from 'service/storage';
 import { campoCurtoSchema, descricaoSchema, nomeSchema, urlImagemSchema } from 'common/utils/yupSchemas';
+import { getNome } from 'common/utils/resolveNome';
 import { useDraftLocalStorage } from 'hooks/useDraftLocalStorage';
 import DraftBanner from 'components/DraftBanner/DraftBanner';
 
@@ -40,7 +40,7 @@ const PerfilFormBody = ({
   onRestaurar,
   onDescartar,
 }) => {
-  const { values, errors, touched, handleChange, handleBlur, handleSubmit: submit, isSubmitting, dirty } = formik;
+  const { values, errors, touched, handleChange, handleBlur, handleSubmit: submit, dirty } = formik;
 
   useEffect(() => {
     if (dirty) {
@@ -49,7 +49,7 @@ const PerfilFormBody = ({
   }, [values, dirty, salvarRascunho]);
 
   return (
-    <form onSubmit={submit} noValidate>
+    <form id="perfil-form" onSubmit={submit} noValidate>
       {rascunho && <DraftBanner onRestaurar={onRestaurar} onDescartar={onDescartar} />}
 
       <SectionTitle>Perfil</SectionTitle>
@@ -129,7 +129,7 @@ const PerfilFormBody = ({
           </MenuItem>
           {origens.map(item => (
             <MenuItem key={item.id} value={item.id}>
-              {item.Nome}
+              {getNome(item)}
             </MenuItem>
           ))}
         </TextField>
@@ -202,10 +202,6 @@ const PerfilFormBody = ({
         size="small"
         sx={{ marginTop: 8, maxWidth: 600 }}
       />
-
-      <Button type="submit" variant="contained" disabled={isSubmitting} sx={{ marginTop: 24 }}>
-        Salvar
-      </Button>
     </form>
   );
 };
@@ -251,7 +247,7 @@ const PerfilTab = ({ personagem, onSave }) => {
 
   useEffect(() => {
     if (personagem.raca) {
-      getFirestoreItem('racas', personagem.raca).then(item => setRacaNome(item?.Nome ?? ''));
+      getFirestoreItem('racas', personagem.raca).then(item => setRacaNome(getNome(item)));
     } else {
       setRacaNome('');
     }
@@ -259,7 +255,7 @@ const PerfilTab = ({ personagem, onSave }) => {
 
   useEffect(() => {
     Promise.all((personagem.classes ?? []).map(id => getFirestoreItem('classes', id))).then(itens =>
-      setClassesNomes(itens.filter(Boolean).map(item => item.Nome)),
+      setClassesNomes(itens.filter(Boolean).map(getNome)),
     );
   }, [personagem.classes]);
 

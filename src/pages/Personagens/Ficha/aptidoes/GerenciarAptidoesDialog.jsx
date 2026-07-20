@@ -7,6 +7,8 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import TextField from '@mui/material/TextField';
 
+import { getNome } from 'common/utils/resolveNome';
+
 import { StatusValueRow } from '../styles';
 
 const GerenciarAptidoesDialog = ({ open, onClose, catalogo, idsAdquiridos, limite, onConfirm }) => {
@@ -22,7 +24,7 @@ const GerenciarAptidoesDialog = ({ open, onClose, catalogo, idsAdquiridos, limit
 
   const disponiveis = catalogo.filter(item => !idsAdquiridos.includes(item.id));
   const filtrados = disponiveis.filter(item =>
-    (item.Nome ?? '').toLowerCase().includes(busca.toLowerCase()),
+    getNome(item).toLowerCase().includes(busca.toLowerCase()),
   );
 
   const toggle = id => {
@@ -67,7 +69,7 @@ const GerenciarAptidoesDialog = ({ open, onClose, catalogo, idsAdquiridos, limit
                   borderRadius: 8,
                 }}
               >
-                <span>{item.Nome}</span>
+                <span>{getNome(item)}</span>
                 <Button
                   size="small"
                   variant={selecionado ? 'contained' : 'outlined'}

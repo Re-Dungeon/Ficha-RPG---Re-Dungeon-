@@ -10,6 +10,7 @@ import TextField from '@mui/material/TextField';
 import CloseIcon from '@mui/icons-material/Close';
 
 import { getCondicoesPorUniverso } from 'service/storage';
+import { getNome } from 'common/utils/resolveNome';
 
 import { AtributoCardWrapper, CardTitle, SectionTitle, StatusValueRow } from '../styles';
 
@@ -81,7 +82,7 @@ const CondicoesTab = ({ personagem, onSave }) => {
   );
 
   const catalogoFiltrado = catalogo.filter(item =>
-    (item.Nome ?? '').toLowerCase().includes(busca.toLowerCase()),
+    getNome(item).toLowerCase().includes(busca.toLowerCase()),
   );
 
   return (
@@ -98,8 +99,7 @@ const CondicoesTab = ({ personagem, onSave }) => {
           <StatusValueRow>Nenhuma condição ativa no momento.</StatusValueRow>
         )}
         {condicoesAtivas.map(ativo => {
-          const nomeCondicao = catalogo.find(item => item.id === ativo.condicaoId)?.Nome
-            ?? 'Condição';
+          const nomeCondicao = getNome(catalogo.find(item => item.id === ativo.condicaoId)) || 'Condição';
 
           return (
             <AtributoCardWrapper
@@ -157,7 +157,7 @@ const CondicoesTab = ({ personagem, onSave }) => {
                   borderRadius: 8,
                 }}
               >
-                <span>{item.Nome}</span>
+                <span>{getNome(item)}</span>
                 <Button size="small" onClick={() => handleAdicionar(item.id)}>
                   Adicionar
                 </Button>
@@ -167,7 +167,7 @@ const CondicoesTab = ({ personagem, onSave }) => {
               <StatusValueRow>
                 {personagem.universo
                   ? 'Nenhuma condição encontrada.'
-                  : 'Defina o Universo do personagem na aba Progressão primeiro.'}
+                  : 'Defina o Universo do personagem no menu lateral Info primeiro.'}
               </StatusValueRow>
             )}
           </div>

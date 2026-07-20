@@ -8,7 +8,7 @@ import DialogActions from '@mui/material/DialogActions';
 import TextField from '@mui/material/TextField';
 
 import { getClassesPorUniverso } from 'service/storage';
-import { resolveNome } from 'common/utils/resolveNome';
+import { getNome, resolveNome } from 'common/utils/resolveNome';
 
 import { SectionTitle, StatusValueRow } from '../styles';
 
@@ -57,7 +57,7 @@ const ClassesSection = ({ personagem, onSave, powerCombat }) => {
     .filter(Boolean);
 
   const classesFiltradas = classes.filter(item =>
-    (item.Nome ?? '').toLowerCase().includes(busca.toLowerCase()),
+    getNome(item).toLowerCase().includes(busca.toLowerCase()),
   );
 
   return (
@@ -76,7 +76,7 @@ const ClassesSection = ({ personagem, onSave, powerCombat }) => {
 
       {!personagem.universo && (
         <StatusValueRow style={{ display: 'block', marginTop: 8 }}>
-          Selecione um Universo primeiro.
+          Selecione um Universo no menu lateral Info primeiro.
         </StatusValueRow>
       )}
 
@@ -151,7 +151,7 @@ const ClassesSection = ({ personagem, onSave, powerCombat }) => {
                     borderRadius: 8,
                   }}
                 >
-                  <span>{item.Nome}</span>
+                  <span>{getNome(item)}</span>
                   <Button
                     size="small"
                     variant={selecionada ? 'contained' : 'outlined'}
