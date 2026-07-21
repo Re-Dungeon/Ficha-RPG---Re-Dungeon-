@@ -7,6 +7,7 @@ import LinearProgress from '@mui/material/LinearProgress';
 import { getItensPorUniverso } from 'service/storage';
 import { calcularEspacoInventario, calcularPrimariosTotais } from 'common/utils/formulas';
 import { getNome } from 'common/utils/resolveNome';
+import { useSaving } from 'context/SavingContext';
 
 import ItemCard from '../inventario/ItemCard';
 import AdicionarItemDialog from '../inventario/AdicionarItemDialog';
@@ -16,6 +17,7 @@ const InventarioTab = ({ personagem, onSave }) => {
   const [catalogo, setCatalogo] = useState([]);
   const [dialogAberto, setDialogAberto] = useState(false);
   const [busca, setBusca] = useState('');
+  const { executar } = useSaving();
 
   useEffect(() => {
     if (!personagem.universo) {
@@ -49,7 +51,7 @@ const InventarioTab = ({ personagem, onSave }) => {
   const espaco = calcularEspacoInventario(primariosTotais, inventarioResolvido);
 
   const handleAdicionar = useCallback(
-    async (itemId, quantidade) => {
+    (itemId, quantidade) => {
       const existente = inventario.find(entrada => entrada.itemId === itemId);
       const novoInventario = existente
         ? inventario.map(entrada =>
@@ -58,13 +60,13 @@ const InventarioTab = ({ personagem, onSave }) => {
               : entrada,
           )
         : [...inventario, { itemId, quantidade, equipado: false }];
-      await onSave({ inventario: novoInventario });
+      return executar(() => onSave({ inventario: novoInventario }));
     },
-    [inventario, onSave],
+    [inventario, onSave, executar],
   );
 
   const handleAlterarQuantidade = useCallback(
-    async (itemId, delta) => {
+    (itemId, delta) => {
       const novoInventario = inventario
         .map(entrada =>
           entrada.itemId === itemId
@@ -72,26 +74,24 @@ const InventarioTab = ({ personagem, onSave }) => {
             : entrada,
         )
         .filter(entrada => entrada.quantidade > 0);
-      await onSave({ inventario: novoInventario });
+      return executar(() => onSave({ inventario: novoInventario }));
     },
-    [inventario, onSave],
+    [inventario, onSave, executar],
   );
 
   const handleToggleEquipado = useCallback(
-    async itemId => {
+    itemId => {
       const novoInventario = inventario.map(entrada =>
         entrada.itemId === itemId ? { ...entrada, equipado: !entrada.equipado } : entrada,
       );
-      await onSave({ inventario: novoInventario });
+      return executar(() => onSave({ inventario: novoInventario }));
     },
-    [inventario, onSave],
+    [inventario, onSave, executar],
   );
 
   const handleRemover = useCallback(
-    async itemId => {
-      await onSave({ inventario: inventario.filter(entrada => entrada.itemId !== itemId) });
-    },
-    [inventario, onSave],
+    itemId => executar(() => onSave({ inventario: inventario.filter(entrada => entrada.itemId !== itemId) })),
+    [inventario, onSave, executar],
   );
 
   const itensFiltrados = inventarioResolvido.filter(entrada =>

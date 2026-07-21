@@ -1,19 +1,23 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import CircularProgress from '@mui/material/CircularProgress';
-import IconButton from '@mui/material/IconButton';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
+import EqualizerIcon from '@mui/icons-material/Equalizer';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
+import Inventory2Icon from '@mui/icons-material/Inventory2';
+import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
+import HubIcon from '@mui/icons-material/Hub';
 
 import { getPersonagem, removePersonagem, updatePersonagem } from 'service/storage';
+import { SavingProvider } from 'context/SavingContext';
 
 import AtributosTab from './tabs/AtributosTab';
 import AptidoesTab from './tabs/AptidoesTab';
@@ -30,11 +34,12 @@ import SorteModal from './sidebar/SorteModal';
 import LojaModal from './sidebar/LojaModal';
 import CondicoesModal from './sidebar/CondicoesModal';
 import CodexModal from './sidebar/CodexModal';
-import { FichaLayout, FichaMain, HeaderTitleRow, PageHeader, PageTitle } from './styles';
+import { FichaLayout, FichaMain, TabsBar } from './styles';
 
 const Ficha = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { setHeaderExtra } = useOutletContext();
   const [personagem, setPersonagem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [aba, setAba] = useState('atributos');
@@ -89,6 +94,14 @@ const Ficha = () => {
 
   const fecharModal = useCallback(() => setModalAtivo(null), []);
 
+  useEffect(() => {
+    if (!personagem) {
+      return undefined;
+    }
+    setHeaderExtra({ nome: personagem.nome, onVoltar: handleVoltar });
+    return () => setHeaderExtra(null);
+  }, [personagem, handleVoltar, setHeaderExtra]);
+
   if (loading || !personagem) {
     return (
       <FichaMain>
@@ -98,88 +111,84 @@ const Ficha = () => {
   }
 
   return (
-    <FichaLayout>
-      <FichaSidebar
-        expandida={sidebarExpandida}
-        onAlternar={() => setSidebarExpandida(current => !current)}
-        onAbrirModal={setModalAtivo}
-      />
-
-      <FichaMain>
-        <PageHeader>
-          <HeaderTitleRow>
-            <IconButton aria-label="Voltar" onClick={handleVoltar} sx={{ color: 'var(--text-primary)' }}>
-              <ArrowBackIcon />
-            </IconButton>
-            <PageTitle>{personagem.nome}</PageTitle>
-          </HeaderTitleRow>
-
-          <Button
-            variant="outlined"
-            color="error"
-            startIcon={<DeleteOutlineIcon />}
-            onClick={() => setDialogExcluir(true)}
-          >
-            Excluir Personagem
-          </Button>
-        </PageHeader>
-
-        <Tabs
-          value={aba}
-          onChange={(_event, novaAba) => setAba(novaAba)}
-          variant="scrollable"
-          scrollButtons="auto"
-          textColor="inherit"
-          slotProps={{ indicator: { style: { backgroundColor: 'var(--color-accent)' } } }}
-        >
-          <Tab value="atributos" label="Atributos" />
-          <Tab value="aptidoes" label="Aptidões" />
-          <Tab value="arts" label="Artes" />
-          <Tab value="inventario" label="Inventário" />
-          <Tab value="treinamento" label="Treinamento" />
-          <Tab value="veiasAstrais" label="Veias Astrais" />
-        </Tabs>
-
-        {aba === 'atributos' && <AtributosTab personagem={personagem} onSave={handleSave} />}
-        {aba === 'aptidoes' && <AptidoesTab personagem={personagem} onSave={handleSave} />}
-        {aba === 'arts' && <ArtsTab personagem={personagem} onSave={handleSave} />}
-        {aba === 'inventario' && <InventarioTab personagem={personagem} onSave={handleSave} />}
-        {aba === 'treinamento' && <TreinamentoTab personagem={personagem} onSave={handleSave} />}
-        {aba === 'veiasAstrais' && <VeiasAstraisTab personagem={personagem} onSave={handleSave} />}
-
-        <Dialog open={dialogExcluir} onClose={() => setDialogExcluir(false)}>
-          <DialogTitle>Excluir Personagem</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              Tem certeza que deseja excluir <strong>{personagem.nome}</strong>? Essa ação não pode ser
-              desfeita.
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setDialogExcluir(false)} disabled={excluindo}>
-              Cancelar
-            </Button>
-            <Button color="error" variant="contained" onClick={handleExcluir} disabled={excluindo}>
-              Excluir
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        <InfoModal open={modalAtivo === 'info'} onClose={fecharModal} personagem={personagem} onSave={handleSave} />
-        <AptidaoConsultaModal open={modalAtivo === 'aptidao'} onClose={fecharModal} personagem={personagem} />
-        <RacaModal open={modalAtivo === 'raca'} onClose={fecharModal} personagem={personagem} onSave={handleSave} />
-        <ClasseModal open={modalAtivo === 'classe'} onClose={fecharModal} personagem={personagem} onSave={handleSave} />
-        <SorteModal open={modalAtivo === 'sorte'} onClose={fecharModal} personagem={personagem} onSave={handleSave} />
-        <LojaModal open={modalAtivo === 'loja'} onClose={fecharModal} personagem={personagem} onSave={handleSave} />
-        <CondicoesModal
-          open={modalAtivo === 'condicoes'}
-          onClose={fecharModal}
-          personagem={personagem}
-          onSave={handleSave}
+    <SavingProvider>
+      <FichaLayout>
+        <FichaSidebar
+          expandida={sidebarExpandida}
+          onAlternar={() => setSidebarExpandida(current => !current)}
+          onAbrirModal={setModalAtivo}
         />
-        <CodexModal open={modalAtivo === 'codex'} onClose={fecharModal} personagem={personagem} />
-      </FichaMain>
-    </FichaLayout>
+
+        <FichaMain>
+          <TabsBar>
+            <Tabs
+              value={aba}
+              onChange={(_event, novaAba) => setAba(novaAba)}
+              variant="scrollable"
+              scrollButtons="auto"
+              textColor="inherit"
+            >
+              <Tab value="atributos" label="Atributos" icon={<EqualizerIcon fontSize="small" />} iconPosition="start" />
+              <Tab value="aptidoes" label="Aptidões" icon={<AutoAwesomeIcon fontSize="small" />} iconPosition="start" />
+              <Tab value="arts" label="Artes" icon={<AutoFixHighIcon fontSize="small" />} iconPosition="start" />
+              <Tab value="inventario" label="Inventário" icon={<Inventory2Icon fontSize="small" />} iconPosition="start" />
+              <Tab
+                value="treinamento"
+                label="Treinamento"
+                icon={<FitnessCenterIcon fontSize="small" />}
+                iconPosition="start"
+              />
+              <Tab value="veiasAstrais" label="Veias Astrais" icon={<HubIcon fontSize="small" />} iconPosition="start" />
+            </Tabs>
+          </TabsBar>
+
+          {aba === 'atributos' && (
+            <AtributosTab
+              personagem={personagem}
+              onSave={handleSave}
+              onExcluir={() => setDialogExcluir(true)}
+            />
+          )}
+          {aba === 'aptidoes' && <AptidoesTab personagem={personagem} onSave={handleSave} />}
+          {aba === 'arts' && <ArtsTab personagem={personagem} onSave={handleSave} />}
+          {aba === 'inventario' && <InventarioTab personagem={personagem} onSave={handleSave} />}
+          {aba === 'treinamento' && <TreinamentoTab personagem={personagem} onSave={handleSave} />}
+          {aba === 'veiasAstrais' && <VeiasAstraisTab personagem={personagem} onSave={handleSave} />}
+
+          <Dialog open={dialogExcluir} onClose={() => setDialogExcluir(false)}>
+            <DialogTitle>Excluir Personagem</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                Tem certeza que deseja excluir <strong>{personagem.nome}</strong>? Essa ação não pode ser
+                desfeita.
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setDialogExcluir(false)} disabled={excluindo}>
+                Cancelar
+              </Button>
+              <Button color="error" variant="contained" onClick={handleExcluir} disabled={excluindo}>
+                Excluir
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          <InfoModal open={modalAtivo === 'info'} onClose={fecharModal} personagem={personagem} onSave={handleSave} />
+          <AptidaoConsultaModal open={modalAtivo === 'aptidao'} onClose={fecharModal} personagem={personagem} />
+          <RacaModal open={modalAtivo === 'raca'} onClose={fecharModal} personagem={personagem} onSave={handleSave} />
+          <ClasseModal open={modalAtivo === 'classe'} onClose={fecharModal} personagem={personagem} onSave={handleSave} />
+          <SorteModal open={modalAtivo === 'sorte'} onClose={fecharModal} personagem={personagem} onSave={handleSave} />
+          <LojaModal open={modalAtivo === 'loja'} onClose={fecharModal} personagem={personagem} onSave={handleSave} />
+          <CondicoesModal
+            open={modalAtivo === 'condicoes'}
+            onClose={fecharModal}
+            personagem={personagem}
+            onSave={handleSave}
+          />
+          <CodexModal open={modalAtivo === 'codex'} onClose={fecharModal} personagem={personagem} />
+        </FichaMain>
+      </FichaLayout>
+    </SavingProvider>
   );
 };
 

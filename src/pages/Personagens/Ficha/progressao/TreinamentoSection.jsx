@@ -14,6 +14,7 @@ import {
   calcularResultadoTreino,
   calcularXpNecessario,
 } from 'common/utils/formulas';
+import { useSaving } from 'context/SavingContext';
 
 import { PRIMARIOS_LABELS } from '../constants';
 import { AttributesGrid, AtributoCardWrapper, CardTitle, CardTotal, SectionTitle, StatusValueRow } from '../styles';
@@ -23,7 +24,7 @@ const TreinamentoSection = ({ personagem, onSave, sorteTotal }) => {
   const [horas, setHoras] = useState(1);
   const [bonusMestre, setBonusMestre] = useState(0);
   const [resultado, setResultado] = useState(null);
-  const [processando, setProcessando] = useState(false);
+  const { executar } = useSaving();
 
   const abrirTreino = useCallback(chave => {
     setAtributoAberto(chave);
@@ -35,7 +36,6 @@ const TreinamentoSection = ({ personagem, onSave, sorteTotal }) => {
   const fechar = useCallback(() => setAtributoAberto(null), []);
 
   const handleTreinar = useCallback(async () => {
-    setProcessando(true);
     const chave = atributoAberto;
     const nivelAtual = personagem.treinamento?.[chave]?.nivel ?? personagem.atributosBase?.[chave] ?? 0;
     const xpAtualAntes = personagem.treinamento?.[chave]?.xpAtual ?? 0;
@@ -44,14 +44,15 @@ const TreinamentoSection = ({ personagem, onSave, sorteTotal }) => {
     const resultadoTreino = calcularResultadoTreino({ nivelAtual, horas, bonusSorte, bonusMestre });
     const { nivel, xpAtual } = aplicarXpTreino(nivelAtual, xpAtualAntes, resultadoTreino.xpGanho);
 
-    await onSave({
-      treinamento: { ...personagem.treinamento, [chave]: { nivel, xpAtual } },
-      atributosBase: { ...personagem.atributosBase, [chave]: nivel },
-    });
+    await executar(() =>
+      onSave({
+        treinamento: { ...personagem.treinamento, [chave]: { nivel, xpAtual } },
+        atributosBase: { ...personagem.atributosBase, [chave]: nivel },
+      }),
+    );
 
     setResultado({ ...resultadoTreino, nivelAnterior: nivelAtual, nivelNovo: nivel });
-    setProcessando(false);
-  }, [atributoAberto, bonusMestre, horas, onSave, personagem, sorteTotal]);
+  }, [atributoAberto, bonusMestre, horas, onSave, personagem, sorteTotal, executar]);
 
   return (
     <div>
@@ -121,7 +122,7 @@ const TreinamentoSection = ({ personagem, onSave, sorteTotal }) => {
         </DialogContent>
         <DialogActions>
           <Button onClick={fechar}>Fechar</Button>
-          <Button variant="contained" onClick={handleTreinar} disabled={processando}>
+          <Button variant="contained" onClick={handleTreinar}>
             Iniciar Treinamento
           </Button>
         </DialogActions>

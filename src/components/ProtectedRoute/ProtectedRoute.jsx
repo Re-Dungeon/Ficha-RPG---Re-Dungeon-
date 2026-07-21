@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { Navigate, Outlet, useLocation, useOutletContext } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useAuth } from 'context/AuthContext';
@@ -21,6 +21,7 @@ const PageLoadingFallback = () => (
 const ProtectedRoute = () => {
   const { currentUser, loading } = useAuth();
   const location = useLocation();
+  const outletContext = useOutletContext();
 
   if (loading) {
     return <PageLoadingFallback />;
@@ -32,7 +33,7 @@ const ProtectedRoute = () => {
 
   return (
     <Suspense fallback={<PageLoadingFallback />}>
-      <Outlet />
+      <Outlet context={outletContext} />
     </Suspense>
   );
 };

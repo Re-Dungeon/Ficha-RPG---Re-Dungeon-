@@ -1,6 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import Button from '@mui/material/Button';
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 
 import {
   getAptidoesAdquiridas,
@@ -18,7 +21,27 @@ import { getNome } from 'common/utils/resolveNome';
 import AjusteGanhasDialog from '../aptidoes/AjusteGanhasDialog';
 import GerenciarAptidoesDialog from '../aptidoes/GerenciarAptidoesDialog';
 import AptidaoRow from '../aptidoes/AptidaoRow';
-import { AtributoCardWrapper, CardTitle, CardTotal, SectionTitle, StatusValueRow } from '../styles';
+import {
+  COR_GANHAR,
+  COR_GERENCIAR,
+  COR_REMOVER,
+  AcoesRow,
+  ColunaCard,
+  ColunasRow,
+  ColunaTitulo,
+  StatBar,
+  StatCard,
+  StatLabel,
+  StatValor,
+  TabelaBody,
+  TabelaHeaderRow,
+  VantagemCard,
+  VantagemHeader,
+  VantagemTexto,
+  VantagemTitulo,
+  VantagensGrid,
+} from '../aptidoes/styles';
+import { SectionTitle, StatusValueRow } from '../styles';
 
 const AptidoesTab = ({ personagem, onSave }) => {
   const [catalogo, setCatalogo] = useState([]);
@@ -27,6 +50,14 @@ const AptidoesTab = ({ personagem, onSave }) => {
   const [dialogGanhar, setDialogGanhar] = useState(false);
   const [dialogRemover, setDialogRemover] = useState(false);
   const [dialogGerenciar, setDialogGerenciar] = useState(false);
+  const [ganhas, setGanhas] = useState(personagem.aptidoesGanhas ?? 0);
+  const [erro, setErro] = useState(null);
+
+  // Espelha o valor otimista com o que vem do personagem (ex.: troca de personagem
+  // ou o próprio onSave confirmando o mesmo valor já aplicado localmente).
+  useEffect(() => {
+    setGanhas(personagem.aptidoesGanhas ?? 0);
+  }, [personagem.id, personagem.aptidoesGanhas]);
 
   const primariosTotais = useMemo(
     () =>
@@ -38,19 +69,15 @@ const AptidoesTab = ({ personagem, onSave }) => {
     [personagem.atributosBase, personagem.atributosExtra, personagem.atributosBonus],
   );
 
-  const ganhas = personagem.aptidoesGanhas ?? 0;
   const maximo = calcularMaximoAptidoes(primariosTotais, ganhas);
   const proximoEm = calcularProximoAptidaoEm(primariosTotais);
-
-  const carregarAdquiridas = useCallback(async () => {
-    const itens = await getAptidoesAdquiridas(personagem.id);
-    setAdquiridas(itens);
-  }, [personagem.id]);
 
   useEffect(() => {
     let isMounted = true;
     Promise.all([
-      personagem.universo ? getAptidoesPorUniverso(personagem.universo) : Promise.resolve([]),
+      personagem.universo
+        ? getAptidoesPorUniverso(personagem.universo)
+        : Promise.resolve([]),
       getAptidoesAdquiridas(personagem.id),
     ]).then(([catalogoItens, adquiridasItens]) => {
       if (isMounted) {
@@ -64,90 +91,200 @@ const AptidoesTab = ({ personagem, onSave }) => {
     };
   }, [personagem.id, personagem.universo]);
 
+  // Atualiza a UI na hora (otimista) e só dispara a escrita no Firestore em segundo
+  // plano — sem overlay bloqueante. Se a escrita falhar, desfaz o estado local e avisa.
   const handleAjustarGanhas = useCallback(
-    async delta => {
-      await onSave({ aptidoesGanhas: Math.max(0, ganhas + delta) });
+    delta => {
+      const anterior = ganhas;
+      const proximo = Math.max(0, anterior + delta);
+      setGanhas(proximo);
+      setErro(null);
+      onSave({ aptidoesGanhas: proximo }).catch(() => {
+        setGanhas(anterior);
+        setErro('Não foi possível salvar a alteração. Tente novamente.');
+      });
     },
     [ganhas, onSave],
   );
 
   const handleAdquirir = useCallback(
-    async aptidaoIds => {
-      await Promise.all(aptidaoIds.map(id => setAptidaoAdquirida(personagem.id, id, 1)));
-      await carregarAdquiridas();
+    aptidaoIds => {
+      setAdquiridas(prev => [...prev, ...aptidaoIds.map(id => ({ id, nivel: 1 }))]);
+      setErro(null);
+      Promise.all(aptidaoIds.map(id => setAptidaoAdquirida(personagem.id, id, 1))).catch(() => {
+        setAdquiridas(prev => prev.filter(item => !aptidaoIds.includes(item.id)));
+        setErro('Não foi possível salvar a alteração. Tente novamente.');
+      });
     },
-    [personagem.id, carregarAdquiridas],
+    [personagem.id],
   );
 
   const handleUpgrade = useCallback(
-    async (aptidaoId, nivelAtual, nivelMaximo) => {
-      if (nivelAtual >= nivelMaximo) {
+    (aptidaoId, nivelAtual, nivelMaximo, atualTotal, maximoTotal) => {
+      if (nivelAtual >= nivelMaximo || atualTotal >= maximoTotal) {
         return;
       }
-      await setAptidaoAdquirida(personagem.id, aptidaoId, nivelAtual + 1);
-      await carregarAdquiridas();
+      const novoNivel = nivelAtual + 1;
+      setAdquiridas(prev =>
+        prev.map(item => (item.id === aptidaoId ? { ...item, nivel: novoNivel } : item)),
+      );
+      setErro(null);
+      setAptidaoAdquirida(personagem.id, aptidaoId, novoNivel).catch(() => {
+        setAdquiridas(prev =>
+          prev.map(item => (item.id === aptidaoId ? { ...item, nivel: nivelAtual } : item)),
+        );
+        setErro('Não foi possível salvar a alteração. Tente novamente.');
+      });
     },
-    [personagem.id, carregarAdquiridas],
+    [personagem.id],
   );
 
   const handleReset = useCallback(
-    async aptidaoId => {
-      await setAptidaoAdquirida(personagem.id, aptidaoId, 0);
-      await carregarAdquiridas();
+    (aptidaoId, nivelAtual) => {
+      setAdquiridas(prev =>
+        prev.map(item => (item.id === aptidaoId ? { ...item, nivel: 0 } : item)),
+      );
+      setErro(null);
+      setAptidaoAdquirida(personagem.id, aptidaoId, 0).catch(() => {
+        setAdquiridas(prev =>
+          prev.map(item => (item.id === aptidaoId ? { ...item, nivel: nivelAtual } : item)),
+        );
+        setErro('Não foi possível salvar a alteração. Tente novamente.');
+      });
     },
-    [personagem.id, carregarAdquiridas],
+    [personagem.id],
   );
 
   const handleRemover = useCallback(
-    async aptidaoId => {
-      await removeAptidaoAdquirida(personagem.id, aptidaoId);
-      await carregarAdquiridas();
+    aptidaoId => {
+      let removida = null;
+      setAdquiridas(prev => {
+        removida = prev.find(item => item.id === aptidaoId) ?? null;
+        return prev.filter(item => item.id !== aptidaoId);
+      });
+      setErro(null);
+      removeAptidaoAdquirida(personagem.id, aptidaoId).catch(() => {
+        setAdquiridas(prev => (removida ? [...prev, removida] : prev));
+        setErro('Não foi possível salvar a alteração. Tente novamente.');
+      });
     },
-    [personagem.id, carregarAdquiridas],
+    [personagem.id],
   );
 
-  const atual = adquiridas.length;
+  const atual = adquiridas.reduce((soma, item) => soma + (item.nivel ?? 0), 0);
   const idsAdquiridos = adquiridas.map(item => item.id);
   const disponiveisParaEscolher = Math.max(0, maximo - atual);
+
+  // Por nível desbloqueado (nivel <= nivelAtual): possuiBonus true vira um card de
+  // vantagem narrativa; possuiBonus false soma +1 ao contador de Bônus da linha.
+  const linhasAdquiridas = useMemo(
+    () =>
+      adquiridas.map(item => {
+        const aptidao = catalogo.find(cat => cat.id === item.id);
+        const nivelAtual = item.nivel ?? 0;
+        const niveisDesbloqueados = (aptidao?.progressaoNiveis ?? []).filter(
+          nivelInfo => nivelInfo.nivel <= nivelAtual,
+        );
+        const bonus = niveisDesbloqueados.filter(
+          nivelInfo => !nivelInfo.possuiBonus,
+        ).length;
+        const vantagens = niveisDesbloqueados
+          .filter(nivelInfo => nivelInfo.possuiBonus)
+          .map(nivelInfo => ({
+            aptidaoId: item.id,
+            aptidaoNome: getNome(aptidao) || 'Aptidão',
+            nivel: nivelInfo.nivel,
+            descricao: nivelInfo.bonus?.descricaoCompleta ?? '',
+          }));
+
+        return {
+          id: item.id,
+          nome: getNome(aptidao) || 'Aptidão',
+          nivel: nivelAtual,
+          nivelMaximo: aptidao?.nivelMaximo ?? 1,
+          bonus,
+          vantagens,
+        };
+      }),
+    [adquiridas, catalogo],
+  );
+
+  const vantagensDesbloqueadas = useMemo(
+    () => linhasAdquiridas.flatMap(linha => linha.vantagens),
+    [linhasAdquiridas],
+  );
 
   return (
     <div>
       <SectionTitle>Aptidões</SectionTitle>
 
-      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 16 }}>
-        <AtributoCardWrapper style={{ minWidth: 140 }}>
-          <CardTitle>Atual</CardTitle>
-          <CardTotal>{atual}</CardTotal>
-        </AtributoCardWrapper>
-        <AtributoCardWrapper style={{ minWidth: 140 }}>
-          <CardTitle>Ganhas</CardTitle>
-          <CardTotal>{ganhas}</CardTotal>
-        </AtributoCardWrapper>
-        <AtributoCardWrapper style={{ minWidth: 140 }}>
-          <CardTitle>Máximo</CardTitle>
-          <CardTotal>{maximo}</CardTotal>
-        </AtributoCardWrapper>
-        <AtributoCardWrapper style={{ minWidth: 140 }}>
-          <CardTitle>Atributo p/+1</CardTitle>
-          <CardTotal>{proximoEm}</CardTotal>
-        </AtributoCardWrapper>
-      </div>
+      <StatBar style={{ marginTop: 16 }}>
+        <StatCard>
+          <StatLabel>Atual</StatLabel>
+          <StatValor>{atual}</StatValor>
+        </StatCard>
+        <StatCard>
+          <StatLabel>Ganhas</StatLabel>
+          <StatValor>{ganhas}</StatValor>
+        </StatCard>
+        <StatCard>
+          <StatLabel>Máximo</StatLabel>
+          <StatValor>{maximo}</StatValor>
+        </StatCard>
+        <StatCard>
+          <StatLabel>Atributo p/+1</StatLabel>
+          <StatValor>{proximoEm}</StatValor>
+        </StatCard>
+      </StatBar>
 
-      <div style={{ display: 'flex', gap: 12, marginTop: 20, flexWrap: 'wrap' }}>
-        <Button variant="outlined" onClick={() => setDialogGanhar(true)}>
-          ➕ Ganhar Aptidão
+      <AcoesRow style={{ marginTop: 20 }}>
+        <Button
+          startIcon={<AddIcon />}
+          onClick={() => setDialogGanhar(true)}
+          sx={{
+            flex: 1,
+            minWidth: 200,
+            border: `1px solid ${COR_GANHAR}`,
+            color: COR_GANHAR,
+            background: 'rgba(74, 222, 128, 0.1)',
+            '&:hover': { background: 'rgba(74, 222, 128, 0.18)' },
+          }}
+        >
+          Ganhar Aptidão
         </Button>
         <Button
-          variant="contained"
           disabled={!personagem.universo || disponiveisParaEscolher === 0}
           onClick={() => setDialogGerenciar(true)}
+          sx={{
+            flex: 1,
+            minWidth: 200,
+            background: COR_GERENCIAR,
+            color: '#1c1830',
+            '&:hover': { background: COR_GERENCIAR, filter: 'brightness(1.08)' },
+            '&.Mui-disabled': {
+              background: 'rgba(249, 115, 22, 0.25)',
+              color: 'rgba(28, 24, 48, 0.5)',
+            },
+          }}
         >
           Gerenciar Aptidões
         </Button>
-        <Button variant="outlined" color="error" disabled={ganhas === 0} onClick={() => setDialogRemover(true)}>
-          ➖ Remover Aptidão
+        <Button
+          startIcon={<RemoveIcon />}
+          disabled={ganhas === 0}
+          onClick={() => setDialogRemover(true)}
+          sx={{
+            flex: 1,
+            minWidth: 200,
+            border: `1px solid ${COR_REMOVER}`,
+            color: COR_REMOVER,
+            background: 'rgba(248, 113, 113, 0.1)',
+            '&:hover': { background: 'rgba(248, 113, 113, 0.18)' },
+          }}
+        >
+          Remover Aptidão
         </Button>
-      </div>
+      </AcoesRow>
 
       {!personagem.universo && (
         <StatusValueRow style={{ display: 'block', marginTop: 8 }}>
@@ -155,32 +292,78 @@ const AptidoesTab = ({ personagem, onSave }) => {
         </StatusValueRow>
       )}
 
-      <SectionTitle style={{ marginTop: 32 }}>Aptidões Adquiridas</SectionTitle>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 }}>
-        {!carregando && adquiridas.length === 0 && (
-          <StatusValueRow>Nenhuma aptidão adquirida ainda.</StatusValueRow>
-        )}
-        {adquiridas.map(item => {
-          const aptidao = catalogo.find(cat => cat.id === item.id);
-          const nivelMaximo = aptidao?.nivelMaximo ?? 5;
-          return (
-            <AptidaoRow
-              key={item.id}
-              nome={getNome(aptidao) || 'Aptidão'}
-              nivel={item.nivel ?? 0}
-              nivelMaximo={nivelMaximo}
-              vantagens={aptidao?.vantagens ?? []}
-              onUpgrade={() => handleUpgrade(item.id, item.nivel ?? 0, nivelMaximo)}
-              onReset={() => handleReset(item.id)}
-              onRemover={() => handleRemover(item.id)}
-            />
-          );
-        })}
-      </div>
+      {erro && (
+        <StatusValueRow style={{ display: 'block', marginTop: 8, color: '#f87171' }}>
+          {erro}
+        </StatusValueRow>
+      )}
+
+      <ColunasRow style={{ marginTop: 32 }}>
+        <ColunaCard>
+          <ColunaTitulo>Aptidões Adquiridas</ColunaTitulo>
+          {!carregando && linhasAdquiridas.length === 0 && (
+            <StatusValueRow>Nenhuma aptidão adquirida ainda.</StatusValueRow>
+          )}
+          {linhasAdquiridas.length > 0 && (
+            <>
+              <TabelaHeaderRow>
+                <span>Aptidão</span>
+                <span>Nível</span>
+                <span>Bônus</span>
+                <span>Ações</span>
+              </TabelaHeaderRow>
+              <TabelaBody>
+                {linhasAdquiridas.map(linha => (
+                  <AptidaoRow
+                    key={linha.id}
+                    nome={linha.nome}
+                    nivel={linha.nivel}
+                    nivelMaximo={linha.nivelMaximo}
+                    bonus={linha.bonus}
+                    limiteAtingido={atual >= maximo}
+                    onUpgrade={() =>
+                      handleUpgrade(
+                        linha.id,
+                        linha.nivel,
+                        linha.nivelMaximo,
+                        atual,
+                        maximo,
+                      )
+                    }
+                    onReset={() => handleReset(linha.id, linha.nivel)}
+                    onRemover={() => handleRemover(linha.id)}
+                  />
+                ))}
+              </TabelaBody>
+            </>
+          )}
+        </ColunaCard>
+
+        <ColunaCard>
+          <ColunaTitulo>Vantagens Desbloqueadas</ColunaTitulo>
+          {vantagensDesbloqueadas.length === 0 ? (
+            <StatusValueRow>Nenhuma vantagem desbloqueada ainda.</StatusValueRow>
+          ) : (
+            <VantagensGrid>
+              {vantagensDesbloqueadas.map(vantagem => (
+                <VantagemCard key={`${vantagem.aptidaoId}-${vantagem.nivel}`}>
+                  <VantagemHeader>
+                    <VantagemTitulo>
+                      <AutoAwesomeIcon fontSize="inherit" />
+                      {vantagem.aptidaoNome} - Nível {vantagem.nivel}
+                    </VantagemTitulo>
+                  </VantagemHeader>
+                  <VantagemTexto>{vantagem.descricao}</VantagemTexto>
+                </VantagemCard>
+              ))}
+            </VantagensGrid>
+          )}
+        </ColunaCard>
+      </ColunasRow>
 
       <AjusteGanhasDialog
         open={dialogGanhar}
-        titulo="Ganhar Aptidão"
+        titulo="Quantas aptidões deseja ganhar?"
         onClose={() => setDialogGanhar(false)}
         onConfirm={quantidade => {
           handleAjustarGanhas(quantidade);
@@ -189,7 +372,7 @@ const AptidoesTab = ({ personagem, onSave }) => {
       />
       <AjusteGanhasDialog
         open={dialogRemover}
-        titulo="Remover Aptidão"
+        titulo="Quantas aptidões deseja remover?"
         onClose={() => setDialogRemover(false)}
         onConfirm={quantidade => {
           handleAjustarGanhas(-quantidade);
@@ -202,8 +385,12 @@ const AptidoesTab = ({ personagem, onSave }) => {
         catalogo={catalogo}
         idsAdquiridos={idsAdquiridos}
         limite={disponiveisParaEscolher}
-        onConfirm={async ids => {
-          await handleAdquirir(ids);
+        atual={atual}
+        ganhas={ganhas}
+        maximo={maximo}
+        proximoEm={proximoEm}
+        onConfirm={ids => {
+          handleAdquirir(ids);
           setDialogGerenciar(false);
         }}
       />

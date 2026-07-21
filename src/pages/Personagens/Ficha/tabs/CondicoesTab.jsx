@@ -11,6 +11,7 @@ import CloseIcon from '@mui/icons-material/Close';
 
 import { getCondicoesPorUniverso } from 'service/storage';
 import { getNome } from 'common/utils/resolveNome';
+import { useSaving } from 'context/SavingContext';
 
 import { AtributoCardWrapper, CardTitle, SectionTitle, StatusValueRow } from '../styles';
 
@@ -20,6 +21,7 @@ const CondicoesTab = ({ personagem, onSave }) => {
   const [catalogo, setCatalogo] = useState([]);
   const [dialogAberto, setDialogAberto] = useState(false);
   const [busca, setBusca] = useState('');
+  const { executar } = useSaving();
 
   useEffect(() => {
     if (!personagem.universo) {
@@ -43,7 +45,7 @@ const CondicoesTab = ({ personagem, onSave }) => {
   );
 
   const handleAdicionar = useCallback(
-    async condicaoId => {
+    condicaoId => {
       const existente = condicoesAtivas.find(item => item.condicaoId === condicaoId);
       const novaLista = existente
         ? condicoesAtivas.map(item =>
@@ -56,18 +58,19 @@ const CondicoesTab = ({ personagem, onSave }) => {
             { condicaoId, stack: 1, duracaoRestante: null, aplicadoEm: hoje() },
           ];
 
-      await onSave({ condicoesAtivas: novaLista });
+      return executar(() => onSave({ condicoesAtivas: novaLista }));
     },
-    [condicoesAtivas, onSave],
+    [condicoesAtivas, onSave, executar],
   );
 
   const handleRemover = useCallback(
-    async condicaoId => {
-      await onSave({
-        condicoesAtivas: condicoesAtivas.filter(item => item.condicaoId !== condicaoId),
-      });
-    },
-    [condicoesAtivas, onSave],
+    condicaoId =>
+      executar(() =>
+        onSave({
+          condicoesAtivas: condicoesAtivas.filter(item => item.condicaoId !== condicaoId),
+        }),
+      ),
+    [condicoesAtivas, onSave, executar],
   );
 
   const handleAlterarDuracao = useCallback(

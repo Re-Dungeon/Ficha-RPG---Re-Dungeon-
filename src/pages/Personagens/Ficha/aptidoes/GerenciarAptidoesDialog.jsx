@@ -2,16 +2,43 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import TextField from '@mui/material/TextField';
+import InputAdornment from '@mui/material/InputAdornment';
+import SearchIcon from '@mui/icons-material/Search';
+import CloseIcon from '@mui/icons-material/Close';
+import CheckIcon from '@mui/icons-material/Check';
 
 import { getNome } from 'common/utils/resolveNome';
 
+import { DialogFecharButton, DialogHeaderRow, DialogHeaderTitle } from '../styles';
+import {
+  COR_GERENCIAR,
+  CatalogoCard,
+  CatalogoCheckBadge,
+  CatalogoGrid,
+  CatalogoIcone,
+  CatalogoNome,
+  StatBar,
+  StatCard,
+  StatLabel,
+  StatValor,
+} from './styles';
 import { StatusValueRow } from '../styles';
 
-const GerenciarAptidoesDialog = ({ open, onClose, catalogo, idsAdquiridos, limite, onConfirm }) => {
+const GerenciarAptidoesDialog = ({
+  open,
+  onClose,
+  catalogo,
+  idsAdquiridos,
+  limite,
+  atual,
+  ganhas,
+  maximo,
+  proximoEm,
+  onConfirm,
+}) => {
   const [selecionados, setSelecionados] = useState([]);
   const [busca, setBusca] = useState('');
 
@@ -22,12 +49,12 @@ const GerenciarAptidoesDialog = ({ open, onClose, catalogo, idsAdquiridos, limit
     }
   }, [open]);
 
-  const disponiveis = catalogo.filter(item => !idsAdquiridos.includes(item.id));
-  const filtrados = disponiveis.filter(item =>
-    getNome(item).toLowerCase().includes(busca.toLowerCase()),
-  );
+  const filtrados = catalogo.filter(item => getNome(item).toLowerCase().includes(busca.toLowerCase()));
 
   const toggle = id => {
+    if (idsAdquiridos.includes(id)) {
+      return;
+    }
     setSelecionados(current => {
       if (current.includes(id)) {
         return current.filter(item => item !== id);
@@ -40,56 +67,90 @@ const GerenciarAptidoesDialog = ({ open, onClose, catalogo, idsAdquiridos, limit
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle>
-        Gerenciar Aptidões ({selecionados.length}/{limite})
-      </DialogTitle>
-      <DialogContent>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md" aria-labelledby="dialog-titulo-gerenciar-aptidoes">
+      <DialogHeaderRow>
+        <DialogHeaderTitle id="dialog-titulo-gerenciar-aptidoes">Gerenciar Aptidões</DialogHeaderTitle>
         <TextField
-          fullWidth
           size="small"
-          placeholder="Buscar aptidão..."
+          placeholder="Filtrar..."
           value={busca}
           onChange={event => setBusca(event.target.value)}
-          sx={{ marginBottom: 2, marginTop: 1 }}
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon fontSize="small" />
+                </InputAdornment>
+              ),
+            },
+          }}
+          sx={{ flex: 1, maxWidth: 260 }}
         />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 320, overflowY: 'auto' }}>
+        <DialogFecharButton type="button" aria-label="Fechar" onClick={onClose}>
+          <CloseIcon fontSize="small" />
+        </DialogFecharButton>
+      </DialogHeaderRow>
+      <DialogContent>
+        <StatBar style={{ marginBottom: 20, marginTop: 4 }}>
+          <StatCard>
+            <StatLabel>Atual</StatLabel>
+            <StatValor>{atual}</StatValor>
+          </StatCard>
+          <StatCard>
+            <StatLabel>Ganhas</StatLabel>
+            <StatValor>{ganhas}</StatValor>
+          </StatCard>
+          <StatCard>
+            <StatLabel>Máximo</StatLabel>
+            <StatValor>{maximo}</StatValor>
+          </StatCard>
+          <StatCard>
+            <StatLabel>+1 Atributo</StatLabel>
+            <StatValor>{proximoEm}</StatValor>
+          </StatCard>
+        </StatBar>
+
+        <CatalogoGrid>
           {filtrados.map(item => {
+            const adquirida = idsAdquiridos.includes(item.id);
             const selecionado = selecionados.includes(item.id);
-            const bloqueado = !selecionado && selecionados.length >= limite;
+            const bloqueado = !adquirida && !selecionado && selecionados.length >= limite;
+
             return (
-              <div
+              <CatalogoCard
                 key={item.id}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '8px 12px',
-                  border: `1px solid ${selecionado ? 'var(--color-accent)' : 'var(--border-primary)'}`,
-                  borderRadius: 8,
-                }}
+                type="button"
+                disabled={adquirida || bloqueado}
+                $selecionado={selecionado}
+                $desabilitado={adquirida || bloqueado}
+                onClick={() => toggle(item.id)}
               >
-                <span>{getNome(item)}</span>
-                <Button
-                  size="small"
-                  variant={selecionado ? 'contained' : 'outlined'}
-                  disabled={bloqueado}
-                  onClick={() => toggle(item.id)}
-                >
-                  {selecionado ? 'Selecionada' : bloqueado ? '🔒 Limite atingido' : 'Selecionar'}
-                </Button>
-              </div>
+                {adquirida && (
+                  <CatalogoCheckBadge>
+                    <CheckIcon fontSize="inherit" />
+                  </CatalogoCheckBadge>
+                )}
+                <CatalogoIcone src={item.linkImagem} alt="" />
+                <CatalogoNome>{getNome(item)}</CatalogoNome>
+              </CatalogoCard>
             );
           })}
-          {filtrados.length === 0 && <StatusValueRow>Nenhuma aptidão disponível.</StatusValueRow>}
-        </div>
+          {filtrados.length === 0 && <StatusValueRow>Nenhuma aptidão encontrada.</StatusValueRow>}
+        </CatalogoGrid>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Cancelar</Button>
+        <Button onClick={onClose} sx={{ border: '1px solid var(--border-primary)', color: 'var(--text-secondary)' }}>
+          Cancelar
+        </Button>
         <Button
-          variant="contained"
           disabled={selecionados.length === 0}
           onClick={() => onConfirm(selecionados)}
+          sx={{
+            background: COR_GERENCIAR,
+            color: '#1c1830',
+            '&:hover': { background: COR_GERENCIAR, filter: 'brightness(1.08)' },
+            '&.Mui-disabled': { background: 'rgba(249, 115, 22, 0.25)', color: 'rgba(28, 24, 48, 0.5)' },
+          }}
         >
           Salvar
         </Button>
@@ -104,6 +165,10 @@ GerenciarAptidoesDialog.propTypes = {
   catalogo: PropTypes.array.isRequired,
   idsAdquiridos: PropTypes.array.isRequired,
   limite: PropTypes.number.isRequired,
+  atual: PropTypes.number.isRequired,
+  ganhas: PropTypes.number.isRequired,
+  maximo: PropTypes.number.isRequired,
+  proximoEm: PropTypes.number.isRequired,
   onConfirm: PropTypes.func.isRequired,
 };
 

@@ -65,8 +65,8 @@ const CriarArtDialog = ({ open, onClose, personagem, onCreate }) => {
   }, [open, origem, personagem.universo]);
 
   const handleAutoralSubmit = useCallback(
-    async (values, { setSubmitting }) => {
-      await onCreate({ origem: 'autoral', ...values, ativa: true });
+    (values, { setSubmitting }) => {
+      onCreate({ origem: 'autoral', ...values, ativa: true });
       setSubmitting(false);
       onClose();
     },
@@ -74,8 +74,8 @@ const CriarArtDialog = ({ open, onClose, personagem, onCreate }) => {
   );
 
   const handleEscolherHabilidadeClasse = useCallback(
-    async (classe, tipoLista, index, habilidade) => {
-      await onCreate({
+    (classe, tipoLista, index, habilidade) => {
+      onCreate({
         origem: 'classe',
         classeId: classe.id,
         habilidadeId: `${tipoLista}-${index}`,
@@ -89,8 +89,8 @@ const CriarArtDialog = ({ open, onClose, personagem, onCreate }) => {
   );
 
   const handeEscolherDoCatalogo = useCallback(
-    async item => {
-      await onCreate({ origem: 'catalogo', arteId: item.id, nome: getNome(item), ativa: true });
+    item => {
+      onCreate({ origem: 'catalogo', arteId: item.id, nome: getNome(item), ativa: true });
       onClose();
     },
     [onCreate, onClose],
@@ -237,7 +237,10 @@ const CriarArtDialog = ({ open, onClose, personagem, onCreate }) => {
                         style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', border: '1px solid var(--border-primary)', borderRadius: 8 }}
                       >
                         <span>{habilidade.nome}</span>
-                        <Button size="small" onClick={() => handleEscolherHabilidadeClasse(classe, 'basica', index, habilidade)}>
+                        <Button
+                          size="small"
+                          onClick={() => handleEscolherHabilidadeClasse(classe, 'basica', index, habilidade)}
+                        >
                           Escolher
                         </Button>
                       </div>
@@ -248,7 +251,10 @@ const CriarArtDialog = ({ open, onClose, personagem, onCreate }) => {
                         style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', border: '1px solid var(--border-primary)', borderRadius: 8 }}
                       >
                         <span>{habilidade.nome}</span>
-                        <Button size="small" onClick={() => handleEscolherHabilidadeClasse(classe, 'avancada', index, habilidade)}>
+                        <Button
+                          size="small"
+                          onClick={() => handleEscolherHabilidadeClasse(classe, 'avancada', index, habilidade)}
+                        >
                           Escolher
                         </Button>
                       </div>

@@ -1,15 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import Avatar from '@mui/material/Avatar';
 
 import { getFirestoreItem } from 'service/storage';
 import { getNome } from 'common/utils/resolveNome';
 
-import { PersonagemCard, PersonagemDetail, PersonagemInfo, PersonagemNome } from './styles';
+import {
+  PersonagemCard,
+  PersonagemCardImage,
+  PersonagemCardImagePlaceholder,
+  PersonagemDetail,
+  PersonagemInfo,
+  PersonagemNome,
+  PersonagemUniverso,
+} from './styles';
 
 const PersonagemCardItem = ({ personagem, onClick }) => {
   const [racaNome, setRacaNome] = useState('');
   const [classesNomes, setClassesNomes] = useState([]);
+  const [universoNome, setUniversoNome] = useState('');
 
   useEffect(() => {
     if (personagem.raca) {
@@ -25,17 +33,27 @@ const PersonagemCardItem = ({ personagem, onClick }) => {
     );
   }, [personagem.classes]);
 
+  useEffect(() => {
+    if (personagem.universo) {
+      getFirestoreItem('Universo', personagem.universo).then(item => setUniversoNome(getNome(item)));
+    } else {
+      setUniversoNome('');
+    }
+  }, [personagem.universo]);
+
+  const racaClasse = [racaNome, classesNomes.join(' ➠ ')].filter(Boolean).join(' - ');
+
   return (
     <PersonagemCard type="button" onClick={onClick}>
-      <Avatar
-        src={personagem.linkImagem || undefined}
-        alt={personagem.nome}
-        sx={{ width: 72, height: 72, border: '1px solid var(--border-primary)' }}
-      />
+      {personagem.linkImagem ? (
+        <PersonagemCardImage src={personagem.linkImagem} alt={personagem.nome} />
+      ) : (
+        <PersonagemCardImagePlaceholder>Sem imagem</PersonagemCardImagePlaceholder>
+      )}
       <PersonagemInfo>
         <PersonagemNome>{personagem.nome}</PersonagemNome>
-        <PersonagemDetail>{classesNomes.length > 0 ? classesNomes.join(' ➠ ') : 'Sem classe'}</PersonagemDetail>
-        <PersonagemDetail>{racaNome || 'Sem raça'}</PersonagemDetail>
+        <PersonagemDetail>{racaClasse || 'Sem raça/classe'}</PersonagemDetail>
+        <PersonagemUniverso>{universoNome || 'Sem universo'}</PersonagemUniverso>
       </PersonagemInfo>
     </PersonagemCard>
   );

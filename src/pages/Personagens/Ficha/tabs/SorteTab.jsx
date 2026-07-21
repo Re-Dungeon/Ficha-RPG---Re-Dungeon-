@@ -9,6 +9,7 @@ import {
   calcularRolagemFortuna,
   podeRolarFortunaHoje,
 } from 'common/utils/formulas';
+import { useSaving } from 'context/SavingContext';
 
 import {
   AtributoCardWrapper,
@@ -25,8 +26,8 @@ const formatarData = timestamp => {
 
 const SorteTab = ({ personagem, onSave }) => {
   const [historico, setHistorico] = useState([]);
-  const [rolando, setRolando] = useState(false);
   const [ultimoResultado, setUltimoResultado] = useState(null);
+  const { executar } = useSaving();
 
   useEffect(() => {
     let isMounted = true;
@@ -52,25 +53,24 @@ const SorteTab = ({ personagem, onSave }) => {
   const podeRolar = podeRolarFortunaHoje(ultimaRolagemData);
 
   const handleRolar = useCallback(async () => {
-    setRolando(true);
     const resultado = calcularRolagemFortuna(sorteTotal);
     const hoje = new Date().toISOString().slice(0, 10);
-
-    await onSave({
-      sorte: { fortunaAtual: fortunaAtual + resultado.resultado, ultimaRolagemData: hoje },
-    });
-
     const evento = {
       tipo: 'rolagem_fortuna',
       descricao: `${resultado.quantidadeDados}d6 (${resultado.rolagens.join(' + ')}) + bônus ${resultado.bonusBase}`,
       valor: resultado.resultado,
     };
-    await addHistoricoSorte(personagem.id, evento);
+
+    await executar(async () => {
+      await onSave({
+        sorte: { fortunaAtual: fortunaAtual + resultado.resultado, ultimaRolagemData: hoje },
+      });
+      await addHistoricoSorte(personagem.id, evento);
+    });
 
     setHistorico(current => [{ id: `local-${Date.now()}`, ...evento }, ...current].slice(0, 10));
     setUltimoResultado(resultado.resultado);
-    setRolando(false);
-  }, [fortunaAtual, onSave, personagem.id, sorteTotal]);
+  }, [fortunaAtual, onSave, personagem.id, sorteTotal, executar]);
 
   return (
     <div>
@@ -92,7 +92,7 @@ const SorteTab = ({ personagem, onSave }) => {
       </div>
 
       <div style={{ marginTop: 24, display: 'flex', alignItems: 'center', gap: 16 }}>
-        <Button variant="contained" disabled={!podeRolar || rolando} onClick={handleRolar}>
+        <Button variant="contained" disabled={!podeRolar} onClick={handleRolar}>
           🎲 Rolar Fortuna
         </Button>
         <StatusValueRow>

@@ -7,21 +7,23 @@ import MenuItem from '@mui/material/MenuItem';
 
 import { getUniverso } from 'service/storage';
 import { getNome } from 'common/utils/resolveNome';
+import { useSaving } from 'context/SavingContext';
 
 const UniversoSelect = ({ personagem, onSave }) => {
   const [opcoes, setOpcoes] = useState([]);
+  const { executar } = useSaving();
 
   useEffect(() => {
     getUniverso().then(setOpcoes);
   }, []);
 
   const handleChange = useCallback(
-    async event => {
+    event => {
       const universo = event.target.value;
       // Trocar de universo invalida raça/classes escolhidas (escopadas ao universo anterior).
-      await onSave({ universo, raca: '', racaHabilidadesAtivas: [], classes: [] });
+      return executar(() => onSave({ universo, raca: '', racaHabilidadesAtivas: [], classes: [] }));
     },
-    [onSave],
+    [onSave, executar],
   );
 
   return (

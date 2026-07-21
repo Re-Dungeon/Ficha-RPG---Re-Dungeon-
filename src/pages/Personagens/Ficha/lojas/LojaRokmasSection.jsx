@@ -6,6 +6,7 @@ import TextField from '@mui/material/TextField';
 import { getItensPorUniverso } from 'service/storage';
 import { calcularEspacoInventario, calcularPrimariosTotais } from 'common/utils/formulas';
 import { getNome } from 'common/utils/resolveNome';
+import { useSaving } from 'context/SavingContext';
 
 import { SectionTitle, StatusValueRow } from '../styles';
 
@@ -14,6 +15,7 @@ const SALDO_INICIAL_PADRAO = 150;
 const LojaRokmasSection = ({ personagem, onSave }) => {
   const [catalogo, setCatalogo] = useState([]);
   const [busca, setBusca] = useState('');
+  const { executar } = useSaving();
 
   useEffect(() => {
     if (!personagem.universo) {
@@ -50,10 +52,10 @@ const LojaRokmasSection = ({ personagem, onSave }) => {
   const espaco = calcularEspacoInventario(primariosTotais, inventarioResolvido);
 
   const handleComprar = useCallback(
-    async item => {
+    item => {
       const preco = item.preco ?? 0;
       if (saldoRokmas < preco || (item.espaco ?? 0) > espaco.espacoLivre) {
-        return;
+        return undefined;
       }
 
       const existente = inventario.find(entrada => entrada.itemId === item.id);
@@ -68,16 +70,18 @@ const LojaRokmasSection = ({ personagem, onSave }) => {
         ...historicoCompras,
       ].slice(0, 20);
 
-      await onSave({
-        inventario: novoInventario,
-        lojaRokmas: { saldoRokmas: saldoRokmas - preco, historicoCompras: novoHistorico },
-      });
+      return executar(() =>
+        onSave({
+          inventario: novoInventario,
+          lojaRokmas: { saldoRokmas: saldoRokmas - preco, historicoCompras: novoHistorico },
+        }),
+      );
     },
-    [inventario, saldoRokmas, espaco.espacoLivre, historicoCompras, onSave],
+    [inventario, saldoRokmas, espaco.espacoLivre, historicoCompras, onSave, executar],
   );
 
   const handleVender = useCallback(
-    async entrada => {
+    entrada => {
       const item = catalogo.find(cat => cat.id === entrada.itemId);
       const valorVenda = item?.valorVenda ?? Math.floor((item?.preco ?? 0) * 0.5);
 
@@ -92,12 +96,14 @@ const LojaRokmasSection = ({ personagem, onSave }) => {
         ...historicoCompras,
       ].slice(0, 20);
 
-      await onSave({
-        inventario: novoInventario,
-        lojaRokmas: { saldoRokmas: saldoRokmas + valorVenda, historicoCompras: novoHistorico },
-      });
+      return executar(() =>
+        onSave({
+          inventario: novoInventario,
+          lojaRokmas: { saldoRokmas: saldoRokmas + valorVenda, historicoCompras: novoHistorico },
+        }),
+      );
     },
-    [catalogo, inventario, saldoRokmas, historicoCompras, onSave],
+    [catalogo, inventario, saldoRokmas, historicoCompras, onSave, executar],
   );
 
   const catalogoFiltrado = catalogo.filter(item =>

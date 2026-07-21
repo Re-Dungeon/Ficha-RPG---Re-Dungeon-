@@ -1,28 +1,20 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 
+import { useSaving } from 'context/SavingContext';
+
 import PerfilTab from '../tabs/PerfilTab';
 import UniversoSelect from '../progressao/UniversoSelect';
 import { SectionTitle } from '../styles';
 
 const InfoModal = ({ open, onClose, personagem, onSave }) => {
-  const [salvando, setSalvando] = useState(false);
+  const { executar } = useSaving();
 
-  const handleSalvarPerfil = useCallback(
-    async patch => {
-      setSalvando(true);
-      try {
-        await onSave(patch);
-      } finally {
-        setSalvando(false);
-      }
-    },
-    [onSave],
-  );
+  const handleSalvarPerfil = useCallback(patch => executar(() => onSave(patch)), [onSave, executar]);
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
@@ -36,7 +28,7 @@ const InfoModal = ({ open, onClose, personagem, onSave }) => {
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Fechar</Button>
-        <Button type="submit" form="perfil-form" variant="contained" disabled={salvando}>
+        <Button type="submit" form="perfil-form" variant="contained">
           Salvar
         </Button>
       </DialogActions>

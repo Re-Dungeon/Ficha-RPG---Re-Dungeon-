@@ -10,6 +10,7 @@ import {
   calcularSecundarios,
 } from 'common/utils/formulas';
 import { getNome } from 'common/utils/resolveNome';
+import { useSaving } from 'context/SavingContext';
 
 import ConstelacaoCard from '../veiasAstrais/ConstelacaoCard';
 import DesbloquearNoDialog from '../veiasAstrais/DesbloquearNoDialog';
@@ -19,6 +20,7 @@ const VeiasAstraisTab = ({ personagem, onSave }) => {
   const [constelacoes, setConstelacoes] = useState([]);
   const [divindades, setDivindades] = useState([]);
   const [selecao, setSelecao] = useState(null);
+  const { executar } = useSaving();
 
   useEffect(() => {
     getDivindades().then(setDivindades);
@@ -77,15 +79,17 @@ const VeiasAstraisTab = ({ personagem, onSave }) => {
       }
     });
 
-    await onSave({
-      veiasAstrais: {
-        powerCombatGasto: pcGasto + selecaoInfo.custoTotal,
-        nosDesbloqueados: [...idsDesbloqueados, ...selecaoInfo.cadeia.map(no => no.id)],
-      },
-      atributosBonus: novoAtributosBonus,
-    });
+    await executar(() =>
+      onSave({
+        veiasAstrais: {
+          powerCombatGasto: pcGasto + selecaoInfo.custoTotal,
+          nosDesbloqueados: [...idsDesbloqueados, ...selecaoInfo.cadeia.map(no => no.id)],
+        },
+        atributosBonus: novoAtributosBonus,
+      }),
+    );
     setSelecao(null);
-  }, [selecaoInfo, personagem.atributosBonus, pcGasto, idsDesbloqueados, onSave]);
+  }, [selecaoInfo, personagem.atributosBonus, pcGasto, idsDesbloqueados, onSave, executar]);
 
   const nomeDivindade = divindadeId => getNome(divindades.find(item => item.id === divindadeId));
 

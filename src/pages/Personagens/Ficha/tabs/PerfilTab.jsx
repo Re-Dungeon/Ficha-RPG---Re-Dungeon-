@@ -6,10 +6,11 @@ import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
 import Avatar from '@mui/material/Avatar';
 
-import { getFirestoreItem, getOrigens } from 'service/storage';
+import { getOrigens } from 'service/storage';
 import { campoCurtoSchema, descricaoSchema, nomeSchema, urlImagemSchema } from 'common/utils/yupSchemas';
 import { getNome } from 'common/utils/resolveNome';
 import { useDraftLocalStorage } from 'hooks/useDraftLocalStorage';
+import { useRacaClasseNomes } from 'hooks/useRacaClasseNomes';
 import DraftBanner from 'components/DraftBanner/DraftBanner';
 
 import { SectionTitle, StatusValueRow } from '../styles';
@@ -225,8 +226,7 @@ PerfilFormBody.defaultProps = {
 
 const PerfilTab = ({ personagem, onSave }) => {
   const [origens, setOrigens] = useState([]);
-  const [racaNome, setRacaNome] = useState('');
-  const [classesNomes, setClassesNomes] = useState([]);
+  const { racaNome, classesNomes } = useRacaClasseNomes(personagem);
 
   const chaveRascunho = `rascunho_personagem_${personagem.id}_perfil`;
   const { lerRascunho, salvarRascunho, limparRascunho } = useDraftLocalStorage(chaveRascunho);
@@ -244,20 +244,6 @@ const PerfilTab = ({ personagem, onSave }) => {
   useEffect(() => {
     getOrigens().then(setOrigens);
   }, []);
-
-  useEffect(() => {
-    if (personagem.raca) {
-      getFirestoreItem('racas', personagem.raca).then(item => setRacaNome(getNome(item)));
-    } else {
-      setRacaNome('');
-    }
-  }, [personagem.raca]);
-
-  useEffect(() => {
-    Promise.all((personagem.classes ?? []).map(id => getFirestoreItem('classes', id))).then(itens =>
-      setClassesNomes(itens.filter(Boolean).map(getNome)),
-    );
-  }, [personagem.classes]);
 
   const handleSubmit = useCallback(
     async (values, { setSubmitting }) => {

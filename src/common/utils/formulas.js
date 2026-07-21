@@ -76,13 +76,15 @@ export const podeRolarFortunaHoje = (
 ) => ultimaRolagemData !== hoje;
 
 // ── Raças — limite de habilidades básicas simultâneas por raridade (§11) ──
+// Chaves no feminino ("rara", "epica", "lendaria", "mitica") pra bater com o
+// campo `raridade` real das raças no Firestore (concorda com "raça").
 
 const LIMITE_HABILIDADES_POR_RARIDADE = {
   comum: 1,
-  raro: 1,
-  epico: 1,
-  lendario: 2,
-  mitico: 3,
+  rara: 1,
+  epica: 1,
+  lendaria: 2,
+  mitica: 3,
   celestial: Infinity,
 };
 

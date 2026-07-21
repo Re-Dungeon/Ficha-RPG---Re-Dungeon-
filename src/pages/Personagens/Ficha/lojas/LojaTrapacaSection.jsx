@@ -1,16 +1,42 @@
 import React, { useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import Button from '@mui/material/Button';
+import BoltIcon from '@mui/icons-material/Bolt';
+import CasinoIcon from '@mui/icons-material/Casino';
 
 import { addHistoricoSorte } from 'service/storage';
+import { useSaving } from 'context/SavingContext';
 
-import { CATALOGO_TRAPACA, LIMITE_POR_CATEGORIA } from './catalogoTrapaca';
-import { CardTitle, SectionTitle, StatusValueRow } from '../styles';
+import { CATALOGO_TRAPACA, CATEGORIAS_TRAPACA, LIMITE_POR_CATEGORIA } from './catalogoTrapaca';
+import {
+  CategoriaBloco,
+  CategoriaHeader,
+  CategoriaIcone,
+  CategoriaSubtitulo,
+  CategoriaTitulo,
+  GuardadoItem,
+  GuardadosGrid,
+  ItemCard,
+  ItemDescricao,
+  ItemEfeitoBox,
+  ItemEfeitoTexto,
+  ItemHeader,
+  ItemIcone,
+  ItemNome,
+  ItemNomeRow,
+  ItemPreco,
+  ItemTag,
+  ItemTagsRow,
+  ItensGrid,
+  RodapeInfo,
+} from './styles';
+import { SectionTitle, StatusValueRow } from '../styles';
 
-const CATEGORIAS = [...new Set(CATALOGO_TRAPACA.map(efeito => efeito.categoria))];
+const CATEGORIAS = Object.keys(CATEGORIAS_TRAPACA);
 
 const LojaTrapacaSection = ({ personagem, onSave }) => {
   const fortunaAtual = personagem.sorte?.fortunaAtual ?? 0;
+  const { executar } = useSaving();
   const efeitosAtivos = useMemo(
     () => personagem.lojaTrapaça?.efeitosAtivos ?? [],
     [personagem.lojaTrapaça?.efeitosAtivos],
@@ -22,13 +48,13 @@ const LojaTrapacaSection = ({ personagem, onSave }) => {
   );
 
   const handleComprar = useCallback(
-    async efeito => {
+    efeito => {
       if (fortunaAtual < efeito.custo) {
-        return;
+        return undefined;
       }
       const limite = LIMITE_POR_CATEGORIA[efeito.categoria] ?? Infinity;
       if (efeito.tipoAtivacao === 'manual' && contagemPorCategoria(efeito.categoria) >= limite) {
-        return;
+        return undefined;
       }
 
       const novosEfeitos =
@@ -39,93 +65,109 @@ const LojaTrapacaSection = ({ personagem, onSave }) => {
             ]
           : efeitosAtivos;
 
-      await onSave({
-        sorte: { ...personagem.sorte, fortunaAtual: fortunaAtual - efeito.custo },
-        lojaTrapaça: { ...personagem.lojaTrapaça, efeitosAtivos: novosEfeitos },
-      });
-      await addHistoricoSorte(personagem.id, {
-        tipo: 'compra_trapaca',
-        descricao: `Comprou "${efeito.nome}" na Loja da Trapaça`,
-        valor: -efeito.custo,
+      return executar(async () => {
+        await onSave({
+          sorte: { ...personagem.sorte, fortunaAtual: fortunaAtual - efeito.custo },
+          lojaTrapaça: { ...personagem.lojaTrapaça, efeitosAtivos: novosEfeitos },
+        });
+        await addHistoricoSorte(personagem.id, {
+          tipo: 'compra_trapaca',
+          descricao: `Comprou "${efeito.nome}" na Loja da Trapaça`,
+          valor: -efeito.custo,
+        });
       });
     },
-    [fortunaAtual, efeitosAtivos, onSave, personagem, contagemPorCategoria],
+    [fortunaAtual, efeitosAtivos, onSave, personagem, contagemPorCategoria, executar],
   );
 
   const handleUsar = useCallback(
-    async index => {
-      await onSave({
-        lojaTrapaça: {
-          ...personagem.lojaTrapaça,
-          efeitosAtivos: efeitosAtivos.filter((_efeito, itemIndex) => itemIndex !== index),
-        },
-      });
-    },
-    [efeitosAtivos, onSave, personagem.lojaTrapaça],
+    index =>
+      executar(() =>
+        onSave({
+          lojaTrapaça: {
+            ...personagem.lojaTrapaça,
+            efeitosAtivos: efeitosAtivos.filter((_efeito, itemIndex) => itemIndex !== index),
+          },
+        }),
+      ),
+    [efeitosAtivos, onSave, personagem.lojaTrapaça, executar],
   );
 
   return (
     <div>
-      <SectionTitle>Loja da Trapaça</SectionTitle>
-      <StatusValueRow style={{ display: 'block', marginTop: 8 }}>
-        Saldo de Fortuna: {fortunaAtual} Ȼ
-      </StatusValueRow>
-
       {CATEGORIAS.map(categoria => {
-        const limite = LIMITE_POR_CATEGORIA[categoria];
+        const { icone, cor, subtitulo } = CATEGORIAS_TRAPACA[categoria];
         return (
-          <div key={categoria} style={{ marginTop: 20 }}>
-            <CardTitle>
-              {categoria}
-              {limite !== Infinity && ` (${contagemPorCategoria(categoria)}/${limite} guardados)`}
-            </CardTitle>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
+          <CategoriaBloco key={categoria}>
+            <CategoriaHeader>
+              <CategoriaIcone>{icone}</CategoriaIcone>
+              <CategoriaTitulo $cor={cor}>{categoria}</CategoriaTitulo>
+            </CategoriaHeader>
+            <CategoriaSubtitulo>{subtitulo}</CategoriaSubtitulo>
+
+            <ItensGrid>
               {CATALOGO_TRAPACA.filter(efeito => efeito.categoria === categoria).map(efeito => {
                 const semSaldo = fortunaAtual < efeito.custo;
+                const limite = LIMITE_POR_CATEGORIA[categoria];
                 const limiteAtingido =
                   efeito.tipoAtivacao === 'manual' && contagemPorCategoria(categoria) >= (limite ?? Infinity);
+
                 return (
-                  <div
-                    key={efeito.id}
-                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', border: '1px solid var(--border-primary)', borderRadius: 8, gap: 12 }}
-                  >
-                    <div>
-                      <div style={{ fontWeight: 600 }}>
-                        {efeito.nome} — {efeito.custo} Ȼ
-                      </div>
-                      <StatusValueRow>{efeito.descricao}</StatusValueRow>
-                    </div>
+                  <ItemCard key={efeito.id}>
+                    <ItemHeader>
+                      <ItemNomeRow>
+                        <ItemIcone>{efeito.icone}</ItemIcone>
+                        <ItemNome>{efeito.nome}</ItemNome>
+                      </ItemNomeRow>
+                      <ItemPreco>{efeito.custo}Ȼ</ItemPreco>
+                    </ItemHeader>
+
+                    <ItemDescricao>{efeito.descricao}</ItemDescricao>
+
+                    <ItemEfeitoBox>
+                      <BoltIcon fontSize="inherit" />
+                      <ItemEfeitoTexto>{efeito.efeito}</ItemEfeitoTexto>
+                    </ItemEfeitoBox>
+
+                    <ItemTagsRow>
+                      {efeito.tags.map(tag => (
+                        <ItemTag key={tag}>{tag}</ItemTag>
+                      ))}
+                    </ItemTagsRow>
+
                     <Button
-                      size="small"
+                      fullWidth
                       variant="contained"
                       disabled={semSaldo || limiteAtingido}
                       onClick={() => handleComprar(efeito)}
                     >
-                      💳 Comprar
+                      {limiteAtingido ? 'Limite atingido' : semSaldo ? 'Saldo insuficiente' : 'Comprar'}
                     </Button>
-                  </div>
+                  </ItemCard>
                 );
               })}
-            </div>
-          </div>
+            </ItensGrid>
+          </CategoriaBloco>
         );
       })}
 
       <SectionTitle style={{ marginTop: 32 }}>Efeitos Guardados</SectionTitle>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 }}>
+      <GuardadosGrid style={{ marginTop: 12 }}>
         {efeitosAtivos.length === 0 && <StatusValueRow>Nenhum efeito guardado.</StatusValueRow>}
         {efeitosAtivos.map((efeito, index) => (
-          <div
-            key={`${efeito.id}-${index}`}
-            style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', border: '1px solid var(--border-primary)', borderRadius: 8 }}
-          >
+          <GuardadoItem key={`${efeito.id}-${index}`}>
             <span>{efeito.nome}</span>
             <Button size="small" variant="outlined" onClick={() => handleUsar(index)}>
               Usar
             </Button>
-          </div>
+          </GuardadoItem>
         ))}
-      </div>
+      </GuardadosGrid>
+
+      <RodapeInfo>
+        <CasinoIcon fontSize="inherit" />
+        Use Fortuna (Ȼ) para comprar itens mágicos e especiais | Limite de 1 Bênção por dia
+      </RodapeInfo>
     </div>
   );
 };

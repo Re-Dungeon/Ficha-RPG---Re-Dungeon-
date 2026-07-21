@@ -1,24 +1,38 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
-import Accordion from '@mui/material/Accordion';
-import AccordionSummary from '@mui/material/AccordionSummary';
-import AccordionDetails from '@mui/material/AccordionDetails';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import KeyboardReturnIcon from '@mui/icons-material/KeyboardReturn';
+import CloseIcon from '@mui/icons-material/Close';
 
 import { getAptidoesPorUniverso } from 'service/storage';
 import { getNome } from 'common/utils/resolveNome';
 
-import { StatusValueRow } from '../styles';
+import { DialogFecharButton, DialogHeaderRow, DialogHeaderTitle, StatusValueRow } from '../styles';
+import {
+  DetalheDescricao,
+  DetalheDivisor,
+  DetalheHeader,
+  DetalheIcone,
+  DetalheNome,
+  EnciclopediaCard,
+  EnciclopediaGrid,
+  EnciclopediaIcone,
+  EnciclopediaNome,
+  NiveisLista,
+  NivelCard,
+  NivelCurta,
+  NivelHeader,
+  NivelTexto,
+  ProgressaoTitulo,
+} from '../aptidoes/styles';
 
 const AptidaoConsultaModal = ({ open, onClose, personagem }) => {
   const [catalogo, setCatalogo] = useState([]);
   const [busca, setBusca] = useState('');
+  const [aptidaoSelecionada, setAptidaoSelecionada] = useState(null);
 
   useEffect(() => {
     if (!open) {
@@ -42,75 +56,117 @@ const AptidaoConsultaModal = ({ open, onClose, personagem }) => {
   useEffect(() => {
     if (open) {
       setBusca('');
+      setAptidaoSelecionada(null);
     }
   }, [open]);
 
-  const catalogoFiltrado = catalogo.filter(item =>
-    getNome(item).toLowerCase().includes(busca.toLowerCase()),
+  const catalogoFiltrado = catalogo.filter(
+    item =>
+      getNome(item).toLowerCase().includes(busca.toLowerCase()) ||
+      (item.descricao ?? '').toLowerCase().includes(busca.toLowerCase()),
   );
+
+  const voltar = () => {
+    if (aptidaoSelecionada) {
+      setAptidaoSelecionada(null);
+    } else {
+      onClose();
+    }
+  };
+
+  const niveis = [...(aptidaoSelecionada?.progressaoNiveis ?? [])].sort((a, b) => a.nivel - b.nivel);
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle>Aptidões do Universo</DialogTitle>
-      <DialogContent>
-        <TextField
-          fullWidth
-          size="small"
-          placeholder="Buscar aptidão..."
-          value={busca}
-          onChange={event => setBusca(event.target.value)}
-          sx={{ marginBottom: 2, marginTop: 1 }}
-        />
-
-        {!personagem.universo && (
-          <StatusValueRow style={{ display: 'block' }}>
-            Selecione um Universo no menu lateral Info primeiro.
-          </StatusValueRow>
-        )}
-
-        {personagem.universo && catalogoFiltrado.length === 0 && (
-          <StatusValueRow style={{ display: 'block' }}>Nenhuma aptidão encontrada.</StatusValueRow>
-        )}
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 400, overflowY: 'auto' }}>
-          {catalogoFiltrado.map(item => {
-            const vantagens = [...(item.vantagens ?? [])].sort((a, b) => a.nivel - b.nivel);
-            return (
-              <Accordion
-                key={item.id}
-                sx={{
-                  background: 'var(--bg-card)',
-                  color: 'var(--text-primary)',
-                  border: '1px solid var(--border-primary)',
-                  '&::before': { display: 'none' },
-                }}
-              >
-                <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ color: 'var(--text-secondary)' }} />}>
-                  {getNome(item)} {item.nivelMaximo ? `(máx. nível ${item.nivelMaximo})` : ''}
-                </AccordionSummary>
-                <AccordionDetails style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {item.descricao && (
-                    <StatusValueRow style={{ display: 'block', color: 'var(--text-secondary)' }}>
-                      {item.descricao}
-                    </StatusValueRow>
-                  )}
-                  {vantagens.map(vantagem => (
-                    <StatusValueRow key={vantagem.nivel} style={{ display: 'block' }}>
-                      Nível {vantagem.nivel}: {vantagem.texto}
-                    </StatusValueRow>
-                  ))}
-                  {vantagens.length === 0 && !item.descricao && (
-                    <StatusValueRow>Sem detalhes cadastrados.</StatusValueRow>
-                  )}
-                </AccordionDetails>
-              </Accordion>
-            );
-          })}
+      <DialogHeaderRow>
+        <DialogHeaderTitle>{aptidaoSelecionada ? 'Detalhes da Aptidão' : 'Enciclopédia de Aptidões'}</DialogHeaderTitle>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <DialogFecharButton type="button" aria-label="Voltar" onClick={voltar}>
+            <KeyboardReturnIcon fontSize="small" />
+          </DialogFecharButton>
+          <DialogFecharButton type="button" aria-label="Fechar" onClick={onClose}>
+            <CloseIcon fontSize="small" />
+          </DialogFecharButton>
         </div>
+      </DialogHeaderRow>
+
+      <DialogContent>
+        {!aptidaoSelecionada && (
+          <>
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="Buscar aptidão por nome ou descrição..."
+              value={busca}
+              onChange={event => setBusca(event.target.value)}
+              sx={{ marginBottom: 2, marginTop: 1 }}
+            />
+
+            {!personagem.universo && (
+              <StatusValueRow style={{ display: 'block' }}>
+                Selecione um Universo no menu lateral Info primeiro.
+              </StatusValueRow>
+            )}
+
+            {personagem.universo && catalogoFiltrado.length === 0 && (
+              <StatusValueRow style={{ display: 'block' }}>Nenhuma aptidão encontrada.</StatusValueRow>
+            )}
+
+            <EnciclopediaGrid>
+              {catalogoFiltrado.map(item => (
+                <EnciclopediaCard key={item.id}>
+                  <EnciclopediaIcone src={item.linkImagem} alt="" />
+                  <EnciclopediaNome>{getNome(item)}</EnciclopediaNome>
+                  <Button
+                    size="small"
+                    fullWidth
+                    onClick={() => setAptidaoSelecionada(item)}
+                    sx={{
+                      border: '1px solid var(--color-accent)',
+                      color: 'var(--color-accent)',
+                      background: 'rgba(91, 124, 250, 0.1)',
+                    }}
+                  >
+                    Visualizar
+                  </Button>
+                </EnciclopediaCard>
+              ))}
+            </EnciclopediaGrid>
+          </>
+        )}
+
+        {aptidaoSelecionada && (
+          <div style={{ marginTop: 8 }}>
+            <DetalheHeader>
+              <DetalheIcone src={aptidaoSelecionada.linkImagem} alt="" />
+              <div>
+                <DetalheNome>{getNome(aptidaoSelecionada)}</DetalheNome>
+                {aptidaoSelecionada.descricao && <DetalheDescricao>{aptidaoSelecionada.descricao}</DetalheDescricao>}
+              </div>
+            </DetalheHeader>
+
+            <DetalheDivisor />
+
+            <ProgressaoTitulo>Progressão de Níveis</ProgressaoTitulo>
+            {niveis.length === 0 && <StatusValueRow>Sem níveis cadastrados.</StatusValueRow>}
+            <NiveisLista>
+              {niveis.map(nivelInfo => (
+                <NivelCard key={nivelInfo.nivel}>
+                  <NivelHeader>Nível {nivelInfo.nivel}</NivelHeader>
+                  {nivelInfo.possuiBonus ? (
+                    <>
+                      <NivelTexto>{nivelInfo.bonus?.descricaoCompleta}</NivelTexto>
+                      {nivelInfo.bonus?.descricaoCurta && <NivelCurta>{nivelInfo.bonus.descricaoCurta}</NivelCurta>}
+                    </>
+                  ) : (
+                    <NivelTexto>+1 Bônus nos testes desta aptidão.</NivelTexto>
+                  )}
+                </NivelCard>
+              ))}
+            </NiveisLista>
+          </div>
+        )}
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Fechar</Button>
-      </DialogActions>
     </Dialog>
   );
 };

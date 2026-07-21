@@ -42,13 +42,14 @@ export const CardsGrid = styled.div`
 
 export const PersonagemCard = styled.button`
   display: flex;
-  align-items: center;
-  gap: 16px;
+  flex-direction: column;
+  gap: 0;
   background: var(--bg-card);
   border: 1px solid var(--border-primary);
   border-radius: 12px;
   box-shadow: var(--shadow-md);
-  padding: 20px;
+  padding: 0;
+  overflow: hidden;
   text-align: left;
   color: var(--text-primary);
   cursor: pointer;
@@ -59,11 +60,31 @@ export const PersonagemCard = styled.button`
   }
 `;
 
+export const PersonagemCardImage = styled.img`
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-bottom: 1px solid var(--border-primary);
+`;
+
+export const PersonagemCardImagePlaceholder = styled.div`
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-primary);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+`;
+
 export const PersonagemInfo = styled.div`
   display: flex;
   flex-direction: column;
   gap: 4px;
   min-width: 0;
+  padding: 16px;
 `;
 
 export const PersonagemNome = styled.h3`
@@ -73,7 +94,15 @@ export const PersonagemNome = styled.h3`
 
 export const PersonagemDetail = styled.span`
   font-size: 0.85rem;
-  color: var(--text-secondary);
+  color: var(--color-accent);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+export const PersonagemUniverso = styled.span`
+  font-size: 0.8rem;
+  color: var(--text-muted);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

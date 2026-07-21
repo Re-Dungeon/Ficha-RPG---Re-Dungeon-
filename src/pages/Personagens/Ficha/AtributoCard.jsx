@@ -2,17 +2,31 @@ import React, { useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useField } from 'formik';
 import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
+import CloseIcon from '@mui/icons-material/Close';
+import LockIcon from '@mui/icons-material/Lock';
 
 import NumberField from 'components/NumberField/NumberField';
+import {
+  NumberFieldBox,
+  NumberFieldLabel,
+  NumberFieldWrapper,
+} from 'components/NumberField/styles';
 
-import { AtributoCardButton, CardTitle, CardTotal, FieldsRow } from './styles';
+import {
+  AtributoGemaButton,
+  AtributoGemaLabel,
+  AtributoGemaValor,
+  DialogFecharButton,
+  DialogHeaderRow,
+  DialogHeaderTitle,
+  FieldsRow,
+} from './styles';
 
 const AtributoCard = ({ label, total, baseName, extraName, bonusName }) => {
+  const tituloId = `dialog-titulo-${baseName}`;
   const [aberto, setAberto] = useState(false);
   const [baseField, , baseHelpers] = useField(baseName);
   const [extraField, , extraHelpers] = useField(extraName);
@@ -20,7 +34,11 @@ const AtributoCard = ({ label, total, baseName, extraName, bonusName }) => {
   const snapshotRef = useRef(null);
 
   const abrir = () => {
-    snapshotRef.current = { base: baseField.value, extra: extraField.value, bonus: bonusField.value };
+    snapshotRef.current = {
+      base: baseField.value,
+      extra: extraField.value,
+      bonus: bonusField.value,
+    };
     setAberto(true);
   };
 
@@ -36,20 +54,37 @@ const AtributoCard = ({ label, total, baseName, extraName, bonusName }) => {
 
   return (
     <>
-      <AtributoCardButton type="button" onClick={abrir}>
-        <CardTitle>{label}</CardTitle>
-        <CardTotal>{total}</CardTotal>
-      </AtributoCardButton>
+      <AtributoGemaButton type="button" onClick={abrir}>
+        <AtributoGemaValor>{total}</AtributoGemaValor>
+        <AtributoGemaLabel>{label.slice(0, 3)}</AtributoGemaLabel>
+      </AtributoGemaButton>
 
-      <Dialog open={aberto} onClose={cancelar} fullWidth maxWidth="xs">
-        <DialogTitle>Configurar {label}</DialogTitle>
+      <Dialog
+        open={aberto}
+        onClose={cancelar}
+        fullWidth
+        maxWidth="xs"
+        aria-labelledby={tituloId}
+      >
+        <DialogHeaderRow>
+          <DialogHeaderTitle id={tituloId}>Configurar {label}</DialogHeaderTitle>
+          <DialogFecharButton type="button" aria-label="Fechar" onClick={cancelar}>
+            <CloseIcon fontSize="small" />
+          </DialogFecharButton>
+        </DialogHeaderRow>
         <DialogContent style={{ paddingTop: 8 }}>
           <FieldsRow>
             <NumberField name={baseName} label="Base" />
             <NumberField name={extraName} label="Extra" />
           </FieldsRow>
           <FieldsRow style={{ marginTop: 16 }}>
-            <TextField label="Total" value={total} size="small" disabled />
+            <NumberFieldWrapper>
+              <NumberFieldLabel as="span">
+                Total
+                <LockIcon fontSize="inherit" />
+              </NumberFieldLabel>
+              <NumberFieldBox value={total} disabled />
+            </NumberFieldWrapper>
             <NumberField name={bonusName} label="Bônus" />
           </FieldsRow>
         </DialogContent>

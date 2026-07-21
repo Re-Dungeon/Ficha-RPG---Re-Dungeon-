@@ -178,9 +178,10 @@ describe('podeRolarFortunaHoje', () => {
 describe('calcularLimiteHabilidadesBasicas', () => {
   it('respeita a tabela de limites por raridade (§11), ignorando acentuação/caixa', () => {
     expect(calcularLimiteHabilidadesBasicas('Comum')).toBe(1);
-    expect(calcularLimiteHabilidadesBasicas('Épico')).toBe(1);
-    expect(calcularLimiteHabilidadesBasicas('Lendário')).toBe(2);
-    expect(calcularLimiteHabilidadesBasicas('Mítico')).toBe(3);
+    expect(calcularLimiteHabilidadesBasicas('Rara')).toBe(1);
+    expect(calcularLimiteHabilidadesBasicas('Épica')).toBe(1);
+    expect(calcularLimiteHabilidadesBasicas('Lendária')).toBe(2);
+    expect(calcularLimiteHabilidadesBasicas('Mítica')).toBe(3);
     expect(calcularLimiteHabilidadesBasicas('celestial')).toBe(Infinity);
   });
 

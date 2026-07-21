@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 import { getItensPorUniverso } from 'service/storage';
+import { SavingProvider } from 'context/SavingContext';
 import InventarioTab from './InventarioTab';
 
 vi.mock('service/storage', () => ({
@@ -27,7 +28,11 @@ describe('InventarioTab — fluxo de adicionar item', () => {
 
   it('adiciona um item do catálogo ao inventário do personagem', async () => {
     const onSave = vi.fn().mockResolvedValue();
-    render(<InventarioTab personagem={personagem} onSave={onSave} />);
+    render(
+      <SavingProvider>
+        <InventarioTab personagem={personagem} onSave={onSave} />
+      </SavingProvider>,
+    );
 
     fireEvent.click(screen.getByRole('button', { name: /\+ adicionar item/i }));
     fireEvent.click(await screen.findByRole('button', { name: /escolher/i }));

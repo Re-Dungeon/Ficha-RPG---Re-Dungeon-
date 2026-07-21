@@ -4,6 +4,7 @@ import Button from '@mui/material/Button';
 
 import { addArt, getArts, removeArt, updateArt } from 'service/storage';
 import { calcularLimiteArts, calcularPrimariosTotais, reorganizarArts } from 'common/utils/formulas';
+import { useSaving } from 'context/SavingContext';
 
 import ArtCard from '../arts/ArtCard';
 import CriarArtDialog from '../arts/CriarArtDialog';
@@ -13,6 +14,7 @@ const ArtsTab = ({ personagem, onSave: _onSave }) => {
   const [arts, setArts] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [dialogAberto, setDialogAberto] = useState(false);
+  const { executar } = useSaving();
 
   const carregarArts = useCallback(async () => {
     const itens = await getArts(personagem.id);
@@ -33,46 +35,53 @@ const ArtsTab = ({ personagem, onSave: _onSave }) => {
   const ativas = arts.filter(art => art.ativa).length;
 
   const handleCreate = useCallback(
-    async dadosArt => {
-      await addArt(personagem.id, dadosArt);
-      await carregarArts();
-    },
-    [personagem.id, carregarArts],
+    dadosArt =>
+      executar(async () => {
+        await addArt(personagem.id, dadosArt);
+        await carregarArts();
+      }),
+    [personagem.id, carregarArts, executar],
   );
 
   const handleToggleAtiva = useCallback(
-    async art => {
-      await updateArt(personagem.id, art.id, { ativa: !art.ativa });
-      await carregarArts();
-    },
-    [personagem.id, carregarArts],
+    art =>
+      executar(async () => {
+        await updateArt(personagem.id, art.id, { ativa: !art.ativa });
+        await carregarArts();
+      }),
+    [personagem.id, carregarArts, executar],
   );
 
   const handleRemover = useCallback(
-    async art => {
-      await removeArt(personagem.id, art.id);
-      await carregarArts();
-    },
-    [personagem.id, carregarArts],
+    art =>
+      executar(async () => {
+        await removeArt(personagem.id, art.id);
+        await carregarArts();
+      }),
+    [personagem.id, carregarArts, executar],
   );
 
-  const handleReorganizar = useCallback(async () => {
-    const lista = arts.map(art => ({
-      id: art.id,
-      ativa: art.ativa,
-      criadoEm: art.createdAt?.toMillis?.() ?? 0,
-    }));
-    const reorganizada = reorganizarArts(lista, limite);
-    await Promise.all(
-      reorganizada
-        .filter(item => {
-          const original = arts.find(art => art.id === item.id);
-          return original && original.ativa !== item.ativa;
-        })
-        .map(item => updateArt(personagem.id, item.id, { ativa: item.ativa })),
-    );
-    await carregarArts();
-  }, [arts, limite, personagem.id, carregarArts]);
+  const handleReorganizar = useCallback(
+    () =>
+      executar(async () => {
+        const lista = arts.map(art => ({
+          id: art.id,
+          ativa: art.ativa,
+          criadoEm: art.createdAt?.toMillis?.() ?? 0,
+        }));
+        const reorganizada = reorganizarArts(lista, limite);
+        await Promise.all(
+          reorganizada
+            .filter(item => {
+              const original = arts.find(art => art.id === item.id);
+              return original && original.ativa !== item.ativa;
+            })
+            .map(item => updateArt(personagem.id, item.id, { ativa: item.ativa })),
+        );
+        await carregarArts();
+      }),
+    [arts, limite, personagem.id, carregarArts, executar],
+  );
 
   return (
     <div>

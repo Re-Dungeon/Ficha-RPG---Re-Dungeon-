@@ -1,43 +1,34 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
-import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import TextField from '@mui/material/TextField';
+import CloseIcon from '@mui/icons-material/Close';
+
+import { DialogFecharButton, DialogHeaderRow, DialogHeaderTitle } from '../styles';
+import { NumeroBotao, NumeroGrid } from './styles';
+
+const NUMEROS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 const AjusteGanhasDialog = ({ open, titulo, onClose, onConfirm }) => {
-  const [quantidade, setQuantidade] = useState(1);
-
-  useEffect(() => {
-    if (open) {
-      setQuantidade(1);
-    }
-  }, [open]);
+  const tituloId = `dialog-titulo-ajuste-${titulo.replace(/\s+/g, '-').toLowerCase()}`;
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
-      <DialogTitle>{titulo}</DialogTitle>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs" aria-labelledby={tituloId}>
+      <DialogHeaderRow>
+        <DialogHeaderTitle id={tituloId}>{titulo}</DialogHeaderTitle>
+        <DialogFecharButton type="button" aria-label="Fechar" onClick={onClose}>
+          <CloseIcon fontSize="small" />
+        </DialogFecharButton>
+      </DialogHeaderRow>
       <DialogContent>
-        <TextField
-          type="number"
-          label="Quantidade (1-9)"
-          size="small"
-          fullWidth
-          value={quantidade}
-          onChange={event =>
-            setQuantidade(Math.min(9, Math.max(1, Number(event.target.value) || 1)))
-          }
-          sx={{ marginTop: 1 }}
-        />
+        <NumeroGrid style={{ marginTop: 8 }}>
+          {NUMEROS.map(numero => (
+            <NumeroBotao key={numero} type="button" onClick={() => onConfirm(numero)}>
+              {numero}
+            </NumeroBotao>
+          ))}
+        </NumeroGrid>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancelar</Button>
-        <Button variant="contained" onClick={() => onConfirm(quantidade)}>
-          Confirmar
-        </Button>
-      </DialogActions>
     </Dialog>
   );
 };

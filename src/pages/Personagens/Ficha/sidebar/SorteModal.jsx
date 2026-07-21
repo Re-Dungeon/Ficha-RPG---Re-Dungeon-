@@ -2,25 +2,46 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import CasinoIcon from '@mui/icons-material/Casino';
+import KeyboardReturnIcon from '@mui/icons-material/KeyboardReturn';
+import CloseIcon from '@mui/icons-material/Close';
+import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 
 import SorteTab from '../tabs/SorteTab';
 import LojaTrapacaSection from '../lojas/LojaTrapacaSection';
+import { DialogFecharButton, DialogHeaderRow, DialogHeaderTitle } from '../styles';
+import { SaldoBadge } from '../lojas/styles';
 
 const SorteModal = ({ open, onClose, personagem, onSave }) => {
   const [subAba, setSubAba] = useState('sorte');
+  const fortunaAtual = personagem.sorte?.fortunaAtual ?? 0;
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
+      <DialogHeaderRow>
+        <DialogHeaderTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <CasinoIcon fontSize="small" /> Loja da Sorte
+        </DialogHeaderTitle>
+        <SaldoBadge>
+          <MonetizationOnIcon fontSize="inherit" />
+          Saldo: {fortunaAtual} Ȼ
+        </SaldoBadge>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <DialogFecharButton type="button" aria-label="Voltar" onClick={onClose}>
+            <KeyboardReturnIcon fontSize="small" />
+          </DialogFecharButton>
+          <DialogFecharButton type="button" aria-label="Fechar" onClick={onClose}>
+            <CloseIcon fontSize="small" />
+          </DialogFecharButton>
+        </div>
+      </DialogHeaderRow>
       <Tabs
         value={subAba}
         onChange={(_event, novaSubAba) => setSubAba(novaSubAba)}
         textColor="inherit"
         variant="fullWidth"
-        slotProps={{ indicator: { style: { backgroundColor: 'var(--color-accent)' } } }}
       >
         <Tab value="sorte" label="Sorte" />
         <Tab value="trapaca" label="Loja da Trapaça" />
@@ -29,9 +50,6 @@ const SorteModal = ({ open, onClose, personagem, onSave }) => {
         {subAba === 'sorte' && <SorteTab personagem={personagem} onSave={onSave} />}
         {subAba === 'trapaca' && <LojaTrapacaSection personagem={personagem} onSave={onSave} />}
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Fechar</Button>
-      </DialogActions>
     </Dialog>
   );
 };
