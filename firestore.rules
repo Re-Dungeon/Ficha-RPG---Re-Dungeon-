@@ -1,0 +1,41 @@
+rules_version = '2';
+
+// ⚠️ Este projeto Firebase (Auth + Firestore) é COMPARTILHADO com o projeto
+// administrativo "Re-Dungeon — Banco de Dados". As coleções de referência
+// (racas, classes, itens, materiais, receitas, condicoes, artes, origens,
+// regras, cardflux, veiasAstrais, divindades, aptidoes, Universo,
+// userPermissions) já têm suas próprias regras definidas naquele projeto
+// (leitura liberada a qualquer usuário autenticado via `allow read: if
+// isAuth();`, escrita controlada por userPermissions/isAdmin) — este arquivo
+// NÃO deve substituir as regras existentes, apenas ACRESCENTAR o bloco
+// `personagens` abaixo ao `firestore.rules` real do projeto Firebase e
+// então fazer o deploy (`firebase deploy --only firestore:rules`).
+//
+// Ver player-site-handoff.md §3.3 e MIGRACAO-REACT-FIREBASE.md §8.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    // ── personagens ──────────────────────────────────────────────────────
+    // Cada usuário só lê/escreve os próprios personagens (uid == request.auth.uid).
+    match /personagens/{personagemId} {
+      allow read: if isAuth() && resource.data.uid == request.auth.uid;
+      allow create: if isAuth() && request.resource.data.uid == request.auth.uid;
+      allow update: if isAuth() && resource.data.uid == request.auth.uid
+                    && request.resource.data.uid == request.auth.uid;
+      allow delete: if isAuth() && resource.data.uid == request.auth.uid;
+
+      // Subcoleções (aptidoesAdquiridas, arts, historicoSorte) herdam a mesma
+      // checagem, validando o uid do documento pai — regra genérica por
+      // nome de subcoleção para não precisar de um bloco por feature.
+      match /{subcolecao}/{docId} {
+        allow read, write: if isAuth()
+          && get(/databases/$(database)/documents/personagens/$(personagemId)).data.uid
+             == request.auth.uid;
+      }
+    }
+  }
+}
