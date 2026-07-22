@@ -265,8 +265,26 @@ export const getClassesPorUniverso = universoId =>
 export const getCondicoesPorUniverso = universoId =>
   getColecaoPorUniverso('condicoes', universoId);
 
-export const getAptidoesPorUniverso = universoId =>
-  getColecaoPorUniverso('aptidoes', universoId);
+// Aptidões são o único catálogo que pode pertencer a mais de um universo — o
+// projeto administrativo migrou o campo de `universo` (string) para `universos`
+// (array), mas documentos antigos ainda não recadastrados pelo novo formulário
+// continuam só com `universo`. Consulta os dois formatos e mescla, removendo
+// duplicatas por id (confirmado lendo o Firestore + o repositório administrativo
+// em 2026-07-22 — nenhum doc tinha os dois campos ao mesmo tempo).
+export const getAptidoesPorUniverso = async universoId => {
+  const [porUniversos, porUniversoLegado] = await Promise.all([
+    getFirestoreItems('aptidoes', where('universos', 'array-contains', universoId)),
+    getFirestoreItems('aptidoes', where('universo', '==', universoId)),
+  ]);
+  const vistos = new Set();
+  return [...porUniversos, ...porUniversoLegado].filter(item => {
+    if (vistos.has(item.id)) {
+      return false;
+    }
+    vistos.add(item.id);
+    return true;
+  });
+};
 
 export const getVeiasAstraisPorUniverso = universoId =>
   getColecaoPorUniverso('veiasAstrais', universoId);
