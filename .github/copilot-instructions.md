@@ -1,4 +1,4 @@
-# Claude Instructions - ReDungeon Player Site
+# Copilot Instructions - ReDungeon Player Site
 
 ## Visão Geral do Projeto
 
@@ -139,16 +139,16 @@ O tema é **dark/glassmorphism**, aplicado em duas camadas que precisam ficar co
 
 1. **`src/common/styles/global.css`** — variáveis CSS usadas em `styled-components` e em `sx`/`style` inline:
    ```css
-   --color-primary: #8b5cf6; /* roxo */
-   --color-accent: #22d3ee; /* ciano */
-   --bg-primary: #0f0f14;
-   --bg-secondary: #16161d;
+   --color-primary: #e8cb85; /* dourado */
+   --color-accent: #5b7cfa; /* azul */
+   --bg-primary: #0a0913;
+   --bg-secondary: #100e1c;
    --bg-card: rgba(255, 255, 255, 0.04);
    --text-primary: #f1f1f4;
    --text-secondary: #b4b4c0;
    --text-muted: #7a7a88;
    --border-primary: rgba(255, 255, 255, 0.08);
-   --border-hover: rgba(139, 92, 246, 0.5);
+   --border-hover: rgba(232, 203, 133, 0.5);
    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
    ```
 2. **`src/common/styles/theme.js`** — `createTheme({ palette: { mode: 'dark', ... } })` aplicado via `<ThemeProvider>` em `App.jsx`. **Isso é obrigatório**: os componentes MUI (`TextField`, `Select` etc.) não leem variáveis CSS sozinhos — sem esse tema dark eles renderizam com o tema claro padrão do MUI (texto escuro, borda quase invisível num fundo escuro). Se adicionar um componente MUI novo com aparência estranha, o problema quase certamente é a falta de override no `theme.js`, não CSS.
