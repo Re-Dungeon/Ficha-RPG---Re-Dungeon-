@@ -115,9 +115,12 @@ const CriarArtDialog = ({ open, onClose, personagem, nucleos, condicoes, onCreat
     if (!open || origem !== 'classe') {
       return;
     }
-    Promise.all((personagem.classes ?? []).map(id => getFirestoreItem('classes', id))).then(
-      itens => setClassesDetalhes(itens.filter(Boolean)),
-    );
+    Promise.all((personagem.classes ?? []).map(id => getFirestoreItem('classes', id)))
+      .then(itens => setClassesDetalhes(itens.filter(Boolean)))
+      .catch(erro => {
+        // eslint-disable-next-line no-console
+        console.error('Falha ao carregar classes:', erro);
+      });
   }, [open, origem, personagem.classes]);
 
   useEffect(() => {
@@ -125,7 +128,12 @@ const CriarArtDialog = ({ open, onClose, personagem, nucleos, condicoes, onCreat
       setCatalogoArtes([]);
       return;
     }
-    getArtesPorUniverso(personagem.universo).then(setCatalogoArtes);
+    getArtesPorUniverso(personagem.universo)
+      .then(setCatalogoArtes)
+      .catch(erro => {
+        // eslint-disable-next-line no-console
+        console.error('Falha ao carregar catálogo de artes:', erro);
+      });
   }, [open, origem, personagem.universo]);
 
   const handleAutoralSubmit = useCallback(

@@ -62,13 +62,20 @@ const CriarCompanheiroModal = ({ open, onClose, personagem }) => {
       return;
     }
     setCriando(true);
-    const novoId = await addPersonagem({
-      uid: currentUser.uid,
-      nome: nomeValidado,
-      universo: personagem.universo,
-      companheiroDe: personagem.id,
-    });
-    finalizarCriacao(novoId);
+    try {
+      const novoId = await addPersonagem({
+        uid: currentUser.uid,
+        nome: nomeValidado,
+        universo: personagem.universo,
+        companheiroDe: personagem.id,
+      });
+      finalizarCriacao(novoId);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Falha ao criar companheiro:', error);
+      setErro('Não foi possível criar o companheiro. Verifique sua conexão e tente novamente.');
+      setCriando(false);
+    }
   }, [validarNome, currentUser.uid, personagem, finalizarCriacao]);
 
   const handleDuplicar = useCallback(async () => {
@@ -77,12 +84,19 @@ const CriarCompanheiroModal = ({ open, onClose, personagem }) => {
       return;
     }
     setCriando(true);
-    const novoId = await duplicarPersonagem(personagem, {
-      uid: currentUser.uid,
-      nome: nomeValidado,
-      companheiroDe: personagem.id,
-    });
-    finalizarCriacao(novoId);
+    try {
+      const novoId = await duplicarPersonagem(personagem, {
+        uid: currentUser.uid,
+        nome: nomeValidado,
+        companheiroDe: personagem.id,
+      });
+      finalizarCriacao(novoId);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Falha ao duplicar personagem:', error);
+      setErro('Não foi possível duplicar o personagem. Verifique sua conexão e tente novamente.');
+      setCriando(false);
+    }
   }, [validarNome, currentUser.uid, personagem, finalizarCriacao]);
 
   return (

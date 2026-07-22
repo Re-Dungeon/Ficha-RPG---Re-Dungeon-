@@ -5,7 +5,6 @@ import DialogContent from '@mui/material/DialogContent';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
-import KeyboardReturnIcon from '@mui/icons-material/KeyboardReturn';
 import CloseIcon from '@mui/icons-material/Close';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Diversity3Icon from '@mui/icons-material/Diversity3';
@@ -86,11 +85,16 @@ const RacaModal = ({ open, onClose, personagem, onSave }) => {
       return undefined;
     }
     let isMounted = true;
-    getRacasPorUniverso(personagem.universo).then(itens => {
-      if (isMounted) {
-        setRacas(itens);
-      }
-    });
+    getRacasPorUniverso(personagem.universo)
+      .then(itens => {
+        if (isMounted) {
+          setRacas(itens);
+        }
+      })
+      .catch(erro => {
+        // eslint-disable-next-line no-console
+        console.error('Falha ao carregar raças:', erro);
+      });
     return () => {
       isMounted = false;
     };
@@ -102,11 +106,16 @@ const RacaModal = ({ open, onClose, personagem, onSave }) => {
       return undefined;
     }
     let isMounted = true;
-    getFirestoreItem('Universo', personagem.universo).then(item => {
-      if (isMounted) {
-        setUniversoNome(getNome(item));
-      }
-    });
+    getFirestoreItem('Universo', personagem.universo)
+      .then(item => {
+        if (isMounted) {
+          setUniversoNome(getNome(item));
+        }
+      })
+      .catch(erro => {
+        // eslint-disable-next-line no-console
+        console.error('Falha ao carregar universo:', erro);
+      });
     return () => {
       isMounted = false;
     };
@@ -203,14 +212,9 @@ const RacaModal = ({ open, onClose, personagem, onSave }) => {
             </MenuItem>
           ))}
         </TextField>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <DialogFecharButton type="button" aria-label="Voltar" onClick={onClose}>
-            <KeyboardReturnIcon fontSize="small" />
-          </DialogFecharButton>
-          <DialogFecharButton type="button" aria-label="Fechar" onClick={onClose}>
-            <CloseIcon fontSize="small" />
-          </DialogFecharButton>
-        </div>
+        <DialogFecharButton type="button" aria-label="Fechar" onClick={onClose}>
+          <CloseIcon fontSize="small" />
+        </DialogFecharButton>
       </DialogHeaderRow>
 
       <DialogContent>

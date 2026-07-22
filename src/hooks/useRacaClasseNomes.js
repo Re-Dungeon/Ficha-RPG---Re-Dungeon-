@@ -9,16 +9,24 @@ export const useRacaClasseNomes = personagem => {
 
   useEffect(() => {
     if (personagem.raca) {
-      getFirestoreItem('racas', personagem.raca).then(item => setRacaNome(getNome(item)));
+      getFirestoreItem('racas', personagem.raca)
+        .then(item => setRacaNome(getNome(item)))
+        .catch(erro => {
+          // eslint-disable-next-line no-console
+          console.error('Falha ao carregar nome da raça:', erro);
+        });
     } else {
       setRacaNome('');
     }
   }, [personagem.raca]);
 
   useEffect(() => {
-    Promise.all((personagem.classes ?? []).map(id => getFirestoreItem('classes', id))).then(itens =>
-      setClassesNomes(itens.filter(Boolean).map(getNome)),
-    );
+    Promise.all((personagem.classes ?? []).map(id => getFirestoreItem('classes', id)))
+      .then(itens => setClassesNomes(itens.filter(Boolean).map(getNome)))
+      .catch(erro => {
+        // eslint-disable-next-line no-console
+        console.error('Falha ao carregar nomes das classes:', erro);
+      });
   }, [personagem.classes]);
 
   return { racaNome, classesNomes };

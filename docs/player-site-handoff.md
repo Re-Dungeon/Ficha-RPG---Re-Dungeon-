@@ -9,6 +9,7 @@
 ## 1. Objetivo do novo projeto
 
 Um site onde jogadores:
+
 1. Fazem login (e-mail/senha, cadastro ou Google) usando o **mesmo Firebase Auth** do projeto atual.
 2. Após o login, são redirecionados para uma tela de consulta **"Meus Personagens"**, listando apenas os personagens cujo dono (`uid`) é o usuário logado.
 3. Podem **criar, visualizar, editar e remover** seus próprios personagens (ficha de personagem).
@@ -183,10 +184,7 @@ export const AuthProvider = ({ children }) => {
     [],
   );
 
-  const loginWithGoogle = useCallback(
-    () => signInWithPopup(auth, googleProvider),
-    [],
-  );
+  const loginWithGoogle = useCallback(() => signInWithPopup(auth, googleProvider), []);
 
   const logout = useCallback(() => signOut(auth), []);
 
@@ -206,6 +204,7 @@ export const useAuth = () => useContext(AuthContext);
 ```
 
 **Como funciona:**
+
 - `currentUser`/`loading`: `onAuthStateChanged` é o listener do Firebase Auth — dispara toda vez que o usuário loga, desloga, ou quando a página recarrega e o Firebase restaura a sessão a partir do `localStorage` interno do SDK. Enquanto o Firebase ainda não respondeu, `loading` fica `true` (o `setTimeout` de 5s é um fallback de segurança para não travar `loading` para sempre caso o listener demore/falhe). É esse `loading` que o `ProtectedRoute` usa para não redirecionar para `/login` prematuramente antes do Firebase confirmar se já existe sessão.
 - `login`/`signup`/`loginWithGoogle`/`logout`: wrappers finos em cima das funções do SDK (`signInWithEmailAndPassword`, `createUserWithEmailAndPassword`, `signInWithPopup` com o `googleProvider`, `signOut`). Todas retornam uma Promise — quem chama (ex.: a tela `/login`) deve dar `await`/`.catch` para tratar erro (credenciais inválidas, e-mail já cadastrado, popup fechado pelo usuário, etc.) e mostrar feedback.
 - `useMemo`/`useCallback`: evitam recriar o objeto `value` (e as funções) a cada render do `AuthProvider`, o que evitaria re-renders desnecessários em todo componente que consome `useAuth()`.
@@ -260,7 +259,8 @@ export default ProtectedRoute;
 ```
 
 **Como funciona:**
-- É uma *layout route* do React Router: no `routes/index.jsx`, todas as rotas internas (`/personagens`, `/personagens/novo`, etc.) ficam **aninhadas** dentro de um elemento `<ProtectedRoute />`, e o `<Outlet />` é onde a rota filha correspondente é renderizada.
+
+- É uma _layout route_ do React Router: no `routes/index.jsx`, todas as rotas internas (`/personagens`, `/personagens/novo`, etc.) ficam **aninhadas** dentro de um elemento `<ProtectedRoute />`, e o `<Outlet />` é onde a rota filha correspondente é renderizada.
 - Enquanto `loading` é `true` (Firebase ainda não confirmou se há sessão), mostra um spinner — **não redireciona ainda**, para não mandar um usuário já logado para `/login` só porque o Firebase ainda não respondeu.
 - Se `loading` terminou e `!currentUser`, usa `<Navigate to="/login" replace />` para redirecionar (em vez do `Box` com "Acesso Restrito" do projeto atual). `replace` evita empilhar a rota protegida no histórico do navegador (botão "voltar" não volta para uma tela que exigia login). `state={{ from: location }}` é opcional, mas permite que a tela `/login` redirecione de volta para a rota que o usuário tentou acessar originalmente, após autenticar com sucesso.
 - Se há usuário logado, renderiza `<Outlet />` (a rota filha) dentro de um `Suspense`, para cobrir o caso de páginas carregadas via `React.lazy`.
@@ -284,6 +284,7 @@ export default ProtectedRoute;
 - **Vitest** + **Testing Library** para testes
 
 Versões de referência (`package.json` do projeto atual) — usar as mesmas major versions para evitar incompatibilidades caso algum código/hook seja copiado entre os dois projetos:
+
 ```json
 "@mui/material": "^9.1.2",
 "firebase": "^12.15.0",
@@ -372,5 +373,4 @@ src/
 - [x] `src/common/utils/yupSchemas.js` e `src/hooks/useStableListKeys.js` — idem, recriados a partir da especificação.
 - [x] `AuthContext` simplificado (sem `usePermissions`) — `src/context/AuthContext.jsx`, byte-a-byte igual ao código desta seção 4.2, exceto que `signup`/`loginWithGoogle` foram removidos depois a pedido do responsável do projeto (contas são criadas manualmente pelo mestre/administrador — login é só e-mail/senha).
 - [x] `service/storage.js` com leitura das coleções de referência + CRUD de `personagens` filtrado por `uid` — e mais: CRUD das subcoleções (`aptidoesAdquiridas`, `arts`, `historicoSorte`) que foram necessárias conforme a ficha cresceu além do escopo original deste handoff.
-- [x] Bloco de regra `personagens` no `firestore.rules` — criado neste repo (que passou a ser o dono do Firestore, já que a migração não usou um repositório separado) e **já deployado no projeto Firebase real**.
 - [x] `/login`, `/personagens` e `/personagens/novo` — e muito mais: a ficha completa (`/personagens/:id`) com 10 abas, muito além do MVP que este handoff descrevia. Ver [MIGRACAO-REACT-FIREBASE.md](./MIGRACAO-REACT-FIREBASE.md).

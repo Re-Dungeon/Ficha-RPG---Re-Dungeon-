@@ -30,7 +30,12 @@ const VeiasAstraisTab = ({ personagem, onSave }) => {
   const { executar } = useSaving();
 
   useEffect(() => {
-    getDivindades().then(setDivindades);
+    getDivindades()
+      .then(setDivindades)
+      .catch(erro => {
+        // eslint-disable-next-line no-console
+        console.error('Falha ao carregar divindades:', erro);
+      });
   }, []);
 
   useEffect(() => {
@@ -39,11 +44,16 @@ const VeiasAstraisTab = ({ personagem, onSave }) => {
       return undefined;
     }
     let isMounted = true;
-    getVeiasAstraisPorUniverso(personagem.universo).then(itens => {
-      if (isMounted) {
-        setVeias(itens.map(normalizarVeia));
-      }
-    });
+    getVeiasAstraisPorUniverso(personagem.universo)
+      .then(itens => {
+        if (isMounted) {
+          setVeias(itens.map(normalizarVeia));
+        }
+      })
+      .catch(erro => {
+        // eslint-disable-next-line no-console
+        console.error('Falha ao carregar veias astrais:', erro);
+      });
     return () => {
       isMounted = false;
     };

@@ -73,11 +73,16 @@ const LojaModal = ({ open, onClose, personagem, onSave }) => {
       return undefined;
     }
     let isMounted = true;
-    getItensPorUniverso(personagem.universo).then(itens => {
-      if (isMounted) {
-        setCatalogo(itens);
-      }
-    });
+    getItensPorUniverso(personagem.universo)
+      .then(itens => {
+        if (isMounted) {
+          setCatalogo(itens);
+        }
+      })
+      .catch(erro => {
+        // eslint-disable-next-line no-console
+        console.error('Falha ao carregar itens da loja:', erro);
+      });
     return () => {
       isMounted = false;
     };
@@ -89,11 +94,16 @@ const LojaModal = ({ open, onClose, personagem, onSave }) => {
       return undefined;
     }
     let isMounted = true;
-    getReceitasPorUniverso(personagem.universo).then(receitas => {
-      if (isMounted) {
-        setCatalogoReceitas(receitas);
-      }
-    });
+    getReceitasPorUniverso(personagem.universo)
+      .then(receitas => {
+        if (isMounted) {
+          setCatalogoReceitas(receitas);
+        }
+      })
+      .catch(erro => {
+        // eslint-disable-next-line no-console
+        console.error('Falha ao carregar receitas da loja:', erro);
+      });
     return () => {
       isMounted = false;
     };

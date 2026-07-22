@@ -19,6 +19,8 @@ import PetsIcon from '@mui/icons-material/Pets';
 
 import { getPersonagem, removePersonagem, updatePersonagem } from 'service/storage';
 import { SavingProvider } from 'context/SavingContext';
+import ErrorBoundary from 'components/ErrorBoundary/ErrorBoundary';
+import ErrorSnackbar from 'components/ErrorSnackbar/ErrorSnackbar';
 
 import AtributosTab from './tabs/AtributosTab';
 import AptidoesTab from './tabs/AptidoesTab';
@@ -50,6 +52,7 @@ const Ficha = () => {
   const [excluindo, setExcluindo] = useState(false);
   const [sidebarExpandida, setSidebarExpandida] = useState(true);
   const [modalAtivo, setModalAtivo] = useState(null);
+  const [erroExclusao, setErroExclusao] = useState(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -93,8 +96,15 @@ const Ficha = () => {
 
   const handleExcluir = useCallback(async () => {
     setExcluindo(true);
-    await removePersonagem(id);
-    navigate('/personagens', { replace: true });
+    try {
+      await removePersonagem(id);
+      navigate('/personagens', { replace: true });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Falha ao excluir personagem:', error);
+      setErroExclusao('Não foi possível excluir o personagem. Verifique sua conexão e tente novamente.');
+      setExcluindo(false);
+    }
   }, [id, navigate]);
 
   const fecharModal = useCallback(() => setModalAtivo(null), []);
@@ -148,19 +158,21 @@ const Ficha = () => {
             </Tabs>
           </TabsBar>
 
-          {aba === 'atributos' && (
-            <AtributosTab
-              personagem={personagem}
-              onSave={handleSave}
-              onExcluir={() => setDialogExcluir(true)}
-            />
-          )}
-          {aba === 'aptidoes' && <AptidoesTab personagem={personagem} onSave={handleSave} />}
-          {aba === 'arts' && <ArtsTab personagem={personagem} onSave={handleSave} />}
-          {aba === 'inventario' && <InventarioTab personagem={personagem} onSave={handleSave} />}
-          {aba === 'treinamento' && <TreinamentoTab personagem={personagem} onSave={handleSave} />}
-          {aba === 'veiasAstrais' && <VeiasAstraisTab personagem={personagem} onSave={handleSave} />}
-          {aba === 'companheiro' && <CompanheiroTab personagem={personagem} />}
+          <ErrorBoundary key={aba} mensagem="Não foi possível exibir esta aba. Troque de aba ou recarregue a página.">
+            {aba === 'atributos' && (
+              <AtributosTab
+                personagem={personagem}
+                onSave={handleSave}
+                onExcluir={() => setDialogExcluir(true)}
+              />
+            )}
+            {aba === 'aptidoes' && <AptidoesTab personagem={personagem} onSave={handleSave} />}
+            {aba === 'arts' && <ArtsTab personagem={personagem} />}
+            {aba === 'inventario' && <InventarioTab personagem={personagem} />}
+            {aba === 'treinamento' && <TreinamentoTab personagem={personagem} onSave={handleSave} />}
+            {aba === 'veiasAstrais' && <VeiasAstraisTab personagem={personagem} onSave={handleSave} />}
+            {aba === 'companheiro' && <CompanheiroTab personagem={personagem} />}
+          </ErrorBoundary>
 
           <Dialog open={dialogExcluir} onClose={() => setDialogExcluir(false)}>
             <DialogTitle>Excluir Personagem</DialogTitle>
@@ -199,6 +211,12 @@ const Ficha = () => {
             onSave={handleSave}
           />
           <CodexModal open={modalAtivo === 'codex'} onClose={fecharModal} personagem={personagem} />
+
+          <ErrorSnackbar
+            open={!!erroExclusao}
+            mensagem={erroExclusao}
+            onClose={() => setErroExclusao(null)}
+          />
         </FichaMain>
       </FichaLayout>
     </SavingProvider>

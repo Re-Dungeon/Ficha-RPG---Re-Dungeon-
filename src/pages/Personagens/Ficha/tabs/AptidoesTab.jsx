@@ -79,13 +79,22 @@ const AptidoesTab = ({ personagem, onSave }) => {
         ? getAptidoesPorUniverso(personagem.universo)
         : Promise.resolve([]),
       getAptidoesAdquiridas(personagem.id),
-    ]).then(([catalogoItens, adquiridasItens]) => {
-      if (isMounted) {
-        setCatalogo(catalogoItens);
-        setAdquiridas(adquiridasItens);
-        setCarregando(false);
-      }
-    });
+    ])
+      .then(([catalogoItens, adquiridasItens]) => {
+        if (isMounted) {
+          setCatalogo(catalogoItens);
+          setAdquiridas(adquiridasItens);
+          setCarregando(false);
+        }
+      })
+      .catch(erroCarregamento => {
+        if (isMounted) {
+          // eslint-disable-next-line no-console
+          console.error('Falha ao carregar aptidões:', erroCarregamento);
+          setCarregando(false);
+          setErro('Não foi possível carregar as aptidões. Tente novamente.');
+        }
+      });
     return () => {
       isMounted = false;
     };

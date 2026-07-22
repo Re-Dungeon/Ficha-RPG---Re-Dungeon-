@@ -14,6 +14,7 @@ import { useAuth } from 'context/AuthContext';
 import { addPersonagem, getUniverso } from 'service/storage';
 import { nomeSchema } from 'common/utils/yupSchemas';
 import { getNome } from 'common/utils/resolveNome';
+import ErrorSnackbar from 'components/ErrorSnackbar/ErrorSnackbar';
 
 import { FormWrapper, PageTitle, PageWrapper } from './styles';
 
@@ -26,6 +27,7 @@ const NovoPersonagem = () => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   const [universos, setUniversos] = useState([]);
+  const [erro, setErro] = useState(null);
 
   useEffect(() => {
     getUniverso().then(setUniversos);
@@ -33,9 +35,15 @@ const NovoPersonagem = () => {
 
   const handleSubmit = useCallback(
     async ({ nome, universo }, { setSubmitting }) => {
-      const id = await addPersonagem({ uid: currentUser.uid, nome, universo });
-      setSubmitting(false);
-      navigate(`/personagens/${id}`);
+      try {
+        const id = await addPersonagem({ uid: currentUser.uid, nome, universo });
+        navigate(`/personagens/${id}`);
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('Falha ao criar personagem:', error);
+        setErro('Não foi possível criar o personagem. Verifique sua conexão e tente novamente.');
+        setSubmitting(false);
+      }
     },
     [currentUser.uid, navigate],
   );
@@ -92,6 +100,8 @@ const NovoPersonagem = () => {
           </FormWrapper>
         )}
       </Formik>
+
+      <ErrorSnackbar open={!!erro} mensagem={erro} onClose={() => setErro(null)} />
     </PageWrapper>
   );
 };

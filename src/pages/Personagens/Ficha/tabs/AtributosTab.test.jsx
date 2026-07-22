@@ -65,4 +65,17 @@ describe('AtributosTab — fluxo de edição', () => {
     const dialogReaberto = await screen.findByRole('dialog', { name: /configurar força/i });
     expect(within(dialogReaberto).getByLabelText('Base')).toHaveValue(0);
   });
+
+  it('mostra uma mensagem de erro e reabilita o botão Salvar quando onSave falha', async () => {
+    const onSave = vi.fn().mockRejectedValue(new Error('offline'));
+    renderComProvider(<AtributosTab personagem={personagem} onSave={onSave} onExcluir={vi.fn()} />);
+
+    const botaoSalvar = screen.getByRole('button', { name: /^salvar$/i });
+    fireEvent.click(botaoSalvar);
+
+    await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
+    await screen.findByText(/não foi possível salvar/i);
+    // SavingContext.executar impõe uma duração mínima de overlay (2s) mesmo em erro.
+    await waitFor(() => expect(botaoSalvar).not.toBeDisabled(), { timeout: 3000 });
+  });
 });

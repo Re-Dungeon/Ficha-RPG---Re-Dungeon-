@@ -45,11 +45,16 @@ const CriarReceitaDialog = ({ open, onClose, personagem, onCreate }) => {
       return undefined;
     }
     let isMounted = true;
-    getReceitasPorUniverso(personagem.universo).then(receitas => {
-      if (isMounted) {
-        setCatalogo(receitas);
-      }
-    });
+    getReceitasPorUniverso(personagem.universo)
+      .then(receitas => {
+        if (isMounted) {
+          setCatalogo(receitas);
+        }
+      })
+      .catch(erro => {
+        // eslint-disable-next-line no-console
+        console.error('Falha ao carregar catálogo de receitas:', erro);
+      });
     return () => {
       isMounted = false;
     };

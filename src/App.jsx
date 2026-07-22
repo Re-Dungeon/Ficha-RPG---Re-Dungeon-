@@ -6,12 +6,15 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { AuthProvider } from 'context/AuthContext';
 import theme from 'common/styles/theme';
 import router from 'routes/index.jsx';
+import ErrorBoundary from 'components/ErrorBoundary/ErrorBoundary';
 
 const App = () => (
   <ThemeProvider theme={theme}>
     <CssBaseline />
     <AuthProvider>
-      <RouterProvider router={router} />
+      <ErrorBoundary>
+        <RouterProvider router={router} />
+      </ErrorBoundary>
     </AuthProvider>
   </ThemeProvider>
 );

@@ -45,11 +45,16 @@ const CriarMaterialDialog = ({ open, onClose, personagem, onCreate }) => {
       return undefined;
     }
     let isMounted = true;
-    getMateriaisPorUniverso(personagem.universo).then(materiais => {
-      if (isMounted) {
-        setCatalogo(materiais);
-      }
-    });
+    getMateriaisPorUniverso(personagem.universo)
+      .then(materiais => {
+        if (isMounted) {
+          setCatalogo(materiais);
+        }
+      })
+      .catch(erro => {
+        // eslint-disable-next-line no-console
+        console.error('Falha ao carregar catálogo de materiais:', erro);
+      });
     return () => {
       isMounted = false;
     };

@@ -28,11 +28,16 @@ const CondicoesTab = ({ personagem, onSave }) => {
       return undefined;
     }
     let isMounted = true;
-    getCondicoesPorUniverso(personagem.universo).then(itens => {
-      if (isMounted) {
-        setCatalogo(itens);
-      }
-    });
+    getCondicoesPorUniverso(personagem.universo)
+      .then(itens => {
+        if (isMounted) {
+          setCatalogo(itens);
+        }
+      })
+      .catch(erro => {
+        // eslint-disable-next-line no-console
+        console.error('Falha ao carregar catálogo de condições:', erro);
+      });
     return () => {
       isMounted = false;
     };
@@ -73,14 +78,15 @@ const CondicoesTab = ({ personagem, onSave }) => {
   );
 
   const handleAlterarDuracao = useCallback(
-    async (condicaoId, duracaoRestante) => {
-      await onSave({
-        condicoesAtivas: condicoesAtivas.map(item =>
-          item.condicaoId === condicaoId ? { ...item, duracaoRestante } : item,
-        ),
-      });
-    },
-    [condicoesAtivas, onSave],
+    (condicaoId, duracaoRestante) =>
+      executar(() =>
+        onSave({
+          condicoesAtivas: condicoesAtivas.map(item =>
+            item.condicaoId === condicaoId ? { ...item, duracaoRestante } : item,
+          ),
+        }),
+      ),
+    [condicoesAtivas, onSave, executar],
   );
 
   const catalogoFiltrado = catalogo.filter(item =>

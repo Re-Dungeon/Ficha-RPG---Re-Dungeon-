@@ -248,21 +248,32 @@ const PerfilTab = ({ personagem, onSave, aba }) => {
   }, [lerRascunho]);
 
   useEffect(() => {
-    getOrigens().then(setOrigens);
+    getOrigens()
+      .then(setOrigens)
+      .catch(erro => {
+        // eslint-disable-next-line no-console
+        console.error('Falha ao carregar origens:', erro);
+      });
   }, []);
 
   const handleSubmit = useCallback(
     async (values, { setSubmitting }) => {
       const { nome, titulo, origem, afiliacao, statusNarrativo, notasAdicionais, background, ...resto } = values;
-      await onSave({
-        ...resto,
-        nome,
-        origem,
-        jogadorInfo: { titulo, afiliacao, statusNarrativo, notasAdicionais, background },
-      });
-      limparRascunho();
-      setRascunhoDisponivel(null);
-      setSubmitting(false);
+      try {
+        await onSave({
+          ...resto,
+          nome,
+          origem,
+          jogadorInfo: { titulo, afiliacao, statusNarrativo, notasAdicionais, background },
+        });
+        limparRascunho();
+        setRascunhoDisponivel(null);
+      } catch {
+        // Erro já registrado e exibido pelo SnackBar de SavingContext.executar
+        // (onSave aqui é o handleSalvarPerfil de InfoModal, que já passa por executar).
+      } finally {
+        setSubmitting(false);
+      }
     },
     [onSave, limparRascunho],
   );

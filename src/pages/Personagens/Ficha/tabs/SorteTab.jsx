@@ -31,11 +31,16 @@ const SorteTab = ({ personagem, onSave }) => {
 
   useEffect(() => {
     let isMounted = true;
-    getHistoricoSorte(personagem.id).then(itens => {
-      if (isMounted) {
-        setHistorico(itens);
-      }
-    });
+    getHistoricoSorte(personagem.id)
+      .then(itens => {
+        if (isMounted) {
+          setHistorico(itens);
+        }
+      })
+      .catch(erro => {
+        // eslint-disable-next-line no-console
+        console.error('Falha ao carregar histórico de sorte:', erro);
+      });
     return () => {
       isMounted = false;
     };

@@ -44,12 +44,20 @@ const CodexTab = ({ personagem }) => {
     }
     let isMounted = true;
     setCarregando(true);
-    getRegrasPorUniverso(personagem.universo).then(itens => {
-      if (isMounted) {
-        setRegras(itens);
-        setCarregando(false);
-      }
-    });
+    getRegrasPorUniverso(personagem.universo)
+      .then(itens => {
+        if (isMounted) {
+          setRegras(itens);
+          setCarregando(false);
+        }
+      })
+      .catch(erro => {
+        if (isMounted) {
+          // eslint-disable-next-line no-console
+          console.error('Falha ao carregar regras:', erro);
+          setCarregando(false);
+        }
+      });
     return () => {
       isMounted = false;
     };

@@ -52,11 +52,16 @@ const ReputacaoModal = ({ open, onClose, personagem, onSave }) => {
       return undefined;
     }
     let isMounted = true;
-    getOrigensPorUniverso(personagem.universo).then(itens => {
-      if (isMounted) {
-        setOrigens(itens);
-      }
-    });
+    getOrigensPorUniverso(personagem.universo)
+      .then(itens => {
+        if (isMounted) {
+          setOrigens(itens);
+        }
+      })
+      .catch(erro => {
+        // eslint-disable-next-line no-console
+        console.error('Falha ao carregar origens:', erro);
+      });
     return () => {
       isMounted = false;
     };

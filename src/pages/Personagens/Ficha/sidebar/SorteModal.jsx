@@ -5,7 +5,6 @@ import DialogContent from '@mui/material/DialogContent';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import CasinoIcon from '@mui/icons-material/Casino';
-import KeyboardReturnIcon from '@mui/icons-material/KeyboardReturn';
 import CloseIcon from '@mui/icons-material/Close';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 
@@ -28,14 +27,9 @@ const SorteModal = ({ open, onClose, personagem, onSave }) => {
           <MonetizationOnIcon fontSize="inherit" />
           Saldo: {fortunaAtual} Ȼ
         </SaldoBadge>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <DialogFecharButton type="button" aria-label="Voltar" onClick={onClose}>
-            <KeyboardReturnIcon fontSize="small" />
-          </DialogFecharButton>
-          <DialogFecharButton type="button" aria-label="Fechar" onClick={onClose}>
-            <CloseIcon fontSize="small" />
-          </DialogFecharButton>
-        </div>
+        <DialogFecharButton type="button" aria-label="Fechar" onClick={onClose}>
+          <CloseIcon fontSize="small" />
+        </DialogFecharButton>
       </DialogHeaderRow>
       <Tabs
         value={subAba}

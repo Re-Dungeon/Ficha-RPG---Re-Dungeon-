@@ -18,7 +18,7 @@ import {
 
 // Placeholders — o usuário troca essas URLs pelas imagens finais dos botões depois.
 const SALVAR_BADGE_URL = 'https://placehold.co/112x112/1c1830/4ade80?text=Salvar';
-const EXCLUIR_BADGE_URL = 'https://placehold.co/112x112/1c1830/f87171?text=Excluir';
+const EXCLUIR_BADGE_URL = 'https://i.imgur.com/GS68rHh.png';
 
 const PersonagemHeroCard = ({
   personagem,

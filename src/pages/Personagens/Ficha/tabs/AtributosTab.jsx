@@ -171,10 +171,15 @@ const AtributosTab = ({ personagem, onSave, onExcluir }) => {
 
   const handleSubmit = useCallback(
     async (values, { setSubmitting }) => {
-      await executar(() => onSave(values));
-      limparRascunho();
-      setRascunhoDisponivel(null);
-      setSubmitting(false);
+      try {
+        await executar(() => onSave(values));
+        limparRascunho();
+        setRascunhoDisponivel(null);
+      } catch {
+        // Erro já registrado e exibido pelo SnackBar de SavingContext.executar.
+      } finally {
+        setSubmitting(false);
+      }
     },
     [onSave, limparRascunho, executar],
   );

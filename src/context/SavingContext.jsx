@@ -2,13 +2,16 @@ import React, { createContext, useCallback, useContext, useRef, useState } from 
 import PropTypes from 'prop-types';
 
 import SavingOverlay from 'components/SavingOverlay/SavingOverlay';
+import ErrorSnackbar from 'components/ErrorSnackbar/ErrorSnackbar';
 
 const SavingContext = createContext(null);
 
 const DURACAO_MINIMA_MS = 2000;
+const MENSAGEM_ERRO_PADRAO = 'Não foi possível salvar. Verifique sua conexão e tente novamente.';
 
 export const SavingProvider = ({ children }) => {
   const [salvando, setSalvando] = useState(false);
+  const [erro, setErro] = useState(null);
   const emAndamentoRef = useRef(false);
 
   const executar = useCallback(async fn => {
@@ -21,7 +24,13 @@ export const SavingProvider = ({ children }) => {
     setSalvando(true);
     const inicio = Date.now();
     try {
-      return await fn();
+      const resultado = await fn();
+      return resultado;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Falha ao salvar:', error);
+      setErro(MENSAGEM_ERRO_PADRAO);
+      throw error;
     } finally {
       const decorrido = Date.now() - inicio;
       const espera = DURACAO_MINIMA_MS - decorrido;
@@ -37,6 +46,7 @@ export const SavingProvider = ({ children }) => {
     <SavingContext.Provider value={{ salvando, executar }}>
       {children}
       <SavingOverlay open={salvando} />
+      <ErrorSnackbar open={!!erro} mensagem={erro} onClose={() => setErro(null)} />
     </SavingContext.Provider>
   );
 };

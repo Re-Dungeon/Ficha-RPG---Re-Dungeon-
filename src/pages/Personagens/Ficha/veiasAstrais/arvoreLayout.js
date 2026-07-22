@@ -9,12 +9,23 @@ const ROW_HEIGHT = 110;
 // estritamente à direita do pai na árvore desenhada.
 const calcularProfundidades = (nos, porId) => {
   const profundidade = new Map();
+  // `visitando` guarda os nós no caminho de recursão atual: dado de catálogo é
+  // admin-managed e este site só lê, então um `parentId` formando ciclo (ex. A
+  // aponta pra B e B aponta de volta pra A) não pode virar recursão infinita —
+  // trata o nó que fecha o ciclo como raiz (profundidade 0) em vez de travar.
+  const visitando = new Set();
   const resolver = no => {
     if (profundidade.has(no.id)) {
       return profundidade.get(no.id);
     }
+    if (visitando.has(no.id)) {
+      profundidade.set(no.id, 0);
+      return 0;
+    }
+    visitando.add(no.id);
     const pai = no.parentId ? porId.get(no.parentId) : null;
     const valor = pai ? resolver(pai) + 1 : 0;
+    visitando.delete(no.id);
     profundidade.set(no.id, valor);
     return valor;
   };
@@ -36,24 +47,46 @@ export const calcularLayoutArvore = nos => {
   const profundidade = calcularProfundidades(nos, porId);
 
   const linhaPorId = new Map();
+  const visitandoLinha = new Set();
   let proximaLinha = 0;
   const atribuirLinha = no => {
     if (linhaPorId.has(no.id)) {
       return linhaPorId.get(no.id);
     }
-    const filhos = filhosPorPai.get(no.id) ?? [];
-    if (filhos.length === 0) {
+    // Mesma proteção contra ciclo de calcularProfundidades: se `no` já está no
+    // caminho de recursão atual, trata como folha em vez de recursar pra sempre.
+    if (visitandoLinha.has(no.id)) {
       const linha = proximaLinha;
       proximaLinha += 1;
       linhaPorId.set(no.id, linha);
       return linha;
     }
-    const linhas = filhos.map(atribuirLinha);
-    const linha = linhas.reduce((total, valor) => total + valor, 0) / linhas.length;
+    visitandoLinha.add(no.id);
+    const filhos = filhosPorPai.get(no.id) ?? [];
+    let linha;
+    if (filhos.length === 0) {
+      linha = proximaLinha;
+      proximaLinha += 1;
+    } else {
+      const linhas = filhos.map(atribuirLinha);
+      linha = linhas.reduce((total, valor) => total + valor, 0) / linhas.length;
+    }
+    visitandoLinha.delete(no.id);
     linhaPorId.set(no.id, linha);
     return linha;
   };
   (filhosPorPai.get(null) ?? []).forEach(atribuirLinha);
+
+  // Nós presos num ciclo puro (ex. A aponta pra B e B aponta de volta pra A,
+  // sem nenhum deles descender de uma raiz real) nunca são alcançados pela
+  // varredura a partir de `filhosPorPai.get(null)` acima — sem isso, ficariam
+  // sem linha atribuída (`y: NaN` no SVG). Varre o que sobrou e força a
+  // atribuição de linha pra esses nós isolados também.
+  nos.forEach(no => {
+    if (!linhaPorId.has(no.id)) {
+      atribuirLinha(no);
+    }
+  });
 
   const posicoes = new Map(
     nos.map(no => [

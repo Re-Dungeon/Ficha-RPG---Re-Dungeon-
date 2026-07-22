@@ -44,11 +44,16 @@ const AptidaoConsultaModal = ({ open, onClose, personagem }) => {
       return undefined;
     }
     let isMounted = true;
-    getAptidoesPorUniverso(personagem.universo).then(itens => {
-      if (isMounted) {
-        setCatalogo(itens);
-      }
-    });
+    getAptidoesPorUniverso(personagem.universo)
+      .then(itens => {
+        if (isMounted) {
+          setCatalogo(itens);
+        }
+      })
+      .catch(erro => {
+        // eslint-disable-next-line no-console
+        console.error('Falha ao carregar aptidões:', erro);
+      });
     return () => {
       isMounted = false;
     };

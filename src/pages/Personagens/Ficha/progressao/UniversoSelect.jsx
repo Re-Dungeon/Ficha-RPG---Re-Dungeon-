@@ -14,7 +14,12 @@ const UniversoSelect = ({ personagem, onSave }) => {
   const { executar } = useSaving();
 
   useEffect(() => {
-    getUniverso().then(setOpcoes);
+    getUniverso()
+      .then(setOpcoes)
+      .catch(erro => {
+        // eslint-disable-next-line no-console
+        console.error('Falha ao carregar universos:', erro);
+      });
   }, []);
 
   const handleChange = useCallback(

@@ -45,11 +45,16 @@ const CriarItemDialog = ({ open, onClose, personagem, espacoLivre, onCreate }) =
       return undefined;
     }
     let isMounted = true;
-    getItensPorUniverso(personagem.universo).then(itens => {
-      if (isMounted) {
-        setCatalogo(itens);
-      }
-    });
+    getItensPorUniverso(personagem.universo)
+      .then(itens => {
+        if (isMounted) {
+          setCatalogo(itens);
+        }
+      })
+      .catch(erro => {
+        // eslint-disable-next-line no-console
+        console.error('Falha ao carregar catálogo de itens:', erro);
+      });
     return () => {
       isMounted = false;
     };

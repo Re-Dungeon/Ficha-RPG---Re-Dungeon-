@@ -31,7 +31,7 @@ import VarianteViewDialog from '../arts/VarianteViewDialog';
 import VariantesSection from '../arts/VariantesSection';
 import { ArtsHeader, StatCard, StatLabel, StatsGrid, StatValue } from '../arts/styles';
 
-const ArtsTab = ({ personagem, onSave: _onSave }) => {
+const ArtsTab = ({ personagem }) => {
   const [nucleos, setNucleos] = useState([]);
   const [arts, setArts] = useState([]);
   const [variantes, setVariantes] = useState([]);
@@ -52,15 +52,21 @@ const ArtsTab = ({ personagem, onSave: _onSave }) => {
   const [varianteEmVisualizacao, setVarianteEmVisualizacao] = useState(null);
 
   const carregarTudo = useCallback(async () => {
-    const [nucleosCarregados, artsCarregadas, variantesCarregadas] = await Promise.all([
-      getNucleos(personagem.id),
-      getArts(personagem.id),
-      getVariantes(personagem.id),
-    ]);
-    setNucleos(nucleosCarregados);
-    setArts(artsCarregadas);
-    setVariantes(variantesCarregadas);
-    setCarregando(false);
+    try {
+      const [nucleosCarregados, artsCarregadas, variantesCarregadas] = await Promise.all([
+        getNucleos(personagem.id),
+        getArts(personagem.id),
+        getVariantes(personagem.id),
+      ]);
+      setNucleos(nucleosCarregados);
+      setArts(artsCarregadas);
+      setVariantes(variantesCarregadas);
+    } catch (erro) {
+      // eslint-disable-next-line no-console
+      console.error('Falha ao carregar arts/núcleos/variantes:', erro);
+    } finally {
+      setCarregando(false);
+    }
   }, [personagem.id]);
 
   useEffect(() => {
@@ -75,11 +81,16 @@ const ArtsTab = ({ personagem, onSave: _onSave }) => {
       return undefined;
     }
     let isMounted = true;
-    getCondicoesPorUniverso(personagem.universo).then(itens => {
-      if (isMounted) {
-        setCondicoes(itens);
-      }
-    });
+    getCondicoesPorUniverso(personagem.universo)
+      .then(itens => {
+        if (isMounted) {
+          setCondicoes(itens);
+        }
+      })
+      .catch(erro => {
+        // eslint-disable-next-line no-console
+        console.error('Falha ao carregar condições:', erro);
+      });
     return () => {
       isMounted = false;
     };
@@ -370,7 +381,6 @@ const ArtsTab = ({ personagem, onSave: _onSave }) => {
 
 ArtsTab.propTypes = {
   personagem: PropTypes.object.isRequired,
-  onSave: PropTypes.func.isRequired,
 };
 
 export default ArtsTab;

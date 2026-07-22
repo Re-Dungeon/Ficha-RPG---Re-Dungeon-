@@ -49,7 +49,7 @@ import {
 } from '../inventario/styles';
 import { SectionTitle, StatusValueRow } from '../styles';
 
-const InventarioTab = ({ personagem, onSave: _onSave }) => {
+const InventarioTab = ({ personagem }) => {
   const [itens, setItens] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [dialogAberto, setDialogAberto] = useState(false);
@@ -416,7 +416,6 @@ const InventarioTab = ({ personagem, onSave: _onSave }) => {
 
 InventarioTab.propTypes = {
   personagem: PropTypes.object.isRequired,
-  onSave: PropTypes.func.isRequired,
 };
 
 export default InventarioTab;

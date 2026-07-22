@@ -21,11 +21,16 @@ const CompanheiroTab = ({ personagem }) => {
 
   useEffect(() => {
     let isMounted = true;
-    getCompanheiros(currentUser.uid, personagem.id).then(itens => {
-      if (isMounted) {
-        setCompanheiros(itens);
-      }
-    });
+    getCompanheiros(currentUser.uid, personagem.id)
+      .then(itens => {
+        if (isMounted) {
+          setCompanheiros(itens);
+        }
+      })
+      .catch(erro => {
+        // eslint-disable-next-line no-console
+        console.error('Falha ao carregar companheiros:', erro);
+      });
     return () => {
       isMounted = false;
     };
@@ -37,11 +42,16 @@ const CompanheiroTab = ({ personagem }) => {
       setPersonagemBase(null);
       return undefined;
     }
-    getPersonagem(personagem.companheiroDe).then(item => {
-      if (isMounted) {
-        setPersonagemBase(item);
-      }
-    });
+    getPersonagem(personagem.companheiroDe)
+      .then(item => {
+        if (isMounted) {
+          setPersonagemBase(item);
+        }
+      })
+      .catch(erro => {
+        // eslint-disable-next-line no-console
+        console.error('Falha ao carregar personagem base do companheiro:', erro);
+      });
     return () => {
       isMounted = false;
     };
