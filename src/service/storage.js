@@ -55,6 +55,13 @@ export const updatePersonagem = (id, data) => updateFirestoreItem('personagens',
 
 export const removePersonagem = id => removeFirestoreItem('personagens', id);
 
+// Companheiros são outro doc top-level de `personagens` com `companheiroDe`
+// apontando pro id do personagem "base" — não uma subcoleção (ver
+// MIGRACAO-REACT-FIREBASE.md §5). Os dois filtros são necessários porque
+// `firestore.rules` restringe list queries a `uid == request.auth.uid`.
+export const getCompanheiros = (uid, personagemId) =>
+  getFirestoreItems('personagens', where('uid', '==', uid), where('companheiroDe', '==', personagemId));
+
 // ── historicoSorte — subcoleção personagens/{id}/historicoSorte (§6, §5.1) ──
 
 export const getHistoricoSorte = async personagemId => {
@@ -248,6 +255,9 @@ export const getDivindades = () => getFirestoreItems('divindades');
 
 export const getRacasPorUniverso = universoId =>
   getColecaoPorUniverso('racas', universoId);
+
+export const getOrigensPorUniverso = universoId =>
+  getColecaoPorUniverso('origens', universoId);
 
 export const getClassesPorUniverso = universoId =>
   getColecaoPorUniverso('classes', universoId);

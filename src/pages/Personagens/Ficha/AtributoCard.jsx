@@ -54,7 +54,7 @@ const AtributoCard = ({ label, total, baseName, extraName, bonusName }) => {
 
   return (
     <>
-      <AtributoGemaButton type="button" onClick={abrir}>
+      <AtributoGemaButton type="button" aria-label={label} onClick={abrir}>
         <AtributoGemaValor>{total}</AtributoGemaValor>
         <AtributoGemaLabel>{label.slice(0, 3)}</AtributoGemaLabel>
       </AtributoGemaButton>

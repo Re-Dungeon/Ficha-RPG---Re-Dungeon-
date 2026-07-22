@@ -1,25 +1,32 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
+import Button from '@mui/material/Button';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import LockIcon from '@mui/icons-material/Lock';
 
 import { getDivindades, getVeiasAstraisPorUniverso } from 'service/storage';
 import {
-  calcularCustoDesbloqueio,
   calcularPcDisponivel,
   calcularPowerCombat,
   calcularPrimariosTotais,
   calcularSecundarios,
 } from 'common/utils/formulas';
-import { getNome } from 'common/utils/resolveNome';
 import { useSaving } from 'context/SavingContext';
 
-import ConstelacaoCard from '../veiasAstrais/ConstelacaoCard';
-import DesbloquearNoDialog from '../veiasAstrais/DesbloquearNoDialog';
+import ConstelacaoArvoreModal from '../veiasAstrais/ConstelacaoArvoreModal';
+import { agruparVeiasPorDivindade, normalizarVeia } from '../veiasAstrais/constants';
+import DivindadeCard from '../veiasAstrais/DivindadeCard';
+import NucleoCentralModal from '../veiasAstrais/NucleoCentralModal';
+import ResetarVeiasDialog from '../veiasAstrais/ResetarVeiasDialog';
+import { DivindadeGrid } from '../veiasAstrais/styles';
 import { AtributoCardWrapper, CardTitle, CardTotal, SectionTitle, StatusValueRow } from '../styles';
 
 const VeiasAstraisTab = ({ personagem, onSave }) => {
-  const [constelacoes, setConstelacoes] = useState([]);
+  const [veias, setVeias] = useState([]);
   const [divindades, setDivindades] = useState([]);
-  const [selecao, setSelecao] = useState(null);
+  const [divindadeAbertaId, setDivindadeAbertaId] = useState(null);
+  const [nucleoAberto, setNucleoAberto] = useState(false);
+  const [resetarAberto, setResetarAberto] = useState(false);
   const { executar } = useSaving();
 
   useEffect(() => {
@@ -28,13 +35,13 @@ const VeiasAstraisTab = ({ personagem, onSave }) => {
 
   useEffect(() => {
     if (!personagem.universo) {
-      setConstelacoes([]);
+      setVeias([]);
       return undefined;
     }
     let isMounted = true;
     getVeiasAstraisPorUniverso(personagem.universo).then(itens => {
       if (isMounted) {
-        setConstelacoes(itens);
+        setVeias(itens.map(normalizarVeia));
       }
     });
     return () => {
@@ -62,36 +69,47 @@ const VeiasAstraisTab = ({ personagem, onSave }) => {
     [personagem.veiasAstrais?.nosDesbloqueados],
   );
 
-  const selecaoInfo = selecao
-    ? calcularCustoDesbloqueio(selecao.constelacao.nos ?? [], selecao.no.id, idsDesbloqueados)
-    : null;
+  const grupos = useMemo(() => agruparVeiasPorDivindade(veias, divindades), [veias, divindades]);
+  const grupoAberto = grupos.find(item => item.divindadeId === divindadeAbertaId) ?? null;
 
-  const handleConfirmar = useCallback(async () => {
-    if (!selecaoInfo || selecaoInfo.cadeia.length === 0) {
-      return;
-    }
+  const handleDesbloquear = useCallback(
+    async (cadeia, custoTotal) => {
+      await executar(() =>
+        onSave({
+          veiasAstrais: {
+            powerCombatGasto: pcGasto + custoTotal,
+            nosDesbloqueados: [...idsDesbloqueados, ...cadeia.map(no => no.id)],
+          },
+        }),
+      );
+    },
+    [pcGasto, idsDesbloqueados, onSave, executar],
+  );
 
-    const novoAtributosBonus = { ...personagem.atributosBonus };
-    selecaoInfo.cadeia.forEach(no => {
-      const atributo = no.bonusAtributo?.atributo;
-      if (atributo) {
-        novoAtributosBonus[atributo] = (novoAtributosBonus[atributo] ?? 0) + (no.bonusAtributo.valor ?? 0);
-      }
-    });
+  // Bloquear um nó devolve o PC dele — e de qualquer descendente que dependia
+  // dele e também foi bloqueado em cascata (ver calcularCadeiaBloqueio).
+  const handleBloquear = useCallback(
+    async (idsParaBloquear, custoRecuperado) => {
+      await executar(() =>
+        onSave({
+          veiasAstrais: {
+            powerCombatGasto: Math.max(0, pcGasto - custoRecuperado),
+            nosDesbloqueados: idsDesbloqueados.filter(id => !idsParaBloquear.includes(id)),
+          },
+        }),
+      );
+    },
+    [pcGasto, idsDesbloqueados, onSave, executar],
+  );
 
+  const handleResetarTudo = useCallback(async () => {
     await executar(() =>
       onSave({
-        veiasAstrais: {
-          powerCombatGasto: pcGasto + selecaoInfo.custoTotal,
-          nosDesbloqueados: [...idsDesbloqueados, ...selecaoInfo.cadeia.map(no => no.id)],
-        },
-        atributosBonus: novoAtributosBonus,
+        veiasAstrais: { powerCombatGasto: 0, nosDesbloqueados: [] },
       }),
     );
-    setSelecao(null);
-  }, [selecaoInfo, personagem.atributosBonus, pcGasto, idsDesbloqueados, onSave, executar]);
-
-  const nomeDivindade = divindadeId => getNome(divindades.find(item => item.id === divindadeId));
+    setResetarAberto(false);
+  }, [onSave, executar]);
 
   return (
     <div>
@@ -112,35 +130,68 @@ const VeiasAstraisTab = ({ personagem, onSave }) => {
         </AtributoCardWrapper>
       </div>
 
+      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 16 }}>
+        <Button variant="outlined" startIcon={<AutoAwesomeIcon />} onClick={() => setNucleoAberto(true)}>
+          Núcleo Central
+        </Button>
+        <Button
+          variant="outlined"
+          color="error"
+          startIcon={<LockIcon />}
+          disabled={idsDesbloqueados.length === 0}
+          onClick={() => setResetarAberto(true)}
+        >
+          Bloquear Todas as Veias
+        </Button>
+      </div>
+
       {!personagem.universo && (
         <StatusValueRow style={{ display: 'block', marginTop: 16 }}>
           Selecione um Universo no menu lateral Info primeiro.
         </StatusValueRow>
       )}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 24 }}>
-        {constelacoes.map(constelacao => (
-          <ConstelacaoCard
-            key={constelacao.id}
-            constelacao={constelacao}
-            divindadeNome={nomeDivindade(constelacao.divindadeId)}
-            idsDesbloqueados={idsDesbloqueados}
-            onSelecionarNo={(cons, no) => setSelecao({ constelacao: cons, no })}
+      <DivindadeGrid>
+        {grupos.map(grupo => (
+          <DivindadeCard
+            key={grupo.divindadeId}
+            divindade={grupo.divindade}
+            veias={grupo.veias}
+            totalDesbloqueados={grupo.veias.filter(no => idsDesbloqueados.includes(no.id)).length}
+            onClick={() => setDivindadeAbertaId(grupo.divindadeId)}
           />
         ))}
-        {personagem.universo && constelacoes.length === 0 && (
-          <StatusValueRow>Nenhuma constelação cadastrada para este universo.</StatusValueRow>
-        )}
-      </div>
+      </DivindadeGrid>
+      {personagem.universo && grupos.length === 0 && (
+        <StatusValueRow style={{ display: 'block', marginTop: 16 }}>
+          Nenhuma veia astral cadastrada para este universo.
+        </StatusValueRow>
+      )}
 
-      <DesbloquearNoDialog
-        open={Boolean(selecao)}
-        no={selecao?.no}
-        cadeia={selecaoInfo?.cadeia ?? []}
-        custoTotal={selecaoInfo?.custoTotal ?? 0}
+      <ConstelacaoArvoreModal
+        open={Boolean(grupoAberto)}
+        veias={grupoAberto?.veias ?? []}
+        divindade={grupoAberto?.divindade ?? null}
+        idsDesbloqueados={idsDesbloqueados}
         pcDisponivel={pcDisponivel}
-        onClose={() => setSelecao(null)}
-        onConfirmar={handleConfirmar}
+        onClose={() => setDivindadeAbertaId(null)}
+        onDesbloquear={handleDesbloquear}
+        onBloquear={handleBloquear}
+      />
+
+      <NucleoCentralModal
+        open={nucleoAberto}
+        grupos={grupos}
+        idsDesbloqueados={idsDesbloqueados}
+        onClose={() => setNucleoAberto(false)}
+      />
+
+      <ResetarVeiasDialog
+        open={resetarAberto}
+        totalDesbloqueadas={idsDesbloqueados.length}
+        pcParaRecuperar={pcGasto}
+        onClose={() => setResetarAberto(false)}
+        onConfirmar={handleResetarTudo}
       />
     </div>
   );

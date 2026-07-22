@@ -257,3 +257,45 @@ export const calcularCustoDesbloqueio = (nos, nodeId, idsDesbloqueados = []) => 
 
   return { cadeia, custoTotal: cadeia.reduce((total, no) => total + (no.custo ?? 0), 0) };
 };
+
+// Ao bloquear um nó já desbloqueado, todo nó desbloqueado que dependa dele
+// (filho, neto etc. — via `parentId`, descendo a árvore) perde seu
+// requisito e precisa ser bloqueado junto, devolvendo o PC de todos eles.
+// Só desce por ramos já desbloqueados: um filho bloqueado nunca teria um
+// neto desbloqueado (a cadeia de requisito impede isso).
+export const calcularCadeiaBloqueio = (nos, nodeId, idsDesbloqueados = []) => {
+  const porId = new Map(nos.map(no => [no.id, no]));
+  const filhosPorPai = new Map();
+  nos.forEach(no => {
+    const pai = no.parentId ?? null;
+    if (!filhosPorPai.has(pai)) {
+      filhosPorPai.set(pai, []);
+    }
+    filhosPorPai.get(pai).push(no);
+  });
+
+  const cadeia = [];
+  const coletar = id => {
+    const no = porId.get(id);
+    if (!no || !idsDesbloqueados.includes(id)) {
+      return;
+    }
+    cadeia.push(no);
+    (filhosPorPai.get(id) ?? []).forEach(filho => coletar(filho.id));
+  };
+  coletar(nodeId);
+
+  return { cadeia, custoRecuperado: cadeia.reduce((total, no) => total + (no.custo ?? 0), 0) };
+};
+
+// ── Reputação (Fama/Terror por Origem) ─────────────────────────────────────
+// `efeitos` vem direto do catálogo `origens` (campo `reputacao.fama` ou
+// `reputacao.terror`, cada item `{ quantidade, efeito }`) — não garantido
+// estar ordenado por quantidade, por isso ordena antes de avaliar.
+export const calcularEfeitosReputacao = (efeitos = [], valor = 0) => {
+  const ordenados = [...efeitos].sort((a, b) => (a.quantidade ?? 0) - (b.quantidade ?? 0));
+  return {
+    desbloqueados: ordenados.filter(efeito => valor >= (efeito.quantidade ?? 0)),
+    proximo: ordenados.find(efeito => valor < (efeito.quantidade ?? 0)) ?? null,
+  };
+};

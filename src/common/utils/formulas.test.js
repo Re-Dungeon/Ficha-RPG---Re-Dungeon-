@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
   aplicarXpTreino,
   calcularBonusPorSorte,
+  calcularCadeiaBloqueio,
   calcularCustoDesbloqueio,
+  calcularEfeitosReputacao,
   calcularEspacoInventario,
   calcularLimiteArts,
   calcularLimiteHabilidadesBasicas,
@@ -399,5 +401,79 @@ describe('calcularCustoDesbloqueio', () => {
     const resultado = calcularCustoDesbloqueio(nos, 'c', ['c']);
     expect(resultado.cadeia).toEqual([]);
     expect(resultado.custoTotal).toBe(0);
+  });
+});
+
+describe('calcularCadeiaBloqueio', () => {
+  // a -> b -> c (cadeia linear) e a -> d (outro ramo, ainda bloqueado)
+  const nos = [
+    { id: 'a', custo: 5, parentId: null },
+    { id: 'b', custo: 3, parentId: 'a' },
+    { id: 'c', custo: 2, parentId: 'b' },
+    { id: 'd', custo: 4, parentId: 'a' },
+  ];
+
+  it('bloqueia o nó e todos os descendentes desbloqueados em cascata (§20)', () => {
+    const resultado = calcularCadeiaBloqueio(nos, 'a', ['a', 'b', 'c']);
+    expect(resultado.cadeia.map(no => no.id)).toEqual(['a', 'b', 'c']);
+    expect(resultado.custoRecuperado).toBe(10);
+  });
+
+  it('não desce por um ramo que já está bloqueado', () => {
+    const resultado = calcularCadeiaBloqueio(nos, 'a', ['a']);
+    expect(resultado.cadeia.map(no => no.id)).toEqual(['a']);
+    expect(resultado.custoRecuperado).toBe(5);
+  });
+
+  it('bloqueando um nó do meio da cadeia não afeta o pai, só os filhos', () => {
+    const resultado = calcularCadeiaBloqueio(nos, 'b', ['a', 'b', 'c']);
+    expect(resultado.cadeia.map(no => no.id)).toEqual(['b', 'c']);
+    expect(resultado.custoRecuperado).toBe(5);
+  });
+
+  it('cadeia vazia quando o nó já está bloqueado', () => {
+    const resultado = calcularCadeiaBloqueio(nos, 'c', []);
+    expect(resultado.cadeia).toEqual([]);
+    expect(resultado.custoRecuperado).toBe(0);
+  });
+});
+
+describe('calcularEfeitosReputacao', () => {
+  // Fora de ordem de propósito — o catálogo `origens` não garante a ordem dos efeitos.
+  const efeitos = [
+    { quantidade: 30, efeito: 'NPCs pedem autógrafo' },
+    { quantidade: 10, efeito: 'NPCs tratam com cordialidade' },
+    { quantidade: 20, efeito: 'Descontos em lojas locais' },
+  ];
+
+  it('desbloqueia todos os efeitos com quantidade <= valor, ordenados', () => {
+    const resultado = calcularEfeitosReputacao(efeitos, 20);
+    expect(resultado.desbloqueados.map(item => item.quantidade)).toEqual([10, 20]);
+  });
+
+  it('conta o próprio limiar como desbloqueado (>=, não >)', () => {
+    const resultado = calcularEfeitosReputacao(efeitos, 10);
+    expect(resultado.desbloqueados.map(item => item.quantidade)).toEqual([10]);
+  });
+
+  it('aponta o próximo efeito ainda bloqueado', () => {
+    const resultado = calcularEfeitosReputacao(efeitos, 15);
+    expect(resultado.proximo.quantidade).toBe(20);
+  });
+
+  it('próximo é null quando todos os efeitos já foram desbloqueados', () => {
+    const resultado = calcularEfeitosReputacao(efeitos, 999);
+    expect(resultado.proximo).toBeNull();
+    expect(resultado.desbloqueados).toHaveLength(3);
+  });
+
+  it('lista vazia quando não há efeitos cadastrados', () => {
+    const resultado = calcularEfeitosReputacao([], 50);
+    expect(resultado.desbloqueados).toEqual([]);
+    expect(resultado.proximo).toBeNull();
+  });
+
+  it('usa 0 como padrão quando efeitos/valor não são passados', () => {
+    expect(calcularEfeitosReputacao()).toEqual({ desbloqueados: [], proximo: null });
   });
 });

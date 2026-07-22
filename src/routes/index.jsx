@@ -8,23 +8,26 @@ import Personagens from 'pages/Personagens/Personagens';
 import NovoPersonagem from 'pages/Personagens/NovoPersonagem';
 import Ficha from 'pages/Personagens/Ficha/Ficha';
 
-const router = createBrowserRouter([
-  {
-    element: <Layout />,
-    children: [
-      { path: '/login', element: <Login /> },
-      {
-        element: <ProtectedRoute />,
-        children: [
-          { path: '/personagens', element: <Personagens /> },
-          { path: '/personagens/novo', element: <NovoPersonagem /> },
-          { path: '/personagens/:id', element: <Ficha /> },
-        ],
-      },
-      { path: '/', element: <Navigate to="/personagens" replace /> },
-      { path: '*', element: <Navigate to="/personagens" replace /> },
-    ],
-  },
-]);
+const router = createBrowserRouter(
+  [
+    {
+      element: <Layout />,
+      children: [
+        { path: '/login', element: <Login /> },
+        {
+          element: <ProtectedRoute />,
+          children: [
+            { path: '/personagens', element: <Personagens /> },
+            { path: '/personagens/novo', element: <NovoPersonagem /> },
+            { path: '/personagens/:id', element: <Ficha /> },
+          ],
+        },
+        { path: '/', element: <Navigate to="/personagens" replace /> },
+        { path: '*', element: <Navigate to="/personagens" replace /> },
+      ],
+    },
+  ],
+  { basename: import.meta.env.BASE_URL },
+);
 
 export default router;

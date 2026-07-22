@@ -15,6 +15,7 @@ import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import Inventory2Icon from '@mui/icons-material/Inventory2';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import HubIcon from '@mui/icons-material/Hub';
+import PetsIcon from '@mui/icons-material/Pets';
 
 import { getPersonagem, removePersonagem, updatePersonagem } from 'service/storage';
 import { SavingProvider } from 'context/SavingContext';
@@ -25,11 +26,13 @@ import ArtsTab from './tabs/ArtsTab';
 import InventarioTab from './tabs/InventarioTab';
 import TreinamentoTab from './tabs/TreinamentoTab';
 import VeiasAstraisTab from './tabs/VeiasAstraisTab';
+import CompanheiroTab from './tabs/CompanheiroTab';
 import FichaSidebar from './sidebar/FichaSidebar';
 import InfoModal from './sidebar/InfoModal';
 import AptidaoConsultaModal from './sidebar/AptidaoConsultaModal';
 import RacaModal from './sidebar/RacaModal';
 import ClasseModal from './sidebar/ClasseModal';
+import ReputacaoModal from './sidebar/ReputacaoModal';
 import SorteModal from './sidebar/SorteModal';
 import LojaModal from './sidebar/LojaModal';
 import CondicoesModal from './sidebar/CondicoesModal';
@@ -50,6 +53,8 @@ const Ficha = () => {
 
   useEffect(() => {
     let isMounted = true;
+    setLoading(true);
+    setPersonagem(null);
 
     getPersonagem(id)
       .then(item => {
@@ -139,6 +144,7 @@ const Ficha = () => {
                 iconPosition="start"
               />
               <Tab value="veiasAstrais" label="Veias Astrais" icon={<HubIcon fontSize="small" />} iconPosition="start" />
+              <Tab value="companheiro" label="Companheiro" icon={<PetsIcon fontSize="small" />} iconPosition="start" />
             </Tabs>
           </TabsBar>
 
@@ -154,6 +160,7 @@ const Ficha = () => {
           {aba === 'inventario' && <InventarioTab personagem={personagem} onSave={handleSave} />}
           {aba === 'treinamento' && <TreinamentoTab personagem={personagem} onSave={handleSave} />}
           {aba === 'veiasAstrais' && <VeiasAstraisTab personagem={personagem} onSave={handleSave} />}
+          {aba === 'companheiro' && <CompanheiroTab personagem={personagem} />}
 
           <Dialog open={dialogExcluir} onClose={() => setDialogExcluir(false)}>
             <DialogTitle>Excluir Personagem</DialogTitle>
@@ -177,6 +184,12 @@ const Ficha = () => {
           <AptidaoConsultaModal open={modalAtivo === 'aptidao'} onClose={fecharModal} personagem={personagem} />
           <RacaModal open={modalAtivo === 'raca'} onClose={fecharModal} personagem={personagem} onSave={handleSave} />
           <ClasseModal open={modalAtivo === 'classe'} onClose={fecharModal} personagem={personagem} onSave={handleSave} />
+          <ReputacaoModal
+            open={modalAtivo === 'reputacao'}
+            onClose={fecharModal}
+            personagem={personagem}
+            onSave={handleSave}
+          />
           <SorteModal open={modalAtivo === 'sorte'} onClose={fecharModal} personagem={personagem} onSave={handleSave} />
           <LojaModal open={modalAtivo === 'loja'} onClose={fecharModal} personagem={personagem} onSave={handleSave} />
           <CondicoesModal
