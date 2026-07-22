@@ -32,6 +32,7 @@ const perfilSchema = yup.object({
 // Formik não são um componente reconhecido pelo React/eslint-plugin-react-hooks.
 const PerfilFormBody = ({
   formik,
+  aba,
   personagemNome,
   racaNome,
   classesNomes,
@@ -53,162 +54,167 @@ const PerfilFormBody = ({
     <form id="perfil-form" onSubmit={submit} noValidate>
       {rascunho && <DraftBanner onRestaurar={onRestaurar} onDescartar={onDescartar} />}
 
-      <SectionTitle>Perfil</SectionTitle>
+      {aba === 'perfil' && (
+        <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', marginTop: 16 }}>
+          <Avatar
+            src={values.linkImagem || undefined}
+            alt={personagemNome}
+            sx={{ width: 120, height: 120, border: '1px solid var(--border-primary)' }}
+          />
 
-      <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', marginTop: 16 }}>
-        <Avatar
-          src={values.linkImagem || undefined}
-          alt={personagemNome}
-          sx={{ width: 120, height: 120, border: '1px solid var(--border-primary)' }}
-        />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, flex: 1, minWidth: 260 }}>
+            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+              <TextField
+                name="nome"
+                label="Nome do Personagem"
+                value={values.nome}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={touched.nome && Boolean(errors.nome)}
+                helperText={touched.nome && errors.nome}
+                size="small"
+                sx={{ flex: 1, minWidth: 180 }}
+              />
+              <TextField
+                name="titulo"
+                label="Título"
+                value={values.titulo}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={touched.titulo && Boolean(errors.titulo)}
+                helperText={touched.titulo && errors.titulo}
+                size="small"
+                sx={{ flex: 1, minWidth: 180 }}
+              />
+            </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, flex: 1, minWidth: 260 }}>
-          <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+              <TextField label="Raça" value={racaNome || '—'} size="small" disabled sx={{ flex: 1, minWidth: 160 }} />
+              <TextField
+                label="Classe"
+                value={classesNomes.length > 0 ? classesNomes.join(' ➠ ') : '—'}
+                size="small"
+                disabled
+                sx={{ flex: 1, minWidth: 160 }}
+              />
+            </div>
+
             <TextField
-              name="nome"
-              label="Nome do Personagem"
-              value={values.nome}
+              name="linkImagem"
+              label="URL da imagem"
+              placeholder="https://..."
+              value={values.linkImagem}
               onChange={handleChange}
               onBlur={handleBlur}
-              error={touched.nome && Boolean(errors.nome)}
-              helperText={touched.nome && errors.nome}
+              error={touched.linkImagem && Boolean(errors.linkImagem)}
+              helperText={touched.linkImagem && errors.linkImagem}
+              fullWidth
               size="small"
-              sx={{ flex: 1, minWidth: 180 }}
-            />
-            <TextField
-              name="titulo"
-              label="Título"
-              value={values.titulo}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={touched.titulo && Boolean(errors.titulo)}
-              helperText={touched.titulo && errors.titulo}
-              size="small"
-              sx={{ flex: 1, minWidth: 180 }}
             />
           </div>
+        </div>
+      )}
 
-          <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-            <TextField label="Raça" value={racaNome || '—'} size="small" disabled sx={{ flex: 1, minWidth: 160 }} />
-            <TextField
-              label="Classe"
-              value={classesNomes.length > 0 ? classesNomes.join(' ➠ ') : '—'}
-              size="small"
-              disabled
-              sx={{ flex: 1, minWidth: 160 }}
-            />
-          </div>
-
+      {aba === 'geral' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 16, maxWidth: 600 }}>
           <TextField
-            name="linkImagem"
-            label="URL da imagem"
-            placeholder="https://..."
-            value={values.linkImagem}
+            name="origem"
+            label="Origem"
+            select
+            value={values.origem}
+            onChange={handleChange}
+            size="small"
+            fullWidth
+          >
+            <MenuItem value="">
+              <em>Nenhuma</em>
+            </MenuItem>
+            {origens.map(item => (
+              <MenuItem key={item.id} value={item.id}>
+                {getNome(item)}
+              </MenuItem>
+            ))}
+          </TextField>
+          <TextField
+            name="afiliacao"
+            label="Afiliação"
+            value={values.afiliacao}
             onChange={handleChange}
             onBlur={handleBlur}
-            error={touched.linkImagem && Boolean(errors.linkImagem)}
-            helperText={touched.linkImagem && errors.linkImagem}
-            fullWidth
+            error={touched.afiliacao && Boolean(errors.afiliacao)}
+            helperText={touched.afiliacao && errors.afiliacao}
             size="small"
+            fullWidth
+          />
+          <TextField
+            name="statusNarrativo"
+            label="Status Narrativo"
+            value={values.statusNarrativo}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            error={touched.statusNarrativo && Boolean(errors.statusNarrativo)}
+            helperText={touched.statusNarrativo && errors.statusNarrativo}
+            size="small"
+            fullWidth
+          />
+          <TextField
+            name="notasAdicionais"
+            label="Notas Adicionais"
+            value={values.notasAdicionais}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            error={touched.notasAdicionais && Boolean(errors.notasAdicionais)}
+            helperText={touched.notasAdicionais && errors.notasAdicionais}
+            size="small"
+            fullWidth
+            multiline
+            minRows={3}
           />
         </div>
-      </div>
+      )}
 
-      <SectionTitle style={{ marginTop: 32 }}>Informações Gerais</SectionTitle>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 16, maxWidth: 600 }}>
-        <TextField
-          name="origem"
-          label="Origem"
-          select
-          value={values.origem}
-          onChange={handleChange}
-          size="small"
-          fullWidth
-        >
-          <MenuItem value="">
-            <em>Nenhuma</em>
-          </MenuItem>
-          {origens.map(item => (
-            <MenuItem key={item.id} value={item.id}>
-              {getNome(item)}
-            </MenuItem>
-          ))}
-        </TextField>
-        <TextField
-          name="afiliacao"
-          label="Afiliação"
-          value={values.afiliacao}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          error={touched.afiliacao && Boolean(errors.afiliacao)}
-          helperText={touched.afiliacao && errors.afiliacao}
-          size="small"
-          fullWidth
-        />
-        <TextField
-          name="statusNarrativo"
-          label="Status Narrativo"
-          value={values.statusNarrativo}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          error={touched.statusNarrativo && Boolean(errors.statusNarrativo)}
-          helperText={touched.statusNarrativo && errors.statusNarrativo}
-          size="small"
-          fullWidth
-        />
-        <TextField
-          name="notasAdicionais"
-          label="Notas Adicionais"
-          value={values.notasAdicionais}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          error={touched.notasAdicionais && Boolean(errors.notasAdicionais)}
-          helperText={touched.notasAdicionais && errors.notasAdicionais}
-          size="small"
-          fullWidth
-          multiline
-          minRows={3}
-        />
-      </div>
+      {aba === 'background' && (
+        <>
+          <StatusValueRow style={{ display: 'block', marginTop: 16 }}>
+            Até 5000 caracteres. ({(values.background ?? '').length}/5000)
+          </StatusValueRow>
+          <TextField
+            name="background"
+            value={values.background}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            error={touched.background && Boolean(errors.background)}
+            helperText={touched.background && errors.background}
+            fullWidth
+            multiline
+            minRows={8}
+            size="small"
+            sx={{ marginTop: 8, maxWidth: 600 }}
+          />
 
-      <SectionTitle style={{ marginTop: 32 }}>Background</SectionTitle>
-      <StatusValueRow style={{ display: 'block', marginTop: 4 }}>
-        Até 5000 caracteres. ({(values.background ?? '').length}/5000)
-      </StatusValueRow>
-      <TextField
-        name="background"
-        value={values.background}
-        onChange={handleChange}
-        onBlur={handleBlur}
-        error={touched.background && Boolean(errors.background)}
-        helperText={touched.background && errors.background}
-        fullWidth
-        multiline
-        minRows={8}
-        size="small"
-        sx={{ marginTop: 8, maxWidth: 600 }}
-      />
-
-      <SectionTitle style={{ marginTop: 32 }}>Descrição (história / aparência curta)</SectionTitle>
-      <TextField
-        name="descricao"
-        value={values.descricao}
-        onChange={handleChange}
-        onBlur={handleBlur}
-        error={touched.descricao && Boolean(errors.descricao)}
-        helperText={touched.descricao && errors.descricao}
-        fullWidth
-        multiline
-        minRows={4}
-        size="small"
-        sx={{ marginTop: 8, maxWidth: 600 }}
-      />
+          <SectionTitle style={{ marginTop: 32 }}>Descrição (história / aparência curta)</SectionTitle>
+          <TextField
+            name="descricao"
+            value={values.descricao}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            error={touched.descricao && Boolean(errors.descricao)}
+            helperText={touched.descricao && errors.descricao}
+            fullWidth
+            multiline
+            minRows={4}
+            size="small"
+            sx={{ marginTop: 8, maxWidth: 600 }}
+          />
+        </>
+      )}
     </form>
   );
 };
 
 PerfilFormBody.propTypes = {
   formik: PropTypes.object.isRequired,
+  aba: PropTypes.oneOf(['perfil', 'geral', 'background']).isRequired,
   personagemNome: PropTypes.string,
   racaNome: PropTypes.string.isRequired,
   classesNomes: PropTypes.array.isRequired,
@@ -224,7 +230,7 @@ PerfilFormBody.defaultProps = {
   rascunho: null,
 };
 
-const PerfilTab = ({ personagem, onSave }) => {
+const PerfilTab = ({ personagem, onSave, aba }) => {
   const [origens, setOrigens] = useState([]);
   const { racaNome, classesNomes } = useRacaClasseNomes(personagem);
 
@@ -280,6 +286,7 @@ const PerfilTab = ({ personagem, onSave }) => {
       {formik => (
         <PerfilFormBody
           formik={formik}
+          aba={aba}
           personagemNome={personagem.nome}
           racaNome={racaNome}
           classesNomes={classesNomes}
@@ -303,6 +310,7 @@ const PerfilTab = ({ personagem, onSave }) => {
 PerfilTab.propTypes = {
   personagem: PropTypes.object.isRequired,
   onSave: PropTypes.func.isRequired,
+  aba: PropTypes.oneOf(['perfil', 'geral', 'background']).isRequired,
 };
 
 export default PerfilTab;

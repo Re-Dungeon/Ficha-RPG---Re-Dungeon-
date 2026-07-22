@@ -9,15 +9,14 @@ const RARIDADE_CORES = {
   celestial: '#f4dda2',
 };
 
-const DIACRITICOS = new RegExp(`[${String.fromCharCode(0x0300)}-${String.fromCharCode(0x036f)}]`, 'g');
+const DIACRITICOS = new RegExp(
+  `[${String.fromCharCode(0x0300)}-${String.fromCharCode(0x036f)}]`,
+  'g',
+);
 
 export const corRaridade = raridade =>
   RARIDADE_CORES[
-    (raridade ?? '')
-      .toString()
-      .normalize('NFD')
-      .replace(DIACRITICOS, '')
-      .toLowerCase()
+    (raridade ?? '').toString().normalize('NFD').replace(DIACRITICOS, '').toLowerCase()
   ] ?? 'var(--text-muted)';
 
 export const PickerLayout = styled.div`
@@ -107,7 +106,8 @@ export const PickerItem = styled.button`
   padding: 10px 12px;
   margin-bottom: 6px;
   border-radius: 8px;
-  border: 1px solid ${({ $selecionado }) => ($selecionado ? 'var(--color-accent)' : 'var(--border-primary)')};
+  border: 1px solid
+    ${({ $selecionado }) => ($selecionado ? 'var(--color-accent)' : 'var(--border-primary)')};
   background: ${({ $selecionado }) => ($selecionado ? 'rgba(91, 124, 250, 0.12)' : 'var(--bg-card)')};
   color: var(--text-primary);
   font-size: 0.82rem;
@@ -281,7 +281,8 @@ export const HabilidadeTabButton = styled.button`
   font-size: 0.85rem;
   font-weight: 700;
   color: ${({ $ativo }) => ($ativo ? 'var(--status-gold-strong)' : 'var(--text-secondary)')};
-  border-bottom: 2px solid ${({ $ativo }) => ($ativo ? 'var(--status-gold)' : 'transparent')};
+  border-bottom: 2px solid
+    ${({ $ativo }) => ($ativo ? 'var(--status-gold)' : 'transparent')};
 
   svg {
     width: 16px;
@@ -299,7 +300,8 @@ export const HabilidadesGrid = styled.div`
 export const HabilidadeCard = styled.div`
   box-sizing: border-box;
   background: var(--bg-card);
-  border: 1px solid ${({ $ativo }) => ($ativo ? 'var(--color-accent)' : 'var(--border-primary)')};
+  border: 1px solid
+    ${({ $ativo }) => ($ativo ? 'var(--color-accent)' : 'var(--border-primary)')};
   border-radius: 10px;
   padding: 14px 16px;
   display: flex;
@@ -506,6 +508,323 @@ export const ProgressoMarcoValor = styled.span`
   font-size: 0.78rem;
   font-weight: 700;
   color: var(--color-accent);
+`;
+
+// ── Treinamento (cards por atributo) ────────────────────────────────────────
+
+export const TreinoGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+export const TreinoCardWrapper = styled.div`
+  background: var(--bg-card);
+  border: 1px solid var(--status-gold-border);
+  border-radius: 14px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`;
+
+export const TreinoHeaderRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+`;
+
+export const TreinoNome = styled.span`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--status-gold-strong);
+`;
+
+export const TreinoNivelBadge = styled.span`
+  flex-shrink: 0;
+  padding: 4px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--status-gold-border);
+  color: var(--status-gold-strong);
+  font-size: 0.9rem;
+  font-weight: 700;
+  white-space: nowrap;
+`;
+
+export const TreinoBarraTrack = styled.div`
+  height: 8px;
+  border-radius: 999px;
+  background: var(--status-track-bg);
+  border: 1px solid var(--status-gold-border);
+  overflow: hidden;
+`;
+
+export const TreinoBarraFill = styled.div`
+  height: 100%;
+  width: ${({ $percentual }) => $percentual}%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--status-gold) 0%, var(--color-accent) 100%);
+  transition: width 0.3s ease;
+`;
+
+export const TreinoXpTexto = styled.div`
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+`;
+
+export const TreinoBotao = styled.button`
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+  text-align: center;
+  padding: 14px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 1rem;
+  color: #fff;
+  background: #4caf7a;
+  transition: filter 0.15s ease;
+
+  &:hover {
+    filter: brightness(1.1);
+  }
+`;
+
+// ── Modal "Treinar Atributo" ─────────────────────────────────────────────
+
+export const TreinoDialogSubtitulo = styled.p`
+  margin: 4px 0 0;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+`;
+
+export const TreinoPainel = styled.div`
+  border: 1px solid ${({ $cor }) => $cor};
+  background: ${({ $cor }) => $cor}14;
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
+
+export const TreinoPainelTitulo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--status-gold-strong);
+`;
+
+export const TreinoPainelTexto = styled.p`
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+`;
+
+export const TreinoStatusBoxesRow = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+`;
+
+export const TreinoStatusBox = styled.div`
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid ${({ $cor }) => $cor}55;
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
+`;
+
+export const TreinoStatusLabel = styled.div`
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+`;
+
+export const TreinoStatusValor = styled.div`
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: ${({ $cor }) => $cor};
+`;
+
+export const TreinoXpRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--status-gold-strong);
+  font-weight: 700;
+`;
+
+export const TreinoStepperRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+`;
+
+export const TreinoStepperBtn = styled.button`
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--color-accent);
+  color: var(--color-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 700;
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  &:not(:disabled):hover {
+    background: rgba(91, 124, 250, 0.15);
+  }
+`;
+
+export const TreinoStepperValor = styled.div`
+  min-width: 72px;
+  text-align: center;
+  border: 1px solid var(--color-accent);
+  border-radius: 8px;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.3);
+`;
+
+export const TreinoStepperNumero = styled.div`
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-accent);
+`;
+
+export const TreinoStepperLabel = styled.div`
+  font-size: 0.6rem;
+  letter-spacing: 1px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+`;
+
+export const TreinoBonusRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+`;
+
+export const TreinoBonusInput = styled.input`
+  width: 72px;
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #c084fc;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid #a855f7;
+  border-radius: 8px;
+  padding: 8px;
+  font-family: inherit;
+
+  &:focus {
+    outline: none;
+    border-color: #c084fc;
+  }
+
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    margin: 0;
+  }
+`;
+
+export const TreinoBonusHint = styled.span`
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+`;
+
+export const TreinoBotaoIniciar = styled.button`
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+  text-align: center;
+  padding: 12px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #fff;
+  background: #4caf7a;
+  box-shadow: 0 0 16px rgba(76, 175, 122, 0.35);
+  transition: filter 0.15s ease;
+
+  &:hover {
+    filter: brightness(1.1);
+  }
+`;
+
+export const TreinoResultadoTitulo = styled.h4`
+  margin: 0;
+  text-align: center;
+  font-size: 1rem;
+  color: var(--status-gold-strong);
+`;
+
+export const TreinoResultadoLinha = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  ${({ $cor }) =>
+    $cor
+      ? `border: 1px solid ${$cor}; background: ${$cor}14;`
+      : 'border-bottom: 1px solid var(--border-primary);'}
+`;
+
+export const TreinoResultadoLabel = styled.span`
+  color: var(--text-secondary);
+`;
+
+export const TreinoResultadoValor = styled.span`
+  font-weight: 700;
+  color: ${({ $cor }) => $cor ?? 'var(--text-primary)'};
+`;
+
+export const TreinoBotaoConcluir = styled.button`
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+  padding: 12px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #1c1830;
+  background: linear-gradient(90deg, var(--status-gold) 0%, var(--color-accent) 100%);
+
+  &:hover {
+    filter: brightness(1.08);
+  }
 `;
 
 export const BonusItem = styled.li`

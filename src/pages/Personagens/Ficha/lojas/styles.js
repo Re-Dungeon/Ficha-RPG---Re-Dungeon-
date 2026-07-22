@@ -168,6 +168,125 @@ export const GuardadoItem = styled.div`
   border-radius: 8px;
 `;
 
+// ── Menu principal da Loja Rokmas (Sistema de Itens) ────────────────────────
+
+export const MenuSaldoDestaque = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 24px;
+  background: rgba(232, 203, 133, 0.06);
+  border: 1px solid var(--status-gold-border);
+  border-radius: 12px;
+`;
+
+export const MenuSaldoLabel = styled.span`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-secondary);
+
+  svg {
+    color: var(--status-gold);
+  }
+`;
+
+export const MenuSaldoValor = styled.span`
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: var(--status-gold-strong);
+  text-shadow: 0 0 16px rgba(232, 203, 133, 0.35);
+`;
+
+export const MenuButtonsGrid = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 24px;
+`;
+
+export const MenuActionButton = styled.button`
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--status-gold-border);
+  border-radius: 10px;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+
+  svg {
+    font-size: 1.5rem;
+    color: var(--status-gold);
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    border-color: var(--status-gold);
+    background: rgba(232, 203, 133, 0.08);
+    transform: translateX(4px);
+  }
+`;
+
+export const MenuActionLabel = styled.span`
+  font-weight: 700;
+  font-size: 0.95rem;
+`;
+
+// ── Comprar/Vender — filtros e card de item ──────────────────────────────────
+
+export const FiltrosRow = styled.div`
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  align-items: center;
+`;
+
+export const ItemPosseBadge = styled.div`
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 1;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid var(--status-gold-border);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--status-gold-strong);
+`;
+
+export const ItemLojaRodape = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid var(--border-primary);
+  padding-top: 10px;
+  margin-top: auto;
+`;
+
+export const ItemLojaPrecoBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: rgba(232, 203, 133, 0.12);
+  border: 1px solid var(--status-gold-border);
+  color: var(--status-gold-strong);
+`;
+
 export const RodapeInfo = styled.div`
   display: flex;
   align-items: center;

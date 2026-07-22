@@ -18,6 +18,7 @@ import {
   DetalheIcone,
   DetalheNome,
   EnciclopediaCard,
+  EnciclopediaDescricao,
   EnciclopediaGrid,
   EnciclopediaIcone,
   EnciclopediaNome,
@@ -117,6 +118,7 @@ const AptidaoConsultaModal = ({ open, onClose, personagem }) => {
                 <EnciclopediaCard key={item.id}>
                   <EnciclopediaIcone src={item.linkImagem} alt="" />
                   <EnciclopediaNome>{getNome(item)}</EnciclopediaNome>
+                  {item.descricao && <EnciclopediaDescricao>{item.descricao}</EnciclopediaDescricao>}
                   <Button
                     size="small"
                     fullWidth

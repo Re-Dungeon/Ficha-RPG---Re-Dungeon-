@@ -8,7 +8,29 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { getRegrasPorUniverso } from 'service/storage';
 import { getNome } from 'common/utils/resolveNome';
 
-import { SectionTitle, StatusValueRow } from '../styles';
+import { PowerCombatBadge, SectionTitle, StatusValueRow } from '../styles';
+import {
+  BadgesRow,
+  ExemploBox,
+  MetaCard,
+  MetaGrid,
+  MetaLabel,
+  MetaValor,
+  RegraImagem,
+  RegraResumo,
+  RegraSecaoTitulo,
+  RegraTexto,
+  RegraTopo,
+  ResultadoCard,
+  ResultadoRow,
+} from '../codex/styles';
+
+const CAMPOS_META = [
+  { chave: 'custo', rotulo: 'Custo' },
+  { chave: 'limite', rotulo: 'Limite' },
+  { chave: 'requisitos', rotulo: 'Requisitos' },
+  { chave: 'dadosUtilizados', rotulo: 'Dados utilizados' },
+];
 
 const CodexTab = ({ personagem }) => {
   const [regras, setRegras] = useState([]);
@@ -35,8 +57,6 @@ const CodexTab = ({ personagem }) => {
 
   return (
     <div>
-      <SectionTitle>Códex Mágico</SectionTitle>
-
       {!personagem.universo && (
         <StatusValueRow style={{ display: 'block', marginTop: 8 }}>
           Selecione um Universo no menu lateral Info para ver as regras deste universo.
@@ -50,26 +70,112 @@ const CodexTab = ({ personagem }) => {
       )}
 
       <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {regras.map(regra => (
-          <Accordion
-            key={regra.id}
-            sx={{
-              background: 'var(--bg-card)',
-              color: 'var(--text-primary)',
-              border: '1px solid var(--border-primary)',
-              '&::before': { display: 'none' },
-            }}
-          >
-            <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ color: 'var(--text-secondary)' }} />}>
-              {getNome(regra)}
-            </AccordionSummary>
-            <AccordionDetails style={{ whiteSpace: 'pre-wrap' }}>
-              <StatusValueRow style={{ display: 'block', color: 'var(--text-secondary)' }}>
-                {regra.conteudo ?? regra.descricao ?? regra.texto ?? 'Sem conteúdo.'}
-              </StatusValueRow>
-            </AccordionDetails>
-          </Accordion>
-        ))}
+        {regras.map(regra => {
+          const semConteudo =
+            !regra.descricaoCurta &&
+            !regra.comoFunciona &&
+            !regra.exemplo &&
+            !regra.sucesso &&
+            !regra.falha &&
+            CAMPOS_META.every(({ chave }) => !regra[chave]);
+
+          return (
+            <Accordion
+              key={regra.id}
+              sx={{
+                background: 'var(--bg-card)',
+                color: 'var(--text-primary)',
+                border: '1px solid var(--border-primary)',
+                '&::before': { display: 'none' },
+              }}
+            >
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon sx={{ color: 'var(--text-secondary)' }} />}
+              >
+                {getNome(regra)}
+              </AccordionSummary>
+              <AccordionDetails
+                style={{ display: 'flex', flexDirection: 'column', gap: 16 }}
+              >
+                <RegraTopo>
+                  {regra.linkImagem && <RegraImagem src={regra.linkImagem} alt="" />}
+                  <div
+                    style={{ display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}
+                  >
+                    {regra.descricaoCurta && (
+                      <RegraResumo>{regra.descricaoCurta}</RegraResumo>
+                    )}
+                    {(regra.categoria || regra.tipo || regra.complexidade) && (
+                      <BadgesRow>
+                        {regra.categoria && (
+                          <PowerCombatBadge>{regra.categoria}</PowerCombatBadge>
+                        )}
+                        {regra.tipo && <PowerCombatBadge>{regra.tipo}</PowerCombatBadge>}
+                        {regra.complexidade && (
+                          <PowerCombatBadge>{regra.complexidade}</PowerCombatBadge>
+                        )}
+                      </BadgesRow>
+                    )}
+                  </div>
+                </RegraTopo>
+
+                {regra.comoFunciona && (
+                  <div>
+                    <RegraSecaoTitulo>Como funciona</RegraSecaoTitulo>
+                    <RegraTexto>{regra.comoFunciona}</RegraTexto>
+                  </div>
+                )}
+
+                {regra.exemplo && (
+                  <div>
+                    <RegraSecaoTitulo>Exemplo</RegraSecaoTitulo>
+                    <ExemploBox>
+                      <RegraTexto style={{ margin: 0 }}>{regra.exemplo}</RegraTexto>
+                    </ExemploBox>
+                  </div>
+                )}
+
+                {(regra.sucesso || regra.falha) && (
+                  <ResultadoRow>
+                    {regra.sucesso && (
+                      <ResultadoCard $variante="sucesso">
+                        <RegraSecaoTitulo>Sucesso</RegraSecaoTitulo>
+                        <RegraTexto>{regra.sucesso}</RegraTexto>
+                      </ResultadoCard>
+                    )}
+                    {regra.falha && (
+                      <ResultadoCard $variante="falha">
+                        <RegraSecaoTitulo>Falha</RegraSecaoTitulo>
+                        <RegraTexto>{regra.falha}</RegraTexto>
+                      </ResultadoCard>
+                    )}
+                  </ResultadoRow>
+                )}
+
+                {CAMPOS_META.some(({ chave }) => regra[chave]) && (
+                  <MetaGrid>
+                    {CAMPOS_META.filter(({ chave }) => regra[chave]).map(
+                      ({ chave, rotulo }) => (
+                        <MetaCard key={chave}>
+                          <MetaLabel>{rotulo}</MetaLabel>
+                          <MetaValor>{regra[chave]}</MetaValor>
+                        </MetaCard>
+                      ),
+                    )}
+                  </MetaGrid>
+                )}
+
+                {semConteudo && (
+                  <StatusValueRow
+                    style={{ display: 'block', color: 'var(--text-secondary)' }}
+                  >
+                    Sem conteúdo.
+                  </StatusValueRow>
+                )}
+              </AccordionDetails>
+            </Accordion>
+          );
+        })}
       </div>
     </div>
   );

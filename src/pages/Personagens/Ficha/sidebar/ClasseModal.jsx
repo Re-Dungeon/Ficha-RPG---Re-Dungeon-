@@ -20,11 +20,12 @@ import UpdateIcon from '@mui/icons-material/Update';
 import CasinoIcon from '@mui/icons-material/Casino';
 import TimerIcon from '@mui/icons-material/Timer';
 
-import { addArt, getClassesPorUniverso, getFirestoreItem } from 'service/storage';
+import { addArt, addNucleo, getClassesPorUniverso, getFirestoreItem, getNucleos } from 'service/storage';
 import { calcularPowerCombat, calcularPrimariosTotais, calcularSecundarios } from 'common/utils/formulas';
 import { getNome } from 'common/utils/resolveNome';
 import { useSaving } from 'context/SavingContext';
 
+import { TIPO_ART_OPTIONS } from '../arts/constants';
 import { PRIMARIOS_LABELS } from '../constants';
 import { DialogFecharButton, DialogHeaderRow, DialogHeaderTitle, StatusValueRow } from '../styles';
 import {
@@ -87,7 +88,37 @@ const ClasseModal = ({ open, onClose, personagem, onSave }) => {
   const [classeVisualizadaId, setClasseVisualizadaId] = useState(null);
   const [abaHabilidade, setAbaHabilidade] = useState('basicas');
   const [artsCriadas, setArtsCriadas] = useState(() => new Set());
+  const [nucleoIdPorClasse, setNucleoIdPorClasse] = useState({});
   const { executar } = useSaving();
+
+  // Cada classe escolhida ganha um Núcleo próprio em Arts (personagens/{id}/nucleos,
+  // campo `classeId` marcando o vínculo) — criado na hora, reaproveitado se já existir,
+  // pra toda Art nascida de uma habilidade de classe já ter o `nucleoId` obrigatório.
+  const garantirNucleoDaClasse = useCallback(
+    async classe => {
+      const nucleoIdConhecido = nucleoIdPorClasse[classe.id];
+      if (nucleoIdConhecido) {
+        return nucleoIdConhecido;
+      }
+      const nucleosExistentes = await getNucleos(personagem.id);
+      const existente = nucleosExistentes.find(nucleo => nucleo.classeId === classe.id);
+      const nucleoId = existente
+        ? existente.id
+        : (
+            await addNucleo(personagem.id, {
+              nome: getNome(classe),
+              tipo: TIPO_ART_OPTIONS[0],
+              bonus: '',
+              descricao: classe.descricao ?? '',
+              imagem: classe.linkImagem ?? '',
+              classeId: classe.id,
+            })
+          ).id;
+      setNucleoIdPorClasse(current => ({ ...current, [classe.id]: nucleoId }));
+      return nucleoId;
+    },
+    [personagem.id, nucleoIdPorClasse],
+  );
 
   useEffect(() => {
     if (!open || !personagem.universo) {
@@ -184,11 +215,17 @@ const ClasseModal = ({ open, onClose, personagem, onSave }) => {
     if (!classeVisualizada || bloqueada) {
       return undefined;
     }
+    const adicionando = !jaEscolhida;
     const nova = jaEscolhida
       ? classesSelecionadas.filter(id => id !== classeVisualizada.id)
       : [...classesSelecionadas, classeVisualizada.id];
-    return executar(() => onSave({ classes: nova }));
-  }, [classeVisualizada, jaEscolhida, bloqueada, classesSelecionadas, onSave, executar]);
+    return executar(async () => {
+      if (adicionando) {
+        await garantirNucleoDaClasse(classeVisualizada);
+      }
+      await onSave({ classes: nova });
+    });
+  }, [classeVisualizada, jaEscolhida, bloqueada, classesSelecionadas, onSave, executar, garantirNucleoDaClasse]);
 
   const handleCriarArt = useCallback(
     (habilidade, tipoLista, index) => {
@@ -197,18 +234,30 @@ const ClasseModal = ({ open, onClose, personagem, onSave }) => {
       }
       const chave = `${classeVisualizada.id}-${tipoLista}-${index}`;
       return executar(async () => {
+        const nucleoId = await garantirNucleoDaClasse(classeVisualizada);
         await addArt(personagem.id, {
           origem: 'classe',
           classeId: classeVisualizada.id,
           habilidadeId: `${tipoLista}-${index}`,
           nome: habilidade.nome,
           descricao: habilidade.descricao ?? '',
+          // Campos da habilidade de classe têm nomes próprios (alvo/acao) —
+          // remapeados pros nomes que o card/formulário de Art usam (alvos/tipoAcao).
+          // `dados` já usa o mesmo nome nos dois lados.
+          alcance: habilidade.alcance ?? '',
+          alvos: habilidade.alvo ?? '',
+          custo: habilidade.custo ?? '',
+          recarga: habilidade.recarga ?? '',
+          dados: habilidade.dados ?? '',
+          duracao: habilidade.duracao ?? '',
+          tipoAcao: habilidade.acao ?? '',
+          nucleoId,
           ativa: true,
         });
         setArtsCriadas(current => new Set(current).add(chave));
       });
     },
-    [classeVisualizada, personagem.id, executar],
+    [classeVisualizada, personagem.id, executar, garantirNucleoDaClasse],
   );
 
   const atributosBasicos = classeVisualizada?.atributosBasicos ?? {};

@@ -129,7 +129,8 @@ export const AcaoIconButton = styled.button`
   justify-content: center;
   cursor: pointer;
   border-radius: 6px;
-  border: 1px solid ${({ $variante }) => ($variante === 'vermelho' ? '#f87171' : 'var(--color-accent)')};
+  border: 1px solid
+    ${({ $variante }) => ($variante === 'vermelho' ? '#f87171' : 'var(--color-accent)')};
   background: ${({ $variante }) =>
     $variante === 'vermelho' ? 'rgba(248, 113, 113, 0.12)' : 'rgba(91, 124, 250, 0.12)'};
   color: ${({ $variante }) => ($variante === 'vermelho' ? '#f87171' : 'var(--color-accent)')};
@@ -187,13 +188,6 @@ export const VantagemTitulo = styled.span`
   }
 `;
 
-export const VantagemTipo = styled.span`
-  flex-shrink: 0;
-  font-size: 0.7rem;
-  color: var(--text-muted);
-  white-space: nowrap;
-`;
-
 export const VantagemTexto = styled.p`
   margin: 0;
   font-size: 0.85rem;
@@ -246,7 +240,8 @@ export const CatalogoCard = styled.button`
   gap: 6px;
   padding: 10px 6px;
   border-radius: 10px;
-  border: 1px solid ${({ $selecionado }) => ($selecionado ? 'var(--color-accent)' : 'var(--border-primary)')};
+  border: 1px solid
+    ${({ $selecionado }) => ($selecionado ? 'var(--color-accent)' : 'var(--border-primary)')};
   background: ${({ $selecionado }) => ($selecionado ? 'rgba(91, 124, 250, 0.12)' : 'var(--bg-card)')};
   opacity: ${({ $desabilitado }) => ($desabilitado ? 0.5 : 1)};
 
@@ -304,6 +299,12 @@ export const EnciclopediaNome = styled.span`
   text-transform: uppercase;
   text-align: center;
   color: var(--status-gold-strong);
+`;
+
+export const EnciclopediaDescricao = styled.span`
+  font-size: 0.75rem;
+  text-align: center;
+  color: var(--text-secondary);
 `;
 
 export const DetalheHeader = styled.div`

@@ -17,6 +17,7 @@ import {
   calcularSecundarios,
   calcularStatusMaximos,
   calcularXpNecessario,
+  dominioVarianteValido,
   podeRolarFortunaHoje,
   reorganizarArts,
 } from './formulas';
@@ -317,6 +318,17 @@ describe('reorganizarArts', () => {
     const resultado = reorganizarArts(arts, 5);
 
     expect(resultado.every(art => art.ativa)).toBe(true);
+  });
+});
+
+describe('dominioVarianteValido', () => {
+  it('válido quando o domínio da variante é menor que o da Art base', () => {
+    expect(dominioVarianteValido(2, 3)).toBe(true);
+  });
+
+  it('inválido quando o domínio da variante é igual ou maior que o da Art base', () => {
+    expect(dominioVarianteValido(3, 3)).toBe(false);
+    expect(dominioVarianteValido(4, 3)).toBe(false);
   });
 });
 

@@ -62,6 +62,7 @@ import {
   PickerItem,
   PickerLayout,
   PickerSidebar,
+  PickerSubgrupoHeader,
   RaridadeBadge,
   SecaoTitulo,
   corRaridade,
@@ -129,6 +130,15 @@ const RacaModal = ({ open, onClose, personagem, onSave }) => {
         return nomeOk && raridadeOk;
       }),
     [racas, busca, filtroRaridade],
+  );
+
+  const gruposPorRaridade = useMemo(
+    () =>
+      RARIDADES.map(raridade => ({
+        raridade,
+        itens: racasFiltradas.filter(item => item.raridade === raridade),
+      })).filter(grupo => grupo.itens.length > 0),
+    [racasFiltradas],
   );
 
   useEffect(() => {
@@ -223,18 +233,26 @@ const RacaModal = ({ open, onClose, personagem, onSave }) => {
               </PickerGrupoHeader>
 
               {grupoExpandido &&
-                racasFiltradas.map(item => (
-                  <PickerItem
-                    key={item.id}
-                    type="button"
-                    $selecionado={item.id === racaVisualizadaId}
-                    onClick={() => setRacaVisualizadaId(item.id)}
-                  >
-                    <span>{getNome(item)}</span>
-                    {item.raridade && <RaridadeBadge $cor={corRaridade(item.raridade)}>{item.raridade}</RaridadeBadge>}
-                  </PickerItem>
+                gruposPorRaridade.map(grupo => (
+                  <React.Fragment key={grupo.raridade}>
+                    <PickerSubgrupoHeader>
+                      <span>{grupo.raridade}</span>
+                      <span>({grupo.itens.length})</span>
+                    </PickerSubgrupoHeader>
+                    {grupo.itens.map(item => (
+                      <PickerItem
+                        key={item.id}
+                        type="button"
+                        $selecionado={item.id === racaVisualizadaId}
+                        onClick={() => setRacaVisualizadaId(item.id)}
+                      >
+                        <span>{getNome(item)}</span>
+                        <RaridadeBadge $cor={corRaridade(item.raridade)}>{item.raridade}</RaridadeBadge>
+                      </PickerItem>
+                    ))}
+                  </React.Fragment>
                 ))}
-              {grupoExpandido && racasFiltradas.length === 0 && (
+              {grupoExpandido && gruposPorRaridade.length === 0 && (
                 <StatusValueRow style={{ display: 'block' }}>Nenhuma raça encontrada.</StatusValueRow>
               )}
             </PickerSidebar>

@@ -1,50 +1,97 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import AddIcon from '@mui/icons-material/Add';
-import RemoveIcon from '@mui/icons-material/Remove';
 
 import { getNome } from 'common/utils/resolveNome';
 
-import { AtributoCardWrapper, CardTitle, StatusValueRow } from '../styles';
+import { ITEM_STAT_CAMPOS, QUALIDADE_META, obterEmojiTipo, obterValorStatItem } from './constants';
+import {
+  EquipadoBadge,
+  ItemBloco,
+  ItemBlocoLabel,
+  ItemBlocoValor,
+  ItemBlocos,
+  ItemBotoesGrid,
+  ItemBtn,
+  ItemCardWrapper,
+  ItemConteudo,
+  ItemEspacoInfo,
+  ItemEspacoValor,
+  ItemHeader,
+  ItemImagem,
+  ItemNome,
+  ItemQuantidade,
+  ItemRodape,
+  QualidadeBadge,
+} from './styles';
 
-const ItemCard = ({ item, onAlterarQuantidade, onToggleEquipado, onRemover }) => (
-  <AtributoCardWrapper style={{ alignItems: 'flex-start' }}>
-    <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
-      <CardTitle>{getNome(item) || 'Item desconhecido'}</CardTitle>
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-        <Button size="small" variant={item.equipado ? 'contained' : 'outlined'} onClick={onToggleEquipado}>
-          {item.equipado ? 'Equipado' : 'Equipar'}
-        </Button>
-        <Button size="small" variant="outlined" color="error" onClick={onRemover}>
-          ❌
-        </Button>
-      </div>
-    </div>
+const ItemCard = ({ item, onVer, onEditar, onEquipar, onRemover }) => {
+  const qualidadeMeta = QUALIDADE_META[item.qualidade] ?? {};
+  const espacoUnitario = item.pesoUnitario ?? 0;
+  const espacoTotal = espacoUnitario * (item.quantidade ?? 1);
 
-    <StatusValueRow>
-      {[item.qualidade, item.tipo, item.espaco != null ? `${item.espaco} espaço/un.` : null, item.bonusEspaco ? `+${item.bonusEspaco} espaço (armazenamento)` : null]
-        .filter(Boolean)
-        .join(' · ')}
-    </StatusValueRow>
+  return (
+    <ItemCardWrapper $cor={qualidadeMeta.cor} data-equipado={Boolean(item.equipado)}>
+      {item.equipado && <EquipadoBadge>⚔️ Equipado</EquipadoBadge>}
 
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
-      <IconButton size="small" onClick={() => onAlterarQuantidade(-1)} disabled={item.quantidade <= 1}>
-        <RemoveIcon fontSize="small" />
-      </IconButton>
-      <StatusValueRow>{item.quantidade}</StatusValueRow>
-      <IconButton size="small" onClick={() => onAlterarQuantidade(1)}>
-        <AddIcon fontSize="small" />
-      </IconButton>
-    </div>
-  </AtributoCardWrapper>
-);
+      <ItemImagem>
+        {item.linkImagem ? <img src={item.linkImagem} alt={getNome(item)} /> : obterEmojiTipo(item.tipo)}
+      </ItemImagem>
+
+      <ItemConteudo>
+        <ItemHeader>
+          <ItemNome>{getNome(item) || 'Item desconhecido'}</ItemNome>
+          {item.qualidade && <QualidadeBadge $cor={qualidadeMeta.cor}>{item.qualidade}</QualidadeBadge>}
+        </ItemHeader>
+
+        <ItemBlocos>
+          {ITEM_STAT_CAMPOS.map(([label, campo]) => (
+            <ItemBloco key={label}>
+              <ItemBlocoLabel>{label}</ItemBlocoLabel>
+              <ItemBlocoValor>{obterValorStatItem(item, campo) || '—'}</ItemBlocoValor>
+            </ItemBloco>
+          ))}
+        </ItemBlocos>
+
+        <ItemRodape>
+          <ItemQuantidade>
+            Quantidade: <strong>{item.quantidade}</strong>
+          </ItemQuantidade>
+          <ItemEspacoInfo>
+            <span>
+              <small>Unitário</small>
+              <ItemEspacoValor>{espacoUnitario.toFixed(2)}</ItemEspacoValor>
+            </span>
+            <span>
+              <small>Total</small>
+              <ItemEspacoValor>{espacoTotal.toFixed(2)}</ItemEspacoValor>
+            </span>
+          </ItemEspacoInfo>
+
+          <ItemBotoesGrid>
+            <ItemBtn $variante="editar" onClick={onEditar}>
+              ✏️ Editar
+            </ItemBtn>
+            <ItemBtn $variante="ver" onClick={onVer}>
+              👁️ Ver
+            </ItemBtn>
+            <ItemBtn $variante="equipar" onClick={onEquipar}>
+              {item.equipado ? '🗝️ Desequipar' : '⚔️ Equipar'}
+            </ItemBtn>
+            <ItemBtn $variante="deletar" onClick={onRemover}>
+              🗑️ Deletar
+            </ItemBtn>
+          </ItemBotoesGrid>
+        </ItemRodape>
+      </ItemConteudo>
+    </ItemCardWrapper>
+  );
+};
 
 ItemCard.propTypes = {
   item: PropTypes.object.isRequired,
-  onAlterarQuantidade: PropTypes.func.isRequired,
-  onToggleEquipado: PropTypes.func.isRequired,
+  onVer: PropTypes.func.isRequired,
+  onEditar: PropTypes.func.isRequired,
+  onEquipar: PropTypes.func.isRequired,
   onRemover: PropTypes.func.isRequired,
 };
 

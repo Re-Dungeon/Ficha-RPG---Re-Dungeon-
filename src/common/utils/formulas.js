@@ -202,6 +202,10 @@ export const reorganizarArts = (arts, limite) => {
   return ordenadas.map((art, index) => ({ ...art, ativa: index < limite }));
 };
 
+// Uma Variante só é válida se seu domínio for estritamente menor que o da Art base.
+export const dominioVarianteValido = (dominioVariante, dominioArtBase) =>
+  dominioVariante < dominioArtBase;
+
 // ── Inventário (FUNCIONALIDADES.md §14) ────────────────────────────────────
 // `itensInventario` é a lista já resolvida (item do catálogo `itens` + dados
 // do personagem mesclados): [{ espaco, bonusEspaco, quantidade, equipado }].

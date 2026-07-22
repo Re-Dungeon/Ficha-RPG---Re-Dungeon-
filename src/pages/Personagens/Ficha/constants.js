@@ -7,6 +7,16 @@ export const PRIMARIOS_LABELS = {
   sorte: 'Sorte',
 };
 
+// Ícone por atributo primário — usado nos cards da aba Treinamento.
+export const PRIMARIOS_ICONES = {
+  forca: '💪',
+  vitalidade: '❤️',
+  agilidade: '⚡',
+  inteligencia: '🧠',
+  percepcao: '👁️',
+  sorte: '🍀',
+};
+
 export const SECUNDARIOS_LABELS = {
   prontidao: 'Prontidão',
   ataque: 'Ataque',
