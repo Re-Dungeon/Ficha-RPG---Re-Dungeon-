@@ -49,9 +49,9 @@ export const calcularStatusMaximos = (primariosTotais, status = {}) => {
 };
 
 export const calcularPowerCombat = (primariosTotais, secundariosTotais) => {
-  const { forca, vitalidade, agilidade } = primariosTotais;
-  const { ataque, defesa } = secundariosTotais;
-  return Math.floor((ataque + defesa) * 1.5 + (forca + vitalidade + agilidade) * 0.8);
+  const { forca, vitalidade, agilidade, inteligencia, percepcao, sorte } = primariosTotais;
+  const { ataque, defesa, reacao, precisao, evasao, prontidao } = secundariosTotais;
+  return Math.floor((ataque + defesa + reacao + precisao + evasao) * 0.9 + (forca + vitalidade + agilidade + inteligencia + percepcao + sorte) * 0.5 + prontidao * 0.15);
 };
 
 export const rolarDado = sides => 1 + Math.floor(Math.random() * sides);
