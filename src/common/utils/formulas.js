@@ -66,7 +66,7 @@ export const calcularPowerCombat = (primariosTotais, secundariosTotais) => {
     primariosTotais;
   const { ataque, defesa, reacao, precisao, evasao, prontidao } = secundariosTotais;
   return Math.floor(
-    (ataque + defesa + reacao + precisao + evasao) * 0.7 +
+    (ataque + defesa + reacao + precisao + evasao) * 0.6 +
       (forca + vitalidade + agilidade + inteligencia + percepcao + sorte) * 0.4 +
       prontidao * 0.1,
   );
