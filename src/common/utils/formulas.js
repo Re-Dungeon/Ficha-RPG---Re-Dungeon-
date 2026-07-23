@@ -1,4 +1,11 @@
-const PRIMARIOS = ['forca', 'vitalidade', 'agilidade', 'inteligencia', 'percepcao', 'sorte'];
+const PRIMARIOS = [
+  'forca',
+  'vitalidade',
+  'agilidade',
+  'inteligencia',
+  'percepcao',
+  'sorte',
+];
 
 const somar = (...campos) => campos.reduce((total, valor) => total + (valor ?? 0), 0);
 
@@ -7,8 +14,14 @@ export const calcularPrimariosTotais = (base = {}, extra = {}, bonus = {}) =>
     PRIMARIOS.map(chave => [chave, somar(base[chave], extra[chave], bonus[chave])]),
   );
 
-export const calcularSecundarios = (primariosTotais, base = {}, extra = {}, bonus = {}) => {
-  const { forca, vitalidade, agilidade, inteligencia, percepcao, sorte } = primariosTotais;
+export const calcularSecundarios = (
+  primariosTotais,
+  base = {},
+  extra = {},
+  bonus = {},
+) => {
+  const { forca, vitalidade, agilidade, inteligencia, percepcao, sorte } =
+    primariosTotais;
   const ajuste = chave => somar(base[chave], extra[chave], bonus[chave]);
 
   return {
@@ -49,9 +62,14 @@ export const calcularStatusMaximos = (primariosTotais, status = {}) => {
 };
 
 export const calcularPowerCombat = (primariosTotais, secundariosTotais) => {
-  const { forca, vitalidade, agilidade, inteligencia, percepcao, sorte } = primariosTotais;
+  const { forca, vitalidade, agilidade, inteligencia, percepcao, sorte } =
+    primariosTotais;
   const { ataque, defesa, reacao, precisao, evasao, prontidao } = secundariosTotais;
-  return Math.floor((ataque + defesa + reacao + precisao + evasao) * 0.9 + (forca + vitalidade + agilidade + inteligencia + percepcao + sorte) * 0.5 + prontidao * 0.15);
+  return Math.floor(
+    (ataque + defesa + reacao + precisao + evasao) * 0.7 +
+      (forca + vitalidade + agilidade + inteligencia + percepcao + sorte) * 0.4 +
+      prontidao * 0.1,
+  );
 };
 
 export const rolarDado = sides => 1 + Math.floor(Math.random() * sides);
@@ -67,7 +85,13 @@ export const calcularRolagemFortuna = (sorteTotal, rolarDadoFn = rolarDado) => {
   const rolagens = Array.from({ length: quantidadeDados }, () => rolarDadoFn(6));
   const somaDados = rolagens.reduce((total, valor) => total + valor, 0);
   const bonusBase = calcularBonusPorSorte(sorteTotal);
-  return { quantidadeDados, rolagens, somaDados, bonusBase, resultado: somaDados + bonusBase };
+  return {
+    quantidadeDados,
+    rolagens,
+    somaDados,
+    bonusBase,
+    resultado: somaDados + bonusBase,
+  };
 };
 
 export const podeRolarFortunaHoje = (
@@ -97,11 +121,7 @@ const DIACRITICOS = new RegExp(
 );
 
 const normalizarTexto = texto =>
-  (texto ?? '')
-    .toString()
-    .normalize('NFD')
-    .replace(DIACRITICOS, '')
-    .toLowerCase();
+  (texto ?? '').toString().normalize('NFD').replace(DIACRITICOS, '').toLowerCase();
 
 export const calcularLimiteHabilidadesBasicas = raridade =>
   LIMITE_HABILIDADES_POR_RARIDADE[normalizarTexto(raridade)] ?? 1;
@@ -285,7 +305,10 @@ export const calcularCadeiaBloqueio = (nos, nodeId, idsDesbloqueados = []) => {
   };
   coletar(nodeId);
 
-  return { cadeia, custoRecuperado: cadeia.reduce((total, no) => total + (no.custo ?? 0), 0) };
+  return {
+    cadeia,
+    custoRecuperado: cadeia.reduce((total, no) => total + (no.custo ?? 0), 0),
+  };
 };
 
 // ── Reputação (Fama/Terror por Origem) ─────────────────────────────────────
@@ -293,7 +316,9 @@ export const calcularCadeiaBloqueio = (nos, nodeId, idsDesbloqueados = []) => {
 // `reputacao.terror`, cada item `{ quantidade, efeito }`) — não garantido
 // estar ordenado por quantidade, por isso ordena antes de avaliar.
 export const calcularEfeitosReputacao = (efeitos = [], valor = 0) => {
-  const ordenados = [...efeitos].sort((a, b) => (a.quantidade ?? 0) - (b.quantidade ?? 0));
+  const ordenados = [...efeitos].sort(
+    (a, b) => (a.quantidade ?? 0) - (b.quantidade ?? 0),
+  );
   return {
     desbloqueados: ordenados.filter(efeito => valor >= (efeito.quantidade ?? 0)),
     proximo: ordenados.find(efeito => valor < (efeito.quantidade ?? 0)) ?? null,
