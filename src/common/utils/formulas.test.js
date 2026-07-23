@@ -137,8 +137,8 @@ describe('calcularPowerCombat', () => {
       prontidao: 10,
     };
 
-    // (4+3+2+5+1)*0.7 + (50+40+60+30+20+10)*0.4 + 10*0.1 = 10.5 + 84 + 1 = 95.5 -> floor = 95
-    expect(calcularPowerCombat(primariosTotais, secundariosTotais)).toBe(95);
+    // (4+3+2+5+1)*0.6 + (50+40+60+30+20+10)*0.4 + 10*0.1 = 9 + 84 + 1 = 94
+    expect(calcularPowerCombat(primariosTotais, secundariosTotais)).toBe(94);
   });
 
   it('usa floor (arredonda para baixo)', () => {
@@ -152,7 +152,7 @@ describe('calcularPowerCombat', () => {
     };
     const secundariosTotais = { ataque: 2, defesa: 0, reacao: 0, precisao: 0, evasao: 0, prontidao: 0 };
 
-    // 2*0.7 = 1.4 -> floor = 1
+    // 2*0.6 = 1.2 -> floor = 1
     expect(calcularPowerCombat(primariosTotais, secundariosTotais)).toBe(1);
   });
 });
