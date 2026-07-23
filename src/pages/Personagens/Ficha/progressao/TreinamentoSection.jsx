@@ -84,9 +84,7 @@ const TreinamentoSection = ({ personagem, onSave, sorteTotal }) => {
 
   const bonusSorte = calcularBonusPorSorte(sorteTotal);
 
-  const nivelAtual = atributoAberto
-    ? personagem.treinamento?.[atributoAberto]?.nivel ?? personagem.atributosBase?.[atributoAberto] ?? 0
-    : 0;
+  const nivelAtual = atributoAberto ? personagem.atributosBase?.[atributoAberto] ?? 0 : 0;
   const xpAtual = atributoAberto ? personagem.treinamento?.[atributoAberto]?.xpAtual ?? 0 : 0;
   const xpNecessario = calcularXpNecessario(nivelAtual);
   const obstaculo = calcularObstaculoTreino(nivelAtual);
@@ -117,7 +115,7 @@ const TreinamentoSection = ({ personagem, onSave, sorteTotal }) => {
       <SectionTitle style={{ marginTop: 32 }}>Treinamento</SectionTitle>
       <TreinoGrid style={{ marginTop: 16 }}>
         {Object.entries(PRIMARIOS_LABELS).map(([chave, label]) => {
-          const nivel = personagem.treinamento?.[chave]?.nivel ?? personagem.atributosBase?.[chave] ?? 0;
+          const nivel = personagem.atributosBase?.[chave] ?? 0;
           const xp = personagem.treinamento?.[chave]?.xpAtual ?? 0;
           const xpNec = calcularXpNecessario(nivel);
           const percentual = Math.min(100, (xp / xpNec) * 100);
