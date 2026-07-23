@@ -119,18 +119,40 @@ describe('calcularStatusMaximos', () => {
 });
 
 describe('calcularPowerCombat', () => {
-  it('combina ataque/defesa com força/vitalidade/agilidade (FUNCIONALIDADES.md §4)', () => {
-    const primariosTotais = { forca: 50, vitalidade: 40, agilidade: 60 };
-    const secundariosTotais = { ataque: 4, defesa: 3 };
+  it('combina ataque/defesa/reação/precisão/evasão com todos os primários e prontidão (FUNCIONALIDADES.md §4)', () => {
+    const primariosTotais = {
+      forca: 50,
+      vitalidade: 40,
+      agilidade: 60,
+      inteligencia: 30,
+      percepcao: 20,
+      sorte: 10,
+    };
+    const secundariosTotais = {
+      ataque: 4,
+      defesa: 3,
+      reacao: 2,
+      precisao: 5,
+      evasao: 1,
+      prontidao: 10,
+    };
 
-    expect(calcularPowerCombat(primariosTotais, secundariosTotais)).toBe(130);
+    // (4+3+2+5+1)*0.9 + (50+40+60+30+20+10)*0.5 + 10*0.15 = 13.5 + 105 + 1.5 = 120
+    expect(calcularPowerCombat(primariosTotais, secundariosTotais)).toBe(120);
   });
 
   it('usa floor (arredonda para baixo)', () => {
-    const primariosTotais = { forca: 0, vitalidade: 0, agilidade: 0 };
-    const secundariosTotais = { ataque: 1, defesa: 0 };
+    const primariosTotais = {
+      forca: 0,
+      vitalidade: 0,
+      agilidade: 0,
+      inteligencia: 0,
+      percepcao: 0,
+      sorte: 0,
+    };
+    const secundariosTotais = { ataque: 2, defesa: 0, reacao: 0, precisao: 0, evasao: 0, prontidao: 0 };
 
-    // (1+0)*1.5 = 1.5 -> floor = 1
+    // 2*0.9 = 1.8 -> floor = 1
     expect(calcularPowerCombat(primariosTotais, secundariosTotais)).toBe(1);
   });
 });
