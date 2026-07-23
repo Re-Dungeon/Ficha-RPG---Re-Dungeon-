@@ -262,19 +262,17 @@ export const getOrigensPorUniverso = universoId =>
 export const getClassesPorUniverso = universoId =>
   getColecaoPorUniverso('classes', universoId);
 
-export const getCondicoesPorUniverso = universoId =>
-  getColecaoPorUniverso('condicoes', universoId);
-
-// Aptidões são o único catálogo que pode pertencer a mais de um universo — o
+// Aptidões, Condições e Regras podem pertencer a mais de um universo — o
 // projeto administrativo migrou o campo de `universo` (string) para `universos`
-// (array), mas documentos antigos ainda não recadastrados pelo novo formulário
-// continuam só com `universo`. Consulta os dois formatos e mescla, removendo
-// duplicatas por id (confirmado lendo o Firestore + o repositório administrativo
-// em 2026-07-22 — nenhum doc tinha os dois campos ao mesmo tempo).
-export const getAptidoesPorUniverso = async universoId => {
+// (array) nesses três catálogos, mas documentos antigos ainda não recadastrados
+// pelo novo formulário continuam só com `universo`. Consulta os dois formatos e
+// mescla, removendo duplicatas por id (mesmo padrão validado em 2026-07-22 para
+// aptidoes, estendido em 2026-07-23 quando condicoes/regras ganharam o mesmo
+// campo `universos` no admin, commit dd0d038).
+const getColecaoMultiUniversoPorUniverso = async (collectionName, universoId) => {
   const [porUniversos, porUniversoLegado] = await Promise.all([
-    getFirestoreItems('aptidoes', where('universos', 'array-contains', universoId)),
-    getFirestoreItems('aptidoes', where('universo', '==', universoId)),
+    getFirestoreItems(collectionName, where('universos', 'array-contains', universoId)),
+    getFirestoreItems(collectionName, where('universo', '==', universoId)),
   ]);
   const vistos = new Set();
   return [...porUniversos, ...porUniversoLegado].filter(item => {
@@ -286,11 +284,25 @@ export const getAptidoesPorUniverso = async universoId => {
   });
 };
 
+export const getCondicoesPorUniverso = universoId =>
+  getColecaoMultiUniversoPorUniverso('condicoes', universoId);
+
+export const getAptidoesPorUniverso = universoId =>
+  getColecaoMultiUniversoPorUniverso('aptidoes', universoId);
+
 export const getVeiasAstraisPorUniverso = universoId =>
   getColecaoPorUniverso('veiasAstrais', universoId);
 
-export const getItensPorUniverso = universoId =>
-  getColecaoPorUniverso('itens', universoId);
+// `itens` continua com `universo` singular (não migrado para `universos` no
+// admin), mas ganhou o booleano `mostrarNaLoja` (commit dd0d038, 2026-07-23):
+// só itens marcados por lá devem aparecer na Loja e no catálogo de "Adicionar
+// Item" da aba Inventário — os dois únicos consumidores deste catálogo no site
+// (LojaModal.jsx e CriarItemDialog.jsx). Filtro feito em memória (não via query
+// Firestore) para não exigir um índice composto novo.
+export const getItensPorUniverso = async universoId => {
+  const itens = await getColecaoPorUniverso('itens', universoId);
+  return itens.filter(item => item.mostrarNaLoja === true);
+};
 
 export const getMateriaisPorUniverso = universoId =>
   getColecaoPorUniverso('materiais', universoId);
@@ -303,6 +315,8 @@ export const getArtesPorUniverso = universoId =>
 
 // `regras` é filtrada por universo (confirmado pelo usuário — corrige a
 // suposição cautelosa de MIGRACAO-REACT-FIREBASE.md §4.1, que a listava como
-// possivelmente compartilhada). Usada pelo Códex Mágico (§21).
+// possivelmente compartilhada) e agora também pode pertencer a mais de um
+// universo — mesmo padrão `universos`/`universo` legado de condicoes/aptidoes.
+// Usada pelo Códex Mágico (§21).
 export const getRegrasPorUniverso = universoId =>
-  getColecaoPorUniverso('regras', universoId);
+  getColecaoMultiUniversoPorUniverso('regras', universoId);
