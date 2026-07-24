@@ -112,6 +112,8 @@ const STATUS_GRADIENTES = {
     'linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0) 45%), linear-gradient(90deg, #b45309 0%, #ea580c 55%, #7f1d1d 100%)',
   nivel:
     'linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0) 45%), linear-gradient(90deg, #92702c 0%, #e8cb85 55%, #fff3d1 100%)',
+  cultivo:
+    'linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0) 45%), linear-gradient(90deg, #b8860b 0%, #f0c14b 45%, #fff0b8 75%, #fffbe6 100%)',
 };
 
 export const StatusPainelWrapper = styled.div`

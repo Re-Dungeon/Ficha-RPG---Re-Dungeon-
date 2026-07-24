@@ -262,6 +262,9 @@ export const getOrigensPorUniverso = universoId =>
 export const getClassesPorUniverso = universoId =>
   getColecaoPorUniverso('classes', universoId);
 
+export const getCorposEspeciaisPorUniverso = universoId =>
+  getColecaoPorUniverso('corposEspeciais', universoId);
+
 // Aptidões, Condições e Regras podem pertencer a mais de um universo — o
 // projeto administrativo migrou o campo de `universo` (string) para `universos`
 // (array) nesses três catálogos, mas documentos antigos ainda não recadastrados
@@ -320,3 +323,13 @@ export const getArtesPorUniverso = universoId =>
 // Usada pelo Códex Mágico (§21).
 export const getRegrasPorUniverso = universoId =>
   getColecaoMultiUniversoPorUniverso('regras', universoId);
+
+// `reinosCultivo` — catálogo dos Reinos do Sistema de Cultivo (universo Cultivo).
+// Filtrado pelo SubUniverso escolhido (campo `subUniverso`, string com o Nome do
+// sistema, ex.: "Doupo Cangqiong"). A ordem da trilha NÃO vem de um campo de
+// índice: cada Reino aponta o anterior por `reinoAnterior` (id; "" no primeiro) —
+// use `ordenarReinosCultivo` (common/utils/formulas.js) para montar a sequência.
+// A lista de SubUniversos disponíveis vive no campo `SubUniversos` do doc
+// `Cultivo` em `Universo` (lido com getFirestoreItem). Somente leitura.
+export const getReinosCultivo = subUniverso =>
+  getFirestoreItems('reinosCultivo', where('subUniverso', '==', subUniverso));

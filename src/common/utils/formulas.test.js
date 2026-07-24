@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
+  aplicarFalhaTribulacao,
+  aplicarXpCultivo,
   aplicarXpNivel,
   aplicarXpTreino,
   calcularBonusNivel,
@@ -16,6 +18,7 @@ import {
   calcularPcDisponivel,
   calcularPowerCombat,
   calcularPrimariosTotais,
+  calcularProgressoCultivo,
   calcularProximoAptidaoEm,
   calcularResultadoTreino,
   calcularRolagemFortuna,
@@ -24,6 +27,7 @@ import {
   calcularXpNecessario,
   calcularXpNecessarioNivel,
   dominioVarianteValido,
+  ordenarReinosCultivo,
   podeRolarFortunaHoje,
   reorganizarArts,
 } from './formulas';
@@ -576,5 +580,118 @@ describe('calcularEfeitosReputacao', () => {
 
   it('usa 0 como padrão quando efeitos/valor não são passados', () => {
     expect(calcularEfeitosReputacao()).toEqual({ desbloqueados: [], proximo: null });
+  });
+});
+
+describe('calcularProgressoCultivo', () => {
+  const reino = { quantidadeSubReinos: 9, experienciaPorSubReino: 100 };
+
+  it('expTotal = quantidadeSubReinos * experienciaPorSubReino', () => {
+    expect(calcularProgressoCultivo({ xpAtual: 0, ...reino }).expTotal).toBe(900);
+  });
+
+  it('sem Cultivo, nenhuma estrela acesa e 0%', () => {
+    const r = calcularProgressoCultivo({ xpAtual: 0, ...reino });
+    expect(r.estrelas).toBe(0);
+    expect(r.percentual).toBe(0);
+    expect(r.noPico).toBe(false);
+  });
+
+  it('acende uma estrela a cada experienciaPorSubReino de Cultivo', () => {
+    expect(calcularProgressoCultivo({ xpAtual: 100, ...reino }).estrelas).toBe(1);
+    expect(calcularProgressoCultivo({ xpAtual: 250, ...reino }).estrelas).toBe(2);
+    expect(calcularProgressoCultivo({ xpAtual: 899, ...reino }).estrelas).toBe(8);
+  });
+
+  it('a última estrela acende exatamente no Pico, liberando a Ruptura', () => {
+    const r = calcularProgressoCultivo({ xpAtual: 900, ...reino });
+    expect(r.estrelas).toBe(9);
+    expect(r.noPico).toBe(true);
+    expect(r.percentual).toBe(100);
+    expect(r.faltante).toBe(0);
+  });
+
+  it('satura no Pico (excedente não conta como estrelas nem passa de 100%)', () => {
+    const r = calcularProgressoCultivo({ xpAtual: 5000, ...reino });
+    expect(r.xp).toBe(900);
+    expect(r.estrelas).toBe(9);
+    expect(r.percentual).toBe(100);
+  });
+
+  it('faltante = quanto de Cultivo ainda falta para o Pico', () => {
+    expect(calcularProgressoCultivo({ xpAtual: 250, ...reino }).faltante).toBe(650);
+  });
+
+  it('não quebra sem dados do Reino (expTotal 0, sem estrelas, sem Pico)', () => {
+    const r = calcularProgressoCultivo();
+    expect(r).toMatchObject({ expTotal: 0, estrelas: 0, noPico: false, percentual: 0 });
+  });
+});
+
+describe('aplicarXpCultivo', () => {
+  it('soma o ganho ao Cultivo atual', () => {
+    expect(aplicarXpCultivo(100, 250, 9, 100)).toBe(350);
+  });
+
+  it('satura no Pico (não transborda para o próximo Reino)', () => {
+    expect(aplicarXpCultivo(800, 500, 9, 100)).toBe(900);
+  });
+
+  it('ignora ganho negativo e Cultivo negativo', () => {
+    expect(aplicarXpCultivo(-50, -10, 9, 100)).toBe(0);
+  });
+});
+
+describe('aplicarFalhaTribulacao', () => {
+  it('desconta estrelasPerdidas * experienciaPorSubReino do Cultivo (Dou Zhi Qi: 3 estrelas = 300)', () => {
+    expect(aplicarFalhaTribulacao(900, 3, 100)).toBe(600);
+  });
+
+  it('nunca fica negativo (satura em 0 mesmo perdendo mais estrelas do que o Cultivo cobre)', () => {
+    expect(aplicarFalhaTribulacao(150, 5, 100)).toBe(0);
+  });
+
+  it('ignora estrelas perdidas negativas e Cultivo negativo', () => {
+    expect(aplicarFalhaTribulacao(-50, -3, 100)).toBe(0);
+  });
+
+  it('0 estrelas perdidas não altera o Cultivo', () => {
+    expect(aplicarFalhaTribulacao(500, 0, 100)).toBe(500);
+  });
+});
+
+describe('ordenarReinosCultivo', () => {
+  // Fora de ordem de propósito — só `reinoAnterior` define a sequência.
+  const reinos = [
+    { id: 'c', reinoAnterior: 'b', nome: 'Dou Shi' },
+    { id: 'a', reinoAnterior: '', nome: 'Dou Zhi Qi' },
+    { id: 'b', reinoAnterior: 'a', nome: 'Dou Zhe' },
+  ];
+
+  it('reconstrói a trilha a partir da raiz (reinoAnterior vazio) seguindo a lista ligada', () => {
+    expect(ordenarReinosCultivo(reinos).map(r => r.id)).toEqual(['a', 'b', 'c']);
+  });
+
+  it('trata como raiz um Reino cujo reinoAnterior aponta para fora do conjunto', () => {
+    const soFilhos = [
+      { id: 'y', reinoAnterior: 'x' },
+      { id: 'z', reinoAnterior: 'y' },
+    ];
+    expect(ordenarReinosCultivo(soFilhos).map(r => r.id)).toEqual(['y', 'z']);
+  });
+
+  it('anexa Reinos órfãos ao fim em vez de descartá-los', () => {
+    const comOrfao = [
+      { id: 'a', reinoAnterior: '' },
+      { id: 'b', reinoAnterior: 'a' },
+      { id: 'orfao', reinoAnterior: 'inexistente-e-nao-raiz', nome: 'x' },
+    ];
+    const ordenados = ordenarReinosCultivo(comOrfao);
+    expect(ordenados).toHaveLength(3);
+    expect(ordenados.map(r => r.id)).toContain('orfao');
+  });
+
+  it('lista vazia devolve lista vazia', () => {
+    expect(ordenarReinosCultivo([])).toEqual([]);
   });
 });

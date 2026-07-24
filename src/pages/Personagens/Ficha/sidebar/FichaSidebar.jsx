@@ -10,6 +10,7 @@ import Diversity3Icon from '@mui/icons-material/Diversity3';
 import SchoolIcon from '@mui/icons-material/School';
 import PublicIcon from '@mui/icons-material/Public';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import SelfImprovementIcon from '@mui/icons-material/SelfImprovement';
 import CasinoIcon from '@mui/icons-material/Casino';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import HealthAndSafetyIcon from '@mui/icons-material/HealthAndSafety';
@@ -26,7 +27,10 @@ import {
   SidebarWrapper,
 } from './styles';
 
-const GRUPOS = [
+// Item "Cultivo" só entra na lista quando o personagem está no universo Cultivo
+// (ver Ficha.jsx / CULTIVO_UNIVERSO_ID) — por isso os grupos são montados a partir
+// da prop `mostrarCultivo` em vez de uma constante fixa.
+const construirGrupos = mostrarCultivo => [
   {
     titulo: 'Personagem',
     itens: [
@@ -36,6 +40,9 @@ const GRUPOS = [
       { chave: 'classe', label: 'Classe', Icon: SchoolIcon },
       { chave: 'reputacao', label: 'Reputação', Icon: PublicIcon },
       { chave: 'nivel', label: 'Nível', Icon: TrendingUpIcon },
+      ...(mostrarCultivo
+        ? [{ chave: 'cultivo', label: 'Cultivo', Icon: SelfImprovementIcon }]
+        : []),
     ],
   },
   {
@@ -52,7 +59,7 @@ const GRUPOS = [
   },
 ];
 
-const FichaSidebar = ({ expandida, onAlternar, onAbrirModal }) => (
+const FichaSidebar = ({ expandida, onAlternar, onAbrirModal, mostrarCultivo = false }) => (
   <SidebarWrapper $expandida={expandida}>
     <SidebarHeaderRow $expandida={expandida}>
       {expandida ? (
@@ -82,7 +89,7 @@ const FichaSidebar = ({ expandida, onAlternar, onAbrirModal }) => (
       )}
     </SidebarHeaderRow>
 
-    {GRUPOS.map(grupo => (
+    {construirGrupos(mostrarCultivo).map(grupo => (
       <SidebarGrupo key={grupo.titulo}>
         {expandida && <SidebarGrupoTitulo>{grupo.titulo}</SidebarGrupoTitulo>}
 
@@ -113,6 +120,7 @@ FichaSidebar.propTypes = {
   expandida: PropTypes.bool.isRequired,
   onAlternar: PropTypes.func.isRequired,
   onAbrirModal: PropTypes.func.isRequired,
+  mostrarCultivo: PropTypes.bool,
 };
 
 export default FichaSidebar;

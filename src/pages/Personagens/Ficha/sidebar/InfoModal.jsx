@@ -11,6 +11,7 @@ import { useSaving } from 'context/SavingContext';
 
 import PerfilTab from '../tabs/PerfilTab';
 import UniversoSelect from '../progressao/UniversoSelect';
+import CorpoEspecialGrid from '../corpoEspecial/CorpoEspecialGrid';
 import { SectionTitle } from '../styles';
 
 const InfoModal = ({ open, onClose, personagem, onSave }) => {
@@ -25,6 +26,7 @@ const InfoModal = ({ open, onClose, personagem, onSave }) => {
         <Tab value="perfil" label="Perfil" />
         <Tab value="geral" label="Informações Gerais" />
         <Tab value="background" label="Background" />
+        <Tab value="corpoEspecial" label="Corpo Especial" />
       </Tabs>
       <DialogContent>
         {aba === 'perfil' && (
@@ -36,13 +38,19 @@ const InfoModal = ({ open, onClose, personagem, onSave }) => {
           </>
         )}
 
-        <PerfilTab personagem={personagem} onSave={handleSalvarPerfil} aba={aba} />
+        {aba === 'corpoEspecial' ? (
+          <CorpoEspecialGrid personagem={personagem} onSave={onSave} />
+        ) : (
+          <PerfilTab personagem={personagem} onSave={handleSalvarPerfil} aba={aba} />
+        )}
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Fechar</Button>
-        <Button type="submit" form="perfil-form" variant="contained">
-          Salvar
-        </Button>
+        {aba !== 'corpoEspecial' && (
+          <Button type="submit" form="perfil-form" variant="contained">
+            Salvar
+          </Button>
+        )}
       </DialogActions>
     </Dialog>
   );

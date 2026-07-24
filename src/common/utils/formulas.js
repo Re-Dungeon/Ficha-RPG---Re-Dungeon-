@@ -376,3 +376,75 @@ export const calcularEfeitosReputacao = (efeitos = [], valor = 0) => {
     proximo: ordenados.find(efeito => valor < (efeito.quantidade ?? 0)) ?? null,
   };
 };
+
+// ── Cultivo (Doupo Cangqiong) ───────────────────────────────────────────────
+// Cada Reino (`reinosCultivo`) tem N estrelas (`quantidadeSubReinos`) e um custo
+// de Cultivo por estrela (`experienciaPorSubReino`). O Cultivo total do Reino é
+// N × custo; ao enchê-lo o personagem chega ao Pico e libera a Ruptura. As
+// estrelas são derivadas do Cultivo acumulado (nunca persistidas): a k-ésima
+// estrela acende a cada `experienciaPorSubReino` de Cultivo, e a última acende
+// exatamente no Pico. A Ruptura é sempre manual, então o ganho satura no Pico.
+export const calcularProgressoCultivo = ({
+  xpAtual = 0,
+  quantidadeSubReinos = 0,
+  experienciaPorSubReino = 0,
+} = {}) => {
+  const expTotal = Math.max(0, quantidadeSubReinos) * Math.max(0, experienciaPorSubReino);
+  const xp = Math.min(Math.max(0, xpAtual), expTotal);
+  const estrelas =
+    experienciaPorSubReino > 0
+      ? Math.min(quantidadeSubReinos, Math.floor(xp / experienciaPorSubReino))
+      : 0;
+  return {
+    expTotal,
+    xp,
+    estrelas,
+    noPico: quantidadeSubReinos > 0 && expTotal > 0 && xp >= expTotal,
+    percentual: expTotal > 0 ? Math.min(100, Math.round((xp / expTotal) * 100)) : 0,
+    faltante: Math.max(0, expTotal - xp),
+  };
+};
+
+// Aplica um ganho de Cultivo saturando no Pico (Ruptura é manual — o excedente
+// não transborda para o próximo Reino).
+export const aplicarXpCultivo = (xpAtual, ganho, quantidadeSubReinos, experienciaPorSubReino) => {
+  const expTotal = Math.max(0, quantidadeSubReinos) * Math.max(0, experienciaPorSubReino);
+  return Math.min(expTotal, Math.max(0, xpAtual) + Math.max(0, ganho));
+};
+
+// Falha na Tribulação: o personagem perde N estrelas (SubReinos) de Cultivo
+// dentro do próprio Reino — não avança nem recua de Reino, só desconta
+// N × experienciaPorSubReino do Cultivo acumulado, sem deixar ficar negativo.
+export const aplicarFalhaTribulacao = (xpAtual, estrelasPerdidas, experienciaPorSubReino) =>
+  Math.max(
+    0,
+    Math.max(0, xpAtual) - Math.max(0, estrelasPerdidas) * Math.max(0, experienciaPorSubReino),
+  );
+
+// A trilha de Reinos é uma lista ligada por `reinoAnterior` (id do Reino
+// anterior; "" ou fora do conjunto = raiz). Reconstrói a ordem começando pela
+// raiz e seguindo quem aponta para o Reino atual. Qualquer Reino órfão
+// (ciclo/dados inconsistentes) é anexado ao fim para nunca sumir da lista.
+export const ordenarReinosCultivo = (reinos = []) => {
+  const ids = new Set(reinos.map(reino => reino.id));
+  const proximoPorAnterior = new Map();
+  reinos.forEach(reino => {
+    proximoPorAnterior.set(reino.reinoAnterior ?? '', reino);
+  });
+
+  const raiz = reinos.find(reino => !reino.reinoAnterior || !ids.has(reino.reinoAnterior));
+  const ordenados = [];
+  const visitados = new Set();
+  let atual = raiz;
+  while (atual && !visitados.has(atual.id)) {
+    visitados.add(atual.id);
+    ordenados.push(atual);
+    atual = proximoPorAnterior.get(atual.id);
+  }
+  reinos.forEach(reino => {
+    if (!visitados.has(reino.id)) {
+      ordenados.push(reino);
+    }
+  });
+  return ordenados;
+};

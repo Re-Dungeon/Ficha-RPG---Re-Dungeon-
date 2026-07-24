@@ -36,10 +36,12 @@ import RacaModal from './sidebar/RacaModal';
 import ClasseModal from './sidebar/ClasseModal';
 import ReputacaoModal from './sidebar/ReputacaoModal';
 import NivelModal from './sidebar/NivelModal';
+import CultivoModal from './sidebar/CultivoModal';
 import SorteModal from './sidebar/SorteModal';
 import LojaModal from './sidebar/LojaModal';
 import CondicoesModal from './sidebar/CondicoesModal';
 import CodexModal from './sidebar/CodexModal';
+import { CULTIVO_UNIVERSO_ID } from './cultivo/constants';
 import { FichaLayout, FichaMain, TabsBar } from './styles';
 
 const Ficha = () => {
@@ -126,6 +128,8 @@ const Ficha = () => {
     );
   }
 
+  const mostrarCultivo = personagem.universo === CULTIVO_UNIVERSO_ID;
+
   return (
     <SavingProvider>
       <FichaLayout>
@@ -133,6 +137,7 @@ const Ficha = () => {
           expandida={sidebarExpandida}
           onAlternar={() => setSidebarExpandida(current => !current)}
           onAbrirModal={setModalAtivo}
+          mostrarCultivo={mostrarCultivo}
         />
 
         <FichaMain>
@@ -204,6 +209,14 @@ const Ficha = () => {
             onSave={handleSave}
           />
           <NivelModal open={modalAtivo === 'nivel'} onClose={fecharModal} personagem={personagem} onSave={handleSave} />
+          {mostrarCultivo && (
+            <CultivoModal
+              open={modalAtivo === 'cultivo'}
+              onClose={fecharModal}
+              personagem={personagem}
+              onSave={handleSave}
+            />
+          )}
           <SorteModal open={modalAtivo === 'sorte'} onClose={fecharModal} personagem={personagem} onSave={handleSave} />
           <LojaModal open={modalAtivo === 'loja'} onClose={fecharModal} personagem={personagem} onSave={handleSave} />
           <CondicoesModal
