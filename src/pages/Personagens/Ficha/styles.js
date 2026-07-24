@@ -110,6 +110,8 @@ const STATUS_GRADIENTES = {
     'linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0) 45%), linear-gradient(90deg, #1d4ed8 0%, #3b82f6 55%, #bfdbfe 100%)',
   fadiga:
     'linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0) 45%), linear-gradient(90deg, #b45309 0%, #ea580c 55%, #7f1d1d 100%)',
+  nivel:
+    'linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0) 45%), linear-gradient(90deg, #92702c 0%, #e8cb85 55%, #fff3d1 100%)',
 };
 
 export const StatusPainelWrapper = styled.div`

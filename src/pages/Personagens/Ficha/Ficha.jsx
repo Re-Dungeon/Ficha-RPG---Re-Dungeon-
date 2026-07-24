@@ -35,6 +35,7 @@ import AptidaoConsultaModal from './sidebar/AptidaoConsultaModal';
 import RacaModal from './sidebar/RacaModal';
 import ClasseModal from './sidebar/ClasseModal';
 import ReputacaoModal from './sidebar/ReputacaoModal';
+import NivelModal from './sidebar/NivelModal';
 import SorteModal from './sidebar/SorteModal';
 import LojaModal from './sidebar/LojaModal';
 import CondicoesModal from './sidebar/CondicoesModal';
@@ -202,6 +203,7 @@ const Ficha = () => {
             personagem={personagem}
             onSave={handleSave}
           />
+          <NivelModal open={modalAtivo === 'nivel'} onClose={fecharModal} personagem={personagem} onSave={handleSave} />
           <SorteModal open={modalAtivo === 'sorte'} onClose={fecharModal} personagem={personagem} onSave={handleSave} />
           <LojaModal open={modalAtivo === 'loja'} onClose={fecharModal} personagem={personagem} onSave={handleSave} />
           <CondicoesModal

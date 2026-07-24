@@ -9,6 +9,7 @@ import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import Diversity3Icon from '@mui/icons-material/Diversity3';
 import SchoolIcon from '@mui/icons-material/School';
 import PublicIcon from '@mui/icons-material/Public';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import CasinoIcon from '@mui/icons-material/Casino';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import HealthAndSafetyIcon from '@mui/icons-material/HealthAndSafety';
@@ -34,6 +35,7 @@ const GRUPOS = [
       { chave: 'raca', label: 'Raça', Icon: Diversity3Icon },
       { chave: 'classe', label: 'Classe', Icon: SchoolIcon },
       { chave: 'reputacao', label: 'Reputação', Icon: PublicIcon },
+      { chave: 'nivel', label: 'Nível', Icon: TrendingUpIcon },
     ],
   },
   {

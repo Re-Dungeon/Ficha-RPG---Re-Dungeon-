@@ -187,6 +187,58 @@ export const aplicarXpTreino = (nivelAtual, xpAtualAntes, xpGanho) => {
   return { nivel, xpAtual };
 };
 
+// ── Nível Geral do Personagem (XP acumulado) ───────────────────────────────
+// Custo de cada nível é linear: 500 XP * o nível alvo (nv1=500, nv2=1000,
+// nv50=25.000) — diferente da curva de Treinamento (§13), que satura em 100.
+export const calcularXpNecessarioNivel = nivel => 500 * (nivel + 1);
+
+// A cada nível: sempre 4 pontos pra distribuir entre os 5 atributos
+// principais (todos exceto Sorte). A cada 5 níveis, alternando: múltiplos
+// ímpares de 5 (5, 15, 25...) dão 1 ponto de Sorte (aplicado direto, sem
+// escolha do jogador); múltiplos pares de 5 (10, 20, 30...) dão 1 ponto pra
+// escolher entre os 6 atributos secundários.
+export const calcularBonusNivel = nivel => {
+  if (nivel <= 0 || nivel % 5 !== 0) {
+    return { pontosPrincipais: 4, pontoSorte: 0, pontoSecundario: 0 };
+  }
+  const multiplo = nivel / 5;
+  return {
+    pontosPrincipais: 4,
+    pontoSorte: multiplo % 2 === 1 ? 1 : 0,
+    pontoSecundario: multiplo % 2 === 0 ? 1 : 0,
+  };
+};
+
+// Aplica o XP ganho ao par (nível, xpAtual), subindo quantos níveis o XP
+// acumulado permitir (a "escada" de XP necessário muda a cada nível) e
+// somando os bônus de todo nível cruzado no caminho.
+export const aplicarXpNivel = (nivelAtual, xpAtualAntes, xpGanho) => {
+  let nivel = nivelAtual;
+  let xpAtual = xpAtualAntes + xpGanho;
+  let pontosPrincipaisGanhos = 0;
+  let pontosSorteGanhos = 0;
+  let pontosSecundariosGanhos = 0;
+
+  while (xpAtual >= calcularXpNecessarioNivel(nivel)) {
+    xpAtual -= calcularXpNecessarioNivel(nivel);
+    nivel += 1;
+    const bonus = calcularBonusNivel(nivel);
+    pontosPrincipaisGanhos += bonus.pontosPrincipais;
+    pontosSorteGanhos += bonus.pontoSorte;
+    pontosSecundariosGanhos += bonus.pontoSecundario;
+  }
+
+  return { nivel, xpAtual, pontosPrincipaisGanhos, pontosSorteGanhos, pontosSecundariosGanhos };
+};
+
+// Ponto de secundário ganho ao subir de nível: Prontidão vale 5 por ponto
+// investido (os outros 5 secundários valem 1) — escolha autoral, sem base em
+// FUNCIONALIDADES.md.
+const MULTIPLICADOR_SECUNDARIO_POR_NIVEL = { prontidao: 5 };
+
+export const calcularGanhoSecundarioPorNivel = (chave, quantidade) =>
+  quantidade * (MULTIPLICADOR_SECUNDARIO_POR_NIVEL[chave] ?? 1);
+
 // ── Aptidões (FUNCIONALIDADES.md §9) ───────────────────────────────────────
 // Sem Sorte, ao contrário das outras fórmulas do sistema.
 

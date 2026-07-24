@@ -185,7 +185,7 @@ const AtributosTab = ({ personagem, onSave, onExcluir }) => {
   );
 
   return (
-    <Formik initialValues={buildInitialValues(personagem)} onSubmit={handleSubmit}>
+    <Formik enableReinitialize initialValues={buildInitialValues(personagem)} onSubmit={handleSubmit}>
       {formik => (
         <AtributosFormBody
           personagem={personagem}

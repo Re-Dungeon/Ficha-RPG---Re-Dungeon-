@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import {
+  aplicarXpNivel,
   aplicarXpTreino,
+  calcularBonusNivel,
   calcularBonusPorSorte,
   calcularCadeiaBloqueio,
   calcularCustoDesbloqueio,
   calcularEfeitosReputacao,
   calcularEspacoInventario,
+  calcularGanhoSecundarioPorNivel,
   calcularLimiteArts,
   calcularLimiteHabilidadesBasicas,
   calcularMaximoAptidoes,
@@ -19,6 +22,7 @@ import {
   calcularSecundarios,
   calcularStatusMaximos,
   calcularXpNecessario,
+  calcularXpNecessarioNivel,
   dominioVarianteValido,
   podeRolarFortunaHoje,
   reorganizarArts,
@@ -293,6 +297,81 @@ const primariosTotais = {
   percepcao: 45,
   sorte: 999, // não deve influenciar Aptidões/Arts (§9, §10 não usam Sorte)
 };
+
+describe('calcularXpNecessarioNivel', () => {
+  it('custo = 500 * nível alvo (nv1=500, nv2=1000, nv50=25.000)', () => {
+    expect(calcularXpNecessarioNivel(0)).toBe(500);
+    expect(calcularXpNecessarioNivel(1)).toBe(1000);
+    expect(calcularXpNecessarioNivel(49)).toBe(25000);
+  });
+});
+
+describe('calcularBonusNivel', () => {
+  it('todo nível dá sempre 4 pontos principais', () => {
+    expect(calcularBonusNivel(1).pontosPrincipais).toBe(4);
+    expect(calcularBonusNivel(7).pontosPrincipais).toBe(4);
+  });
+
+  it('múltiplos ímpares de 5 (5, 15, 25...) dão 1 ponto de Sorte', () => {
+    expect(calcularBonusNivel(5)).toEqual({ pontosPrincipais: 4, pontoSorte: 1, pontoSecundario: 0 });
+    expect(calcularBonusNivel(15).pontoSorte).toBe(1);
+    expect(calcularBonusNivel(25).pontoSorte).toBe(1);
+  });
+
+  it('múltiplos pares de 5 (10, 20, 30...) dão 1 ponto de secundário', () => {
+    expect(calcularBonusNivel(10)).toEqual({ pontosPrincipais: 4, pontoSorte: 0, pontoSecundario: 1 });
+    expect(calcularBonusNivel(20).pontoSecundario).toBe(1);
+  });
+
+  it('níveis fora de múltiplos de 5 (e o nível 0) não dão bônus extra', () => {
+    expect(calcularBonusNivel(0)).toEqual({ pontosPrincipais: 4, pontoSorte: 0, pontoSecundario: 0 });
+    expect(calcularBonusNivel(3)).toEqual({ pontosPrincipais: 4, pontoSorte: 0, pontoSecundario: 0 });
+  });
+});
+
+describe('aplicarXpNivel', () => {
+  it('acumula XP sem subir de nível quando abaixo do necessário', () => {
+    expect(aplicarXpNivel(0, 100, 200)).toEqual({
+      nivel: 0,
+      xpAtual: 300,
+      pontosPrincipaisGanhos: 0,
+      pontosSorteGanhos: 0,
+      pontosSecundariosGanhos: 0,
+    });
+  });
+
+  it('sobe um nível quando o XP acumulado atinge o necessário (500 para nv1)', () => {
+    expect(aplicarXpNivel(0, 0, 500)).toEqual({
+      nivel: 1,
+      xpAtual: 0,
+      pontosPrincipaisGanhos: 4,
+      pontosSorteGanhos: 0,
+      pontosSecundariosGanhos: 0,
+    });
+  });
+
+  it('sobe múltiplos níveis de uma vez, somando os bônus de cada nível cruzado', () => {
+    // 500 (nv1) + 1000 (nv2) + 1500 (nv3) + 2000 (nv4) + 2500 (nv5) = 7500
+    const resultado = aplicarXpNivel(0, 0, 7500);
+    expect(resultado.nivel).toBe(5);
+    expect(resultado.xpAtual).toBe(0);
+    expect(resultado.pontosPrincipaisGanhos).toBe(20); // 4 * 5 níveis
+    expect(resultado.pontosSorteGanhos).toBe(1); // nível 5 é múltiplo ímpar de 5
+    expect(resultado.pontosSecundariosGanhos).toBe(0);
+  });
+});
+
+describe('calcularGanhoSecundarioPorNivel', () => {
+  it('Prontidão vale 5 por ponto investido', () => {
+    expect(calcularGanhoSecundarioPorNivel('prontidao', 1)).toBe(5);
+    expect(calcularGanhoSecundarioPorNivel('prontidao', 3)).toBe(15);
+  });
+
+  it('os outros secundários valem 1 por ponto investido', () => {
+    expect(calcularGanhoSecundarioPorNivel('ataque', 3)).toBe(3);
+    expect(calcularGanhoSecundarioPorNivel('defesa', 1)).toBe(1);
+  });
+});
 
 describe('calcularMaximoAptidoes', () => {
   it('round((FOR+VIT+AGI+INT+PER)/20 + 3) + ganhas, ignorando Sorte (§9)', () => {
