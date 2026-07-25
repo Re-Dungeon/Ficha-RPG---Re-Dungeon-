@@ -160,7 +160,7 @@ export const DetalheNomeGrande = styled.h2`
 
 export const DetalheBanner = styled.img`
   width: 100%;
-  max-height: 240px;
+  max-height: 400px;
   object-fit: cover;
   border-radius: 10px;
   margin-top: 16px;
