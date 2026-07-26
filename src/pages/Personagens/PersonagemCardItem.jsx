@@ -8,13 +8,27 @@ import {
   PersonagemCard,
   PersonagemCardImage,
   PersonagemCardImagePlaceholder,
-  PersonagemDetail,
   PersonagemInfo,
+  PersonagemMeta,
   PersonagemNome,
-  PersonagemUniverso,
+  PersonagemTag,
+  PersonagemMedia,
+  PersonagemMediaOverlay,
 } from './styles';
 
-const PersonagemCardItem = ({ personagem, onClick }) => {
+const FALLBACK_IMAGES = [
+  'https://i.imgur.com/SSssb4c.png',
+  'https://i.imgur.com/CSR0ld4.png',
+  'https://i.imgur.com/0sZZJbj.png',
+  'https://i.imgur.com/gt47TjZ.png',
+  'https://i.imgur.com/Qr7vYaI.png',
+  'https://i.imgur.com/zctdLhe.png',
+  'https://i.imgur.com/2tpI3i6.png',
+  'https://i.imgur.com/4Tzy4uF.png',
+  'https://i.imgur.com/wxvQktk.png',
+];
+
+const PersonagemCardItem = ({ personagem, onClick, isSelected }) => {
   const [racaNome, setRacaNome] = useState('');
   const [classesNomes, setClassesNomes] = useState([]);
   const [universoNome, setUniversoNome] = useState('');
@@ -41,19 +55,38 @@ const PersonagemCardItem = ({ personagem, onClick }) => {
     }
   }, [personagem.universo]);
 
-  const racaClasse = [racaNome, classesNomes.join(' ➠ ')].filter(Boolean).join(' - ');
+  const fallbackImage =
+    FALLBACK_IMAGES[Math.floor(Math.random() * FALLBACK_IMAGES.length)] || FALLBACK_IMAGES[0];
 
   return (
-    <PersonagemCard type="button" onClick={onClick}>
-      {personagem.linkImagem ? (
-        <PersonagemCardImage src={personagem.linkImagem} alt={personagem.nome} />
-      ) : (
-        <PersonagemCardImagePlaceholder>Sem imagem</PersonagemCardImagePlaceholder>
-      )}
+    <PersonagemCard type="button" onClick={onClick} $isSelected={isSelected}>
+      <PersonagemMedia>
+        {personagem.linkImagem ? (
+          <PersonagemCardImage src={personagem.linkImagem} alt={personagem.nome} />
+        ) : (
+          <PersonagemCardImagePlaceholder as="img" src={fallbackImage} alt="Personagem sem imagem" />
+        )}
+        <PersonagemMediaOverlay />
+      </PersonagemMedia>
       <PersonagemInfo>
-        <PersonagemNome>{personagem.nome}</PersonagemNome>
-        <PersonagemDetail>{racaClasse || 'Sem raça/classe'}</PersonagemDetail>
-        <PersonagemUniverso>{universoNome || 'Sem universo'}</PersonagemUniverso>
+        <PersonagemNome $isSelected={isSelected}>{personagem.nome}</PersonagemNome>
+        <PersonagemMeta>
+          {classesNomes.length > 0 ? (
+            classesNomes.map(classe => (
+              <PersonagemTag key={classe} $variant="class">
+                {classe}
+              </PersonagemTag>
+            ))
+          ) : (
+            <PersonagemTag $variant="class">Sem classe</PersonagemTag>
+          )}
+          {racaNome ? (
+            <PersonagemTag $variant="race">{racaNome}</PersonagemTag>
+          ) : (
+            <PersonagemTag $variant="race">Sem raça</PersonagemTag>
+          )}
+          <PersonagemTag $variant="realm">{universoNome || 'Sem mesa'}</PersonagemTag>
+        </PersonagemMeta>
       </PersonagemInfo>
     </PersonagemCard>
   );
@@ -62,6 +95,11 @@ const PersonagemCardItem = ({ personagem, onClick }) => {
 PersonagemCardItem.propTypes = {
   personagem: PropTypes.object.isRequired,
   onClick: PropTypes.func.isRequired,
+  isSelected: PropTypes.bool,
+};
+
+PersonagemCardItem.defaultProps = {
+  isSelected: false,
 };
 
 export default PersonagemCardItem;
