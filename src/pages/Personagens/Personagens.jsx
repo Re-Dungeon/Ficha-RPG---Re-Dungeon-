@@ -14,6 +14,7 @@ const Personagens = () => {
   const navigate = useNavigate();
   const [personagens, setPersonagens] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedPersonagemId, setSelectedPersonagemId] = useState(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -34,6 +35,7 @@ const Personagens = () => {
 
   const handleOpenPersonagem = useCallback(
     personagemId => {
+      setSelectedPersonagemId(personagemId);
       navigate(`/personagens/${personagemId}`);
     },
     [navigate],
@@ -70,6 +72,7 @@ const Personagens = () => {
               key={personagem.id}
               personagem={personagem}
               onClick={() => handleOpenPersonagem(personagem.id)}
+              isSelected={selectedPersonagemId === personagem.id}
             />
           ))}
         </CardsGrid>
