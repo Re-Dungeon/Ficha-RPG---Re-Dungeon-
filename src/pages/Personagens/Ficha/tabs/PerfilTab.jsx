@@ -21,7 +21,7 @@ const PerfilSection = styled.div`
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(110, 90, 168, 0.2);
   border-radius: 20px;
-  padding: 24px;
+  padding: 18px;
   box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.18);
   display: block;
 `;
@@ -96,31 +96,31 @@ const AvatarPlaceholderText = styled.span`
 
 const PerfilFields = styled.div`
   display: grid;
-  gap: 20px;
+  gap: 12px;
   align-content: start;
 `;
 
 const FieldGroup = styled.div`
   display: grid;
-  gap: 22px;
+  gap: 12px;
 `;
 
 const RowFields = styled.div`
   display: grid;
-  gap: 18px;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
 `;
 
 const InputWrapper = styled.div`
   display: grid;
-  gap: 16px;
+  gap: 10px;
 `;
 
 const fieldSx = {
   backgroundColor: 'rgba(255,255,255,0.04)',
   borderRadius: '12px',
   '& .MuiOutlinedInput-root': {
-    minHeight: '42px',
+    minHeight: '38px',
     transition: 'all 200ms ease',
   },
   '& .MuiOutlinedInput-notchedOutline': {
@@ -140,14 +140,14 @@ const fieldSx = {
     textTransform: 'uppercase',
   },
   '& .MuiInputBase-input': {
-    padding: '10px 12px',
-    fontSize: '0.9rem',
-    lineHeight: 1.35,
+    padding: '8px 10px',
+    fontSize: '0.88rem',
+    lineHeight: 1.25,
   },
   '& .MuiOutlinedInput-inputMultiline': {
-    padding: '10px 12px',
-    fontSize: '0.9rem',
-    lineHeight: 1.35,
+    padding: '8px 10px',
+    fontSize: '0.88rem',
+    lineHeight: 1.25,
   },
 };
 
@@ -171,6 +171,7 @@ const BackgroundEditorCard = styled.div`
   border: 1px solid rgba(84, 125, 255, 0.16);
   border-radius: 24px;
   padding: 24px;
+  min-height: 220px;
   box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.18), 0 2px 12px rgba(0, 0, 0, 0.2);
 `;
 
@@ -180,7 +181,7 @@ const BackgroundEditor = styled.div`
 
 const BackgroundCounter = styled(StatusValueRow)`
   position: absolute;
-  top: 24px;
+  bottom: 24px;
   right: 24px;
   color: rgba(255, 255, 255, 0.72);
   font-size: 0.88rem;
@@ -295,11 +296,20 @@ const PerfilFormBody = ({
 }) => {
   const { values, errors, touched, handleChange, handleBlur, handleSubmit: submit, dirty } = formik;
 
+  const [typing, setTyping] = useState(false);
+  const typingTimerRef = useRef(null);
+
   useEffect(() => {
     if (dirty) {
       salvarRascunho(values);
     }
   }, [values, dirty, salvarRascunho]);
+
+  useEffect(() => {
+    return () => {
+      if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+    };
+  }, []);
 
   return (
     <form id="perfil-form" onSubmit={submit} noValidate>
@@ -575,14 +585,28 @@ const PerfilFormBody = ({
 
           <BackgroundEditorCard>
             <BackgroundEditor>
-              <BackgroundCounter>
-                {(values.background ?? '').toLocaleString('pt-BR')} / 5.000 caracteres
-              </BackgroundCounter>
+              {!typing && (
+                <BackgroundCounter>
+                  {((values.background ?? '').length || 0).toLocaleString('pt-BR')} / 5.000 caracteres
+                </BackgroundCounter>
+              )}
               <TextField
                 name="background"
                 value={values.background}
-                onChange={handleChange}
-                onBlur={handleBlur}
+                onChange={e => {
+                  handleChange(e);
+                  setTyping(true);
+                  if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+                  typingTimerRef.current = setTimeout(() => setTyping(false), 800);
+                }}
+                onBlur={e => {
+                  handleBlur(e);
+                  setTyping(false);
+                  if (typingTimerRef.current) {
+                    clearTimeout(typingTimerRef.current);
+                    typingTimerRef.current = null;
+                  }
+                }}
                 error={touched.background && Boolean(errors.background)}
                 helperText={touched.background && errors.background}
                 fullWidth
@@ -604,6 +628,8 @@ const PerfilFormBody = ({
                   '& .MuiOutlinedInput-root': {
                     backgroundColor: 'rgba(255,255,255,0.04)',
                     borderRadius: '18px',
+                    minHeight: 200,
+                    alignItems: 'flex-start',
                   },
                   '& .MuiOutlinedInput-notchedOutline': {
                     borderColor: 'rgba(84, 125, 255, 0.22)',
@@ -613,6 +639,11 @@ const PerfilFormBody = ({
                   },
                   '& .MuiOutlinedInput-inputMultiline': {
                     padding: '12px 14px',
+                    paddingBottom: '44px',
+                    paddingRight: '14px',
+                    minHeight: 140,
+                    lineHeight: '1.4',
+                    boxSizing: 'border-box',
                   },
                 }}
               />
