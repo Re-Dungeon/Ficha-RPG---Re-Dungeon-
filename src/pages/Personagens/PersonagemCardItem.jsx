@@ -17,15 +17,8 @@ import {
 } from './styles';
 
 const FALLBACK_IMAGES = [
-  'https://i.imgur.com/SSssb4c.png',
-  'https://i.imgur.com/CSR0ld4.png',
-  'https://i.imgur.com/0sZZJbj.png',
-  'https://i.imgur.com/gt47TjZ.png',
-  'https://i.imgur.com/Qr7vYaI.png',
-  'https://i.imgur.com/zctdLhe.png',
-  'https://i.imgur.com/2tpI3i6.png',
-  'https://i.imgur.com/4Tzy4uF.png',
-  'https://i.imgur.com/wxvQktk.png',
+  'https://i.imgur.com/NSDQWT3.png',
+  'https://i.imgur.com/G088HoT.png'
 ];
 
 const PersonagemCardItem = ({ personagem, onClick, isSelected }) => {

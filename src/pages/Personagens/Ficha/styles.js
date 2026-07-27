@@ -354,9 +354,11 @@ export const HeroRetratoFrame = styled.div`
 
 export const HeroRetratoImg = styled.img`
   position: absolute;
-  inset: 9% 10%;
-  width: 81%;
-  height: 82%;
+  top: 50%;
+  left: 50%;
+  width: ${({ $isPlaceholder }) => ($isPlaceholder ? '62%' : '81%')};
+  height: ${({ $isPlaceholder }) => ($isPlaceholder ? '62%' : '82%')};
+  transform: translate(-50%, -50%);
   object-fit: cover;
   border-radius: 4px;
 `;

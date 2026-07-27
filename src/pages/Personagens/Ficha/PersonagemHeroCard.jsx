@@ -42,6 +42,7 @@ const PersonagemHeroCard = ({
         <HeroRetratoImg
           src={personagem.linkImagem || planetaRedungeonImg}
           alt={personagem.nome}
+          $isPlaceholder={!personagem.linkImagem}
         />
         <HeroRetratoMoldura />
       </HeroRetratoFrame>
