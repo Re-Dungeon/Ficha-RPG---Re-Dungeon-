@@ -5,18 +5,23 @@ import { getNome } from 'common/utils/resolveNome';
 
 export const useRacaClasseNomes = personagem => {
   const [racaNome, setRacaNome] = useState('');
+  const [racaLinkImagem, setRacaLinkImagem] = useState('');
   const [classesNomes, setClassesNomes] = useState([]);
 
   useEffect(() => {
     if (personagem.raca) {
       getFirestoreItem('racas', personagem.raca)
-        .then(item => setRacaNome(getNome(item)))
+        .then(item => {
+          setRacaNome(getNome(item));
+          setRacaLinkImagem(item?.linkImagem ?? '');
+        })
         .catch(erro => {
           // eslint-disable-next-line no-console
           console.error('Falha ao carregar nome da raça:', erro);
         });
     } else {
       setRacaNome('');
+      setRacaLinkImagem('');
     }
   }, [personagem.raca]);
 
@@ -29,5 +34,5 @@ export const useRacaClasseNomes = personagem => {
       });
   }, [personagem.classes]);
 
-  return { racaNome, classesNomes };
+  return { racaNome, racaLinkImagem, classesNomes };
 };

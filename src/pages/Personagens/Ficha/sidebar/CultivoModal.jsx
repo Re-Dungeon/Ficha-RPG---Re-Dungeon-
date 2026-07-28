@@ -41,13 +41,16 @@ import {
   StatusValueRow,
 } from '../styles';
 import {
+  CaminhoCard,
   CaminhoInfo,
   CaminhoItem,
   CaminhoMarcador,
   CaminhoNome,
   CaminhoStatusLabel,
   CaminhoTitulo,
+  CultivoActionRow,
   CultivoAside,
+  CultivoCard,
   CultivoLayout,
   CultivoMain,
   EstrelasRow,
@@ -233,7 +236,20 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
   }, [estrelasPerdidasInput, reinoAtual, cultivoXp, subUniversoAtual, onSave, executar]);
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth
+      maxWidth="md"
+      slotProps={{ paper: { sx: {
+          width: 'min(100%, 920px)',
+          maxHeight: 'min(100vh, 86vh)',
+          borderRadius: '22px',
+          background: 'rgba(10, 9, 19, 0.98)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+        } } }}
+      scroll="paper"
+    >
       <DialogHeaderRow>
         <DialogHeaderTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <SelfImprovementIcon fontSize="small" /> Sistema de Cultivo
@@ -243,7 +259,7 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
         </DialogFecharButton>
       </DialogHeaderRow>
 
-      <DialogContent>
+      <DialogContent sx={{ px: { xs: 2, sm: 3 }, pt: 2, pb: 3 }}>
         <TextField
           select
           fullWidth
@@ -251,7 +267,7 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
           label="Sistema Atual"
           value={subUniversoAtual}
           onChange={handleSelecionarSubUniverso}
-          sx={{ maxWidth: 320, mt: 1 }}
+          sx={{ maxWidth: 360, mt: 1, '& .MuiInputBase-root': { borderRadius: '16px' } }}
         >
           <MenuItem value="" disabled>
             <em>Escolha um sistema de cultivo</em>
@@ -284,114 +300,122 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
         {reinoAtual && (
           <CultivoLayout style={{ marginTop: 20 }}>
             <CultivoMain>
-              {reinoAtual.linkImagem && <ReinoHero src={reinoAtual.linkImagem} alt="" />}
+              <CultivoCard>
+                {reinoAtual.linkImagem && <ReinoHero src={reinoAtual.linkImagem} alt="" />}
 
-              <div>
-                <StatusValueRow style={{ display: 'block', textAlign: 'center', letterSpacing: 2 }}>
-                  REINO ATUAL
-                </StatusValueRow>
-                <ReinoTitulo>{getNome(reinoAtual)}</ReinoTitulo>
-                <EstrelasRow style={{ marginTop: 8 }}>
-                  {Array.from({ length: reinoAtual.quantidadeSubReinos ?? 0 }).map((_, estrela) =>
-                    estrela < progresso.estrelas ? (
-                      <StarRoundedIcon key={estrela} fontSize="small" />
-                    ) : (
-                      <StarOutlineRoundedIcon
-                        key={estrela}
-                        fontSize="small"
-                        sx={{ color: 'var(--text-muted)' }}
-                      />
-                    ),
-                  )}
-                </EstrelasRow>
-              </div>
-
-              <div>
-                <SectionTitle style={{ fontSize: '0.9rem' }}>Cultivo</SectionTitle>
-                <StatusBarraTrack $grande style={{ marginTop: 8 }}>
-                  <StatusBarraFill $variante="cultivo" $percentual={progresso.percentual} />
-                  <StatusBarraLabel>
-                    {progresso.xp} / {progresso.expTotal}
-                  </StatusBarraLabel>
-                </StatusBarraTrack>
-                <StatusValueRow style={{ display: 'block', marginTop: 8 }}>
-                  {progresso.noPico
-                    ? 'Pico do Reino alcançado — pronto para a Ruptura.'
-                    : `Faltam ${progresso.faltante} de Cultivo para o Pico.`}
-                </StatusValueRow>
-              </div>
-
-              <GanharRow>
-                <TextField
-                  label="Cultivo ganho"
-                  size="small"
-                  value={xpGanhoInput}
-                  onChange={event => setXpGanhoInput(event.target.value.replace(/[^0-9]/g, ''))}
-                  inputMode="numeric"
-                  sx={{ maxWidth: 160 }}
-                />
-                <Button variant="contained" onClick={handleGanharXp}>
-                  Ganhar Experiência
-                </Button>
-              </GanharRow>
-
-              <div style={{ borderTop: '1px solid var(--border-primary)', paddingTop: 16 }}>
-                <ProximoReinoRow>
-                  <StatusValueRow>
-                    {proximoReino ? (
-                      <>
-                        Próximo Reino: <strong style={{ color: 'var(--color-primary)' }}>{getNome(proximoReino)}</strong>
-                      </>
-                    ) : (
-                      'Reino máximo alcançado.'
+                <div>
+                  <StatusValueRow style={{ display: 'block', textAlign: 'center', letterSpacing: 2 }}>
+                    REINO ATUAL
+                  </StatusValueRow>
+                  <ReinoTitulo>{getNome(reinoAtual)}</ReinoTitulo>
+                  <EstrelasRow style={{ marginTop: 10, gap: 6 }}>
+                    {Array.from({ length: reinoAtual.quantidadeSubReinos ?? 0 }).map((_, estrela) =>
+                      estrela < progresso.estrelas ? (
+                        <StarRoundedIcon key={estrela} fontSize="small" />
+                      ) : (
+                        <StarOutlineRoundedIcon
+                          key={estrela}
+                          fontSize="small"
+                          sx={{ color: 'var(--text-muted)' }}
+                        />
+                      ),
                     )}
+                  </EstrelasRow>
+                </div>
+
+                <div>
+                  <SectionTitle style={{ fontSize: '0.95rem' }}>Cultivo</SectionTitle>
+                  <StatusBarraTrack $grande style={{ marginTop: 12 }}>
+                    <StatusBarraFill $variante="cultivo" $percentual={progresso.percentual} />
+                    <StatusBarraLabel>
+                      {progresso.xp} / {progresso.expTotal}
+                    </StatusBarraLabel>
+                  </StatusBarraTrack>
+                  <StatusValueRow style={{ display: 'block', marginTop: 12 }}>
+                    {progresso.noPico
+                      ? 'Pico do Reino alcançado — pronto para a Ruptura.'
+                      : `Faltam ${progresso.faltante} de Cultivo para o Pico.`}
                   </StatusValueRow>
-                  {proximoReino && (
-                    <StatusValueRow>EXP Necessária: {expTotalReino(proximoReino)}</StatusValueRow>
+                </div>
+
+                <CultivoActionRow>
+                  <TextField
+                    label="Cultivo ganho"
+                    size="small"
+                    value={xpGanhoInput}
+                    onChange={event => setXpGanhoInput(event.target.value.replace(/[^0-9]/g, ''))}
+                    inputMode="numeric"
+                    sx={{ maxWidth: 200, width: '100%', '& .MuiInputBase-root': { borderRadius: '16px' } }}
+                  />
+                  <Button
+                    variant="contained"
+                    onClick={handleGanharXp}
+                    sx={{ minWidth: 172, borderRadius: '16px' }}
+                  >
+                    Ganhar Experiência
+                  </Button>
+                </CultivoActionRow>
+
+                <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 18 }}>
+                  <CultivoStatusRow>
+                    <StatusValueRow style={{ maxWidth: '65%' }}>
+                      {proximoReino ? (
+                        <>
+                          Próximo Reino: <strong style={{ color: 'var(--color-primary)' }}>{getNome(proximoReino)}</strong>
+                        </>
+                      ) : (
+                        'Reino máximo alcançado.'
+                      )}
+                    </StatusValueRow>
+                    {proximoReino && (
+                      <StatusValueRow>EXP Necessária: {expTotalReino(proximoReino)}</StatusValueRow>
+                    )}
+                  </CultivoStatusRow>
+                  <Button
+                    variant="contained"
+                    startIcon={<BoltIcon fontSize="small" />}
+                    disabled={!progresso.noPico || !proximoReino}
+                    onClick={() => setTribulacaoAberta(true)}
+                    sx={{ mt: 2, borderRadius: '16px', minWidth: 190 }}
+                  >
+                    Avançar (Ruptura)
+                  </Button>
+                  {progresso.noPico && !proximoReino && (
+                    <StatusValueRow style={{ display: 'block', marginTop: 12 }}>
+                      Você atingiu o último Reino deste sistema de cultivo.
+                    </StatusValueRow>
                   )}
-                </ProximoReinoRow>
-                <Button
-                  variant="contained"
-                  startIcon={<BoltIcon fontSize="small" />}
-                  disabled={!progresso.noPico || !proximoReino}
-                  onClick={() => setTribulacaoAberta(true)}
-                  sx={{ mt: 1.5 }}
-                >
-                  Avançar (Ruptura)
-                </Button>
-                {progresso.noPico && !proximoReino && (
-                  <StatusValueRow style={{ display: 'block', marginTop: 8 }}>
-                    Você atingiu o último Reino deste sistema de cultivo.
-                  </StatusValueRow>
-                )}
-              </div>
+                </div>
+              </CultivoCard>
             </CultivoMain>
 
             <CultivoAside>
-              <CaminhoTitulo>Caminho do Cultivo</CaminhoTitulo>
-              {reinosDoCaminho.map(({ reino, indice }) => {
-                const status =
-                  indice < indexAtual ? 'concluido' : indice === indexAtual ? 'atual' : 'bloqueado';
-                const rotulo =
-                  status === 'concluido'
-                    ? 'Já Concluído'
-                    : status === 'atual'
-                      ? 'Atual'
-                      : 'Bloqueado';
-                return (
-                  <CaminhoItem key={reino.id} $status={status}>
-                    <CaminhoMarcador $status={status}>
-                      {status === 'concluido' && <CheckCircleRoundedIcon fontSize="small" />}
-                      {status === 'atual' && <AutoAwesomeIcon fontSize="small" />}
-                      {status === 'bloqueado' && <LockRoundedIcon fontSize="small" />}
-                    </CaminhoMarcador>
-                    <CaminhoInfo>
-                      <CaminhoNome>{getNome(reino)}</CaminhoNome>
-                      <CaminhoStatusLabel $status={status}>{rotulo}</CaminhoStatusLabel>
-                    </CaminhoInfo>
-                  </CaminhoItem>
-                );
-              })}
+              <CaminhoCard>
+                <CaminhoTitulo>Caminho do Cultivo</CaminhoTitulo>
+                {reinosDoCaminho.map(({ reino, indice }) => {
+                  const status =
+                    indice < indexAtual ? 'concluido' : indice === indexAtual ? 'atual' : 'bloqueado';
+                  const rotulo =
+                    status === 'concluido'
+                      ? 'Já Concluído'
+                      : status === 'atual'
+                        ? 'Atual'
+                        : 'Bloqueado';
+                  return (
+                    <CaminhoItem key={reino.id} $status={status}>
+                      <CaminhoMarcador $status={status}>
+                        {status === 'concluido' && <CheckCircleRoundedIcon fontSize="small" />}
+                        {status === 'atual' && <AutoAwesomeIcon fontSize="small" />}
+                        {status === 'bloqueado' && <LockRoundedIcon fontSize="small" />}
+                      </CaminhoMarcador>
+                      <CaminhoInfo>
+                        <CaminhoNome>{getNome(reino)}</CaminhoNome>
+                        <CaminhoStatusLabel $status={status}>{rotulo}</CaminhoStatusLabel>
+                      </CaminhoInfo>
+                    </CaminhoItem>
+                  );
+                })}
+              </CaminhoCard>
             </CultivoAside>
           </CultivoLayout>
         )}
