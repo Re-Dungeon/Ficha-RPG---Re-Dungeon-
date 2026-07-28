@@ -1,103 +1,77 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import Button from '@mui/material/Button';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import PlaceIcon from '@mui/icons-material/Place';
+import GpsFixedIcon from '@mui/icons-material/GpsFixed';
+import BoltIcon from '@mui/icons-material/Bolt';
+import UpdateIcon from '@mui/icons-material/Update';
+import CasinoIcon from '@mui/icons-material/Casino';
+import TimerIcon from '@mui/icons-material/Timer';
 
-import { getNome } from 'common/utils/resolveNome';
+import { AcaoBadge, HabilidadeCard, HabilidadeChip, HabilidadeChipsGrid, HabilidadeDescricao, HabilidadeHeader, HabilidadeNome } from '../progressao/styles';
+import { ImageThumb } from './styles';
 
-import { ART_STAT_CAMPOS, DOMINIO_LABELS, TIPO_ACAO_META, TIPO_ART_META } from './constants';
-import {
-  ArtCardFooter,
-  ArtCardHeader,
-  ArtCardHeaderInfo,
-  ArtCardWrapper,
-  ArtDescricao,
-  ArtNome,
-  Badge,
-  BadgeRow,
-  ImageThumb,
-  StatGrid,
-  StatGridCell,
-  StatGridLabel,
-  StatGridValue,
-} from './styles';
-
-// Card compacto de Art usado nas abas "Catálogo" e "Habilidade de Classe" do
-// CriarArtDialog — mesma linguagem visual do ArtCard da ficha, mas com um único
-// botão de rodapé ("Escolher") em vez das ações de editar/remover/ativar.
-const ArtCatalogoCard = ({ art, condicoes, disabled, onEscolher }) => {
-  const tipoMeta = TIPO_ART_META[art.tipo] ?? {};
-  const acaoMeta = TIPO_ACAO_META[art.tipoAcao] ?? {};
-
-  const condicoesAplicadas = useMemo(() => {
-    const ids = art.condicoesAplicadas ?? [];
-    return ids.map(id => condicoes.find(condicao => condicao.id === id)).filter(Boolean);
-  }, [art.condicoesAplicadas, condicoes]);
+// Card compacto de Art usado na aba "Catálogo" do CriarArtDialog, com a mesma
+// linguagem visual do card de habilidade de classe para ficar consistente.
+const ArtCatalogoCard = ({ art, disabled, onEscolher }) => {
+  const chips = [
+    art.alcance ? { icon: <PlaceIcon fontSize="inherit" />, label: art.alcance } : null,
+    art.alvos ? { icon: <GpsFixedIcon fontSize="inherit" />, label: art.alvos } : null,
+    art.custo ? { icon: <BoltIcon fontSize="inherit" />, label: art.custo } : null,
+    art.recarga ? { icon: <UpdateIcon fontSize="inherit" />, label: art.recarga } : null,
+    art.dados ? { icon: <CasinoIcon fontSize="inherit" />, label: art.dados } : null,
+    art.duracao ? { icon: <TimerIcon fontSize="inherit" />, label: art.duracao } : null,
+  ].filter(Boolean);
 
   return (
-    <ArtCardWrapper>
-      <ArtCardHeader>
-        <ImageThumb $size={72}>{art.imagem ? <img src={art.imagem} alt={art.nome} /> : '🎴'}</ImageThumb>
-        <ArtCardHeaderInfo>
-          <ArtNome>{art.nome}</ArtNome>
-          <BadgeRow>
-            {art.tipo && (
-              <Badge $cor={tipoMeta.cor}>
-                {tipoMeta.icone} {art.tipo}
-              </Badge>
-            )}
-            {art.tipoAcao && (
-              <Badge>
-                {acaoMeta.icone} {art.tipoAcao}
-              </Badge>
-            )}
-            {art.dominio && (
-              <Badge $cor="#A78BFA">
-                🔮 {DOMINIO_LABELS[art.dominio]}
-              </Badge>
-            )}
-            {art.circuloMagico && <Badge $cor="#5b7cfa">🔵 {art.circuloMagico}</Badge>}
-          </BadgeRow>
-          {condicoesAplicadas.length > 0 && (
-            <BadgeRow>
-              {condicoesAplicadas.map(condicao => (
-                <Badge key={condicao.id} $cor="#ef4444">
-                  ⚠️ {getNome(condicao)}
-                </Badge>
-              ))}
-            </BadgeRow>
+    <HabilidadeCard data-testid="catalogo-art-card" $clicavel>
+      <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+        <ImageThumb $size={96}>
+          {art.imagem || art.linkImagem ? (
+            <img src={art.imagem || art.linkImagem} alt={art.nome} />
+          ) : (
+            '🎴'
           )}
-        </ArtCardHeaderInfo>
-      </ArtCardHeader>
+        </ImageThumb>
+        <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <HabilidadeHeader style={{ alignItems: 'flex-start' }}>
+            <HabilidadeNome style={{ flex: 1, minWidth: 0 }}>
+              <AutoAwesomeIcon fontSize="inherit" />
+              <span>{art.nome}</span>
+            </HabilidadeNome>
+            {art.tipoAcao ? <AcaoBadge>{art.tipoAcao}</AcaoBadge> : null}
+          </HabilidadeHeader>
 
-      <StatGrid>
-        {ART_STAT_CAMPOS.map(([label, campo]) => (
-          <StatGridCell key={campo}>
-            <StatGridLabel>{label}</StatGridLabel>
-            <StatGridValue>{art[campo] || '-'}</StatGridValue>
-          </StatGridCell>
-        ))}
-      </StatGrid>
+          {art.descricao ? <HabilidadeDescricao>{art.descricao}</HabilidadeDescricao> : null}
+        </div>
+      </div>
 
-      {art.descricao && <ArtDescricao>{art.descricao}</ArtDescricao>}
+      {chips.length > 0 ? (
+        <HabilidadeChipsGrid>
+          {chips.map((chip, index) => (
+            <HabilidadeChip key={`${chip.label}-${index}`}>
+              {chip.icon}
+              <span>{chip.label}</span>
+            </HabilidadeChip>
+          ))}
+        </HabilidadeChipsGrid>
+      ) : null}
 
-      <ArtCardFooter>
-        <Button size="small" variant="contained" fullWidth disabled={disabled} onClick={onEscolher}>
-          Escolher
-        </Button>
-      </ArtCardFooter>
-    </ArtCardWrapper>
+      <Button size="small" variant="contained" fullWidth disabled={disabled} onClick={onEscolher}>
+        Escolher
+      </Button>
+    </HabilidadeCard>
   );
 };
 
 ArtCatalogoCard.propTypes = {
   art: PropTypes.object.isRequired,
-  condicoes: PropTypes.array,
   disabled: PropTypes.bool,
   onEscolher: PropTypes.func.isRequired,
 };
 
 ArtCatalogoCard.defaultProps = {
-  condicoes: [],
   disabled: false,
 };
 

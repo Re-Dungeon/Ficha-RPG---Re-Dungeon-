@@ -18,6 +18,13 @@ import {
   StatGridCell,
   StatGridLabel,
   StatGridValue,
+  ViewDialogHeader,
+  ViewHeaderLeft,
+  ViewHeaderIcon,
+  ViewTitleMain,
+  ViewTitleSub,
+  ViewStatsGrid,
+  DescriptionCard,
 } from './styles';
 
 const CAMPOS_GRID = [
@@ -40,9 +47,18 @@ const VarianteViewDialog = ({ open, onClose, variante, art, nucleo, condicoes, o
     .filter(Boolean);
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle>🔍 Visualizar Variante</DialogTitle>
-      <DialogContent>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg">
+      <ViewDialogHeader>
+        <ViewHeaderLeft>
+          <ViewHeaderIcon>🎴</ViewHeaderIcon>
+          <div>
+            <ViewTitleMain>Visualizar Variante</ViewTitleMain>
+            <ViewTitleSub>Informações completas da variante.</ViewTitleSub>
+          </div>
+        </ViewHeaderLeft>
+        <div />
+      </ViewDialogHeader>
+      <DialogContent sx={{ padding: '10px 14px' }}>
         <DialogTwoColumns>
           <ImagePreviewBox>
             {variante.imagem ? <img src={variante.imagem} alt={variante.nome} /> : '🎴'}
@@ -79,37 +95,49 @@ const VarianteViewDialog = ({ open, onClose, variante, art, nucleo, condicoes, o
               </NucleoMeta>
             )}
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, marginTop: 16 }}>
+            <ViewStatsGrid>
               {CAMPOS_GRID.map(([label, campo]) => (
                 <StatGridCell key={campo} style={{ background: 'var(--bg-card)', borderRadius: 6 }}>
                   <StatGridLabel>{label}</StatGridLabel>
                   <StatGridValue>{variante[campo] || '-'}</StatGridValue>
                 </StatGridCell>
               ))}
-            </div>
+            </ViewStatsGrid>
 
             {variante.descricao && (
-              <div style={{ marginTop: 16 }}>
-                <NucleoMeta style={{ display: 'block', fontWeight: 600 }}>Descrição:</NucleoMeta>
-                <p style={{ margin: '4px 0 0', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                  {variante.descricao}
-                </p>
-              </div>
+              <DescriptionCard>
+                <div>
+                  <NucleoMeta style={{ display: 'block', fontWeight: 600 }}>📜 Descrição</NucleoMeta>
+                  <div style={{ marginTop: 6, color: 'var(--text-secondary)', lineHeight: 1.6 }}>{variante.descricao}</div>
+                </div>
+              </DescriptionCard>
             )}
             {variante.cantico && (
-              <div style={{ marginTop: 16 }}>
-                <NucleoMeta style={{ display: 'block', fontWeight: 600 }}>🎵 Cântico:</NucleoMeta>
-                <p style={{ margin: '4px 0 0', color: 'var(--text-secondary)', lineHeight: 1.5, fontStyle: 'italic' }}>
-                  {variante.cantico}
-                </p>
-              </div>
+              <DescriptionCard>
+                <div>
+                  <NucleoMeta style={{ display: 'block', fontWeight: 600, marginTop: 12 }}>🎵 Cântico</NucleoMeta>
+                  <div style={{ marginTop: 6, fontStyle: 'italic', color: 'var(--text-secondary)' }}>{variante.cantico}</div>
+                </div>
+              </DescriptionCard>
             )}
           </div>
         </DialogTwoColumns>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Fechar</Button>
-        <Button variant="contained" onClick={onEditar}>
+      <DialogActions sx={{ gap: 2, padding: '8px 14px' }}>
+        <Button onClick={onClose} sx={{ border: '1px solid rgba(255,255,255,0.06)', color: 'var(--text-primary)', padding: '6px 12px', borderRadius: 1 }}>
+          Fechar
+        </Button>
+        <Button
+          variant="contained"
+          onClick={onEditar}
+          sx={{
+            background: 'linear-gradient(90deg, rgba(108,99,255,0.95), rgba(91,124,250,0.95))',
+            boxShadow: '0 10px 24px rgba(33,61,150,0.18)',
+            color: '#fff',
+            padding: '6px 12px',
+            borderRadius: 1,
+          }}
+        >
           ✏️ Editar
         </Button>
       </DialogActions>

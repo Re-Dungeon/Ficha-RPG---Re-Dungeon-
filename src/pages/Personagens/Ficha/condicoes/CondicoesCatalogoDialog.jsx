@@ -21,7 +21,7 @@ import {
 } from './styles';
 
 const CondicoesCatalogoDialog = ({ open, onClose, catalogo, busca, onBuscaChange, temUniverso, onAdicionar }) => (
-  <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+  <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg">
     <DialogHeaderRow>
       <DialogHeaderTitle>📋 Códex de Condições</DialogHeaderTitle>
       <DialogFecharButton type="button" aria-label="Fechar" onClick={onClose}>
