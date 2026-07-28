@@ -40,7 +40,7 @@ import {
 import { StatusValueRow } from '../styles';
 import ArtCatalogoCard from './ArtCatalogoCard';
 import { ART_AUTORAL_INICIAL, DOMINIO_LABELS, TIPO_ACAO_OPTIONS, TIPO_ART_OPTIONS } from './constants';
-import { ArtsGrid, CatalogArtsGrid } from './styles';
+import { CatalogArtsGrid } from './styles';
 import styled, { keyframes } from 'styled-components';
 
 const fadeIn = keyframes`

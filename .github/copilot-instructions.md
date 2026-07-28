@@ -271,12 +271,13 @@ npm run test           # Vitest (run, não watch)
 
 ### Verificação de Qualidade
 
-Antes de considerar uma mudança pronta:
+**Sempre** rode `npm run lint` e `npm run test` depois de qualquer alteração de código, antes de considerar a mudança pronta — não só quando pedido explicitamente:
 
-1. `npm run lint` — `no-console` e `react-hooks/exhaustive-deps` são **erros**, não avisos.
-2. `npm run test` — `common/utils/formulas.js` e `resolveNome.js` têm suíte de testes própria; ao adicionar uma fórmula de jogo nova (algo que envolva dados/cálculos determinísticos), escreva-a como função pura ali e cubra com teste, seguindo o padrão de `formulas.test.js` (inclusive as funções que dependem de `Math.random()`, como `rolarDado`, aceitam um `rolarDadoFn` injetável para o teste ser determinístico).
-3. `npm run build` — garante que não há erro de bundle.
-4. Teste manual: **não há ferramenta de browser headless disponível neste ambiente Windows local** — ao validar uma mudança de UI, instale `playwright` num diretório temporário (não como dependência do projeto) e rode contra `npm run dev`, ou peça para o usuário testar manualmente. Nunca declare uma mudança de UI validada sem tê-la efetivamente exercitado.
+1. `npm run lint` — `no-console` e `react-hooks/exhaustive-deps` são **erros**, não avisos, e **todo** warning de `no-unused-vars` também deve ser corrigido (import/variável/destructure não usado → remova; se for parâmetro obrigatório pela assinatura, prefixe com `_`). Os únicos warnings toleráveis são os de `react-refresh/only-export-components` em arquivos que deliberadamente co-exportam hook/schema junto do componente (`context/AuthContext.jsx`, `context/SavingContext.jsx`, `*FormDialog.jsx` de inventário) — não vale a pena quebrar esses arquivos em dois só por causa do aviso.
+2. `npm run test` — `common/utils/formulas.js` e `resolveNome.js` têm suíte de testes própria; ao adicionar uma fórmula de jogo nova (algo que envolva dados/cálculos determinísticos), escreva-a como função pura ali e cubra com teste, seguindo o padrão de `formulas.test.js` (inclusive as funções que dependem de `Math.random()`, como `rolarDado`, aceitam um `rolarDadoFn` injetável para o teste ser determinístico). Se a alteração mudou comportamento coberto por um teste existente, atualize o teste; se adicionou comportamento novo relevante, adicione um teste.
+3. Se `lint` ou `test` acusarem erro/falha, corrija antes de seguir — nunca reporte a tarefa como concluída com lint ou teste quebrado.
+4. `npm run build` — garante que não há erro de bundle.
+5. Teste manual: **não há ferramenta de browser headless disponível neste ambiente Windows local** — ao validar uma mudança de UI, instale `playwright` num diretório temporário (não como dependência do projeto) e rode contra `npm run dev`, ou peça para o usuário testar manualmente. Nunca declare uma mudança de UI validada sem tê-la efetivamente exercitado.
 
 ### Testes de fluxo (Testing Library)
 
@@ -308,7 +309,7 @@ Mocke `service/storage` e `context/AuthContext` com `vi.mock(...)` — os testes
 
 ### Antes do Merge
 
-1. ✅ `npm run lint` sem erros
+1. ✅ `npm run lint` sem erros e sem warnings de `no-unused-vars`
 2. ✅ `npm run test` sem falhas
 3. ✅ `npm run build` sem erros
 4. ✅ Mudança de UI efetivamente testada (Playwright ad-hoc ou validação manual pedida ao usuário) — não apenas "compilou"

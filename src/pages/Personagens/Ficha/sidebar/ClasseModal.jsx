@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
@@ -119,6 +119,11 @@ const ClasseModal = ({ open, onClose, personagem, onSave }) => {
   const [artsCriadas, setArtsCriadas] = useState(() => new Set());
   const { executar } = useSaving();
 
+  const personagemRef = useRef(personagem);
+  useEffect(() => {
+    personagemRef.current = personagem;
+  }, [personagem]);
+
   // Cada classe escolhida ganha um Núcleo próprio em Arts (personagens/{id}/nucleos,
   // campo `classeId` marcando o vínculo) — criado na hora, reaproveitado se já existir,
   // pra toda Art nascida de uma habilidade de classe já ter o `nucleoId` obrigatório.
@@ -212,7 +217,7 @@ const ClasseModal = ({ open, onClose, personagem, onSave }) => {
       setAbaHabilidade('basicas');
       setGrupoExpandido(true);
       setArtsCriadas(new Set());
-      setClasseVisualizadaId((personagem.classes ?? [])[0] ?? null);
+      setClasseVisualizadaId((personagemRef.current.classes ?? [])[0] ?? null);
     }
   }, [open]);
 
@@ -344,7 +349,7 @@ const ClasseModal = ({ open, onClose, personagem, onSave }) => {
         </HabilidadeHeader>
         <HabilidadeDescricao>{habilidade.descricao || 'Sem descrição cadastrada.'}</HabilidadeDescricao>
         <HabilidadeChipsGrid>
-          {HABILIDADE_CHIP_FIELDS.map(({ key, label, Icon }) => (
+          {HABILIDADE_CHIP_FIELDS.map(({ key, Icon }) => (
             <HabilidadeChip key={key} $empty={!habilidade[key]}>
               <Icon fontSize="inherit" />
               <span>{habilidade[key] || 'N/D'}</span>

@@ -16,7 +16,7 @@ import { calcularEfeitosReputacao } from 'common/utils/formulas';
 import { getNome } from 'common/utils/resolveNome';
 import { useSaving } from 'context/SavingContext';
 
-import { DialogFecharButton, DialogHeaderRow, DialogHeaderTitle, StatusValueRow } from '../styles';
+import { DialogFecharButton, DialogHeaderRow, StatusValueRow } from '../styles';
 import OrigemReputacaoCard from '../reputacao/OrigemReputacaoCard';
 import {
   OrigemGrid,

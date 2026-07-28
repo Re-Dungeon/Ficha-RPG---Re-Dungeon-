@@ -12,7 +12,6 @@ import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import SorteTab from '../tabs/SorteTab';
 import LojaTrapacaSection from '../lojas/LojaTrapacaSection';
 import { DialogFecharButton, DialogHeaderRow, DialogHeaderTitle } from '../styles';
-import { SaldoBadge } from '../lojas/styles';
 
 const HeaderIcon = styled.div`
   display: inline-flex;

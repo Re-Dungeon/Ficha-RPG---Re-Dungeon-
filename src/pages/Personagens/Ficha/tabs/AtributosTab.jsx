@@ -22,7 +22,7 @@ import {
   STATUS_LABELS,
   buildInitialValues,
 } from '../constants';
-import { HeroRow, SectionTitle, StatusPainelWrapper, StatusParRow } from '../styles';
+import { HeroRow, StatusPainelWrapper, StatusParRow } from '../styles';
 
 const [[STATUS_PRINCIPAL_CHAVE, STATUS_PRINCIPAL_LABEL], ...STATUS_SECUNDARIOS] =
   Object.entries(STATUS_LABELS);

@@ -8,7 +8,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { getRegrasPorUniverso } from 'service/storage';
 import { getNome } from 'common/utils/resolveNome';
 
-import { PowerCombatBadge, SectionTitle, StatusValueRow } from '../styles';
+import { PowerCombatBadge, StatusValueRow } from '../styles';
 import {
   BadgesRow,
   ExemploBox,

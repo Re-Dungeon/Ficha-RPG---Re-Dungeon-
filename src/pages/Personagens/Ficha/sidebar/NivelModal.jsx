@@ -40,7 +40,6 @@ import { PRIMARIOS_LABELS, SECUNDARIOS_LABELS } from '../constants';
 import {
   AtributoCardWrapper,
   AttributesGrid,
-  CardTitle,
   CardTotal,
   DialogFecharButton,
   DialogHeaderRow,

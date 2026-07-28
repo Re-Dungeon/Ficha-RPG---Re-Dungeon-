@@ -13,7 +13,6 @@ import {
   ImagePreviewBox,
   NucleoEssenceCard,
   NucleoInfoGrid,
-  NucleoMeta,
   NucleoNome,
   NucleoStatCard,
   NucleoStatLabel,

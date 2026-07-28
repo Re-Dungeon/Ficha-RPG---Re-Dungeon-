@@ -55,8 +55,6 @@ import {
   CultivoMain,
   CultivoStatusRow,
   EstrelasRow,
-  GanharRow,
-  ProximoReinoRow,
   ReinoHero,
   ReinoTitulo,
 } from '../cultivo/styles';

@@ -12,7 +12,6 @@ import { useSaving } from 'context/SavingContext';
 
 import PerfilTab from '../tabs/PerfilTab';
 import CorpoEspecialGrid from '../corpoEspecial/CorpoEspecialGrid';
-import { SectionTitle } from '../styles';
 
 const ModalHeader = styled.div`
   display: flex;

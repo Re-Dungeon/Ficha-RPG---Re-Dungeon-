@@ -15,7 +15,6 @@ import { useSaving } from 'context/SavingContext';
 import {
   AtributoCardWrapper,
   CardTitle,
-  CardTotal,
   SectionTitle,
   StatusValueRow,
 } from '../styles';
@@ -127,40 +126,11 @@ const EmptyIllustration = styled.div`
   padding: 18px;
 `;
 
-const SorteGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 16px;
-  margin-top: 16px;
-`;
-
 const SortePanel = styled.div`
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 22px;
   padding: 22px;
-`;
-
-const SortHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 16px;
-`;
-
-const ActionRow = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 16px;
-  margin-top: 24px;
-`;
-
-const HistoryList = styled.div`
-  display: grid;
-  gap: 12px;
-  margin-top: 12px;
 `;
 
 const HistoryCard = styled(AtributoCardWrapper)`
