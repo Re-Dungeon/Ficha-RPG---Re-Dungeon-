@@ -258,12 +258,15 @@ Em todo campo que referencia outra coleção (`universo`, `raca`, `classes`, `or
       sorte: number,
     },
   },
-  cultivo: {   // implementado 2026-07-23 — Sistema de Cultivo (Doupo Cangqiong), só p/ o universo Cultivo
-               // (id fixo CULTIVO_UNIVERSO_ID; menu lateral só mostra "Cultivo" quando universo bate).
-               // Guarda o mínimo; estrelas/Pico são DERIVADOS do catálogo `reinosCultivo` via
-               // calcularProgressoCultivo (common/utils/formulas.js).
-    subUniverso: string,   // Nome do sistema de cultivo escolhido, ex.: "Doupo Cangqiong" (campo
-                            // `SubUniversos` do doc `Cultivo` em `Universo`); casa com `reinosCultivo.subUniverso`
+  cultivo: {   // implementado 2026-07-23, generalizado p/ qualquer universo em 2026-07-28 — Sistema de
+               // Cultivo. Menu lateral mostra "Cultivo" sempre; getReinosCultivo(personagem.universo, subUniverso)
+               // filtra a trilha pelo universo do personagem (§ storage.js). Universos com múltiplos sistemas
+               // paralelos (ex.: Cultivo → "Doupo Cangqiong", "Martial Peak" etc., campo `SubUniversos` do doc
+               // do universo em `Universo`) exigem escolher um sistema antes; universos sem esse campo vão
+               // direto pra trilha (Reinos com `subUniverso: ''`). Guarda o mínimo; estrelas/Pico são
+               // DERIVADOS do catálogo `reinosCultivo` via calcularProgressoCultivo (common/utils/formulas.js).
+    subUniverso: string,   // Nome do sistema de cultivo escolhido, ex.: "Doupo Cangqiong" (campo `SubUniversos`
+                            // do doc do universo do personagem); '' quando o universo não tem múltiplos sistemas.
     reinoId: string,       // id do doc de `reinosCultivo` do Reino atual ("" → cai no 1º Reino da trilha)
     xpAtual: number,       // Cultivo acumulado no Reino atual (0..quantidadeSubReinos*experienciaPorSubReino;
                             // satura no Pico — a Ruptura/Tribulação é manual e zera este valor no novo Reino)

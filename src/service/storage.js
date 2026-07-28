@@ -324,12 +324,21 @@ export const getArtesPorUniverso = universoId =>
 export const getRegrasPorUniverso = universoId =>
   getColecaoMultiUniversoPorUniverso('regras', universoId);
 
-// `reinosCultivo` — catálogo dos Reinos do Sistema de Cultivo (universo Cultivo).
-// Filtrado pelo SubUniverso escolhido (campo `subUniverso`, string com o Nome do
-// sistema, ex.: "Doupo Cangqiong"). A ordem da trilha NÃO vem de um campo de
-// índice: cada Reino aponta o anterior por `reinoAnterior` (id; "" no primeiro) —
-// use `ordenarReinosCultivo` (common/utils/formulas.js) para montar a sequência.
-// A lista de SubUniversos disponíveis vive no campo `SubUniversos` do doc
-// `Cultivo` em `Universo` (lido com getFirestoreItem). Somente leitura.
-export const getReinosCultivo = subUniverso =>
-  getFirestoreItems('reinosCultivo', where('subUniverso', '==', subUniverso));
+// `reinosCultivo` — catálogo dos Reinos do Sistema de Cultivo. Deixou de ser
+// exclusivo do universo Cultivo (confirmado por doc de teste em `reinosCultivo`
+// com `universo` de outro universo e `subUniverso: ''`): todo universo pode ter
+// sua própria trilha de Reinos, filtrada primeiro por `universo`. Universos com
+// múltiplos sistemas paralelos (ex.: Cultivo, que tem "Doupo Cangqiong",
+// "Martial Peak" etc. no campo `SubUniversos` do doc `Universo`) também
+// filtram por `subUniverso`; universos sem esse campo não têm o seletor de
+// sistema — os Reinos têm `subUniverso: ''` e o filtro é só por `universo`.
+// A ordem da trilha NÃO vem de um campo de índice: cada Reino aponta o
+// anterior por `reinoAnterior` (id; "" no primeiro) — use `ordenarReinosCultivo`
+// (common/utils/formulas.js) para montar a sequência. Somente leitura.
+export const getReinosCultivo = (universoId, subUniverso = '') => {
+  const constraints = [where('universo', '==', universoId)];
+  if (subUniverso) {
+    constraints.push(where('subUniverso', '==', subUniverso));
+  }
+  return getFirestoreItems('reinosCultivo', ...constraints);
+};

@@ -29,7 +29,6 @@ import {
 import { getNome } from 'common/utils/resolveNome';
 import { useSaving } from 'context/SavingContext';
 
-import { CULTIVO_UNIVERSO_ID } from '../cultivo/constants';
 import {
   DialogFecharButton,
   DialogHeaderRow,
@@ -65,6 +64,7 @@ const expTotalReino = reino =>
 const CultivoModal = ({ open, onClose, personagem, onSave }) => {
   const { executar } = useSaving();
   const [subUniversos, setSubUniversos] = useState([]);
+  const [carregandoSistemas, setCarregandoSistemas] = useState(false);
   const [reinos, setReinos] = useState([]);
   const [carregandoReinos, setCarregandoReinos] = useState(false);
   const [xpGanhoInput, setXpGanhoInput] = useState('');
@@ -73,41 +73,53 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
   const [falhaTribulacaoAberta, setFalhaTribulacaoAberta] = useState(false);
   const [estrelasPerdidasInput, setEstrelasPerdidasInput] = useState('');
 
+  const universoId = personagem.universo;
   const subUniversoAtual = personagem.cultivo?.subUniverso ?? '';
   const cultivoReinoId = personagem.cultivo?.reinoId ?? '';
   const cultivoXp = personagem.cultivo?.xpAtual ?? 0;
+  // Universos com múltiplos sistemas paralelos (ex.: Cultivo → "Doupo
+  // Cangqiong", "Martial Peak") têm o campo `SubUniversos` no doc `Universo` e
+  // exigem escolher um antes de ver os Reinos. Universos sem esse campo vão
+  // direto pra trilha (Reinos com `subUniverso: ''`).
+  const temSistemas = subUniversos.length > 0;
 
-  // Lista de sistemas de cultivo disponíveis vem do campo `SubUniversos` do doc
-  // `Cultivo` em `Universo` (somente leitura).
+  // Lista de sistemas de cultivo disponíveis (se houver) vem do campo
+  // `SubUniversos` do doc do universo do personagem em `Universo` (somente leitura).
   useEffect(() => {
     if (!open) {
       return undefined;
     }
     let isMounted = true;
-    getFirestoreItem('Universo', CULTIVO_UNIVERSO_ID)
+    setCarregandoSistemas(true);
+    getFirestoreItem('Universo', universoId)
       .then(doc => {
         if (isMounted) {
           setSubUniversos(doc?.SubUniversos ?? doc?.subUniversos ?? []);
+          setCarregandoSistemas(false);
         }
       })
       .catch(erro => {
         // eslint-disable-next-line no-console
         console.error('Falha ao carregar SubUniversos de Cultivo:', erro);
+        if (isMounted) {
+          setCarregandoSistemas(false);
+        }
       });
     return () => {
       isMounted = false;
     };
-  }, [open]);
+  }, [open, universoId]);
 
-  // Reinos do sistema escolhido, já ordenados pela lista ligada `reinoAnterior`.
+  // Reinos da trilha (do universo, e do sistema escolhido quando o universo
+  // tiver mais de um), já ordenados pela lista ligada `reinoAnterior`.
   useEffect(() => {
-    if (!open || !subUniversoAtual) {
+    if (!open || carregandoSistemas || (temSistemas && !subUniversoAtual)) {
       setReinos([]);
       return undefined;
     }
     let isMounted = true;
     setCarregandoReinos(true);
-    getReinosCultivo(subUniversoAtual)
+    getReinosCultivo(universoId, temSistemas ? subUniversoAtual : '')
       .then(itens => {
         if (isMounted) {
           setReinos(ordenarReinosCultivo(itens));
@@ -124,7 +136,7 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
     return () => {
       isMounted = false;
     };
-  }, [open, subUniversoAtual]);
+  }, [open, carregandoSistemas, temSistemas, subUniversoAtual, universoId]);
 
   useEffect(() => {
     if (open) {
@@ -259,40 +271,48 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
       </DialogHeaderRow>
 
       <DialogContent sx={{ px: { xs: 2, sm: 3 }, pt: 2, pb: 3 }}>
-        <TextField
-          select
-          fullWidth
-          size="small"
-          label="Sistema Atual"
-          value={subUniversoAtual}
-          onChange={handleSelecionarSubUniverso}
-          sx={{ maxWidth: 360, mt: 1, '& .MuiInputBase-root': { borderRadius: '16px' } }}
-        >
-          <MenuItem value="" disabled>
-            <em>Escolha um sistema de cultivo</em>
-          </MenuItem>
-          {subUniversos.map(nome => (
-            <MenuItem key={nome} value={nome}>
-              {nome}
-            </MenuItem>
-          ))}
-        </TextField>
+        {carregandoSistemas && (
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 12 }}>
+            <CircularProgress size={28} sx={{ color: 'var(--color-primary)' }} />
+          </div>
+        )}
 
-        {!subUniversoAtual && (
+        {!carregandoSistemas && temSistemas && (
+          <TextField
+            select
+            fullWidth
+            size="small"
+            label="Sistema Atual"
+            value={subUniversoAtual}
+            onChange={handleSelecionarSubUniverso}
+            sx={{ maxWidth: 360, mt: 1, '& .MuiInputBase-root': { borderRadius: '16px' } }}
+          >
+            <MenuItem value="" disabled>
+              <em>Escolha um sistema de cultivo</em>
+            </MenuItem>
+            {subUniversos.map(nome => (
+              <MenuItem key={nome} value={nome}>
+                {nome}
+              </MenuItem>
+            ))}
+          </TextField>
+        )}
+
+        {!carregandoSistemas && temSistemas && !subUniversoAtual && (
           <StatusValueRow style={{ display: 'block', marginTop: 20 }}>
             Escolha um sistema de cultivo (SubUniverso) acima para definir o caminho do personagem.
           </StatusValueRow>
         )}
 
-        {subUniversoAtual && carregandoReinos && (
+        {!carregandoSistemas && (!temSistemas || subUniversoAtual) && carregandoReinos && (
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: 24 }}>
             <CircularProgress size={28} sx={{ color: 'var(--color-primary)' }} />
           </div>
         )}
 
-        {subUniversoAtual && !carregandoReinos && !reinoAtual && (
+        {!carregandoSistemas && (!temSistemas || subUniversoAtual) && !carregandoReinos && !reinoAtual && (
           <StatusValueRow style={{ display: 'block', marginTop: 20 }}>
-            Nenhum Reino cadastrado para este sistema de cultivo.
+            Nenhum Reino de Cultivo cadastrado para este universo{temSistemas ? ' e sistema' : ''}.
           </StatusValueRow>
         )}
 

@@ -27,10 +27,10 @@ import {
   SidebarWrapper,
 } from './styles';
 
-// Item "Cultivo" só entra na lista quando o personagem está no universo Cultivo
-// (ver Ficha.jsx / CULTIVO_UNIVERSO_ID) — por isso os grupos são montados a partir
-// da prop `mostrarCultivo` em vez de uma constante fixa.
-const construirGrupos = mostrarCultivo => [
+// Sistema de Cultivo deixou de ser exclusivo do universo Cultivo — o item
+// "Cultivo" aparece pra qualquer personagem; se o universo dele não tiver
+// nenhum Reino cadastrado, o próprio modal mostra o estado vazio.
+const construirGrupos = () => [
   {
     titulo: 'Personagem',
     itens: [
@@ -40,9 +40,7 @@ const construirGrupos = mostrarCultivo => [
       { chave: 'classe', label: 'Classe', Icon: SchoolIcon },
       { chave: 'reputacao', label: 'Reputação', Icon: PublicIcon },
       { chave: 'nivel', label: 'Nível', Icon: TrendingUpIcon },
-      ...(mostrarCultivo
-        ? [{ chave: 'cultivo', label: 'Cultivo', Icon: SelfImprovementIcon }]
-        : []),
+      { chave: 'cultivo', label: 'Cultivo', Icon: SelfImprovementIcon },
     ],
   },
   {
@@ -59,7 +57,7 @@ const construirGrupos = mostrarCultivo => [
   },
 ];
 
-const FichaSidebar = ({ expandida, onAlternar, onAbrirModal, mostrarCultivo = false }) => (
+const FichaSidebar = ({ expandida, onAlternar, onAbrirModal }) => (
   <SidebarWrapper $expandida={expandida}>
     <SidebarHeaderRow $expandida={expandida}>
       {expandida ? (
@@ -89,7 +87,7 @@ const FichaSidebar = ({ expandida, onAlternar, onAbrirModal, mostrarCultivo = fa
       )}
     </SidebarHeaderRow>
 
-    {construirGrupos(mostrarCultivo).map(grupo => (
+    {construirGrupos().map(grupo => (
       <SidebarGrupo key={grupo.titulo}>
         {expandida && <SidebarGrupoTitulo>{grupo.titulo}</SidebarGrupoTitulo>}
 
@@ -120,7 +118,6 @@ FichaSidebar.propTypes = {
   expandida: PropTypes.bool.isRequired,
   onAlternar: PropTypes.func.isRequired,
   onAbrirModal: PropTypes.func.isRequired,
-  mostrarCultivo: PropTypes.bool,
 };
 
 export default FichaSidebar;
