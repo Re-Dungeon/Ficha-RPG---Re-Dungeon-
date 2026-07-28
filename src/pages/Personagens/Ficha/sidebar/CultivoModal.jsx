@@ -50,6 +50,7 @@ import {
   CultivoAside,
   CultivoLayout,
   CultivoMain,
+  CultivoStatusRow,
   EstrelasRow,
   GanharRow,
   ProximoReinoRow,
