@@ -4,9 +4,9 @@ import styled from 'styled-components';
 
 export const OrigemGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 16px;
-  margin-top: 8px;
+  grid-template-columns: repeat(3, minmax(220px, 1fr));
+  gap: 18px;
+  margin-top: 18px;
 `;
 
 export const OrigemCardButton = styled.button`
@@ -15,135 +15,186 @@ export const OrigemCardButton = styled.button`
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  background: var(--bg-card);
-  border: 1px solid var(--border-primary);
-  border-radius: 14px;
+  min-height: 320px;
+  background: linear-gradient(180deg, rgba(24, 17, 44, 0.95), rgba(15, 10, 30, 0.98));
+  border: 1px solid rgba(212, 175, 103, 0.18);
+  border-radius: 18px;
   overflow: hidden;
-  transition:
-    border-color 0.15s ease,
-    transform 0.15s ease;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03), 0 18px 36px rgba(0, 0, 0, 0.26);
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
 
   &:hover {
-    border-color: var(--border-hover);
     transform: translateY(-2px);
+    border-color: rgba(212, 175, 103, 0.28);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05), 0 24px 50px rgba(0, 0, 0, 0.33);
   }
 `;
 
 export const OrigemImagem = styled.div`
   width: 100%;
-  aspect-ratio: 16 / 9;
-  background: rgba(0, 0, 0, 0.35);
+  aspect-ratio: 1 / 1;
+  min-height: 220px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.28));
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2rem;
   overflow: hidden;
+  position: relative;
 
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: top center;
+    transition: transform 0.25s ease;
+  }
+
+  ${OrigemCardButton}:hover & img {
+    transform: scale(1.02);
   }
 `;
 
 export const OrigemInfo = styled.div`
-  padding: 14px 16px;
+  padding: 20px 18px 22px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 `;
 
 export const OrigemNomeTitulo = styled.h3`
   margin: 0;
   font-family: 'Cinzel', Georgia, 'Times New Roman', serif;
-  font-size: 1rem;
+  font-size: 1.2rem;
+  line-height: 1.2;
+  letter-spacing: 0.04em;
   color: var(--status-gold-strong);
 `;
 
 export const OrigemReputacaoResumo = styled.div`
   display: flex;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
 `;
 
 export const ReputacaoBadge = styled.span`
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-size: 0.72rem;
+  gap: 6px;
+  font-size: 0.78rem;
   font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
   border-radius: 999px;
-  padding: 3px 10px;
-  color: ${({ $variante }) => ($variante === 'terror' ? '#f87171' : 'var(--status-gold-strong)')};
+  padding: 6px 12px;
+  color: ${({ $variante }) => ($variante === 'terror' ? '#f87171' : '#D4AF37')};
   background: ${({ $variante }) =>
-    $variante === 'terror' ? 'rgba(248, 113, 113, 0.12)' : 'rgba(232, 203, 133, 0.12)'};
+    $variante === 'terror' ? 'rgba(248, 113, 113, 0.12)' : 'rgba(212, 175, 103, 0.12)'};
   border: 1px solid
-    ${({ $variante }) => ($variante === 'terror' ? 'rgba(248, 113, 113, 0.35)' : 'rgba(232, 203, 133, 0.35)')};
+    ${({ $variante }) => ($variante === 'terror' ? 'rgba(248, 113, 113, 0.35)' : 'rgba(212, 175, 103, 0.28)')};
 
   svg {
-    width: 14px;
-    height: 14px;
+    width: 16px;
+    height: 16px;
   }
 `;
 
-// ── Detalhe de uma origem (edição de Fama/Terror) ───────────────────────
+export const ReputacaoHeaderTitle = styled.h2`
+  margin: 0;
+  font-family: 'Cinzel', Georgia, 'Times New Roman', serif;
+  font-size: clamp(2rem, 2.5vw, 2.6rem);
+  letter-spacing: 0.05em;
+  color: var(--status-gold-strong);
+  position: relative;
+  padding-bottom: 14px;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 90px;
+    height: 3px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(212, 175, 103, 1), rgba(212, 175, 103, 0.1));
+  }
+`;
+
+export const ReputacaoHeaderActions = styled.div`
+  display: flex;
+  gap: 10px;
+  align-items: center;
+`;
 
 export const ReputacaoDetalheTopo = styled.div`
   display: flex;
-  gap: 20px;
-  align-items: flex-start;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 22px;
 `;
 
 export const ReputacaoDetalheImagem = styled.img`
-  width: 160px;
-  height: 160px;
+  width: 100%;
+  max-width: 420px;
+  height: auto;
+  aspect-ratio: 1 / 1;
   object-fit: cover;
-  border-radius: 12px;
-  border: 1px solid var(--border-primary);
-  flex-shrink: 0;
+  object-position: top center;
+  border-radius: 18px;
+  border: 1px solid rgba(212, 175, 103, 0.25);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+  align-self: center;
 `;
 
 export const ReputacaoDescricaoBox = styled.p`
-  flex: 1;
-  min-width: 220px;
   margin: 0;
-  font-size: 0.85rem;
-  line-height: 1.5;
+  padding: 14px 16px 14px 14px;
+  border-left: 3px solid rgba(212, 175, 103, 0.9);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 0.88rem;
+  line-height: 1.55;
   color: var(--text-secondary);
-  white-space: pre-wrap;
+  max-height: ${({ $expandida }) => ($expandida ? 'none' : 'calc(1.55rem * 8 + 24px)')};
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  ${({ $expandida }) => ($expandida ? '' : '-webkit-line-clamp: 8;')}
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
+  white-space: normal;
 `;
 
 export const ReputacaoEixosGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
-  margin-top: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 22px;
+  margin-top: 24px;
 `;
 
 export const ReputacaoEixoCard = styled.div`
-  background: var(--bg-card);
+  background: linear-gradient(180deg, rgba(22, 16, 43, 0.92), rgba(18, 12, 35, 0.98));
   border: 1px solid
-    ${({ $variante }) => ($variante === 'terror' ? 'rgba(248, 113, 113, 0.3)' : 'rgba(232, 203, 133, 0.3)')};
-  border-radius: 12px;
-  padding: 16px;
+    ${({ $variante }) => ($variante === 'terror' ? 'rgba(248, 113, 113, 0.22)' : 'rgba(212, 175, 103, 0.22)')};
+  border-radius: 18px;
+  padding: 22px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 18px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02), 0 18px 40px rgba(0, 0, 0, 0.28);
 `;
 
 export const ReputacaoEixoHeader = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   font-family: 'Cinzel', Georgia, 'Times New Roman', serif;
   font-weight: 700;
-  font-size: 1rem;
-  color: ${({ $variante }) => ($variante === 'terror' ? '#f87171' : 'var(--status-gold-strong)')};
+  font-size: 1.05rem;
+  color: ${({ $variante }) => ($variante === 'terror' ? '#f87171' : '#D4AF37')};
 
   svg {
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
   }
 `;
 
@@ -153,22 +204,26 @@ export const ReputacaoEfeitosLista = styled.ul`
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 12px;
 `;
 
 export const ReputacaoEfeitoItem = styled.li`
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  font-size: 0.82rem;
-  line-height: 1.4;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  align-items: start;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: ${({ $desbloqueado }) => ($desbloqueado ? 'rgba(255, 255, 255, 0.04)' : 'rgba(255, 255, 255, 0.02)')};
+  border-left: 4px solid
+    ${({ $desbloqueado }) => ($desbloqueado ? 'rgba(212, 175, 103, 0.95)' : 'rgba(255, 255, 255, 0.08)')};
   color: ${({ $desbloqueado }) => ($desbloqueado ? 'var(--text-primary)' : 'var(--text-muted)')};
 
   svg {
     flex-shrink: 0;
-    margin-top: 2px;
-    width: 15px;
-    height: 15px;
+    margin-top: 4px;
+    width: 18px;
+    height: 18px;
     color: ${({ $desbloqueado }) => ($desbloqueado ? '#4ade80' : 'var(--text-muted)')};
   }
 `;
@@ -181,7 +236,11 @@ export const ReputacaoEfeitoQuantidade = styled.span`
 
 export const ReputacaoEfeitosVazio = styled.p`
   margin: 0;
-  font-size: 0.8rem;
-  font-style: italic;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
   color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  font-style: italic;
 `;

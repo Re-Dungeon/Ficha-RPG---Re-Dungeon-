@@ -71,7 +71,7 @@ const ArtsTab = ({ personagem }) => {
 
   useEffect(() => {
     carregarTudo();
-  }, [carregarTudo]);
+  }, [carregarTudo, personagem]);
 
   // Catálogo `condicoes` (somente leitura) pra Arts poderem aplicar condições —
   // mesma coleção já usada pela aba Condições.

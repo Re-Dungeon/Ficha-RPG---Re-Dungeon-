@@ -19,7 +19,18 @@ import UpdateIcon from '@mui/icons-material/Update';
 import CasinoIcon from '@mui/icons-material/Casino';
 import TimerIcon from '@mui/icons-material/Timer';
 
-import { addArt, addNucleo, getClassesPorUniverso, getFirestoreItem, getNucleos } from 'service/storage';
+import {
+  addArt,
+  addNucleo,
+  getArts,
+  getClassesPorUniverso,
+  getFirestoreItem,
+  getNucleos,
+  getVariantes,
+  removeArt,
+  removeNucleo,
+  removeVariante,
+} from 'service/storage';
 import { calcularPowerCombat, calcularPrimariosTotais, calcularSecundarios } from 'common/utils/formulas';
 import { getNome } from 'common/utils/resolveNome';
 import { useSaving } from 'context/SavingContext';
@@ -78,6 +89,25 @@ const RARIDADES = ['Comum', 'Rara', 'Épica', 'Lendária', 'Mítica'];
 const MARCOS_PC = [100, 200, 300];
 const MAX_CLASSES = 3;
 
+const HABILIDADE_CHIP_FIELDS = [
+  { key: 'alcance', label: 'Alcance', Icon: PlaceIcon },
+  { key: 'alvo', label: 'Alvo', Icon: GpsFixedIcon },
+  { key: 'custo', label: 'Custo', Icon: BoltIcon },
+  { key: 'dados', label: 'Dados', Icon: CasinoIcon },
+  { key: 'duracao', label: 'Duração', Icon: TimerIcon },
+  { key: 'recarga', label: 'Recarga', Icon: UpdateIcon },
+];
+
+const HABILIDADE_ACAO_COR_MAP = {
+  Passiva: '#6B7280',
+  Imediata: '#FB923C',
+  Duradoura: '#22C55E',
+  Sustentada: '#6366F1',
+  Ativa: '#5B7CFA',
+};
+
+const obterCorAcao = acao => HABILIDADE_ACAO_COR_MAP[acao] || '#fb923c';
+
 const ClasseModal = ({ open, onClose, personagem, onSave }) => {
   const [classes, setClasses] = useState([]);
   const [universoNome, setUniversoNome] = useState('');
@@ -87,7 +117,6 @@ const ClasseModal = ({ open, onClose, personagem, onSave }) => {
   const [classeVisualizadaId, setClasseVisualizadaId] = useState(null);
   const [abaHabilidade, setAbaHabilidade] = useState('basicas');
   const [artsCriadas, setArtsCriadas] = useState(() => new Set());
-  const [nucleoIdPorClasse, setNucleoIdPorClasse] = useState({});
   const { executar } = useSaving();
 
   // Cada classe escolhida ganha um Núcleo próprio em Arts (personagens/{id}/nucleos,
@@ -95,28 +124,43 @@ const ClasseModal = ({ open, onClose, personagem, onSave }) => {
   // pra toda Art nascida de uma habilidade de classe já ter o `nucleoId` obrigatório.
   const garantirNucleoDaClasse = useCallback(
     async classe => {
-      const nucleoIdConhecido = nucleoIdPorClasse[classe.id];
-      if (nucleoIdConhecido) {
-        return nucleoIdConhecido;
-      }
       const nucleosExistentes = await getNucleos(personagem.id);
       const existente = nucleosExistentes.find(nucleo => nucleo.classeId === classe.id);
-      const nucleoId = existente
-        ? existente.id
-        : (
-            await addNucleo(personagem.id, {
-              nome: getNome(classe),
-              tipo: TIPO_ART_OPTIONS[0],
-              bonus: '',
-              descricao: classe.descricao ?? '',
-              imagem: classe.linkImagem ?? '',
-              classeId: classe.id,
-            })
-          ).id;
-      setNucleoIdPorClasse(current => ({ ...current, [classe.id]: nucleoId }));
-      return nucleoId;
+      if (existente) {
+        return existente.id;
+      }
+      const novoNucleo = await addNucleo(personagem.id, {
+        nome: getNome(classe),
+        tipo: TIPO_ART_OPTIONS[0],
+        bonus: '',
+        descricao: classe.descricao ?? '',
+        imagem: classe.linkImagem ?? '',
+        classeId: classe.id,
+      });
+      return novoNucleo.id;
     },
-    [personagem.id, nucleoIdPorClasse],
+    [personagem.id],
+  );
+
+  const removerNucleoDaClasse = useCallback(
+    async classe => {
+      const nucleosExistentes = await getNucleos(personagem.id);
+      const nucleo = nucleosExistentes.find(item => item.classeId === classe.id);
+      if (!nucleo) {
+        return undefined;
+      }
+      const artsDoNucleo = await getArts(personagem.id);
+      const artsParaRemover = artsDoNucleo.filter(art => art.nucleoId === nucleo.id);
+      const artIds = new Set(artsParaRemover.map(art => art.id));
+      const variantes = await getVariantes(personagem.id);
+      const variantesParaRemover = variantes.filter(variante => artIds.has(variante.artId));
+
+      await Promise.all(variantesParaRemover.map(variante => removeVariante(personagem.id, variante.id)));
+      await Promise.all(artsParaRemover.map(art => removeArt(personagem.id, art.id)));
+      await removeNucleo(personagem.id, nucleo.id);
+      return undefined;
+    },
+    [personagem.id],
   );
 
   useEffect(() => {
@@ -170,7 +214,7 @@ const ClasseModal = ({ open, onClose, personagem, onSave }) => {
       setArtsCriadas(new Set());
       setClasseVisualizadaId((personagem.classes ?? [])[0] ?? null);
     }
-  }, [open, personagem.classes]);
+  }, [open]);
 
   const classesFiltradas = useMemo(
     () =>
@@ -200,7 +244,17 @@ const ClasseModal = ({ open, onClose, personagem, onSave }) => {
   const classeVisualizada = classes.find(item => item.id === classeVisualizadaId) ?? null;
   const classesSelecionadas = useMemo(() => personagem.classes ?? [], [personagem.classes]);
   const jaEscolhida = Boolean(classeVisualizada) && classesSelecionadas.includes(classeVisualizada.id);
-  const bloqueada = !jaEscolhida && classesSelecionadas.length >= MAX_CLASSES;
+  const isMaxReached = classesSelecionadas.length >= MAX_CLASSES;
+  const botaoLabel = jaEscolhida
+    ? 'Desmarcar Classe'
+    : classesSelecionadas.length === 0
+    ? 'Escolher Classe'
+    : classesSelecionadas.length === 1
+    ? '2ª Escolha'
+    : classesSelecionadas.length === 2
+    ? '3ª Escolha'
+    : 'Limite atingido';
+  const bloqueada = !jaEscolhida && isMaxReached;
 
   const primariosTotais = calcularPrimariosTotais(
     personagem.atributosBase,
@@ -231,10 +285,12 @@ const ClasseModal = ({ open, onClose, personagem, onSave }) => {
     return executar(async () => {
       if (adicionando) {
         await garantirNucleoDaClasse(classeVisualizada);
+      } else {
+        await removerNucleoDaClasse(classeVisualizada);
       }
       await onSave({ classes: nova });
     });
-  }, [classeVisualizada, jaEscolhida, bloqueada, classesSelecionadas, onSave, executar, garantirNucleoDaClasse]);
+  }, [classeVisualizada, jaEscolhida, bloqueada, classesSelecionadas, onSave, executar, garantirNucleoDaClasse, removerNucleoDaClasse]);
 
   const handleCriarArt = useCallback(
     (habilidade, tipoLista, index) => {
@@ -264,9 +320,10 @@ const ClasseModal = ({ open, onClose, personagem, onSave }) => {
           ativa: true,
         });
         setArtsCriadas(current => new Set(current).add(chave));
+        await onSave({});
       });
     },
-    [classeVisualizada, personagem.id, executar, garantirNucleoDaClasse],
+    [classeVisualizada, personagem.id, executar, garantirNucleoDaClasse, onSave],
   );
 
   const atributosBasicos = classeVisualizada?.atributosBasicos ?? {};
@@ -281,50 +338,20 @@ const ClasseModal = ({ open, onClose, personagem, onSave }) => {
         <HabilidadeHeader>
           <HabilidadeNome>
             <AutoAwesomeIcon fontSize="inherit" />
-            {habilidade.nome}
+            {habilidade.nome || 'N/D'}
           </HabilidadeNome>
-          {habilidade.acao && <AcaoBadge>{habilidade.acao}</AcaoBadge>}
+          <AcaoBadge $cor={obterCorAcao(habilidade.acao)}>{habilidade.acao || 'N/D'}</AcaoBadge>
         </HabilidadeHeader>
-        <HabilidadeDescricao>{habilidade.descricao}</HabilidadeDescricao>
+        <HabilidadeDescricao>{habilidade.descricao || 'Sem descrição cadastrada.'}</HabilidadeDescricao>
         <HabilidadeChipsGrid>
-          {habilidade.alcance && (
-            <HabilidadeChip>
-              <PlaceIcon fontSize="inherit" />
-              <span>{habilidade.alcance}</span>
+          {HABILIDADE_CHIP_FIELDS.map(({ key, label, Icon }) => (
+            <HabilidadeChip key={key} $empty={!habilidade[key]}>
+              <Icon fontSize="inherit" />
+              <span>{habilidade[key] || 'N/D'}</span>
             </HabilidadeChip>
-          )}
-          {habilidade.alvo && (
-            <HabilidadeChip>
-              <GpsFixedIcon fontSize="inherit" />
-              <span>{habilidade.alvo}</span>
-            </HabilidadeChip>
-          )}
-          {habilidade.custo && (
-            <HabilidadeChip>
-              <BoltIcon fontSize="inherit" />
-              <span>{habilidade.custo}</span>
-            </HabilidadeChip>
-          )}
-          {habilidade.recarga && (
-            <HabilidadeChip>
-              <UpdateIcon fontSize="inherit" />
-              <span>{habilidade.recarga}</span>
-            </HabilidadeChip>
-          )}
-          {habilidade.dados && (
-            <HabilidadeChip>
-              <CasinoIcon fontSize="inherit" />
-              <span>{habilidade.dados}</span>
-            </HabilidadeChip>
-          )}
-          {habilidade.duracao && (
-            <HabilidadeChip>
-              <TimerIcon fontSize="inherit" />
-              <span>{habilidade.duracao}</span>
-            </HabilidadeChip>
-          )}
+          ))}
         </HabilidadeChipsGrid>
-        {Array.isArray(habilidade.bonus) && habilidade.bonus.length > 0 && (
+        {Array.isArray(habilidade.bonus) && habilidade.bonus.length > 0 ? (
           <BonusLista>
             {habilidade.bonus.map((linha, linhaIndex) => (
               <BonusItem key={linhaIndex} $variante="check">
@@ -333,7 +360,7 @@ const ClasseModal = ({ open, onClose, personagem, onSave }) => {
               </BonusItem>
             ))}
           </BonusLista>
-        )}
+        ) : null}
         <HabilidadeCriarArtButton
           type="button"
           aria-label={criada ? `${habilidade.nome} já virou Art` : `Criar Art a partir de ${habilidade.nome}`}
@@ -348,7 +375,13 @@ const ClasseModal = ({ open, onClose, personagem, onSave }) => {
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg">
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth
+      maxWidth="xl"
+      slotProps={{ paper: { sx: { width: 'min(100%, 1280px)', height: 'min(100vh, 92vh)', maxHeight: 'min(100vh, 92vh)' } } }}
+    >
       <DialogHeaderRow>
         <DialogHeaderTitle>Escolher Classe</DialogHeaderTitle>
         <TextField
@@ -441,7 +474,7 @@ const ClasseModal = ({ open, onClose, personagem, onSave }) => {
                         disabled={bloqueada}
                         onClick={handleEscolher}
                       >
-                        {jaEscolhida ? 'Escolhida' : bloqueada ? 'Limite atingido' : 'Escolher'}
+                        {botaoLabel}
                       </Button>
                     </DetalheTopo>
 

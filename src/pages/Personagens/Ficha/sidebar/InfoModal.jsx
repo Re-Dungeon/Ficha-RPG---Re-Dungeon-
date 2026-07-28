@@ -60,7 +60,7 @@ const InfoModal = ({ open, onClose, personagem, onSave }) => {
   const handleSalvarPerfil = useCallback(patch => executar(() => onSave(patch)), [onSave, executar]);
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg">
       <ModalHeader>
         <ModalOrnament />
         <ModalTitle>EDITAR PERSONAGEM</ModalTitle>
