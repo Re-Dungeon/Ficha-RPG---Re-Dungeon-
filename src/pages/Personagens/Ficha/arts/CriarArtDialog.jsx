@@ -5,7 +5,7 @@ import * as yup from 'yup';
 import Autocomplete from '@mui/material/Autocomplete';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
-// DialogTitle não é usado — cabeçalho customizado usado no lugar
+import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import TextField from '@mui/material/TextField';
@@ -40,93 +40,7 @@ import {
 import { StatusValueRow } from '../styles';
 import ArtCatalogoCard from './ArtCatalogoCard';
 import { ART_AUTORAL_INICIAL, DOMINIO_LABELS, TIPO_ACAO_OPTIONS, TIPO_ART_OPTIONS } from './constants';
-import { ArtsGrid, CatalogArtsGrid } from './styles';
-import styled, { keyframes } from 'styled-components';
-
-const fadeIn = keyframes`
-  from { opacity: 0; transform: translateY(-6px); }
-  to { opacity: 1; transform: translateY(0); }
-`;
-
-const DialogHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 18px 24px 8px 24px;
-  background: linear-gradient(180deg, rgba(29,27,47,0.7), rgba(20,16,33,0.6));
-  border-bottom: 1px solid rgba(255,255,255,0.04);
-  animation: ${fadeIn} 220ms ease;
-`;
-
-const HeaderLeft = styled.div`
-  display:flex; align-items:center; gap:12px;
-`;
-const HeaderIcon = styled.div`
-  width:48px; height:48px; border-radius:8px; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, rgba(108,99,255,0.12), rgba(232,195,106,0.06)); color:var(--color-accent);
-  box-shadow: 0 8px 20px rgba(16,14,28,0.4);
-`;
-
-const HeaderTitle = styled.div`
-  display:flex; flex-direction:column;
-`;
-
-const TitleMain = styled.div`
-  font-weight:700; font-size:1.05rem; color:var(--text-primary);
-`;
-
-const TitleSub = styled.div`
-  font-size:0.82rem; color:var(--text-secondary);
-`;
-
-const SectionCard = styled.div`
-  background: var(--bg-card);
-  border: 1px solid var(--border-primary);
-  border-radius: 12px;
-  padding: 14px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.35);
-`;
-
-const SectionHeader = styled.div`
-  display:flex; align-items:center; gap:8px; margin-bottom:10px; font-weight:700; color:var(--text-primary);
-`;
-
-const TwoColGrid = styled.div`
-  display:grid; grid-template-columns: repeat(2, 1fr); gap:12px; align-items:start;
-  @media (max-width:720px){ grid-template-columns:1fr; }
-`;
-
-const UniformGrid = styled.div`
-  display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; align-items:start;
-  @media (max-width:920px){ grid-template-columns: repeat(2, 1fr); }
-  @media (max-width:520px){ grid-template-columns:1fr; }
-`;
-
-const StyledTextField = styled(TextField)`
-  && {
-    .MuiOutlinedInput-root { border-radius: 10px; background: rgba(255,255,255,0.02); transition: box-shadow 180ms ease, border-color 180ms ease; }
-    .MuiOutlinedInput-root:hover { box-shadow: 0 6px 18px rgba(91,124,250,0.04); }
-    .MuiOutlinedInput-root.Mui-focused { box-shadow: 0 10px 34px rgba(108,99,255,0.08); border-color: rgba(108,99,255,0.36); }
-    .MuiInputLabel-root { color: var(--text-secondary); }
-    .MuiFormHelperText-root { color: var(--text-secondary); }
-  }
-`;
-
-const LargeTextarea = styled(StyledTextField)`
-  && { .MuiOutlinedInput-root { min-height:140px; } }
-`;
-
-const ActionsRight = styled.div`
-  display:flex; gap:12px; align-items:center; justify-content:flex-end; padding:12px 24px;
-`;
-
-const OutlineButton = styled(Button)`
-  && { border:1px solid rgba(255,255,255,0.06); color:var(--text-primary); background:transparent; padding:10px 18px; border-radius:10px; }
-`;
-
-const PrimaryButton = styled(Button)`
-  && { background: linear-gradient(90deg, rgba(108,99,255,0.95), rgba(91,124,250,0.95)); color:#fff; padding:10px 20px; border-radius:10px; box-shadow:0 12px 36px rgba(33,61,150,0.18); }
-`;
+import { ArtsGrid } from './styles';
 
 const artAutoralSchema = yup.object({
   nome: nomeSchema,
@@ -177,9 +91,6 @@ const extrairCamposArt = item => {
   }
   if (Array.isArray(item.condicoesAplicadas)) {
     campos.condicoesAplicadas = item.condicoesAplicadas.map(condicao => condicao.id).filter(Boolean);
-  }
-  if (!campos.imagem && item.linkImagem) {
-    campos.imagem = item.linkImagem;
   }
   return campos;
 };
@@ -352,42 +263,43 @@ const CriarArtDialog = ({ open, onClose, personagem, nucleos, condicoes, onCreat
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth={origem === 'autoral' ? 'sm' : 'lg'}>
-      <DialogHeader>
-        <HeaderLeft>
-          <HeaderIcon>
-            <AutoAwesomeIcon fontSize="inherit" />
-          </HeaderIcon>
-          <HeaderTitle>
-            <TitleMain>Criar Arte</TitleMain>
-            <TitleSub>Desenvolva uma nova técnica personalizada.</TitleSub>
-          </HeaderTitle>
-        </HeaderLeft>
-        <div style={{ minWidth: 260 }}>
-          <StyledTextField
-            name="nucleoId"
-            label="Núcleo *"
-            select
-            value={nucleoId}
-            onChange={event => setNucleoId(event.target.value)}
-            size="small"
-            fullWidth
-            disabled={semNucleos}
-          >
-            {nucleos.map(nucleo => (
-              <MenuItem key={nucleo.id} value={nucleo.id}>
-                {nucleo.nome}
-              </MenuItem>
-            ))}
-          </StyledTextField>
-        </div>
-      </DialogHeader>
+      <DialogTitle>Criar Art</DialogTitle>
+
+      <DialogContent style={{ paddingBottom: 0 }}>
+        <TextField
+          name="nucleoId"
+          label="Núcleo *"
+          select
+          value={nucleoId}
+          onChange={event => setNucleoId(event.target.value)}
+          size="small"
+          fullWidth
+          disabled={semNucleos}
+        >
+          {nucleos.map(nucleo => (
+            <MenuItem key={nucleo.id} value={nucleo.id}>
+              {nucleo.nome}
+            </MenuItem>
+          ))}
+        </TextField>
+        {semNucleos && (
+          <StatusValueRow style={{ display: 'block', marginTop: 8, color: '#ef4444' }}>
+            ⚠️ Crie um Núcleo primeiro!
+          </StatusValueRow>
+        )}
+        {!semNucleos && !nucleoId && (
+          <StatusValueRow style={{ display: 'block', marginTop: 8 }}>
+            Selecione um Núcleo pra vincular essa Art.
+          </StatusValueRow>
+        )}
+      </DialogContent>
 
       <Tabs
         value={origem}
         onChange={(_event, novaOrigem) => setOrigem(novaOrigem)}
         variant="fullWidth"
         textColor="inherit"
-        sx={{ '& .MuiTab-root': { textTransform: 'none', fontWeight: 700 }, '& .MuiTabs-indicator': { height: 4, borderRadius: 6, background: 'linear-gradient(90deg, rgba(108,99,255,0.9), rgba(232,195,106,0.9))' } }}
+        slotProps={{ indicator: { style: { backgroundColor: 'var(--color-accent)' } } }}
       >
         <Tab value="autoral" label="Autoral" disabled={semNucleos} />
         <Tab value="classe" label="Habilidade de Classe" disabled={semNucleos} />
@@ -411,156 +323,139 @@ const CriarArtDialog = ({ open, onClose, personagem, nucleos, condicoes, onCreat
             setFieldValue,
           }) => (
             <form onSubmit={submit} noValidate>
-              <DialogContent style={{ paddingBottom: 0 }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  <SectionCard>
-                    <SectionHeader>📜 Informações Básicas</SectionHeader>
-                    <TwoColGrid>
-                      <StyledTextField
-                        name="nome"
-                        label="Nome"
-                        value={values.nome}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        error={touched.nome && Boolean(errors.nome)}
-                        helperText={touched.nome && errors.nome}
-                        size="small"
-                      />
-                      <StyledTextField
-                        name="imagem"
-                        label="URL da imagem (opcional)"
-                        value={values.imagem}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        error={touched.imagem && Boolean(errors.imagem)}
-                        helperText={touched.imagem && errors.imagem}
-                        size="small"
-                      />
-                      <StyledTextField
-                        name="tipo"
-                        label="Tipo"
-                        select
-                        value={values.tipo}
-                        onChange={handleChange}
-                        size="small"
-                      >
-                        {TIPO_ART_OPTIONS.map(opcao => (
-                          <MenuItem key={opcao} value={opcao}>
-                            {opcao}
-                          </MenuItem>
-                        ))}
-                      </StyledTextField>
-                      <StyledTextField
-                        name="dominio"
-                        label="Domínio"
-                        select
-                        value={values.dominio}
-                        onChange={handleChange}
-                        size="small"
-                      >
-                        {[1, 2, 3, 4, 5].map(nivel => (
-                          <MenuItem key={nivel} value={nivel}>
-                            {nivel} — {DOMINIO_LABELS[nivel]}
-                          </MenuItem>
-                        ))}
-                      </StyledTextField>
-                    </TwoColGrid>
-                    <div style={{ marginTop: 10 }}>
-                      <StyledTextField
-                        name="tipoAcao"
-                        label="Tipo de Ação"
-                        select
-                        value={values.tipoAcao}
-                        onChange={handleChange}
-                        size="small"
-                        fullWidth
-                      >
-                        {TIPO_ACAO_OPTIONS.map(opcao => (
-                          <MenuItem key={opcao} value={opcao}>
-                            {opcao}
-                          </MenuItem>
-                        ))}
-                      </StyledTextField>
-                    </div>
-                  </SectionCard>
-
-                  <SectionCard>
-                    <SectionHeader>⚔ Configurações da Arte</SectionHeader>
-                    <UniformGrid>
-                      <StyledTextField name="recarga" label="Recarga" value={values.recarga} onChange={handleChange} size="small" />
-                      <StyledTextField name="duracao" label="Duração" value={values.duracao} onChange={handleChange} size="small" />
-                      <StyledTextField name="alcance" label="Alcance" value={values.alcance} onChange={handleChange} size="small" />
-                      <StyledTextField name="alvos" label="Alvos" value={values.alvos} onChange={handleChange} size="small" />
-                      <StyledTextField name="custo" label="Custo" value={values.custo} onChange={handleChange} size="small" />
-                      <StyledTextField name="dados" label="Dados" value={values.dados} onChange={handleChange} size="small" />
-                    </UniformGrid>
-                  </SectionCard>
-
-                  <SectionCard>
-                    <SectionHeader>✨ Componentes Mágicos</SectionHeader>
-                    <div style={{ color: 'var(--text-secondary)', marginBottom: 8 }}>Elementos opcionais que enriquecem a habilidade.</div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
-                      <StyledTextField
-                        name="circuloMagico"
-                        label="Círculo Mágico (opcional)"
-                        value={values.circuloMagico}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        error={touched.circuloMagico && Boolean(errors.circuloMagico)}
-                        helperText={touched.circuloMagico && errors.circuloMagico}
-                        size="small"
-                        fullWidth
-                      />
-                      <Autocomplete
-                        multiple
-                        size="small"
-                        options={condicoes}
-                        value={condicoes.filter(condicao => (values.condicoesAplicadas ?? []).includes(condicao.id))}
-                        getOptionLabel={getNome}
-                        isOptionEqualToValue={(opcao, valor) => opcao.id === valor.id}
-                        onChange={(_event, novoValor) =>
-                          setFieldValue('condicoesAplicadas', novoValor.map(condicao => condicao.id))
-                        }
-                        renderInput={params => <StyledTextField {...params} label="Condições Aplicadas (opcional)" fullWidth />}
-                      />
-                    </div>
-                    <StyledTextField
-                      name="cantico"
-                      label="Cântico (opcional)"
-                      value={values.cantico}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      error={touched.cantico && Boolean(errors.cantico)}
-                      helperText={touched.cantico && errors.cantico}
-                      size="small"
-                      multiline
-                      minRows={2}
-                      fullWidth
-                    />
-                  </SectionCard>
-
-                  <SectionCard>
-                    <SectionHeader>📝 Descrição</SectionHeader>
-                    <LargeTextarea
-                      name="descricao"
-                      label="Descrição"
-                      placeholder="Descreva detalhadamente como funciona esta Arte..."
-                      value={values.descricao}
-                      onChange={handleChange}
-                      size="small"
-                      multiline
-                      minRows={6}
-                      fullWidth
-                    />
-                  </SectionCard>
+              <DialogContent style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <TextField
+                  name="nome"
+                  label="Nome"
+                  value={values.nome}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  error={touched.nome && Boolean(errors.nome)}
+                  helperText={touched.nome && errors.nome}
+                  size="small"
+                  fullWidth
+                />
+                <TextField
+                  name="imagem"
+                  label="URL da imagem (opcional)"
+                  value={values.imagem}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  error={touched.imagem && Boolean(errors.imagem)}
+                  helperText={touched.imagem && errors.imagem}
+                  size="small"
+                  fullWidth
+                />
+                <div style={{ display: 'flex', gap: 16 }}>
+                  <TextField
+                    name="tipo"
+                    label="Tipo"
+                    select
+                    value={values.tipo}
+                    onChange={handleChange}
+                    size="small"
+                    fullWidth
+                  >
+                    {TIPO_ART_OPTIONS.map(opcao => (
+                      <MenuItem key={opcao} value={opcao}>
+                        {opcao}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                  <TextField
+                    name="dominio"
+                    label="Domínio"
+                    select
+                    value={values.dominio}
+                    onChange={handleChange}
+                    size="small"
+                    fullWidth
+                  >
+                    {[1, 2, 3, 4, 5].map(nivel => (
+                      <MenuItem key={nivel} value={nivel}>
+                        {nivel} — {DOMINIO_LABELS[nivel]}
+                      </MenuItem>
+                    ))}
+                  </TextField>
                 </div>
+                <TextField
+                  name="tipoAcao"
+                  label="Tipo de Ação"
+                  select
+                  value={values.tipoAcao}
+                  onChange={handleChange}
+                  size="small"
+                  fullWidth
+                >
+                  {TIPO_ACAO_OPTIONS.map(opcao => (
+                    <MenuItem key={opcao} value={opcao}>
+                      {opcao}
+                    </MenuItem>
+                  ))}
+                </TextField>
+                <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                  <TextField name="recarga" label="Recarga" value={values.recarga} onChange={handleChange} size="small" sx={{ flex: 1, minWidth: 120 }} />
+                  <TextField name="duracao" label="Duração" value={values.duracao} onChange={handleChange} size="small" sx={{ flex: 1, minWidth: 120 }} />
+                  <TextField name="alcance" label="Alcance" value={values.alcance} onChange={handleChange} size="small" sx={{ flex: 1, minWidth: 120 }} />
+                </div>
+                <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                  <TextField name="alvos" label="Alvos" value={values.alvos} onChange={handleChange} size="small" sx={{ flex: 1, minWidth: 120 }} />
+                  <TextField name="custo" label="Custo" value={values.custo} onChange={handleChange} size="small" sx={{ flex: 1, minWidth: 120 }} />
+                  <TextField name="dados" label="Dados" value={values.dados} onChange={handleChange} size="small" sx={{ flex: 1, minWidth: 120 }} />
+                </div>
+                <TextField
+                  name="circuloMagico"
+                  label="Círculo Mágico (opcional)"
+                  value={values.circuloMagico}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  error={touched.circuloMagico && Boolean(errors.circuloMagico)}
+                  helperText={touched.circuloMagico && errors.circuloMagico}
+                  size="small"
+                  fullWidth
+                />
+                <Autocomplete
+                  multiple
+                  size="small"
+                  options={condicoes}
+                  value={condicoes.filter(condicao => (values.condicoesAplicadas ?? []).includes(condicao.id))}
+                  getOptionLabel={getNome}
+                  isOptionEqualToValue={(opcao, valor) => opcao.id === valor.id}
+                  onChange={(_event, novoValor) =>
+                    setFieldValue('condicoesAplicadas', novoValor.map(condicao => condicao.id))
+                  }
+                  renderInput={params => <TextField {...params} label="Condições Aplicadas (opcional)" />}
+                />
+                <TextField
+                  name="cantico"
+                  label="Cântico (opcional)"
+                  value={values.cantico}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  error={touched.cantico && Boolean(errors.cantico)}
+                  helperText={touched.cantico && errors.cantico}
+                  size="small"
+                  fullWidth
+                  multiline
+                  minRows={2}
+                />
+                <TextField
+                  name="descricao"
+                  label="Descrição"
+                  value={values.descricao}
+                  onChange={handleChange}
+                  size="small"
+                  fullWidth
+                  multiline
+                  minRows={3}
+                />
               </DialogContent>
-              <ActionsRight>
-                <OutlineButton onClick={onClose}>Cancelar</OutlineButton>
-                <PrimaryButton type="submit" variant="contained" disabled={isSubmitting || !nucleoId}>
+              <DialogActions>
+                <Button onClick={onClose}>Cancelar</Button>
+                <Button type="submit" variant="contained" disabled={isSubmitting || !nucleoId}>
                   Criar
-                </PrimaryButton>
-              </ActionsRight>
+                </Button>
+              </DialogActions>
             </form>
           )}
         </Formik>
@@ -612,7 +507,7 @@ const CriarArtDialog = ({ open, onClose, personagem, nucleos, condicoes, onCreat
               onChange={event => setBusca(event.target.value)}
               sx={{ marginBottom: 2 }}
             />
-            <CatalogArtsGrid>
+            <ArtsGrid style={{ marginTop: 0 }}>
               {artesFiltradas.map(item => (
                 <ArtCatalogoCard
                   key={item.id}
@@ -622,7 +517,7 @@ const CriarArtDialog = ({ open, onClose, personagem, nucleos, condicoes, onCreat
                   onEscolher={() => handeEscolherDoCatalogo(item)}
                 />
               ))}
-            </CatalogArtsGrid>
+            </ArtsGrid>
             {artesFiltradas.length === 0 && (
               <StatusValueRow>
                 {personagem.universo ? 'Nenhuma Art encontrada.' : 'Selecione um Universo no menu lateral Info primeiro.'}

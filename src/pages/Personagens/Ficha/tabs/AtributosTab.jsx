@@ -39,7 +39,6 @@ const AtributosFormBody = ({
   onDescartar,
   onExcluir,
   racaNome,
-  racaLinkImagem,
   classesNomes,
 }) => {
   const { values, handleSubmit: submit, isSubmitting, dirty } = formik;
@@ -86,7 +85,6 @@ const AtributosFormBody = ({
         <PersonagemHeroCard
           personagem={personagem}
           racaNome={racaNome}
-          racaLinkImagem={racaLinkImagem}
           classesNomes={classesNomes}
           onExcluir={onExcluir}
           salvando={isSubmitting}
@@ -145,7 +143,6 @@ AtributosFormBody.propTypes = {
   onDescartar: PropTypes.func.isRequired,
   onExcluir: PropTypes.func.isRequired,
   racaNome: PropTypes.string.isRequired,
-  racaLinkImagem: PropTypes.string,
   classesNomes: PropTypes.array.isRequired,
 };
 
@@ -157,7 +154,7 @@ const AtributosTab = ({ personagem, onSave, onExcluir }) => {
   const chaveRascunho = `rascunho_personagem_${personagem.id}_atributos`;
   const { lerRascunho, salvarRascunho, limparRascunho } =
     useDraftLocalStorage(chaveRascunho);
-  const { racaNome, racaLinkImagem, classesNomes } = useRacaClasseNomes(personagem);
+  const { racaNome, classesNomes } = useRacaClasseNomes(personagem);
   const { executar } = useSaving();
   const [rascunhoDisponivel, setRascunhoDisponivel] = useState(null);
   const atualizadoEmRef = useRef(personagem.updatedAt);
@@ -197,7 +194,6 @@ const AtributosTab = ({ personagem, onSave, onExcluir }) => {
           rascunho={rascunhoDisponivel}
           onExcluir={onExcluir}
           racaNome={racaNome}
-          racaLinkImagem={racaLinkImagem}
           classesNomes={classesNomes}
           onRestaurar={() => {
             formik.setValues(rascunhoDisponivel.valores);

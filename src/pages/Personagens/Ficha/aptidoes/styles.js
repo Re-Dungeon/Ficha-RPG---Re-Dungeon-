@@ -222,7 +222,7 @@ export const NumeroBotao = styled.button`
 
 export const CatalogoGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(5, minmax(96px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
   gap: 12px;
   max-height: 360px;
   overflow-y: auto;
@@ -279,8 +279,6 @@ export const EnciclopediaCard = styled.div`
   align-items: center;
   gap: 10px;
   padding: 14px;
-  min-height: 260px;
-  height: 100%;
   border-radius: 10px;
   background: var(--bg-card);
   border: 1px solid var(--border-primary);

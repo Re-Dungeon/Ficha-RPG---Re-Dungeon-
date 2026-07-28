@@ -41,7 +41,6 @@ import {
   DetalheTitulo,
   DetalheTopo,
   HabilidadeCard,
-  HabilidadeCheckboxBottom,
   HabilidadeChip,
   HabilidadeChipsGrid,
   HabilidadeDescricao,
@@ -67,16 +66,6 @@ import {
   SecaoTitulo,
   corRaridade,
 } from '../progressao/styles';
-
-const HABILIDADE_ACAO_COR_MAP = {
-  Passiva: '#6B7280',
-  Imediata: '#FB923C',
-  Duradoura: '#22C55E',
-  Sustentada: '#6366F1',
-  Ativa: '#5B7CFA',
-};
-
-const obterCorAcao = acao => HABILIDADE_ACAO_COR_MAP[acao] || '#fb923c';
 
 const RARIDADES = ['Comum', 'Rara', 'Épica', 'Lendária', 'Mítica'];
 
@@ -199,14 +188,7 @@ const RacaModal = ({ open, onClose, personagem, onSave }) => {
   const atributosBasicos = racaVisualizada?.atributosBasicos ?? {};
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      fullWidth
-      maxWidth="xl"
-      slotProps={{ paper: { sx: { width: 'min(100%, 1280px)', height: 'min(100vh, 92vh)', maxHeight: 'min(100vh, 92vh)' } } }}
-      scroll="paper"
-    >
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg">
       <DialogHeaderRow>
         <DialogHeaderTitle>Escolher Raça</DialogHeaderTitle>
         <TextField
@@ -235,7 +217,7 @@ const RacaModal = ({ open, onClose, personagem, onSave }) => {
         </DialogFecharButton>
       </DialogHeaderRow>
 
-      <DialogContent sx={{ display: 'flex', flexDirection: 'column', height: '100%', px: { xs: 2, sm: 3 }, pt: 2, pb: 0 }}>
+      <DialogContent>
         {!personagem.universo && (
           <StatusValueRow style={{ display: 'block', marginTop: 8 }}>
             Selecione um Universo no menu lateral Info primeiro.
@@ -243,7 +225,7 @@ const RacaModal = ({ open, onClose, personagem, onSave }) => {
         )}
 
         {personagem.universo && (
-          <PickerLayout style={{ flex: 1, minHeight: 0, maxHeight: '100%' }}>
+          <PickerLayout>
             <PickerSidebar>
               <PickerGrupoHeader $expandido={grupoExpandido} onClick={() => setGrupoExpandido(current => !current)}>
                 <ExpandMoreIcon fontSize="small" />
@@ -397,11 +379,6 @@ const RacaModal = ({ open, onClose, personagem, onSave }) => {
                                 ))}
                               </BonusLista>
                             )}
-                            {ativo && (
-                              <HabilidadeCheckboxBottom>
-                                <CheckIcon fontSize="inherit" />
-                              </HabilidadeCheckboxBottom>
-                            )}
                           </HabilidadeCard>
                         );
                       })}
@@ -420,11 +397,7 @@ const RacaModal = ({ open, onClose, personagem, onSave }) => {
                               <AutoAwesomeIcon fontSize="inherit" />
                               {habilidade.nome}
                             </HabilidadeNome>
-                            {habilidade.acao && (
-                              <AcaoBadge $cor={obterCorAcao(habilidade.acao)}>
-                                {habilidade.acao}
-                              </AcaoBadge>
-                            )}
+                            {habilidade.acao && <AcaoBadge>{habilidade.acao}</AcaoBadge>}
                           </HabilidadeHeader>
                           <HabilidadeDescricao>{habilidade.descricao}</HabilidadeDescricao>
                           <HabilidadeChipsGrid>

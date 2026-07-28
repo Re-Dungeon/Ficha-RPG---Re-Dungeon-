@@ -299,7 +299,7 @@ export const HeroCardWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 16px;
-  width: clamp(200px, 20vw, 350px);
+  width: clamp(200px, 20vw, 260px);
 `;
 
 export const HeroNomeBox = styled.div`
@@ -307,140 +307,43 @@ export const HeroNomeBox = styled.div`
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 10px;
+  gap: 4px;
   width: 100%;
-  background: linear-gradient(180deg, #1A1628cc 0%, #14111Fdd 100%);
-  border: 1px solid rgba(255, 215, 120, 0.18);
-  border-radius: 18px;
-  padding: 18px 20px;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03), 0 26px 46px rgba(0, 0, 0, 0.22);
-  backdrop-filter: blur(10px);
+  background: var(--status-panel-bg);
+  border: 1px solid var(--status-gold-border);
+  border-radius: 16px;
+  padding: 16px 20px;
+  box-shadow: var(--shadow-md);
 `;
 
 export const HeroNome = styled.h2`
   margin: 0;
   font-family: 'Cinzel', Georgia, 'Times New Roman', serif;
-  font-size: clamp(1.5rem, 2.4vw, 1.75rem);
-  line-height: 1.05;
-  font-weight: 700;
-  color: #F4D58D;
-  text-shadow: 0 2px 14px rgba(244, 213, 141, 0.2);
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-size: 1.2rem;
+  color: var(--status-gold-strong);
+  text-shadow: 0 0 12px rgba(232, 203, 133, 0.35);
 `;
 
 export const HeroTitulo = styled.span`
-  display: block;
-  width: 100%;
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   font-style: italic;
-  color: #C7CBD8;
-  opacity: 0.92;
-  letter-spacing: 0.02em;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  position: relative;
-  padding-bottom: 12px;
-
-  &::after {
-    content: '';
-    position: absolute;
-    left: 50%;
-    bottom: 4px;
-    transform: translateX(-50%);
-    width: 60%;
-    height: 1px;
-    background: rgba(255, 255, 255, 0.08);
-  }
+  color: var(--text-secondary);
 `;
 
 export const HeroRace = styled.span`
-  margin-top: 6px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  width: 100%;
-  max-width: 100%;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #F5E6B3;
-  background: linear-gradient(180deg, rgba(30, 26, 42, 0.95), rgba(20, 16, 31, 0.98));
-  border: 1px solid rgba(255, 215, 120, 0.18);
-  border-radius: 16px;
-  padding: 10px 14px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
-  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-
-  &:hover {
-    transform: translateY(-2px);
-    border-color: rgba(255, 220, 120, 0.35);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 10px 30px rgba(255, 215, 120, 0.08);
-  }
-`;
-
-export const HeroRaceIcon = styled.span`
-  width: 40px;
-  height: 40px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
-  overflow: hidden;
-
-  & > img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-`;
-
-export const HeroRaceIconPlaceholder = styled.span`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
   font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.8);
+  font-style: italic;
+  color: var(--color-accent);
 `;
 
-export const HeroTokenList = styled.div`
-  display: flex;
-  flex-wrap: nowrap;
-  justify-content: center;
-  gap: 6px;
-  width: 100%;
+export const HeroClasseRaca = styled.span`
   margin-top: 6px;
-  overflow-x: auto;
-`;
-
-export const HeroToken = styled.span`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px 10px;
+  font-size: 0.8rem;
+  color: var(--color-accent);
+  background: rgba(34, 211, 238, 0.1);
+  border: 1px solid rgba(34, 211, 238, 0.3);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 215, 120, 0.18);
-  color: #F5E6B3;
-  font-size: 0.75rem;
-  font-weight: 600;
-  max-width: 100%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  padding: 4px 12px;
 `;
 
 export const HeroRetratoFrame = styled.div`

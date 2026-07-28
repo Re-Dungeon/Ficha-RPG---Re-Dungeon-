@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import Button from '@mui/material/Button';
 
@@ -6,18 +6,15 @@ import { getNome } from 'common/utils/resolveNome';
 
 import { ART_STAT_CAMPOS, DOMINIO_LABELS, TIPO_ACAO_META, TIPO_ART_META } from './constants';
 import {
-  ArtCardBody,
   ArtCardFooter,
   ArtCardHeader,
   ArtCardHeaderInfo,
   ArtCardWrapper,
   ArtDescricao,
-  ArtImageThumb,
-  ArtMetaText,
   ArtNome,
-  ArtTabs,
   Badge,
   BadgeRow,
+  ImageThumb,
   StatGrid,
   StatGridCell,
   StatGridLabel,
@@ -33,18 +30,16 @@ const ArtCard = ({ art, nucleo, condicoes, onVer, onEditar, onRemover, onToggleA
     return ids.map(id => condicoes.find(condicao => condicao.id === id)).filter(Boolean);
   }, [art.condicoesAplicadas, condicoes]);
 
-  const [tab, setTab] = useState('descricao');
-
   return (
     <ArtCardWrapper data-bloqueada={!art.ativa}>
       <ArtCardHeader>
-        <ArtImageThumb>{art.imagem ? <img src={art.imagem} alt={art.nome} /> : '🎴'}</ArtImageThumb>
+        <ImageThumb $size={120}>{art.imagem ? <img src={art.imagem} alt={art.nome} /> : '🎴'}</ImageThumb>
         <ArtCardHeaderInfo>
           <div>
             <ArtNome>{art.nome}</ArtNome>
-            <ArtMetaText>
+            <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: 4 }}>
               Núcleo: <strong>{nucleo?.nome ?? 'Desconhecido'}</strong>
-            </ArtMetaText>
+            </div>
           </div>
           <BadgeRow>
             {art.tipo && (
@@ -86,130 +81,24 @@ const ArtCard = ({ art, nucleo, condicoes, onVer, onEditar, onRemover, onToggleA
         ))}
       </StatGrid>
 
-      {/* Descrição / Cântico tabs (apresentação somente) */}
-      {(art.descricao !== undefined || art.cantico !== undefined) && (
-        <ArtCardBody>
-          <ArtTabs>
-            <Button
-              size="small"
-              variant={tab === 'descricao' ? 'contained' : 'outlined'}
-              onClick={() => setTab('descricao')}
-              sx={{
-                borderRadius: 999,
-                textTransform: 'none',
-                fontWeight: 700,
-                px: 1,
-                py: 0.3,
-              }}
-            >
-              Descrição
-            </Button>
-            <Button
-              size="small"
-              variant={tab === 'cantigo' ? 'contained' : 'outlined'}
-              onClick={() => setTab('cantigo')}
-              sx={{
-                borderRadius: 999,
-                textTransform: 'none',
-                fontWeight: 700,
-                px: 1,
-                py: 0.3,
-              }}
-            >
-              Cântico
-            </Button>
-          </ArtTabs>
-
-          {tab === 'descricao' ? (
-            <ArtDescricao>{art.descricao || ''}</ArtDescricao>
-          ) : (
-            <ArtDescricao>
-              <strong>🎵 Cântico:</strong> {art.cantico || ''}
-            </ArtDescricao>
-          )}
-        </ArtCardBody>
+      {art.descricao && <ArtDescricao>{art.descricao}</ArtDescricao>}
+      {art.cantico && (
+        <ArtDescricao style={{ fontStyle: 'italic', paddingTop: 0 }}>
+          <strong>🎵 Cântico:</strong> {art.cantico}
+        </ArtDescricao>
       )}
 
       <ArtCardFooter>
-        <Button
-          size="small"
-          variant="outlined"
-          onClick={onVer}
-          sx={{
-            borderRadius: 999,
-            textTransform: 'none',
-            fontWeight: 700,
-            px: 1.2,
-            py: 0.5,
-            transition: 'transform 180ms ease, box-shadow 180ms ease',
-            '&:hover': {
-              transform: 'translateY(-1px)',
-              boxShadow: '0 8px 18px rgba(33,61,150,0.14)',
-            },
-          }}
-        >
+        <Button size="small" variant="outlined" onClick={onVer}>
           🔍 Ver
         </Button>
-        <Button
-          size="small"
-          variant="outlined"
-          onClick={onEditar}
-          sx={{
-            borderRadius: 999,
-            textTransform: 'none',
-            fontWeight: 700,
-            px: 1.2,
-            py: 0.5,
-            transition: 'transform 180ms ease, box-shadow 180ms ease',
-            '&:hover': {
-              transform: 'translateY(-1px)',
-              boxShadow: '0 8px 18px rgba(91,124,250,0.16)',
-            },
-          }}
-        >
+        <Button size="small" variant="outlined" onClick={onEditar}>
           ✏️ Editar
         </Button>
-        <Button
-          size="small"
-          variant={art.ativa ? 'contained' : 'outlined'}
-          onClick={onToggleAtiva}
-          sx={{
-            borderRadius: 999,
-            textTransform: 'none',
-            fontWeight: 700,
-            px: 1.2,
-            py: 0.5,
-            background: art.ativa ? 'linear-gradient(90deg, rgba(108,99,255,0.95), rgba(91,124,250,0.95))' : undefined,
-            boxShadow: art.ativa ? '0 10px 20px rgba(33,61,150,0.18)' : undefined,
-            transition: 'transform 180ms ease, box-shadow 180ms ease',
-            '&:hover': {
-              transform: 'translateY(-1px)',
-              boxShadow: art.ativa ? '0 12px 24px rgba(33,61,150,0.22)' : '0 8px 18px rgba(91,124,250,0.16)',
-            },
-          }}
-        >
+        <Button size="small" variant={art.ativa ? 'contained' : 'outlined'} onClick={onToggleAtiva}>
           {art.ativa ? 'Ativa' : '🔒 Bloqueada'}
         </Button>
-        <Button
-          size="small"
-          variant="outlined"
-          color="error"
-          onClick={onRemover}
-          sx={{
-            borderRadius: 999,
-            textTransform: 'none',
-            fontWeight: 700,
-            px: 1.2,
-            py: 0.5,
-            borderColor: 'rgba(248,113,113,0.4)',
-            color: '#fda4af',
-            transition: 'transform 180ms ease, box-shadow 180ms ease',
-            '&:hover': {
-              transform: 'translateY(-1px)',
-              boxShadow: '0 8px 18px rgba(239,68,68,0.16)',
-            },
-          }}
-        >
+        <Button size="small" variant="outlined" color="error" onClick={onRemover}>
           🗑️ Remover
         </Button>
       </ArtCardFooter>

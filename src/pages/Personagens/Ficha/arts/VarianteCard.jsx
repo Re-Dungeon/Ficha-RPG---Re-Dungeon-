@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import Button from '@mui/material/Button';
 
@@ -6,14 +6,12 @@ import { getNome } from 'common/utils/resolveNome';
 
 import { DOMINIO_LABELS, TIPO_ACAO_META, TIPO_ART_META } from './constants';
 import {
-  ArtCardBody,
   ArtCardFooter,
   ArtCardHeader,
   ArtCardHeaderInfo,
   ArtCardWrapper,
   ArtDescricao,
   ArtNome,
-  ArtTabs,
   Badge,
   BadgeRow,
   ImageThumb,
@@ -41,8 +39,6 @@ const VarianteCard = ({ variante, art, nucleo, condicoes, onVer, onEditar, onRem
     const ids = variante.condicoesAplicadas ?? [];
     return ids.map(id => condicoes.find(condicao => condicao.id === id)).filter(Boolean);
   }, [variante.condicoesAplicadas, condicoes]);
-
-  const [tab, setTab] = useState('descricao');
 
   return (
     <ArtCardWrapper>
@@ -97,47 +93,11 @@ const VarianteCard = ({ variante, art, nucleo, condicoes, onVer, onEditar, onRem
         ))}
       </StatGrid>
 
-      {(variante.descricao !== undefined || variante.cantico !== undefined) && (
-        <ArtCardBody>
-          <ArtTabs>
-            <Button
-              size="small"
-              variant={tab === 'descricao' ? 'contained' : 'outlined'}
-              onClick={() => setTab('descricao')}
-              sx={{
-                borderRadius: 999,
-                textTransform: 'none',
-                fontWeight: 700,
-                px: 1,
-                py: 0.3,
-              }}
-            >
-              Descrição
-            </Button>
-            <Button
-              size="small"
-              variant={tab === 'cantigo' ? 'contained' : 'outlined'}
-              onClick={() => setTab('cantigo')}
-              sx={{
-                borderRadius: 999,
-                textTransform: 'none',
-                fontWeight: 700,
-                px: 1,
-                py: 0.3,
-              }}
-            >
-              Cântico
-            </Button>
-          </ArtTabs>
-
-          {tab === 'descricao' ? (
-            <ArtDescricao>{variante.descricao || ''}</ArtDescricao>
-          ) : (
-            <ArtDescricao>
-              <strong>🎵 Cântico:</strong> {variante.cantico || ''}
-            </ArtDescricao>
-          )}
-        </ArtCardBody>
+      {variante.descricao && <ArtDescricao>{variante.descricao}</ArtDescricao>}
+      {variante.cantico && (
+        <ArtDescricao style={{ fontStyle: 'italic', paddingTop: 0 }}>
+          <strong>🎵 Cântico:</strong> {variante.cantico}
+        </ArtDescricao>
       )}
 
       <ArtCardFooter>

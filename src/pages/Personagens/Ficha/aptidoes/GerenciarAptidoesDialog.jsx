@@ -67,7 +67,7 @@ const GerenciarAptidoesDialog = ({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg" aria-labelledby="dialog-titulo-gerenciar-aptidoes">
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md" aria-labelledby="dialog-titulo-gerenciar-aptidoes">
       <DialogHeaderRow>
         <DialogHeaderTitle id="dialog-titulo-gerenciar-aptidoes">Gerenciar Aptidões</DialogHeaderTitle>
         <TextField

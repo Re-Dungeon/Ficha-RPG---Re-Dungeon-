@@ -116,51 +116,6 @@ const InputWrapper = styled.div`
   gap: 10px;
 `;
 
-const TokenFieldWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  width: 100%;
-`;
-
-const TokenFieldLabel = styled.span`
-  color: var(--text-secondary);
-  font-size: 0.82rem;
-  font-weight: 600;
-`;
-
-const TokenChipsRow = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  width: 100%;
-  min-height: 32px;
-  align-items: center;
-  padding: 6px 8px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-`;
-
-const ClassToken = styled.span`
-  display: inline-flex;
-  align-items: center;
-  flex-wrap: wrap;
-  height: auto;
-  min-height: 24px;
-  padding: 4px 8px;
-  border-radius: 999px;
-  background: ${({ $empty }) => ($empty ? 'rgba(255,255,255,0.06)' : 'rgba(255,215,120,0.12)')};
-  color: ${({ $empty }) => ($empty ? 'rgba(255,255,255,0.6)' : '#F5E6B3')};
-  border: 1px solid ${({ $empty }) => ($empty ? 'rgba(255,255,255,0.08)' : 'rgba(255,215,120,0.18)')};
-  font-size: 0.78rem;
-  line-height: 1.1;
-  white-space: normal;
-  overflow-wrap: break-word;
-  word-break: break-word;
-  max-width: 128px;
-`;
-
 const fieldSx = {
   backgroundColor: 'rgba(255,255,255,0.04)',
   borderRadius: '12px',
@@ -416,28 +371,38 @@ const PerfilFormBody = ({
               <FieldGroup>
                 <SectionTitle>Classe e Raça</SectionTitle>
                 <RowFields>
-                  <TokenFieldWrapper>
-                    <TokenFieldLabel>Raça</TokenFieldLabel>
-                    <TokenChipsRow>
-                      {racaNome ? (
-                        <ClassToken>{racaNome}</ClassToken>
-                      ) : (
-                        <ClassToken $empty>Sem raça</ClassToken>
-                      )}
-                    </TokenChipsRow>
-                  </TokenFieldWrapper>
-                  <TokenFieldWrapper>
-                    <TokenFieldLabel>Classe</TokenFieldLabel>
-                    <TokenChipsRow>
-                      {classesNomes.length > 0 ? (
-                        classesNomes.map(nomeClasse => (
-                          <ClassToken key={nomeClasse}>{nomeClasse}</ClassToken>
-                        ))
-                      ) : (
-                        <ClassToken $empty>Sem classe</ClassToken>
-                      )}
-                    </TokenChipsRow>
-                  </TokenFieldWrapper>
+                  <TextField
+                    label="Raça"
+                    value={racaNome || '—'}
+                    size="small"
+                    disabled
+                    fullWidth
+                    sx={{
+                      ...fieldSx,
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'rgba(255,255,255,0.08)',
+                      },
+                      '& .MuiInputBase-input': {
+                        padding: '14px 14px',
+                      },
+                    }}
+                  />
+                  <TextField
+                    label="Classe"
+                    value={classesNomes.length > 0 ? classesNomes.join(' ➠ ') : '—'}
+                    size="small"
+                    disabled
+                    fullWidth
+                    sx={{
+                      ...fieldSx,
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'rgba(255,255,255,0.08)',
+                      },
+                      '& .MuiInputBase-input': {
+                        padding: '14px 14px',
+                      },
+                    }}
+                  />
                 </RowFields>
               </FieldGroup>
 

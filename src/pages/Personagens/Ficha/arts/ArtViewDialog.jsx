@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 
@@ -17,13 +18,6 @@ import {
   StatGridCell,
   StatGridLabel,
   StatGridValue,
-  ViewDialogHeader,
-  ViewHeaderLeft,
-  ViewHeaderIcon,
-  ViewTitleMain,
-  ViewTitleSub,
-  ViewStatsGrid,
-  DescriptionCard,
 } from './styles';
 
 const CAMPOS_GRID = [
@@ -46,22 +40,11 @@ const ArtViewDialog = ({ open, onClose, art, nucleo, condicoes, onEditar }) => {
     .filter(Boolean);
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg">
-      <ViewDialogHeader>
-        <ViewHeaderLeft>
-          <ViewHeaderIcon>🎴</ViewHeaderIcon>
-          <div>
-            <ViewTitleMain>Visualizar Arte</ViewTitleMain>
-            <ViewTitleSub>Informações completas da habilidade.</ViewTitleSub>
-          </div>
-        </ViewHeaderLeft>
-        <div />
-      </ViewDialogHeader>
-      <DialogContent sx={{ padding: '10px 14px' }}>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+      <DialogTitle>🔍 Visualizar Art</DialogTitle>
+      <DialogContent>
         <DialogTwoColumns>
-          <ImagePreviewBox>
-            {art.imagem ? <img src={art.imagem} alt={art.nome} /> : '🎴'}
-          </ImagePreviewBox>
+          <ImagePreviewBox>{art.imagem ? <img src={art.imagem} alt={art.nome} /> : '🎴'}</ImagePreviewBox>
           <div>
             <ArtNome style={{ fontSize: '1.3rem', marginBottom: 12 }}>{art.nome}</ArtNome>
             <NucleoMeta style={{ display: 'block' }}>
@@ -91,49 +74,35 @@ const ArtViewDialog = ({ open, onClose, art, nucleo, condicoes, onEditar }) => {
               </NucleoMeta>
             )}
 
-            <ViewStatsGrid>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, marginTop: 16 }}>
               {CAMPOS_GRID.map(([label, campo]) => (
                 <StatGridCell key={campo} style={{ background: 'var(--bg-card)', borderRadius: 6 }}>
                   <StatGridLabel>{label}</StatGridLabel>
                   <StatGridValue>{art[campo] || '-'}</StatGridValue>
                 </StatGridCell>
               ))}
-            </ViewStatsGrid>
+            </div>
 
             {art.descricao && (
-              <DescriptionCard>
-                <div>
-                  <NucleoMeta style={{ display: 'block', fontWeight: 600 }}>📜 Descrição</NucleoMeta>
-                  <div style={{ marginTop: 6, color: 'var(--text-secondary)', lineHeight: 1.6 }}>{art.descricao}</div>
-                </div>
-              </DescriptionCard>
+              <div style={{ marginTop: 16 }}>
+                <NucleoMeta style={{ display: 'block', fontWeight: 600 }}>Descrição:</NucleoMeta>
+                <p style={{ margin: '4px 0 0', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{art.descricao}</p>
+              </div>
             )}
             {art.cantico && (
-              <DescriptionCard>
-                <div>
-                  <NucleoMeta style={{ display: 'block', fontWeight: 600, marginTop: 12 }}>🎵 Cântico</NucleoMeta>
-                  <div style={{ marginTop: 6, fontStyle: 'italic', color: 'var(--text-secondary)' }}>{art.cantico}</div>
-                </div>
-              </DescriptionCard>
+              <div style={{ marginTop: 16 }}>
+                <NucleoMeta style={{ display: 'block', fontWeight: 600 }}>🎵 Cântico:</NucleoMeta>
+                <p style={{ margin: '4px 0 0', color: 'var(--text-secondary)', lineHeight: 1.5, fontStyle: 'italic' }}>
+                  {art.cantico}
+                </p>
+              </div>
             )}
           </div>
         </DialogTwoColumns>
       </DialogContent>
-      <DialogActions sx={{ gap: 2, padding: '8px 14px' }}>
-        <Button onClick={onClose} sx={{ border: '1px solid rgba(255,255,255,0.06)', color: 'var(--text-primary)', padding: '6px 12px', borderRadius: 1 }}>
-          Fechar
-        </Button>
-        <Button
-          variant="contained"
-          onClick={onEditar}
-          sx={{
-            background: 'linear-gradient(90deg, rgba(108,99,255,0.95), rgba(91,124,250,0.95))',
-            boxShadow: '0 10px 24px rgba(33,61,150,0.18)',
-            color: '#fff',
-            padding: '6px 12px',
-            borderRadius: 1,
-          }}
-        >
+      <DialogActions>
+        <Button onClick={onClose}>Fechar</Button>
+        <Button variant="contained" onClick={onEditar}>
           ✏️ Editar
         </Button>
       </DialogActions>

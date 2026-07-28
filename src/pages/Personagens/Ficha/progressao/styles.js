@@ -162,7 +162,6 @@ export const DetalheBanner = styled.img`
   width: 100%;
   max-height: 400px;
   object-fit: cover;
-  object-position: top center;
   border-radius: 10px;
   margin-top: 16px;
   border: 1px solid var(--border-primary);
@@ -293,15 +292,12 @@ export const HabilidadeTabButton = styled.button`
 
 export const HabilidadesGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 14px;
   padding-bottom: 4px;
 `;
 
 export const HabilidadeCard = styled.div`
-  position: relative;
-  z-index: 0;
-  isolation: isolate;
   box-sizing: border-box;
   background: var(--bg-card);
   border: 1px solid
@@ -311,8 +307,6 @@ export const HabilidadeCard = styled.div`
   display: flex;
   flex-direction: column;
   gap: 10px;
-  justify-content: space-between;
-  min-height: 280px;
   ${({ $clicavel }) => $clicavel && 'cursor: pointer;'}
 
   &:hover {
@@ -343,29 +337,12 @@ export const HabilidadeNome = styled.span`
   }
 `;
 
-export const HabilidadeCheckboxBottom = styled.span`
-  position: absolute;
-  bottom: 14px;
-  right: 14px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border: 1px solid var(--color-accent);
-  border-radius: 6px;
-  background: rgba(91, 124, 250, 0.18);
-  color: var(--color-accent);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-  z-index: 9999;
-`;
-
 export const AcaoBadge = styled.span`
   flex-shrink: 0;
   padding: 2px 10px;
   border-radius: 999px;
-  border: 1px solid ${({ $cor }) => $cor ?? '#fb923c'};
-  color: ${({ $cor }) => $cor ?? '#fb923c'};
+  border: 1px solid #fb923c;
+  color: #fb923c;
   font-size: 0.62rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -383,19 +360,18 @@ export const HabilidadeChipsGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 6px;
-  grid-auto-rows: minmax(32px, auto);
 `;
 
 export const HabilidadeChip = styled.span`
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 6px 10px;
+  padding: 4px 8px;
   border-radius: 6px;
-  background: ${({ $empty }) => ($empty ? 'rgba(255, 255, 255, 0.04)' : 'var(--field-bg)')};
-  border: 1px solid ${({ $empty }) => ($empty ? 'rgba(255, 255, 255, 0.08)' : 'var(--field-border)')};
-  font-size: 0.72rem;
-  color: ${({ $empty }) => ($empty ? 'var(--text-muted)' : 'var(--text-secondary)')};
+  background: var(--field-bg);
+  border: 1px solid var(--field-border);
+  font-size: 0.7rem;
+  color: var(--text-secondary);
   overflow: hidden;
 
   span {
@@ -407,7 +383,7 @@ export const HabilidadeChip = styled.span`
   svg {
     width: 13px;
     height: 13px;
-    color: ${({ $empty }) => ($empty ? 'var(--text-muted)' : 'var(--color-accent)')};
+    color: var(--color-accent);
     flex-shrink: 0;
   }
 `;
@@ -438,9 +414,8 @@ export const HabilidadeCriarArtButton = styled.button`
   all: unset;
   box-sizing: border-box;
   align-self: flex-end;
-  margin-top: auto;
-  width: 32px;
-  height: 32px;
+  width: 26px;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -449,7 +424,6 @@ export const HabilidadeCriarArtButton = styled.button`
   border: 1px solid ${({ $criada }) => ($criada ? '#4ade80' : 'var(--color-accent)')};
   color: ${({ $criada }) => ($criada ? '#4ade80' : 'var(--color-accent)')};
   background: ${({ $criada }) => ($criada ? 'rgba(74, 222, 128, 0.12)' : 'rgba(91, 124, 250, 0.12)')};
-  flex-shrink: 0;
 
   &:not(:disabled):hover {
     filter: brightness(1.2);

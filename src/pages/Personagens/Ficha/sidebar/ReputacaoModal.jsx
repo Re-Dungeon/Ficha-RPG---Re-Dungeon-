@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
@@ -20,8 +20,6 @@ import { DialogFecharButton, DialogHeaderRow, DialogHeaderTitle, StatusValueRow 
 import OrigemReputacaoCard from '../reputacao/OrigemReputacaoCard';
 import {
   OrigemGrid,
-  ReputacaoHeaderTitle,
-  ReputacaoHeaderActions,
   ReputacaoDescricaoBox,
   ReputacaoDetalheImagem,
   ReputacaoDetalheTopo,
@@ -44,9 +42,6 @@ const ReputacaoModal = ({ open, onClose, personagem, onSave }) => {
   const [view, setView] = useState('grid');
   const [origemSelecionadaId, setOrigemSelecionadaId] = useState(null);
   const [valores, setValores] = useState({ fama: 0, terror: 0 });
-  const [mostrarDescricaoCompleta, setMostrarDescricaoCompleta] = useState(false);
-  const descricaoRef = useRef(null);
-  const [descricaoCortada, setDescricaoCortada] = useState(false);
   const { executar } = useSaving();
 
   const reputacoes = useMemo(() => personagem.reputacoes ?? {}, [personagem.reputacoes]);
@@ -89,27 +84,6 @@ const ReputacaoModal = ({ open, onClose, personagem, onSave }) => {
     setValores({ fama: atual.fama ?? 0, terror: atual.terror ?? 0 });
   }, [origemSelecionada, reputacoes]);
 
-  useEffect(() => {
-    if (!open) {
-      setMostrarDescricaoCompleta(false);
-      setDescricaoCortada(false);
-      return;
-    }
-
-    const timeoutId = window.setTimeout(() => {
-      const elemento = descricaoRef.current;
-      if (!elemento) {
-        return;
-      }
-
-      setDescricaoCortada(elemento.scrollHeight > elemento.clientHeight + 2);
-    }, 0);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
-  }, [open, view, origemSelecionada]);
-
   const handleAbrirOrigem = useCallback(id => {
     setOrigemSelecionadaId(id);
     setView('detalhe');
@@ -126,33 +100,19 @@ const ReputacaoModal = ({ open, onClose, personagem, onSave }) => {
   );
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      fullWidth
-      maxWidth={view === 'grid' ? 'lg' : 'md'}
-      slotProps={{ paper: { sx: { width: 'min(100%, 840px)', maxHeight: 'min(100vh, 86vh)', borderRadius: '22px' } } }}
-      scroll="paper"
-    >
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth={view === 'grid' ? 'lg' : 'md'}>
       <DialogHeaderRow>
-        <div>
-          <ReputacaoHeaderTitle>{view === 'grid' ? 'Reputação' : getNome(origemSelecionada) || 'Reputação'}</ReputacaoHeaderTitle>
-        </div>
-        <ReputacaoHeaderActions>
+        <DialogHeaderTitle>{view === 'grid' ? 'Reputação' : getNome(origemSelecionada) || 'Reputação'}</DialogHeaderTitle>
+        <div style={{ display: 'flex', gap: 8 }}>
           {view === 'detalhe' && (
-            <DialogFecharButton type="button" aria-label="Voltar" onClick={() => setView('grid')} sx={{ padding: '10px', borderRadius: '12px' }}>
+            <DialogFecharButton type="button" aria-label="Voltar" onClick={() => setView('grid')}>
               <ArrowBackIcon fontSize="small" />
             </DialogFecharButton>
           )}
-          <DialogFecharButton
-            type="button"
-            aria-label="Fechar"
-            onClick={onClose}
-            sx={{ padding: '10px', borderRadius: '12px' }}
-          >
+          <DialogFecharButton type="button" aria-label="Fechar" onClick={onClose}>
             <CloseIcon fontSize="small" />
           </DialogFecharButton>
-        </ReputacaoHeaderActions>
+        </div>
       </DialogHeaderRow>
 
       <DialogContent>
@@ -183,29 +143,7 @@ const ReputacaoModal = ({ open, onClose, personagem, onSave }) => {
           <>
             <ReputacaoDetalheTopo>
               {origemSelecionada.linkImagem && <ReputacaoDetalheImagem src={origemSelecionada.linkImagem} alt="" />}
-              <ReputacaoDescricaoBox
-                ref={descricaoRef}
-                $expandida={mostrarDescricaoCompleta}
-              >
-                {origemSelecionada.descricao || 'Sem descrição cadastrada.'}
-              </ReputacaoDescricaoBox>
-              {descricaoCortada && (
-                <Button
-                  variant="text"
-                  onClick={() => setMostrarDescricaoCompleta(current => !current)}
-                  sx={{
-                    color: 'var(--text-primary)',
-                    fontSize: '0.82rem',
-                    fontWeight: 700,
-                    textTransform: 'none',
-                    marginLeft: '16px',
-                    marginTop: '8px',
-                    padding: 0,
-                  }}
-                >
-                  {mostrarDescricaoCompleta ? 'Ler menos' : 'Ler mais'}
-                </Button>
-              )}
+              <ReputacaoDescricaoBox>{origemSelecionada.descricao || 'Sem descrição cadastrada.'}</ReputacaoDescricaoBox>
             </ReputacaoDetalheTopo>
 
             <ReputacaoEixosGrid>
@@ -228,33 +166,7 @@ const ReputacaoModal = ({ open, onClose, personagem, onSave }) => {
                         }))
                       }
                       slotProps={{ htmlInput: { min: 0 } }}
-                      sx={{
-                        maxWidth: 180,
-                        width: '100%',
-                        '& .MuiInputBase-root': {
-                          borderRadius: '16px',
-                          background: 'rgba(255,255,255,0.04)',
-                          border: '1px solid rgba(212, 175, 103, 0.18)',
-                          color: 'var(--text-primary)',
-                          padding: '12px 14px',
-                        },
-                        '& .MuiInputBase-input': {
-                          textAlign: 'center',
-                          fontSize: '2.4rem',
-                          fontWeight: 700,
-                          letterSpacing: '0.02em',
-                          color: 'var(--text-primary)',
-                          padding: 0,
-                        },
-                        '& .MuiInputLabel-root': {
-                          color: 'var(--text-secondary)',
-                          fontSize: '0.85rem',
-                          transform: 'translate(14px, -6px) scale(0.9)',
-                        },
-                        '& .MuiOutlinedInput-notchedOutline': {
-                          border: 'none',
-                        },
-                      }}
+                      sx={{ maxWidth: 160 }}
                     />
                     <ReputacaoEfeitosLista>
                       {efeitos.desbloqueados.map(efeito => (
@@ -284,27 +196,8 @@ const ReputacaoModal = ({ open, onClose, personagem, onSave }) => {
               })}
             </ReputacaoEixosGrid>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 22 }}>
-              <Button
-                onClick={handleSalvar}
-                sx={{
-                  background: 'linear-gradient(135deg, #D4AF37 0%, #B58D2A 100%)',
-                  color: '#1c1830',
-                  fontWeight: 800,
-                  letterSpacing: '0.04em',
-                  borderRadius: '16px',
-                  padding: '12px 30px',
-                  boxShadow: '0 15px 35px rgba(212, 175, 103, 0.32)',
-                  transition: 'transform 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease',
-                  '&:hover': {
-                    filter: 'brightness(1.08)',
-                    boxShadow: '0 18px 42px rgba(212, 175, 103, 0.45)',
-                  },
-                  '&:active': {
-                    transform: 'scale(0.97)',
-                  },
-                }}
-              >
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 20 }}>
+              <Button variant="contained" onClick={handleSalvar}>
                 Salvar
               </Button>
             </div>

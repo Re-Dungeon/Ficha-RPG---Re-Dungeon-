@@ -83,13 +83,7 @@ const AptidaoConsultaModal = ({ open, onClose, personagem }) => {
   const niveis = [...(aptidaoSelecionada?.progressaoNiveis ?? [])].sort((a, b) => a.nivel - b.nivel);
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      fullWidth
-      maxWidth="md"
-      slotProps={{ paper: { sx: { width: 'min(100%, 840px)' } } }}
-    >
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
       <DialogHeaderRow>
         <DialogHeaderTitle>{aptidaoSelecionada ? 'Detalhes da Aptidão' : 'Enciclopédia de Aptidões'}</DialogHeaderTitle>
         <div style={{ display: 'flex', gap: 8 }}>
@@ -135,7 +129,6 @@ const AptidaoConsultaModal = ({ open, onClose, personagem }) => {
                     fullWidth
                     onClick={() => setAptidaoSelecionada(item)}
                     sx={{
-                      mt: 'auto',
                       border: '1px solid var(--color-accent)',
                       color: 'var(--color-accent)',
                       background: 'rgba(91, 124, 250, 0.1)',

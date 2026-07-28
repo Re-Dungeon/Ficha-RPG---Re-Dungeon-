@@ -5,17 +5,14 @@ import {
   HeroAcaoBadge,
   HeroAcoesRow,
   HeroCardWrapper,
+  HeroClasseRaca,
   HeroNome,
   HeroNomeBox,
-  HeroRace,
-  HeroRaceIcon,
-  HeroRaceIconPlaceholder,
   HeroRetratoFrame,
   HeroRetratoImg,
   HeroRetratoMoldura,
   HeroTitulo,
-  HeroTokenList,
-  HeroToken,
+  HeroRace,
   planetaRedungeonImg,
 } from './styles';
 
@@ -26,35 +23,19 @@ const EXCLUIR_BADGE_URL = 'https://i.imgur.com/GS68rHh.png';
 const PersonagemHeroCard = ({
   personagem,
   racaNome,
-  racaLinkImagem,
   classesNomes,
   onExcluir,
   salvando,
 }) => {
-  const classTokens = classesNomes.filter(Boolean);
+  const classes = [classesNomes.join(' ➠ ')].filter(Boolean).join(' - ');
 
   return (
     <HeroCardWrapper>
       <HeroNomeBox>
         <HeroNome>{personagem.nome}</HeroNome>
         <HeroTitulo>{personagem.jogadorInfo?.titulo || 'Sem Título'}</HeroTitulo>
-        <HeroRace>
-          <HeroRaceIcon>
-            {racaLinkImagem ? (
-              <img src={racaLinkImagem} alt={racaNome || 'Raça'} />
-            ) : (
-              <HeroRaceIconPlaceholder>🏰</HeroRaceIconPlaceholder>
-            )}
-          </HeroRaceIcon>
-          {racaNome || 'Sem Raça'}
-        </HeroRace>
-        {classTokens.length > 0 && (
-          <HeroTokenList>
-            {classTokens.map((nome, index) => (
-              <HeroToken key={`${nome}-${index}`}>{nome}</HeroToken>
-            ))}
-          </HeroTokenList>
-        )}
+        {classes && <HeroClasseRaca>{classes}</HeroClasseRaca>}
+        <HeroRace>{racaNome || 'Sem Raça'}</HeroRace>
       </HeroNomeBox>
 
       <HeroRetratoFrame>
@@ -81,14 +62,12 @@ const PersonagemHeroCard = ({
 PersonagemHeroCard.propTypes = {
   personagem: PropTypes.object.isRequired,
   racaNome: PropTypes.string.isRequired,
-  racaLinkImagem: PropTypes.string,
   classesNomes: PropTypes.array.isRequired,
   onExcluir: PropTypes.func.isRequired,
   salvando: PropTypes.bool,
 };
 
 PersonagemHeroCard.defaultProps = {
-  racaLinkImagem: '',
   salvando: false,
 };
 

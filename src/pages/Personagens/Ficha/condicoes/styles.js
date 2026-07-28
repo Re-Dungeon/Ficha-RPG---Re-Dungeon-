@@ -131,16 +131,12 @@ export const CondicaoAcaoBtn = styled.button`
 // ── Códex de Condições (catálogo) ───────────────────────────────────────────
 
 export const CatalogoCondicoesLista = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 60vh;
   overflow-y: auto;
-  padding: 6px;
-
-  @media (max-width: 720px) {
-    grid-template-columns: 1fr;
-  }
+  padding: 4px;
 `;
 
 export const CatalogoCondicaoItem = styled.div`
