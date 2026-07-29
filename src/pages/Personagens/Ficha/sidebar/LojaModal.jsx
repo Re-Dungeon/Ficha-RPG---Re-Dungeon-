@@ -34,7 +34,7 @@ const SALDO_INICIAL_PADRAO = 150;
 
 const TITULOS = { menu: 'Sistema de Itens', comprar: 'Loja do Comerciante', vender: 'Vender Itens' };
 
-const LojaModal = ({ open, onClose, personagem, onSave }) => {
+const LojaModal = ({ open, onClose, personagem, onSave, onInventarioAtualizado = () => {} }) => {
   const [view, setView] = useState('menu');
   const [itensInventario, setItensInventario] = useState([]);
   const [catalogo, setCatalogo] = useState([]);
@@ -160,9 +160,10 @@ const LojaModal = ({ open, onClose, personagem, onSave }) => {
           lojaRokmas: { saldoRokmas: saldoRokmas - total, historicoCompras: registrarHistorico('compra', getNome(item), -total) },
         });
         await carregarItensInventario();
+        onInventarioAtualizado();
       });
     },
-    [personagem.id, saldoRokmas, onSave, executar, carregarItensInventario, registrarHistorico],
+    [personagem.id, saldoRokmas, onSave, executar, carregarItensInventario, registrarHistorico, onInventarioAtualizado],
   );
 
   const handleVender = useCallback(
@@ -183,9 +184,10 @@ const LojaModal = ({ open, onClose, personagem, onSave }) => {
           },
         });
         await carregarItensInventario();
+        onInventarioAtualizado();
       });
     },
-    [personagem.id, saldoRokmas, catalogoPorId, onSave, executar, carregarItensInventario, registrarHistorico],
+    [personagem.id, saldoRokmas, catalogoPorId, onSave, executar, carregarItensInventario, registrarHistorico, onInventarioAtualizado],
   );
 
   const handleVenderReceita = useCallback(
@@ -206,9 +208,10 @@ const LojaModal = ({ open, onClose, personagem, onSave }) => {
           },
         });
         await carregarReceitasInventario();
+        onInventarioAtualizado();
       });
     },
-    [personagem.id, saldoRokmas, catalogoReceitasPorId, onSave, executar, carregarReceitasInventario, registrarHistorico],
+    [personagem.id, saldoRokmas, catalogoReceitasPorId, onSave, executar, carregarReceitasInventario, registrarHistorico, onInventarioAtualizado],
   );
 
   const handleDefinirRokmas = useCallback(
@@ -288,6 +291,7 @@ LojaModal.propTypes = {
   onClose: PropTypes.func.isRequired,
   personagem: PropTypes.object.isRequired,
   onSave: PropTypes.func.isRequired,
+  onInventarioAtualizado: PropTypes.func,
 };
 
 export default LojaModal;

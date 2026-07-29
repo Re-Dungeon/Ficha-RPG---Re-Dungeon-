@@ -49,7 +49,7 @@ import {
 } from '../inventario/styles';
 import { SectionTitle, StatusValueRow } from '../styles';
 
-const InventarioTab = ({ personagem }) => {
+const InventarioTab = ({ personagem, inventarioAtualizacoes }) => {
   const [itens, setItens] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [dialogAberto, setDialogAberto] = useState(false);
@@ -88,7 +88,7 @@ const InventarioTab = ({ personagem }) => {
     carregarItens();
     carregarMateriais();
     carregarReceitas();
-  }, [carregarItens, carregarMateriais, carregarReceitas]);
+  }, [carregarItens, carregarMateriais, carregarReceitas, inventarioAtualizacoes]);
 
   const primariosTotais = calcularPrimariosTotais(
     personagem.atributosBase,
@@ -416,6 +416,7 @@ const InventarioTab = ({ personagem }) => {
 
 InventarioTab.propTypes = {
   personagem: PropTypes.object.isRequired,
+  inventarioAtualizacoes: PropTypes.number,
 };
 
 export default InventarioTab;

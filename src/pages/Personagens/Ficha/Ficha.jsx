@@ -55,6 +55,7 @@ const Ficha = () => {
   const [sidebarExpandida, setSidebarExpandida] = useState(true);
   const [modalAtivo, setModalAtivo] = useState(null);
   const [erroExclusao, setErroExclusao] = useState(null);
+  const [inventarioAtualizacoes, setInventarioAtualizacoes] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
@@ -110,6 +111,10 @@ const Ficha = () => {
   }, [id, navigate]);
 
   const fecharModal = useCallback(() => setModalAtivo(null), []);
+
+  const handleInventarioAtualizado = useCallback(() => {
+    setInventarioAtualizacoes(current => current + 1);
+  }, []);
 
   useEffect(() => {
     if (!personagem) {
@@ -170,7 +175,9 @@ const Ficha = () => {
             )}
             {aba === 'aptidoes' && <AptidoesTab personagem={personagem} onSave={handleSave} />}
             {aba === 'arts' && <ArtsTab personagem={personagem} />}
-            {aba === 'inventario' && <InventarioTab personagem={personagem} />}
+            {aba === 'inventario' && (
+              <InventarioTab personagem={personagem} inventarioAtualizacoes={inventarioAtualizacoes} />
+            )}
             {aba === 'treinamento' && <TreinamentoTab personagem={personagem} onSave={handleSave} />}
             {aba === 'veiasAstrais' && <VeiasAstraisTab personagem={personagem} onSave={handleSave} />}
             {aba === 'companheiro' && <CompanheiroTab personagem={personagem} />}
@@ -212,7 +219,13 @@ const Ficha = () => {
             onSave={handleSave}
           />
           <SorteModal open={modalAtivo === 'sorte'} onClose={fecharModal} personagem={personagem} onSave={handleSave} />
-          <LojaModal open={modalAtivo === 'loja'} onClose={fecharModal} personagem={personagem} onSave={handleSave} />
+          <LojaModal
+            open={modalAtivo === 'loja'}
+            onClose={fecharModal}
+            personagem={personagem}
+            onSave={handleSave}
+            onInventarioAtualizado={handleInventarioAtualizado}
+          />
           <CondicoesModal
             open={modalAtivo === 'condicoes'}
             onClose={fecharModal}

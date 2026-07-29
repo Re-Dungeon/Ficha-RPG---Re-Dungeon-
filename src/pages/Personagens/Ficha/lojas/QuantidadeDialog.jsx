@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
+import styled from 'styled-components';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -8,6 +9,30 @@ import DialogActions from '@mui/material/DialogActions';
 import TextField from '@mui/material/TextField';
 
 import { StatusValueRow } from '../styles';
+
+const StyledDialogContent = styled(DialogContent)`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 24px 16px;
+  text-align: center;
+`;
+
+const StyledDialogActions = styled(DialogActions)`
+  justify-content: center;
+  gap: 12px;
+  padding: 16px 24px 22px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+`;
+
+const NomeItem = styled(StatusValueRow)`
+  display: block;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--color-primary);
+  margin-bottom: 4px;
+`;
 
 // Popup de quantidade reutilizado por Comprar (limitado por saldo + espaço
 // livre) e Vender (limitado pela quantidade possuída) — mesma ideia do popup
@@ -25,9 +50,9 @@ const QuantidadeDialog = ({ open, titulo, nomeItem, max, precoUnitario, precoLab
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
-      <DialogTitle>{titulo}</DialogTitle>
-      <DialogContent>
-        <StatusValueRow style={{ display: 'block', fontWeight: 600, marginBottom: 12 }}>{nomeItem}</StatusValueRow>
+      <DialogTitle sx={{ textAlign: 'center' }}>{titulo}</DialogTitle>
+      <StyledDialogContent>
+        <NomeItem>{nomeItem}</NomeItem>
         <TextField
           type="number"
           label="Quantidade"
@@ -35,19 +60,19 @@ const QuantidadeDialog = ({ open, titulo, nomeItem, max, precoUnitario, precoLab
           value={quantidade}
           onChange={event => setQuantidade(Math.min(max, Math.max(1, Number(event.target.value) || 1)))}
           slotProps={{ htmlInput: { min: 1, max } }}
-          sx={{ width: 160 }}
+          sx={{ width: '100%', maxWidth: 200 }}
         />
-        <StatusValueRow style={{ display: 'block', marginTop: 12 }}>
+        <StatusValueRow style={{ display: 'block', marginTop: 0 }}>
           {precoLabel} unitário: {precoUnitario} Rokmas · Total: {total} Rokmas
         </StatusValueRow>
-        <StatusValueRow style={{ display: 'block', marginTop: 4 }}>Máximo: {max}</StatusValueRow>
-      </DialogContent>
-      <DialogActions>
+        <StatusValueRow style={{ display: 'block', marginTop: 0 }}>Máximo: {max}</StatusValueRow>
+      </StyledDialogContent>
+      <StyledDialogActions>
         <Button onClick={onClose}>Cancelar</Button>
         <Button variant="contained" disabled={max <= 0} onClick={() => onConfirmar(quantidade)}>
           {acaoLabel}
         </Button>
-      </DialogActions>
+      </StyledDialogActions>
     </Dialog>
   );
 };
