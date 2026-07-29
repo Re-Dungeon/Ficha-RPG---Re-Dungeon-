@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
+import CriarPersonagemModal from './CriarPersonagemModal';
 
 import { useAuth } from 'context/AuthContext';
 import { getPersonagens } from 'service/storage';
@@ -29,9 +30,23 @@ const Personagens = () => {
     };
   }, [currentUser.uid]);
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const handleCreateClick = useCallback(() => {
-    navigate('/personagens/novo');
-  }, [navigate]);
+    setIsModalOpen(true);
+  }, []);
+
+  const handleCloseModal = useCallback(() => {
+    setIsModalOpen(false);
+  }, []);
+
+  const handleCreated = useCallback(() => {
+    setLoading(true);
+    getPersonagens(currentUser.uid).then(items => {
+      setPersonagens(items);
+      setLoading(false);
+    });
+  }, [currentUser.uid]);
 
   const handleOpenPersonagem = useCallback(
     personagemId => {
@@ -77,6 +92,12 @@ const Personagens = () => {
           ))}
         </CardsGrid>
       )}
+
+      <CriarPersonagemModal
+        open={isModalOpen}
+        onClose={handleCloseModal}
+        onCreated={handleCreated}
+      />
     </PageWrapper>
   );
 };

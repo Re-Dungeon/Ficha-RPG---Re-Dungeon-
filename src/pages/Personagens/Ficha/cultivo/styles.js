@@ -46,21 +46,33 @@ export const ReinoTitulo = styled.h2`
   text-shadow: 0 0 18px rgba(232, 203, 133, 0.35);
 `;
 
+export const ReinoBanner = styled.img`
+  width: 100%;
+  border-radius: 18px;
+  object-fit: cover;
+  margin-top: 18px;
+  max-height: 220px;
+`;
+
 export const CultivoCard = styled.div`
-  background: rgba(16, 12, 24, 0.95);
+  background-image: linear-gradient(rgba(16, 12, 24, 0.88), rgba(16, 12, 24, 0.88)), url('https://i.imgur.com/mb3T1zB.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 24px;
   padding: 22px;
   display: flex;
   flex-direction: column;
   gap: 20px;
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.24);
+  box-shadow: 0 50px 70px rgba(0, 0, 0, 0.24);
 `;
 
 export const CultivoActionRow = styled.div`
   display: flex;
   gap: 14px;
   align-items: center;
+  justify-content: center;
   flex-wrap: wrap;
 `;
 
@@ -73,11 +85,11 @@ export const CultivoStatusRow = styled.div`
 `;
 
 export const CaminhoCard = styled.div`
-  background: rgba(18, 15, 32, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 24px;
+  background: radial-gradient(circle at top, rgba(91, 124, 250, 0.05), rgba(18, 15, 32, 0.98));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 28px;
   padding: 22px;
-  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.22);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02), 0 26px 60px rgba(0, 0, 0, 0.25);
   min-height: 100%;
 `;
 
@@ -117,14 +129,22 @@ export const CaminhoTitulo = styled.h3`
 export const CaminhoItem = styled.div`
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 16px 16px;
-  border-radius: 18px;
+  gap: 16px;
+  padding: 18px 18px;
+  border-radius: 20px;
   border: 1px solid
-    ${({ $status }) => ($status === 'atual' ? 'rgba(212, 175, 103, 0.4)' : 'rgba(255, 255, 255, 0.08)')};
+    ${({ $status }) => ($status === 'atual' ? 'rgba(232, 203, 133, 0.45)' : 'rgba(255, 255, 255, 0.08)')};
   background: ${({ $status }) =>
-    $status === 'atual' ? 'rgba(232, 203, 133, 0.14)' : 'rgba(255, 255, 255, 0.02)'};
-  opacity: ${({ $status }) => ($status === 'bloqueado' ? 0.65 : 1)};
+    $status === 'atual'
+      ? 'rgba(232, 203, 133, 0.13)'
+      : $status === 'concluido'
+        ? 'rgba(255, 255, 255, 0.04)'
+        : 'rgba(255, 255, 255, 0.02)'};
+  opacity: ${({ $status }) => ($status === 'bloqueado' ? 0.8 : 1)};
+  box-shadow: ${({ $status }) =>
+    $status === 'atual'
+      ? '0 18px 45px rgba(232, 203, 133, 0.12)'
+      : '0 16px 30px rgba(0, 0, 0, 0.12)'};
   transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
 
   &:hover {
@@ -138,8 +158,8 @@ export const CaminhoMarcador = styled.span`
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 34px;
-  height: 34px;
+  width: 54px;
+  height: 54px;
   border-radius: 50%;
   background: ${({ $status }) =>
     $status === 'atual'
@@ -154,6 +174,23 @@ export const CaminhoMarcador = styled.span`
         ? 'var(--status-gold)'
         : 'var(--text-muted)'};
   border: 1px solid rgba(255, 255, 255, 0.12);
+`;
+
+export const CaminhoMarcadorImage = styled.img`
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+`;
+
+export const CaminhoSeta = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin: 4px 0;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 1.15rem;
 `;
 
 export const CaminhoInfo = styled.div`

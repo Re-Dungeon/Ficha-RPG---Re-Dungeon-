@@ -44,7 +44,9 @@ import {
   CaminhoInfo,
   CaminhoItem,
   CaminhoMarcador,
+  CaminhoMarcadorImage,
   CaminhoNome,
+  CaminhoSeta,
   CaminhoStatusLabel,
   CaminhoTitulo,
   CultivoActionRow,
@@ -54,7 +56,7 @@ import {
   CultivoMain,
   CultivoStatusRow,
   EstrelasRow,
-  ReinoHero,
+  ReinoBanner,
   ReinoTitulo,
 } from '../cultivo/styles';
 
@@ -169,11 +171,11 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
       }),
     [cultivoXp, reinoAtual],
   );
-  // Caminho do Cultivo mostra só o Reino atual + os 2 próximos, não a trilha inteira
-  // (evita rolar por dezenas de Reinos já concluídos ou muito distantes).
+  // Caminho do Cultivo mostra o Reino atual + os 4 próximos, não a trilha inteira.
+  // (evita rolar por dezenas de Reinos já concluídos ou muito distantes.)
   const reinosDoCaminho = useMemo(() => {
     const inicio = indexAtual >= 0 ? indexAtual : 0;
-    return reinos.slice(inicio, inicio + 3).map((reino, offset) => ({ reino, indice: inicio + offset }));
+    return reinos.slice(inicio, inicio + 5).map((reino, offset) => ({ reino, indice: inicio + offset }));
   }, [reinos, indexAtual]);
 
   const aplicarSubUniverso = useCallback(
@@ -254,9 +256,12 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
       maxWidth="md"
       slotProps={{ paper: { sx: {
           width: 'min(100%, 920px)',
-          maxHeight: 'min(100vh, 86vh)',
+          maxHeight: 'min(100vh, 94vh)',
           borderRadius: '22px',
-          background: 'rgba(10, 9, 19, 0.98)',
+          backgroundImage: "linear-gradient(rgba(10, 9, 19, 0.88), rgba(10, 9, 19, 0.88)), url('https://i.imgur.com/6ewUzUs.jpeg')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
           border: '1px solid rgba(255, 255, 255, 0.08)',
         } } }}
       scroll="paper"
@@ -320,8 +325,6 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
           <CultivoLayout style={{ marginTop: 20 }}>
             <CultivoMain>
               <CultivoCard>
-                {reinoAtual.linkImagem && <ReinoHero src={reinoAtual.linkImagem} alt="" />}
-
                 <div>
                   <StatusValueRow style={{ display: 'block', textAlign: 'center', letterSpacing: 2 }}>
                     REINO ATUAL
@@ -340,6 +343,7 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
                       ),
                     )}
                   </EstrelasRow>
+                  <ReinoBanner src="https://i.imgur.com/ZD2QY5R.png" alt="Reino do Cultivo" />
                 </div>
 
                 <div>
@@ -395,7 +399,15 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
                     startIcon={<BoltIcon fontSize="small" />}
                     disabled={!progresso.noPico || !proximoReino}
                     onClick={() => setTribulacaoAberta(true)}
-                    sx={{ mt: 2, borderRadius: '16px', minWidth: 190 }}
+                    sx={{
+                      mt: 2,
+                      borderRadius: '16px',
+                      minWidth: 190,
+                      mx: 'auto',
+                      display: 'block',
+                      whiteSpace: 'nowrap',
+                      justifyContent: 'center',
+                    }}
                   >
                     Avançar (Ruptura)
                   </Button>
@@ -411,7 +423,7 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
             <CultivoAside>
               <CaminhoCard>
                 <CaminhoTitulo>Caminho do Cultivo</CaminhoTitulo>
-                {reinosDoCaminho.map(({ reino, indice }) => {
+                {reinosDoCaminho.map(({ reino, indice }, index) => {
                   const status =
                     indice < indexAtual ? 'concluido' : indice === indexAtual ? 'atual' : 'bloqueado';
                   const rotulo =
@@ -421,17 +433,28 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
                         ? 'Atual'
                         : 'Bloqueado';
                   return (
-                    <CaminhoItem key={reino.id} $status={status}>
-                      <CaminhoMarcador $status={status}>
-                        {status === 'concluido' && <CheckCircleRoundedIcon fontSize="small" />}
-                        {status === 'atual' && <AutoAwesomeIcon fontSize="small" />}
-                        {status === 'bloqueado' && <LockRoundedIcon fontSize="small" />}
-                      </CaminhoMarcador>
-                      <CaminhoInfo>
-                        <CaminhoNome>{getNome(reino)}</CaminhoNome>
-                        <CaminhoStatusLabel $status={status}>{rotulo}</CaminhoStatusLabel>
-                      </CaminhoInfo>
-                    </CaminhoItem>
+                    <React.Fragment key={reino.id}>
+                      <CaminhoItem $status={status}>
+                        <CaminhoMarcador $status={status}>
+                          {reino.linkImagem ? (
+                            <CaminhoMarcadorImage src={reino.linkImagem} alt={getNome(reino)} />
+                          ) : status === 'concluido' ? (
+                            <CheckCircleRoundedIcon fontSize="small" />
+                          ) : status === 'atual' ? (
+                            <AutoAwesomeIcon fontSize="small" />
+                          ) : (
+                            <LockRoundedIcon fontSize="small" />
+                          )}
+                        </CaminhoMarcador>
+                        <CaminhoInfo>
+                          <CaminhoNome>{getNome(reino)}</CaminhoNome>
+                          <CaminhoStatusLabel $status={status}>{rotulo}</CaminhoStatusLabel>
+                        </CaminhoInfo>
+                      </CaminhoItem>
+                      {index < reinosDoCaminho.length - 1 && (
+                        <CaminhoSeta>↓</CaminhoSeta>
+                      )}
+                    </React.Fragment>
                   );
                 })}
               </CaminhoCard>
