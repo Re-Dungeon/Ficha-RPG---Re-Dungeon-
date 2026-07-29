@@ -1,5 +1,12 @@
 export const TIPOS_PERSONAGEM = ['Personagem Jogável', 'NPC', 'Criatura'];
 
+// Raças/classes com `tiposDisponiveis` vazio ou ausente (catálogo antigo, ainda
+// não migrado pro campo novo) continuam aparecendo pra todos os tipos de ficha.
+export const disponivelParaTipoPersonagem = (item, tipoPersonagem) =>
+  !Array.isArray(item.tiposDisponiveis) ||
+  item.tiposDisponiveis.length === 0 ||
+  item.tiposDisponiveis.includes(tipoPersonagem);
+
 export const PRIMARIOS_LABELS = {
   forca: 'Força',
   vitalidade: 'Vitalidade',

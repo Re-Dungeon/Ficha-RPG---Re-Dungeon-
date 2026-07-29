@@ -169,4 +169,33 @@ describe('ClasseModal', () => {
     ));
     await waitFor(() => expect(onSave).toHaveBeenCalledWith({ classes: ['c1'] }));
   });
+
+  it('só mostra classes cujo tiposDisponiveis inclui o tipo do personagem', async () => {
+    const classeSoCriatura = { id: 'c4', nome: 'Fera Selvagem', raridade: 'Comum', tiposDisponiveis: ['Criatura'] };
+    getClassesPorUniverso.mockResolvedValue([classe, classeSoCriatura]);
+
+    render(
+      <SavingProvider>
+        <ClasseModal open onClose={vi.fn()} personagem={personagem} onSave={vi.fn()} />
+      </SavingProvider>,
+    );
+
+    await screen.findByText('Guerreiro');
+    expect(screen.queryByText('Fera Selvagem')).not.toBeInTheDocument();
+  });
+
+  it('mostra classes sem tiposDisponiveis pra qualquer tipo de personagem (catálogo antigo)', async () => {
+    render(
+      <SavingProvider>
+        <ClasseModal
+          open
+          onClose={vi.fn()}
+          personagem={{ ...personagem, tipo: 'Criatura' }}
+          onSave={vi.fn()}
+        />
+      </SavingProvider>,
+    );
+
+    expect(await screen.findByText('Guerreiro')).toBeInTheDocument();
+  });
 });

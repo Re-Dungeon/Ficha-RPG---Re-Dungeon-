@@ -36,7 +36,7 @@ import { getNome } from 'common/utils/resolveNome';
 import { useSaving } from 'context/SavingContext';
 
 import { TIPO_ART_OPTIONS } from '../arts/constants';
-import { PRIMARIOS_LABELS } from '../constants';
+import { PRIMARIOS_LABELS, TIPOS_PERSONAGEM, disponivelParaTipoPersonagem } from '../constants';
 import { DialogFecharButton, DialogHeaderRow, DialogHeaderTitle, StatusValueRow } from '../styles';
 import {
   AcaoBadge,
@@ -221,14 +221,17 @@ const ClasseModal = ({ open, onClose, personagem, onSave }) => {
     }
   }, [open]);
 
+  const tipoPersonagem = personagem.tipo ?? TIPOS_PERSONAGEM[0];
+
   const classesFiltradas = useMemo(
     () =>
       classes.filter(item => {
         const nomeOk = getNome(item).toLowerCase().includes(busca.toLowerCase());
         const raridadeOk = !filtroRaridade || item.raridade === filtroRaridade;
-        return nomeOk && raridadeOk;
+        const tipoOk = disponivelParaTipoPersonagem(item, tipoPersonagem);
+        return nomeOk && raridadeOk && tipoOk;
       }),
-    [classes, busca, filtroRaridade],
+    [classes, busca, filtroRaridade, tipoPersonagem],
   );
 
   const gruposPorRaridade = useMemo(
@@ -432,7 +435,7 @@ const ClasseModal = ({ open, onClose, personagem, onSave }) => {
                     <Diversity3Icon fontSize="small" />
                   </PickerGrupoIcone>
                   <PickerGrupoNome>{universoNome || 'Universo'}</PickerGrupoNome>
-                  <PickerGrupoContagem>{classes.length}</PickerGrupoContagem>
+                  <PickerGrupoContagem>{classesFiltradas.length}</PickerGrupoContagem>
                 </PickerGrupoHeader>
 
                 {grupoExpandido &&

@@ -42,4 +42,35 @@ describe('RacaModal', () => {
       expect(onSave).toHaveBeenCalledWith({ raca: 'r1', racaHabilidadesAtivas: [] }),
     );
   });
+
+  it('só mostra raças cujo tiposDisponiveis inclui o tipo do personagem', async () => {
+    const racaSoNpc = { id: 'r2', nome: 'Golem de Sucata', raridade: 'Comum', tiposDisponiveis: ['NPC'] };
+    getRacasPorUniverso.mockResolvedValue([raca, racaSoNpc]);
+
+    render(
+      <SavingProvider>
+        <RacaModal open onClose={vi.fn()} personagem={personagem} onSave={vi.fn()} />
+      </SavingProvider>,
+    );
+
+    await screen.findByText('Elfo');
+    expect(screen.queryByText('Golem de Sucata')).not.toBeInTheDocument();
+  });
+
+  it('mostra raças sem tiposDisponiveis pra qualquer tipo de personagem (catálogo antigo)', async () => {
+    getRacasPorUniverso.mockResolvedValue([raca]);
+
+    render(
+      <SavingProvider>
+        <RacaModal
+          open
+          onClose={vi.fn()}
+          personagem={{ ...personagem, tipo: 'NPC' }}
+          onSave={vi.fn()}
+        />
+      </SavingProvider>,
+    );
+
+    expect(await screen.findByText('Elfo')).toBeInTheDocument();
+  });
 });

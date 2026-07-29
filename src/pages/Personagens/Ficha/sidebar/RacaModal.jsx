@@ -25,7 +25,7 @@ import { calcularLimiteHabilidadesBasicas } from 'common/utils/formulas';
 import { getNome } from 'common/utils/resolveNome';
 import { useSaving } from 'context/SavingContext';
 
-import { PRIMARIOS_LABELS } from '../constants';
+import { PRIMARIOS_LABELS, TIPOS_PERSONAGEM, disponivelParaTipoPersonagem } from '../constants';
 import { DialogFecharButton, DialogHeaderRow, DialogHeaderTitle, StatusValueRow } from '../styles';
 import {
   AcaoBadge,
@@ -142,14 +142,17 @@ const RacaModal = ({ open, onClose, personagem, onSave }) => {
     }
   }, [open, personagem.raca]);
 
+  const tipoPersonagem = personagem.tipo ?? TIPOS_PERSONAGEM[0];
+
   const racasFiltradas = useMemo(
     () =>
       racas.filter(item => {
         const nomeOk = getNome(item).toLowerCase().includes(busca.toLowerCase());
         const raridadeOk = !filtroRaridade || item.raridade === filtroRaridade;
-        return nomeOk && raridadeOk;
+        const tipoOk = disponivelParaTipoPersonagem(item, tipoPersonagem);
+        return nomeOk && raridadeOk && tipoOk;
       }),
-    [racas, busca, filtroRaridade],
+    [racas, busca, filtroRaridade, tipoPersonagem],
   );
 
   const gruposPorRaridade = useMemo(
