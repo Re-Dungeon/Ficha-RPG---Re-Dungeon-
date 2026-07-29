@@ -1,3 +1,5 @@
+export const TIPOS_PERSONAGEM = ['Personagem Jogável', 'NPC', 'Criatura'];
+
 export const PRIMARIOS_LABELS = {
   forca: 'Força',
   vitalidade: 'Vitalidade',

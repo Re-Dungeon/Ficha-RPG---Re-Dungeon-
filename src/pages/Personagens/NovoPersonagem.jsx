@@ -15,12 +15,14 @@ import { addPersonagem, getUniverso } from 'service/storage';
 import { nomeSchema } from 'common/utils/yupSchemas';
 import { getNome } from 'common/utils/resolveNome';
 import ErrorSnackbar from 'components/ErrorSnackbar/ErrorSnackbar';
+import { TIPOS_PERSONAGEM } from './Ficha/constants';
 
 import { FormWrapper, PageTitle, PageWrapper } from './styles';
 
 const novoPersonagemSchema = yup.object({
   nome: nomeSchema,
   universo: yup.string().required('Universo é obrigatório'),
+  tipo: yup.string().required('Tipo é obrigatório'),
 });
 
 const NovoPersonagem = () => {
@@ -34,14 +36,16 @@ const NovoPersonagem = () => {
   }, []);
 
   const handleSubmit = useCallback(
-    async ({ nome, universo }, { setSubmitting }) => {
+    async ({ nome, universo, tipo }, { setSubmitting }) => {
       try {
-        const id = await addPersonagem({ uid: currentUser.uid, nome, universo });
+        const id = await addPersonagem({ uid: currentUser.uid, nome, universo, tipo });
         navigate(`/personagens/${id}`);
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error('Falha ao criar personagem:', error);
-        setErro('Não foi possível criar o personagem. Verifique sua conexão e tente novamente.');
+        setErro(
+          'Não foi possível criar o personagem. Verifique sua conexão e tente novamente.',
+        );
         setSubmitting(false);
       }
     },
@@ -50,14 +54,22 @@ const NovoPersonagem = () => {
 
   return (
     <PageWrapper>
-      <PageTitle>Novo Personagem</PageTitle>
+      <PageTitle>Nova Ficha</PageTitle>
 
       <Formik
-        initialValues={{ nome: '', universo: '' }}
+        initialValues={{ nome: '', universo: '', tipo: TIPOS_PERSONAGEM[0] }}
         validationSchema={novoPersonagemSchema}
         onSubmit={handleSubmit}
       >
-        {({ values, errors, touched, handleChange, handleBlur, handleSubmit: submit, isSubmitting }) => (
+        {({
+          values,
+          errors,
+          touched,
+          handleChange,
+          handleBlur,
+          handleSubmit: submit,
+          isSubmitting,
+        }) => (
           <FormWrapper as="form" onSubmit={submit} noValidate>
             <TextField
               name="nome"
@@ -92,6 +104,30 @@ const NovoPersonagem = () => {
               </Select>
               {touched.universo && errors.universo && (
                 <FormHelperText>{errors.universo}</FormHelperText>
+              )}
+            </FormControl>
+            <FormControl
+              size="small"
+              fullWidth
+              error={touched.tipo && Boolean(errors.tipo)}
+            >
+              <InputLabel id="novo-personagem-tipo-label">Tipo</InputLabel>
+              <Select
+                labelId="novo-personagem-tipo-label"
+                name="tipo"
+                label="Tipo"
+                value={values.tipo}
+                onChange={handleChange}
+                onBlur={handleBlur}
+              >
+                {TIPOS_PERSONAGEM.map(opcao => (
+                  <MenuItem key={opcao} value={opcao}>
+                    {opcao}
+                  </MenuItem>
+                ))}
+              </Select>
+              {touched.tipo && errors.tipo && (
+                <FormHelperText>{errors.tipo}</FormHelperText>
               )}
             </FormControl>
             <Button type="submit" variant="contained" disabled={isSubmitting}>

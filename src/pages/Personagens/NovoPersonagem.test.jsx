@@ -42,6 +42,7 @@ describe('NovoPersonagem — fluxo de criação', () => {
         uid: 'uid-teste',
         nome: 'Aldric',
         universo: 'universo-1',
+        tipo: 'Personagem Jogável',
       }),
     );
     await screen.findByText('Ficha aberta');

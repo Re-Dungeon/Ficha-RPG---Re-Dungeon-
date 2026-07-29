@@ -21,10 +21,12 @@ import { addPersonagem, getUniverso } from 'service/storage';
 import { nomeSchema } from 'common/utils/yupSchemas';
 import { getNome } from 'common/utils/resolveNome';
 import ErrorSnackbar from 'components/ErrorSnackbar/ErrorSnackbar';
+import { TIPOS_PERSONAGEM } from './Ficha/constants';
 
 const novoPersonagemSchema = yup.object({
   nome: nomeSchema,
   universo: yup.string().required('Universo é obrigatório'),
+  tipo: yup.string().required('Tipo é obrigatório'),
 });
 
 const CriarPersonagemModal = ({ open, onClose, onCreated }) => {
@@ -68,15 +70,17 @@ const CriarPersonagemModal = ({ open, onClose, onCreated }) => {
   }, [open]);
 
   const handleSubmit = useCallback(
-    async ({ nome, universo }, { setSubmitting }) => {
+    async ({ nome, universo, tipo }, { setSubmitting }) => {
       try {
-        await addPersonagem({ uid: currentUser.uid, nome, universo });
+        await addPersonagem({ uid: currentUser.uid, nome, universo, tipo });
         onCreated();
         onClose();
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error('Falha ao criar personagem:', error);
-        setErro('Não foi possível criar o personagem. Verifique sua conexão e tente novamente.');
+        setErro(
+          'Não foi possível criar o personagem. Verifique sua conexão e tente novamente.',
+        );
         setSubmitting(false);
       }
     },
@@ -113,7 +117,15 @@ const CriarPersonagemModal = ({ open, onClose, onCreated }) => {
       }}
     >
       <DialogContent sx={{ px: { xs: 3, sm: 4 }, pt: { xs: 3, sm: 4 }, pb: 2 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, marginBottom: 20 }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 16,
+            marginBottom: 20,
+          }}
+        >
           <h2
             style={{
               margin: 0,
@@ -125,7 +137,7 @@ const CriarPersonagemModal = ({ open, onClose, onCreated }) => {
               textShadow: '0 0 12px rgba(91, 124, 250, 0.2)',
             }}
           >
-            Novo Personagem
+            Nova Ficha
           </h2>
           <IconButton
             aria-label="Fechar"
@@ -148,16 +160,24 @@ const CriarPersonagemModal = ({ open, onClose, onCreated }) => {
         </div>
 
         <Formik
-          initialValues={{ nome: '', universo: '' }}
+          initialValues={{ nome: '', universo: '', tipo: TIPOS_PERSONAGEM[0] }}
           validationSchema={novoPersonagemSchema}
           onSubmit={handleSubmit}
         >
-          {({ values, errors, touched, handleChange, handleBlur, handleSubmit: submit, isSubmitting }) => (
+          {({
+            values,
+            errors,
+            touched,
+            handleChange,
+            handleBlur,
+            handleSubmit: submit,
+            isSubmitting,
+          }) => (
             <form onSubmit={submit} noValidate>
               <TextField
                 name="nome"
-                label="Nome do personagem"
-                placeholder="Nome do personagem"
+                label="Nome"
+                placeholder="Nome"
                 value={values.nome}
                 onChange={handleChange}
                 onBlur={handleBlur}
@@ -234,7 +254,74 @@ const CriarPersonagemModal = ({ open, onClose, onCreated }) => {
                 )}
               </FormControl>
 
-              <DialogActions sx={{ px: 0, pt: 4, pb: 0, justifyContent: 'flex-end', gap: 2, flexWrap: 'wrap' }}>
+              <FormControl
+                size="small"
+                fullWidth
+                error={touched.tipo && Boolean(errors.tipo)}
+                sx={{ mb: 1.5 }}
+              >
+                <InputLabel id="novo-personagem-tipo-label">Tipo</InputLabel>
+                <Select
+                  labelId="novo-personagem-tipo-label"
+                  name="tipo"
+                  label="Tipo"
+                  value={values.tipo}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  MenuProps={{
+                    slotProps: {
+                      paper: {
+                        sx: {
+                          bgcolor: 'rgba(10, 9, 19, 0.96)',
+                          border: '1px solid rgba(91, 124, 250, 0.18)',
+                          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.35)',
+                        },
+                      },
+                    },
+                  }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: '16px',
+                      background: 'rgba(255, 255, 255, 0.03)',
+                    },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'rgba(91, 124, 250, 0.65)',
+                    },
+                  }}
+                >
+                  {TIPOS_PERSONAGEM.map(opcao => (
+                    <MenuItem
+                      key={opcao}
+                      value={opcao}
+                      sx={{
+                        py: 1.5,
+                        '&.Mui-selected': {
+                          backgroundColor: 'rgba(91, 124, 250, 0.16)',
+                        },
+                        '&:hover': {
+                          backgroundColor: 'rgba(91, 124, 250, 0.08)',
+                        },
+                      }}
+                    >
+                      {opcao}
+                    </MenuItem>
+                  ))}
+                </Select>
+                {touched.tipo && errors.tipo && (
+                  <FormHelperText>{errors.tipo}</FormHelperText>
+                )}
+              </FormControl>
+
+              <DialogActions
+                sx={{
+                  px: 0,
+                  pt: 4,
+                  pb: 0,
+                  justifyContent: 'flex-end',
+                  gap: 2,
+                  flexWrap: 'wrap',
+                }}
+              >
                 <Button
                   type="button"
                   variant="outlined"
@@ -268,7 +355,9 @@ const CriarPersonagemModal = ({ open, onClose, onCreated }) => {
                   }}
                 >
                   {isSubmitting ? (
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                    <span
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
+                    >
                       <CircularProgress size={18} sx={{ color: 'inherit' }} />
                       Criando...
                     </span>

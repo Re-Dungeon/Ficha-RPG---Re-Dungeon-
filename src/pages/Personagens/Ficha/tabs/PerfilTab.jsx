@@ -16,6 +16,7 @@ import DraftBanner from 'components/DraftBanner/DraftBanner';
 
 import { SectionTitle, StatusValueRow } from '../styles';
 import UniversoSelect from '../progressao/UniversoSelect';
+import { TIPOS_PERSONAGEM } from '../constants';
 
 const PerfilSection = styled.div`
   background: rgba(255, 255, 255, 0.05);
@@ -312,6 +313,7 @@ const ShortDescriptionSubtitle = styled.p`
 
 const perfilSchema = yup.object({
   nome: nomeSchema,
+  tipo: yup.string().required('Tipo é obrigatório'),
   titulo: campoCurtoSchema,
   origem: yup.string(),
   afiliacao: campoCurtoSchema,
@@ -410,6 +412,25 @@ const PerfilFormBody = ({
                     fullWidth
                     sx={fieldSx}
                   />
+                  <TextField
+                    name="tipo"
+                    label="Tipo"
+                    select
+                    value={values.tipo}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={touched.tipo && Boolean(errors.tipo)}
+                    helperText={touched.tipo && errors.tipo}
+                    size="small"
+                    fullWidth
+                    sx={fieldSx}
+                  >
+                    {TIPOS_PERSONAGEM.map(opcao => (
+                      <MenuItem key={opcao} value={opcao}>
+                        {opcao}
+                      </MenuItem>
+                    ))}
+                  </TextField>
                 </RowFields>
               </FieldGroup>
 
@@ -762,6 +783,7 @@ const PerfilTab = ({ personagem, onSave, aba }) => {
     <Formik
       initialValues={{
         nome: personagem.nome ?? '',
+        tipo: personagem.tipo ?? TIPOS_PERSONAGEM[0],
         titulo: personagem.jogadorInfo?.titulo ?? '',
         origem: personagem.origem ?? '',
         afiliacao: personagem.jogadorInfo?.afiliacao ?? '',
