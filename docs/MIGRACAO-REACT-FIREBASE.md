@@ -37,6 +37,7 @@ O schema da seção 5 abaixo ficou **um pouco mais completo** do que o desenhado
 - `racaHabilidadesAtivas` (array de índices) — toggle de habilidades básicas ativas da raça (FUNCIONALIDADES.md §11); usa o **índice** da habilidade no array `habilidadesBasicas` do doc de `racas`, já que o catálogo não tem um id próprio por habilidade.
 - `lojaTrapaça` **não tem** `saldoFortuna` como a seção 5 sugeria — isso duplicaria `sorte.fortunaAtual` (mesma moeda, ver FUNCIONALIDADES.md §6). `lojaTrapaça` guarda só `efeitosAtivos`. Trate a seção 5 abaixo como desatualizada nesse ponto específico.
 - `historicoSorte` (subcoleção) registra tanto rolagens de Fortuna quanto compras na Loja da Trapaça — não é usado só para rolagens.
+- `cultivo` **virou um mapa keyed por subUniverso** (2026-07-29), a pedido do usuário — antes era um objeto único (`{subUniverso, reinoId, xpAtual}`) e trocar de sistema de cultivo (SubUniverso) zerava a progressão anterior, exigindo um diálogo de confirmação. Agora cada chave do mapa guarda sua própria progressão independente (`{reinoId, xpAtual}`), então um personagem pode cultivar em mais de um sistema/subUniverso ao mesmo tempo (ex.: "Doupo Cangqiong" e "Martial Peak" em paralelo) sem perder nada ao trocar de aba no `CultivoModal`. Sem ferramenta de migração pro formato antigo — o `personagem.cultivo` de personagens de teste criados antes dessa mudança fica órfão (o modal simplesmente não encontra progressão pra nenhum sistema até o jogador ganhar Cultivo de novo).
 
 Outras simplificações deliberadas (escolhas de escopo, não bugs):
 
@@ -258,18 +259,24 @@ Em todo campo que referencia outra coleção (`universo`, `raca`, `classes`, `or
       sorte: number,
     },
   },
-  cultivo: {   // implementado 2026-07-23, generalizado p/ qualquer universo em 2026-07-28 — Sistema de
-               // Cultivo. Menu lateral mostra "Cultivo" sempre; getReinosCultivo(personagem.universo, subUniverso)
-               // filtra a trilha pelo universo do personagem (§ storage.js). Universos com múltiplos sistemas
-               // paralelos (ex.: Cultivo → "Doupo Cangqiong", "Martial Peak" etc., campo `SubUniversos` do doc
-               // do universo em `Universo`) exigem escolher um sistema antes; universos sem esse campo vão
-               // direto pra trilha (Reinos com `subUniverso: ''`). Guarda o mínimo; estrelas/Pico são
-               // DERIVADOS do catálogo `reinosCultivo` via calcularProgressoCultivo (common/utils/formulas.js).
-    subUniverso: string,   // Nome do sistema de cultivo escolhido, ex.: "Doupo Cangqiong" (campo `SubUniversos`
-                            // do doc do universo do personagem); '' quando o universo não tem múltiplos sistemas.
-    reinoId: string,       // id do doc de `reinosCultivo` do Reino atual ("" → cai no 1º Reino da trilha)
-    xpAtual: number,       // Cultivo acumulado no Reino atual (0..quantidadeSubReinos*experienciaPorSubReino;
+  cultivo: {   // implementado 2026-07-23, generalizado p/ qualquer universo em 2026-07-28, virou mapa
+               // multi-sistema em 2026-07-29 — Sistema de Cultivo. Menu lateral mostra "Cultivo" sempre;
+               // getReinosCultivo(personagem.universo, subUniverso) filtra a trilha pelo universo do
+               // personagem (§ storage.js). Universos com múltiplos sistemas paralelos (ex.: Cultivo →
+               // "Doupo Cangqiong", "Martial Peak" etc., campo `SubUniversos` do doc do universo em
+               // `Universo`) exigem escolher um sistema antes de ver a trilha; universos sem esse campo
+               // vão direto pra trilha (Reinos com `subUniverso: ''`). Mapa keyed por subUniverso (ou ''
+               // pro universo sem múltiplos sistemas) — cada chave guarda a progressão independente
+               // daquele sistema, permitindo cultivar em mais de um sistema/subUniverso ao mesmo tempo
+               // sem perder progresso ao trocar de aba no modal (antes era um objeto único, e trocar de
+               // subUniverso zerava a progressão anterior). Guarda o mínimo por sistema; estrelas/Pico
+               // são DERIVADOS do catálogo `reinosCultivo` via calcularProgressoCultivo
+               // (common/utils/formulas.js).
+    [subUniverso: string]: {
+      reinoId: string,     // id do doc de `reinosCultivo` do Reino atual naquele sistema ("" → 1º Reino da trilha)
+      xpAtual: number,     // Cultivo acumulado no Reino atual daquele sistema (0..quantidadeSubReinos*experienciaPorSubReino;
                             // satura no Pico — a Ruptura/Tribulação é manual e zera este valor no novo Reino)
+    },
   },
 
   // reservado para quando estes sistemas voltarem ao roadmap (não usar ainda — seção 2.3)

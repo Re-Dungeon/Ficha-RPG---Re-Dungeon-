@@ -6,7 +6,11 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import CircularProgress from '@mui/material/CircularProgress';
 import CloseIcon from '@mui/icons-material/Close';
@@ -18,6 +22,7 @@ import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import LockRoundedIcon from '@mui/icons-material/LockRounded';
 import HeartBrokenIcon from '@mui/icons-material/HeartBroken';
+import AddCircleOutlineRoundedIcon from '@mui/icons-material/AddCircleOutlineRounded';
 
 import { getFirestoreItem, getReinosCultivo } from 'service/storage';
 import {
@@ -70,20 +75,37 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
   const [reinos, setReinos] = useState([]);
   const [carregandoReinos, setCarregandoReinos] = useState(false);
   const [xpGanhoInput, setXpGanhoInput] = useState('');
-  const [subUniversoPendente, setSubUniversoPendente] = useState(null);
+  const [subUniversoSelecionado, setSubUniversoSelecionado] = useState('');
+  const [addMenuAnchor, setAddMenuAnchor] = useState(null);
   const [tribulacaoAberta, setTribulacaoAberta] = useState(false);
   const [falhaTribulacaoAberta, setFalhaTribulacaoAberta] = useState(false);
   const [estrelasPerdidasInput, setEstrelasPerdidasInput] = useState('');
 
   const universoId = personagem.universo;
-  const subUniversoAtual = personagem.cultivo?.subUniverso ?? '';
-  const cultivoReinoId = personagem.cultivo?.reinoId ?? '';
-  const cultivoXp = personagem.cultivo?.xpAtual ?? 0;
+  // `cultivo` é um mapa keyed por subUniverso ('' pro universo sem múltiplos
+  // sistemas) — cada chave guarda a progressão independente daquele sistema,
+  // permitindo cultivar em mais de um sistema/subUniverso ao mesmo tempo sem
+  // perder progresso ao trocar de aba (ver docs/MIGRACAO-REACT-FIREBASE.md §5).
+  const cultivoMap = useMemo(() => personagem.cultivo ?? {}, [personagem.cultivo]);
   // Universos com múltiplos sistemas paralelos (ex.: Cultivo → "Doupo
   // Cangqiong", "Martial Peak") têm o campo `SubUniversos` no doc `Universo` e
   // exigem escolher um antes de ver os Reinos. Universos sem esse campo vão
   // direto pra trilha (Reinos com `subUniverso: ''`).
   const temSistemas = subUniversos.length > 0;
+  // Aba mostra só os sistemas que o personagem já possui (uma entrada no mapa
+  // `cultivo`) — trocar entre eles é só clicar na aba, sem reabrir seletor.
+  // "+" abre o menu com os sistemas restantes pra começar um novo em paralelo.
+  const iniciados = useMemo(
+    () => subUniversos.filter(nome => cultivoMap[nome]),
+    [subUniversos, cultivoMap],
+  );
+  const naoIniciados = useMemo(
+    () => subUniversos.filter(nome => !cultivoMap[nome]),
+    [subUniversos, cultivoMap],
+  );
+  const chaveAtual = temSistemas ? subUniversoSelecionado : '';
+  const cultivoReinoId = cultivoMap[chaveAtual]?.reinoId ?? '';
+  const cultivoXp = cultivoMap[chaveAtual]?.xpAtual ?? 0;
 
   // Lista de sistemas de cultivo disponíveis (se houver) vem do campo
   // `SubUniversos` do doc do universo do personagem em `Universo` (somente leitura).
@@ -112,16 +134,20 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
     };
   }, [open, universoId]);
 
+  // Um sistema "pronto" pra mostrar Reinos é: o universo não ter múltiplos
+  // sistemas, ou a aba selecionada ser um dos sistemas já iniciados.
+  const sistemaSelecionadoValido = !temSistemas || iniciados.includes(subUniversoSelecionado);
+
   // Reinos da trilha (do universo, e do sistema escolhido quando o universo
   // tiver mais de um), já ordenados pela lista ligada `reinoAnterior`.
   useEffect(() => {
-    if (!open || carregandoSistemas || (temSistemas && !subUniversoAtual)) {
+    if (!open || carregandoSistemas || !sistemaSelecionadoValido) {
       setReinos([]);
       return undefined;
     }
     let isMounted = true;
     setCarregandoReinos(true);
-    getReinosCultivo(universoId, temSistemas ? subUniversoAtual : '')
+    getReinosCultivo(universoId, chaveAtual)
       .then(itens => {
         if (isMounted) {
           setReinos(ordenarReinosCultivo(itens));
@@ -138,17 +164,31 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
     return () => {
       isMounted = false;
     };
-  }, [open, carregandoSistemas, temSistemas, subUniversoAtual, universoId]);
+  }, [open, carregandoSistemas, sistemaSelecionadoValido, chaveAtual, universoId]);
 
   useEffect(() => {
     if (open) {
       setXpGanhoInput('');
-      setSubUniversoPendente(null);
+      setAddMenuAnchor(null);
       setTribulacaoAberta(false);
       setFalhaTribulacaoAberta(false);
       setEstrelasPerdidasInput('');
     }
   }, [open]);
+
+  // Ao abrir o modal (ou assim que um sistema é iniciado/removido), seleciona
+  // automaticamente a primeira aba de sistema já iniciado. Só troca a
+  // visualização — nunca mexe na progressão de nenhum sistema. Se nenhum
+  // sistema foi iniciado ainda, não seleciona nada (mostra o estado vazio).
+  useEffect(() => {
+    if (!open || !temSistemas || iniciados.length === 0) {
+      return;
+    }
+    if (iniciados.includes(subUniversoSelecionado)) {
+      return;
+    }
+    setSubUniversoSelecionado(iniciados[0]);
+  }, [open, temSistemas, iniciados, subUniversoSelecionado]);
 
   const reinoAtual = useMemo(
     () => reinos.find(reino => reino.id === cultivoReinoId) ?? reinos[0] ?? null,
@@ -178,28 +218,23 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
     return reinos.slice(inicio, inicio + 5).map((reino, offset) => ({ reino, indice: inicio + offset }));
   }, [reinos, indexAtual]);
 
-  const aplicarSubUniverso = useCallback(
-    nome =>
-      executar(() => onSave({ cultivo: { subUniverso: nome, reinoId: '', xpAtual: 0 } })).then(() =>
-        setSubUniversoPendente(null),
-      ),
-    [executar, onSave],
-  );
+  // Trocar de aba é só uma troca de visualização agora — cada sistema tem
+  // sua própria progressão no mapa `cultivo`, então não há nada pra confirmar.
+  const handleSelecionarSubUniverso = useCallback((event, nome) => {
+    setSubUniversoSelecionado(nome);
+  }, []);
 
-  const handleSelecionarSubUniverso = useCallback(
-    event => {
-      const nome = event.target.value;
-      if (!nome || nome === subUniversoAtual) {
-        return undefined;
-      }
-      // Trocar de sistema zera a progressão do anterior — confirma se já houver algo.
-      if (subUniversoAtual && (cultivoXp > 0 || cultivoReinoId)) {
-        setSubUniversoPendente(nome);
-        return undefined;
-      }
-      return aplicarSubUniverso(nome);
+  // Começar a cultivar num sistema novo grava uma progressão zerada no mapa
+  // (é o que faz o sistema aparecer como uma aba própria a partir de agora) e
+  // muda a visualização pra ele — os demais sistemas continuam intactos.
+  const handleAdicionarSistema = useCallback(
+    nome => {
+      setAddMenuAnchor(null);
+      return executar(() =>
+        onSave({ cultivo: { ...cultivoMap, [nome]: { reinoId: '', xpAtual: 0 } } }),
+      ).then(() => setSubUniversoSelecionado(nome));
     },
-    [subUniversoAtual, cultivoXp, cultivoReinoId, aplicarSubUniverso],
+    [cultivoMap, onSave, executar],
   );
 
   const handleGanharXp = useCallback(() => {
@@ -214,20 +249,20 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
         reinoAtual.quantidadeSubReinos,
         reinoAtual.experienciaPorSubReino,
       );
-      await onSave({ cultivo: { subUniverso: subUniversoAtual, reinoId: reinoAtual.id, xpAtual } });
+      await onSave({ cultivo: { ...cultivoMap, [chaveAtual]: { reinoId: reinoAtual.id, xpAtual } } });
       setXpGanhoInput('');
     });
-  }, [xpGanhoInput, reinoAtual, cultivoXp, subUniversoAtual, onSave, executar]);
+  }, [xpGanhoInput, reinoAtual, cultivoXp, cultivoMap, chaveAtual, onSave, executar]);
 
   const handleConfirmarRuptura = useCallback(() => {
     if (!proximoReino) {
       return undefined;
     }
     return executar(async () => {
-      await onSave({ cultivo: { subUniverso: subUniversoAtual, reinoId: proximoReino.id, xpAtual: 0 } });
+      await onSave({ cultivo: { ...cultivoMap, [chaveAtual]: { reinoId: proximoReino.id, xpAtual: 0 } } });
       setTribulacaoAberta(false);
     });
-  }, [proximoReino, subUniversoAtual, onSave, executar]);
+  }, [proximoReino, cultivoMap, chaveAtual, onSave, executar]);
 
   const handleAbrirFalhaTribulacao = useCallback(() => {
     setTribulacaoAberta(false);
@@ -242,11 +277,11 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
     }
     return executar(async () => {
       const xpAtual = aplicarFalhaTribulacao(cultivoXp, estrelasPerdidas, reinoAtual.experienciaPorSubReino);
-      await onSave({ cultivo: { subUniverso: subUniversoAtual, reinoId: reinoAtual.id, xpAtual } });
+      await onSave({ cultivo: { ...cultivoMap, [chaveAtual]: { reinoId: reinoAtual.id, xpAtual } } });
       setFalhaTribulacaoAberta(false);
       setEstrelasPerdidasInput('');
     });
-  }, [estrelasPerdidasInput, reinoAtual, cultivoXp, subUniversoAtual, onSave, executar]);
+  }, [estrelasPerdidasInput, reinoAtual, cultivoXp, cultivoMap, chaveAtual, onSave, executar]);
 
   return (
     <Dialog
@@ -282,40 +317,72 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
           </div>
         )}
 
-        {!carregandoSistemas && temSistemas && (
-          <TextField
-            select
-            fullWidth
-            size="small"
-            label="Sistema Atual"
-            value={subUniversoAtual}
-            onChange={handleSelecionarSubUniverso}
-            sx={{ maxWidth: 360, mt: 1, '& .MuiInputBase-root': { borderRadius: '16px' } }}
-          >
-            <MenuItem value="" disabled>
-              <em>Escolha um sistema de cultivo</em>
-            </MenuItem>
-            {subUniversos.map(nome => (
-              <MenuItem key={nome} value={nome}>
+        {!carregandoSistemas && temSistemas && iniciados.length > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 }}>
+            <Tabs
+              value={iniciados.includes(subUniversoSelecionado) ? subUniversoSelecionado : false}
+              onChange={handleSelecionarSubUniverso}
+              variant="scrollable"
+              scrollButtons="auto"
+              sx={{
+                minHeight: 40,
+                flex: 1,
+                minWidth: 0,
+                borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                '& .MuiTab-root': { minHeight: 40, textTransform: 'none', borderRadius: '12px 12px 0 0' },
+              }}
+            >
+              {iniciados.map(nome => (
+                <Tab key={nome} value={nome} label={nome} />
+              ))}
+            </Tabs>
+            {naoIniciados.length > 0 && (
+              <IconButton
+                type="button"
+                aria-label="Começar a cultivar em outro sistema"
+                size="small"
+                onClick={event => setAddMenuAnchor(event.currentTarget)}
+                sx={{ color: 'var(--color-primary)' }}
+              >
+                <AddCircleOutlineRoundedIcon fontSize="small" />
+              </IconButton>
+            )}
+          </div>
+        )}
+
+        {!carregandoSistemas && temSistemas && naoIniciados.length > 0 && (
+          <Menu anchorEl={addMenuAnchor} open={Boolean(addMenuAnchor)} onClose={() => setAddMenuAnchor(null)}>
+            {naoIniciados.map(nome => (
+              <MenuItem key={nome} onClick={() => handleAdicionarSistema(nome)}>
                 {nome}
               </MenuItem>
             ))}
-          </TextField>
+          </Menu>
         )}
 
-        {!carregandoSistemas && temSistemas && !subUniversoAtual && (
-          <StatusValueRow style={{ display: 'block', marginTop: 20 }}>
-            Escolha um sistema de cultivo (SubUniverso) acima para definir o caminho do personagem.
-          </StatusValueRow>
+        {!carregandoSistemas && temSistemas && iniciados.length === 0 && (
+          <div style={{ marginTop: 20, textAlign: 'center' }}>
+            <StatusValueRow style={{ display: 'block', marginBottom: 12 }}>
+              Nenhum sistema de cultivo iniciado ainda. Escolha um para começar — o personagem pode
+              cultivar em mais de um sistema ao mesmo tempo, cada um com sua própria progressão.
+            </StatusValueRow>
+            <Button
+              variant="outlined"
+              onClick={event => setAddMenuAnchor(event.currentTarget)}
+              sx={{ borderRadius: '16px' }}
+            >
+              Escolher sistema de cultivo
+            </Button>
+          </div>
         )}
 
-        {!carregandoSistemas && (!temSistemas || subUniversoAtual) && carregandoReinos && (
+        {!carregandoSistemas && sistemaSelecionadoValido && carregandoReinos && (
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: 24 }}>
             <CircularProgress size={28} sx={{ color: 'var(--color-primary)' }} />
           </div>
         )}
 
-        {!carregandoSistemas && (!temSistemas || subUniversoAtual) && !carregandoReinos && !reinoAtual && (
+        {!carregandoSistemas && sistemaSelecionadoValido && !carregandoReinos && !reinoAtual && (
           <StatusValueRow style={{ display: 'block', marginTop: 20 }}>
             Nenhum Reino de Cultivo cadastrado para este universo{temSistemas ? ' e sistema' : ''}.
           </StatusValueRow>
@@ -462,22 +529,6 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
           </CultivoLayout>
         )}
       </DialogContent>
-
-      <Dialog open={Boolean(subUniversoPendente)} onClose={() => setSubUniversoPendente(null)}>
-        <DialogTitle>Trocar de sistema de cultivo</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Mudar para <strong>{subUniversoPendente}</strong> vai reiniciar a progressão de cultivo
-            atual (Reino e Cultivo voltam ao início). Essa ação não pode ser desfeita.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setSubUniversoPendente(null)}>Cancelar</Button>
-          <Button variant="contained" onClick={() => aplicarSubUniverso(subUniversoPendente)}>
-            Trocar
-          </Button>
-        </DialogActions>
-      </Dialog>
 
       <Dialog open={tribulacaoAberta} onClose={() => setTribulacaoAberta(false)}>
         <DialogTitle>Tribulação</DialogTitle>
