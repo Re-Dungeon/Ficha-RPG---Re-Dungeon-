@@ -525,15 +525,17 @@ const PerfilFormBody = ({
                 size="small"
                 fullWidth
                 sx={fieldSx}
-                SelectProps={{
-                  multiple: true,
-                  renderValue: selected =>
-                    selected.length === 0
-                      ? 'Nenhuma'
-                      : selected
-                          .map(id => getNome(campanhas.find(item => item.id === id)))
-                          .filter(Boolean)
-                          .join(', '),
+                slotProps={{
+                  select: {
+                    multiple: true,
+                    renderValue: selected =>
+                      selected.length === 0
+                        ? 'Nenhuma'
+                        : selected
+                            .map(id => getNome(campanhas.find(item => item.id === id)))
+                            .filter(Boolean)
+                            .join(', '),
+                  },
                 }}
               >
                 {campanhas.map(item => (

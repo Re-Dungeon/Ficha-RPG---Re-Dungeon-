@@ -175,7 +175,25 @@ const AtributosTab = ({ personagem, onSave, onExcluir }) => {
   const handleSubmit = useCallback(
     async (values, { setSubmitting }) => {
       try {
-        await executar(() => onSave(values));
+        const primariosTotais = calcularPrimariosTotais(
+          values.atributosBase,
+          values.atributosExtra,
+          values.atributosBonus,
+        );
+        const secundariosTotais = calcularSecundarios(
+          primariosTotais,
+          values.secundariosBase,
+          values.secundariosExtra,
+          values.secundariosBonus,
+        );
+        const payload = {
+          ...values,
+          atributosTotais: primariosTotais,
+          secundariosTotais,
+          statusMaximos: calcularStatusMaximos(primariosTotais, values.status),
+          powerCombat: calcularPowerCombat(primariosTotais, secundariosTotais),
+        };
+        await executar(() => onSave(payload));
         limparRascunho();
         setRascunhoDisponivel(null);
       } catch {
