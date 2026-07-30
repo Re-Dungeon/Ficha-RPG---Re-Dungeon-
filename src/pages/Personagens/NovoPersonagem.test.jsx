@@ -4,11 +4,15 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 
 import { useAuth } from 'context/AuthContext';
-import { addPersonagem, getUniverso } from 'service/storage';
+import { addPersonagem, getRmCampanhasPorUniverso, getUniverso } from 'service/storage';
 import NovoPersonagem from './NovoPersonagem';
 
 vi.mock('context/AuthContext', () => ({ useAuth: vi.fn() }));
-vi.mock('service/storage', () => ({ addPersonagem: vi.fn(), getUniverso: vi.fn() }));
+vi.mock('service/storage', () => ({
+  addPersonagem: vi.fn(),
+  getUniverso: vi.fn(),
+  getRmCampanhasPorUniverso: vi.fn(),
+}));
 
 describe('NovoPersonagem — fluxo de criação', () => {
   beforeEach(() => {
@@ -16,6 +20,7 @@ describe('NovoPersonagem — fluxo de criação', () => {
     useAuth.mockReturnValue({ currentUser: { uid: 'uid-teste' } });
     addPersonagem.mockResolvedValue('novo-id-123');
     getUniverso.mockResolvedValue([{ id: 'universo-1', Nome: 'Re-Dungeon' }]);
+    getRmCampanhasPorUniverso.mockResolvedValue([]);
   });
 
   it('cria o personagem com o uid do usuário logado e navega para a ficha recém-criada', async () => {
@@ -43,6 +48,7 @@ describe('NovoPersonagem — fluxo de criação', () => {
         nome: 'Aldric',
         universo: 'universo-1',
         tipo: 'Personagem Jogável',
+        campanha: '',
       }),
     );
     await screen.findByText('Ficha aberta');

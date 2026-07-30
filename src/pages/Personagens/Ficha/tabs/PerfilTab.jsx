@@ -10,6 +10,7 @@ import MenuItem from '@mui/material/MenuItem';
 import { getOrigens } from 'service/storage';
 import { campoCurtoSchema, descricaoSchema, nomeSchema, urlImagemSchema } from 'common/utils/yupSchemas';
 import { getNome } from 'common/utils/resolveNome';
+import { useCampanhasPorUniverso } from 'hooks/useCampanhasPorUniverso';
 import { useDraftLocalStorage } from 'hooks/useDraftLocalStorage';
 import { useRacaClasseNomes } from 'hooks/useRacaClasseNomes';
 import DraftBanner from 'components/DraftBanner/DraftBanner';
@@ -316,6 +317,7 @@ const perfilSchema = yup.object({
   tipo: yup.string().required('Tipo é obrigatório'),
   titulo: campoCurtoSchema,
   origem: yup.string(),
+  campanha: yup.string(),
   afiliacao: campoCurtoSchema,
   statusNarrativo: campoCurtoSchema,
   notasAdicionais: descricaoSchema,
@@ -335,6 +337,7 @@ const PerfilFormBody = ({
   racaNome,
   classesNomes,
   origens,
+  campanhas,
   salvarRascunho,
   rascunho,
   onRestaurar,
@@ -502,6 +505,29 @@ const PerfilFormBody = ({
                   <em>Nenhuma</em>
                 </MenuItem>
                 {origens.map(item => (
+                  <MenuItem key={item.id} value={item.id}>
+                    {getNome(item)}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </InputWrapper>
+            <InputWrapper>
+              <TextField
+                name="campanha"
+                label="Campanha"
+                select
+                value={values.campanha}
+                onChange={handleChange}
+                disabled={!personagem.universo}
+                helperText={!personagem.universo ? 'Escolha um universo para ver as campanhas disponíveis' : ''}
+                size="small"
+                fullWidth
+                sx={fieldSx}
+              >
+                <MenuItem value="">
+                  <em>Nenhuma</em>
+                </MenuItem>
+                {campanhas.map(item => (
                   <MenuItem key={item.id} value={item.id}>
                     {getNome(item)}
                   </MenuItem>
@@ -719,6 +745,7 @@ PerfilFormBody.propTypes = {
   racaNome: PropTypes.string.isRequired,
   classesNomes: PropTypes.array.isRequired,
   origens: PropTypes.array.isRequired,
+  campanhas: PropTypes.array.isRequired,
   salvarRascunho: PropTypes.func.isRequired,
   rascunho: PropTypes.object,
   onRestaurar: PropTypes.func.isRequired,
@@ -733,6 +760,7 @@ PerfilFormBody.defaultProps = {
 
 const PerfilTab = ({ personagem, onSave, aba }) => {
   const [origens, setOrigens] = useState([]);
+  const campanhas = useCampanhasPorUniverso(personagem.universo);
   const { racaNome, classesNomes } = useRacaClasseNomes(personagem);
 
   const chaveRascunho = `rascunho_personagem_${personagem.id}_perfil`;
@@ -786,6 +814,7 @@ const PerfilTab = ({ personagem, onSave, aba }) => {
         tipo: personagem.tipo ?? TIPOS_PERSONAGEM[0],
         titulo: personagem.jogadorInfo?.titulo ?? '',
         origem: personagem.origem ?? '',
+        campanha: personagem.campanha ?? '',
         afiliacao: personagem.jogadorInfo?.afiliacao ?? '',
         statusNarrativo: personagem.jogadorInfo?.statusNarrativo ?? '',
         notasAdicionais: personagem.jogadorInfo?.notasAdicionais ?? '',
@@ -805,6 +834,7 @@ const PerfilTab = ({ personagem, onSave, aba }) => {
           racaNome={racaNome}
           classesNomes={classesNomes}
           origens={origens}
+          campanhas={campanhas}
           salvarRascunho={salvarRascunho}
           rascunho={rascunhoDisponivel}
           onSave={onSave}

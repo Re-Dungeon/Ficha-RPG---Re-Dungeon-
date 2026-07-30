@@ -20,6 +20,7 @@ import { useAuth } from 'context/AuthContext';
 import { addPersonagem, getUniverso } from 'service/storage';
 import { nomeSchema } from 'common/utils/yupSchemas';
 import { getNome } from 'common/utils/resolveNome';
+import { useCampanhasPorUniverso } from 'hooks/useCampanhasPorUniverso';
 import ErrorSnackbar from 'components/ErrorSnackbar/ErrorSnackbar';
 import { TIPOS_PERSONAGEM } from './Ficha/constants';
 
@@ -27,11 +28,14 @@ const novoPersonagemSchema = yup.object({
   nome: nomeSchema,
   universo: yup.string().required('Universo é obrigatório'),
   tipo: yup.string().required('Tipo é obrigatório'),
+  campanha: yup.string(),
 });
 
 const CriarPersonagemModal = ({ open, onClose, onCreated }) => {
   const { currentUser } = useAuth();
   const [universos, setUniversos] = useState([]);
+  const [universoSelecionado, setUniversoSelecionado] = useState('');
+  const campanhas = useCampanhasPorUniverso(universoSelecionado);
   const [erro, setErro] = useState(null);
   const nomeRef = useRef(null);
 
@@ -63,6 +67,7 @@ const CriarPersonagemModal = ({ open, onClose, onCreated }) => {
   useEffect(() => {
     if (open) {
       setErro(null);
+      setUniversoSelecionado('');
       setTimeout(() => {
         nomeRef.current?.focus();
       }, 50);
@@ -70,9 +75,9 @@ const CriarPersonagemModal = ({ open, onClose, onCreated }) => {
   }, [open]);
 
   const handleSubmit = useCallback(
-    async ({ nome, universo, tipo }, { setSubmitting }) => {
+    async ({ nome, universo, tipo, campanha }, { setSubmitting }) => {
       try {
-        await addPersonagem({ uid: currentUser.uid, nome, universo, tipo });
+        await addPersonagem({ uid: currentUser.uid, nome, universo, tipo, campanha });
         onCreated();
         onClose();
       } catch (error) {
@@ -160,7 +165,7 @@ const CriarPersonagemModal = ({ open, onClose, onCreated }) => {
         </div>
 
         <Formik
-          initialValues={{ nome: '', universo: '', tipo: TIPOS_PERSONAGEM[0] }}
+          initialValues={{ nome: '', universo: '', tipo: TIPOS_PERSONAGEM[0], campanha: '' }}
           validationSchema={novoPersonagemSchema}
           onSubmit={handleSubmit}
         >
@@ -172,6 +177,7 @@ const CriarPersonagemModal = ({ open, onClose, onCreated }) => {
             handleBlur,
             handleSubmit: submit,
             isSubmitting,
+            setFieldValue,
           }) => (
             <form onSubmit={submit} noValidate>
               <TextField
@@ -208,7 +214,11 @@ const CriarPersonagemModal = ({ open, onClose, onCreated }) => {
                   name="universo"
                   label="Universo"
                   value={values.universo}
-                  onChange={handleChange}
+                  onChange={e => {
+                    handleChange(e);
+                    setUniversoSelecionado(e.target.value);
+                    setFieldValue('campanha', '');
+                  }}
                   onBlur={handleBlur}
                   MenuProps={{
                     slotProps: {
@@ -309,6 +319,62 @@ const CriarPersonagemModal = ({ open, onClose, onCreated }) => {
                 </Select>
                 {touched.tipo && errors.tipo && (
                   <FormHelperText>{errors.tipo}</FormHelperText>
+                )}
+              </FormControl>
+
+              <FormControl size="small" fullWidth sx={{ mb: 1.5 }} disabled={!values.universo}>
+                <InputLabel id="novo-personagem-campanha-label">Campanha</InputLabel>
+                <Select
+                  labelId="novo-personagem-campanha-label"
+                  name="campanha"
+                  label="Campanha"
+                  value={values.campanha}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  MenuProps={{
+                    slotProps: {
+                      paper: {
+                        sx: {
+                          bgcolor: 'rgba(10, 9, 19, 0.96)',
+                          border: '1px solid rgba(91, 124, 250, 0.18)',
+                          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.35)',
+                        },
+                      },
+                    },
+                  }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: '16px',
+                      background: 'rgba(255, 255, 255, 0.03)',
+                    },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'rgba(91, 124, 250, 0.65)',
+                    },
+                  }}
+                >
+                  <MenuItem value="">
+                    <em>Nenhuma</em>
+                  </MenuItem>
+                  {campanhas.map(item => (
+                    <MenuItem
+                      key={item.id}
+                      value={item.id}
+                      sx={{
+                        py: 1.5,
+                        '&.Mui-selected': {
+                          backgroundColor: 'rgba(91, 124, 250, 0.16)',
+                        },
+                        '&:hover': {
+                          backgroundColor: 'rgba(91, 124, 250, 0.08)',
+                        },
+                      }}
+                    >
+                      {getNome(item)}
+                    </MenuItem>
+                  ))}
+                </Select>
+                {!values.universo && (
+                  <FormHelperText>Escolha um universo para ver as campanhas disponíveis</FormHelperText>
                 )}
               </FormControl>
 

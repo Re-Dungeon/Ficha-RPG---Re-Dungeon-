@@ -256,6 +256,9 @@ export const getDivindades = () => getFirestoreItems('divindades');
 export const getRacasPorUniverso = universoId =>
   getColecaoPorUniverso('racas', universoId);
 
+export const getRmCampanhasPorUniverso = universoId =>
+  getColecaoPorUniverso('rmCampanhas', universoId);
+
 export const getOrigensPorUniverso = universoId =>
   getColecaoPorUniverso('origens', universoId);
 

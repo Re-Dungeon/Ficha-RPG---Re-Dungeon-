@@ -2,7 +2,13 @@ import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 
-import { getCorposEspeciaisPorUniverso, getFirestoreItem, getOrigens, getUniverso } from 'service/storage';
+import {
+  getCorposEspeciaisPorUniverso,
+  getFirestoreItem,
+  getOrigens,
+  getRmCampanhasPorUniverso,
+  getUniverso,
+} from 'service/storage';
 import { SavingProvider } from 'context/SavingContext';
 
 import InfoModal from './InfoModal';
@@ -10,6 +16,7 @@ import InfoModal from './InfoModal';
 vi.mock('service/storage', () => ({
   getFirestoreItem: vi.fn(),
   getOrigens: vi.fn(),
+  getRmCampanhasPorUniverso: vi.fn(),
   getUniverso: vi.fn(),
   getCorposEspeciaisPorUniverso: vi.fn(),
 }));
@@ -27,6 +34,7 @@ describe('InfoModal / PerfilTab', () => {
   beforeEach(() => {
     getFirestoreItem.mockResolvedValue(null);
     getOrigens.mockResolvedValue([]);
+    getRmCampanhasPorUniverso.mockResolvedValue([]);
     getUniverso.mockResolvedValue([{ id: 'universo-1', Nome: 'Re-Dungeon' }]);
     getCorposEspeciaisPorUniverso.mockResolvedValue([]);
   });

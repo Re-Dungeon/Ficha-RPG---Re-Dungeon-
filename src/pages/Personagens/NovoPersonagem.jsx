@@ -14,6 +14,7 @@ import { useAuth } from 'context/AuthContext';
 import { addPersonagem, getUniverso } from 'service/storage';
 import { nomeSchema } from 'common/utils/yupSchemas';
 import { getNome } from 'common/utils/resolveNome';
+import { useCampanhasPorUniverso } from 'hooks/useCampanhasPorUniverso';
 import ErrorSnackbar from 'components/ErrorSnackbar/ErrorSnackbar';
 import { TIPOS_PERSONAGEM } from './Ficha/constants';
 
@@ -23,12 +24,15 @@ const novoPersonagemSchema = yup.object({
   nome: nomeSchema,
   universo: yup.string().required('Universo é obrigatório'),
   tipo: yup.string().required('Tipo é obrigatório'),
+  campanha: yup.string(),
 });
 
 const NovoPersonagem = () => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   const [universos, setUniversos] = useState([]);
+  const [universoSelecionado, setUniversoSelecionado] = useState('');
+  const campanhas = useCampanhasPorUniverso(universoSelecionado);
   const [erro, setErro] = useState(null);
 
   useEffect(() => {
@@ -36,9 +40,9 @@ const NovoPersonagem = () => {
   }, []);
 
   const handleSubmit = useCallback(
-    async ({ nome, universo, tipo }, { setSubmitting }) => {
+    async ({ nome, universo, tipo, campanha }, { setSubmitting }) => {
       try {
-        const id = await addPersonagem({ uid: currentUser.uid, nome, universo, tipo });
+        const id = await addPersonagem({ uid: currentUser.uid, nome, universo, tipo, campanha });
         navigate(`/personagens/${id}`);
       } catch (error) {
         // eslint-disable-next-line no-console
@@ -57,7 +61,7 @@ const NovoPersonagem = () => {
       <PageTitle>Nova Ficha</PageTitle>
 
       <Formik
-        initialValues={{ nome: '', universo: '', tipo: TIPOS_PERSONAGEM[0] }}
+        initialValues={{ nome: '', universo: '', tipo: TIPOS_PERSONAGEM[0], campanha: '' }}
         validationSchema={novoPersonagemSchema}
         onSubmit={handleSubmit}
       >
@@ -69,6 +73,7 @@ const NovoPersonagem = () => {
           handleBlur,
           handleSubmit: submit,
           isSubmitting,
+          setFieldValue,
         }) => (
           <FormWrapper as="form" onSubmit={submit} noValidate>
             <TextField
@@ -93,7 +98,11 @@ const NovoPersonagem = () => {
                 name="universo"
                 label="Universo"
                 value={values.universo}
-                onChange={handleChange}
+                onChange={e => {
+                  handleChange(e);
+                  setUniversoSelecionado(e.target.value);
+                  setFieldValue('campanha', '');
+                }}
                 onBlur={handleBlur}
               >
                 {universos.map(item => (
@@ -128,6 +137,29 @@ const NovoPersonagem = () => {
               </Select>
               {touched.tipo && errors.tipo && (
                 <FormHelperText>{errors.tipo}</FormHelperText>
+              )}
+            </FormControl>
+            <FormControl size="small" fullWidth disabled={!values.universo}>
+              <InputLabel id="novo-personagem-campanha-label">Campanha</InputLabel>
+              <Select
+                labelId="novo-personagem-campanha-label"
+                name="campanha"
+                label="Campanha"
+                value={values.campanha}
+                onChange={handleChange}
+                onBlur={handleBlur}
+              >
+                <MenuItem value="">
+                  <em>Nenhuma</em>
+                </MenuItem>
+                {campanhas.map(item => (
+                  <MenuItem key={item.id} value={item.id}>
+                    {getNome(item)}
+                  </MenuItem>
+                ))}
+              </Select>
+              {!values.universo && (
+                <FormHelperText>Escolha um universo para ver as campanhas disponíveis</FormHelperText>
               )}
             </FormControl>
             <Button type="submit" variant="contained" disabled={isSubmitting}>
