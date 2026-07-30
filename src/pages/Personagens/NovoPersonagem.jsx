@@ -8,6 +8,8 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
+import Checkbox from '@mui/material/Checkbox';
+import ListItemText from '@mui/material/ListItemText';
 import FormHelperText from '@mui/material/FormHelperText';
 
 import { useAuth } from 'context/AuthContext';
@@ -24,7 +26,7 @@ const novoPersonagemSchema = yup.object({
   nome: nomeSchema,
   universo: yup.string().required('Universo é obrigatório'),
   tipo: yup.string().required('Tipo é obrigatório'),
-  campanha: yup.string(),
+  campanhas: yup.array().of(yup.string()),
 });
 
 const NovoPersonagem = () => {
@@ -40,9 +42,9 @@ const NovoPersonagem = () => {
   }, []);
 
   const handleSubmit = useCallback(
-    async ({ nome, universo, tipo, campanha }, { setSubmitting }) => {
+    async ({ nome, universo, tipo, campanhas }, { setSubmitting }) => {
       try {
-        const id = await addPersonagem({ uid: currentUser.uid, nome, universo, tipo, campanha });
+        const id = await addPersonagem({ uid: currentUser.uid, nome, universo, tipo, campanhas });
         navigate(`/personagens/${id}`);
       } catch (error) {
         // eslint-disable-next-line no-console
@@ -61,7 +63,7 @@ const NovoPersonagem = () => {
       <PageTitle>Nova Ficha</PageTitle>
 
       <Formik
-        initialValues={{ nome: '', universo: '', tipo: TIPOS_PERSONAGEM[0], campanha: '' }}
+        initialValues={{ nome: '', universo: '', tipo: TIPOS_PERSONAGEM[0], campanhas: [] }}
         validationSchema={novoPersonagemSchema}
         onSubmit={handleSubmit}
       >
@@ -101,7 +103,7 @@ const NovoPersonagem = () => {
                 onChange={e => {
                   handleChange(e);
                   setUniversoSelecionado(e.target.value);
-                  setFieldValue('campanha', '');
+                  setFieldValue('campanhas', []);
                 }}
                 onBlur={handleBlur}
               >
@@ -140,21 +142,28 @@ const NovoPersonagem = () => {
               )}
             </FormControl>
             <FormControl size="small" fullWidth disabled={!values.universo}>
-              <InputLabel id="novo-personagem-campanha-label">Campanha</InputLabel>
+              <InputLabel id="novo-personagem-campanhas-label">Campanha</InputLabel>
               <Select
-                labelId="novo-personagem-campanha-label"
-                name="campanha"
+                labelId="novo-personagem-campanhas-label"
+                name="campanhas"
                 label="Campanha"
-                value={values.campanha}
+                multiple
+                value={values.campanhas}
                 onChange={handleChange}
                 onBlur={handleBlur}
+                renderValue={selected =>
+                  selected.length === 0
+                    ? 'Nenhuma'
+                    : selected
+                        .map(id => getNome(campanhas.find(item => item.id === id)))
+                        .filter(Boolean)
+                        .join(', ')
+                }
               >
-                <MenuItem value="">
-                  <em>Nenhuma</em>
-                </MenuItem>
                 {campanhas.map(item => (
                   <MenuItem key={item.id} value={item.id}>
-                    {getNome(item)}
+                    <Checkbox size="small" checked={values.campanhas.includes(item.id)} />
+                    <ListItemText primary={getNome(item)} />
                   </MenuItem>
                 ))}
               </Select>

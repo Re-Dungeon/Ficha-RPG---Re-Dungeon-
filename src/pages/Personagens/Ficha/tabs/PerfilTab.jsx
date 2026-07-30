@@ -5,6 +5,8 @@ import * as yup from 'yup';
 import PropTypes from 'prop-types';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
+import Checkbox from '@mui/material/Checkbox';
+import ListItemText from '@mui/material/ListItemText';
 // Avatar img will be a plain img inside the card to allow full-height portrait layout
 
 import { getOrigens } from 'service/storage';
@@ -317,7 +319,7 @@ const perfilSchema = yup.object({
   tipo: yup.string().required('Tipo é obrigatório'),
   titulo: campoCurtoSchema,
   origem: yup.string(),
-  campanha: yup.string(),
+  campanhas: yup.array().of(yup.string()),
   afiliacao: campoCurtoSchema,
   statusNarrativo: campoCurtoSchema,
   notasAdicionais: descricaoSchema,
@@ -513,23 +515,31 @@ const PerfilFormBody = ({
             </InputWrapper>
             <InputWrapper>
               <TextField
-                name="campanha"
+                name="campanhas"
                 label="Campanha"
                 select
-                value={values.campanha}
+                value={values.campanhas}
                 onChange={handleChange}
                 disabled={!personagem.universo}
                 helperText={!personagem.universo ? 'Escolha um universo para ver as campanhas disponíveis' : ''}
                 size="small"
                 fullWidth
                 sx={fieldSx}
+                SelectProps={{
+                  multiple: true,
+                  renderValue: selected =>
+                    selected.length === 0
+                      ? 'Nenhuma'
+                      : selected
+                          .map(id => getNome(campanhas.find(item => item.id === id)))
+                          .filter(Boolean)
+                          .join(', '),
+                }}
               >
-                <MenuItem value="">
-                  <em>Nenhuma</em>
-                </MenuItem>
                 {campanhas.map(item => (
                   <MenuItem key={item.id} value={item.id}>
-                    {getNome(item)}
+                    <Checkbox size="small" checked={values.campanhas.includes(item.id)} />
+                    <ListItemText primary={getNome(item)} />
                   </MenuItem>
                 ))}
               </TextField>
@@ -814,7 +824,7 @@ const PerfilTab = ({ personagem, onSave, aba }) => {
         tipo: personagem.tipo ?? TIPOS_PERSONAGEM[0],
         titulo: personagem.jogadorInfo?.titulo ?? '',
         origem: personagem.origem ?? '',
-        campanha: personagem.campanha ?? '',
+        campanhas: personagem.campanhas ?? [],
         afiliacao: personagem.jogadorInfo?.afiliacao ?? '',
         statusNarrativo: personagem.jogadorInfo?.statusNarrativo ?? '',
         notasAdicionais: personagem.jogadorInfo?.notasAdicionais ?? '',

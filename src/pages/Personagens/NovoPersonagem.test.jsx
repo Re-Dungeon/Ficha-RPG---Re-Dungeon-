@@ -48,7 +48,7 @@ describe('NovoPersonagem — fluxo de criação', () => {
         nome: 'Aldric',
         universo: 'universo-1',
         tipo: 'Personagem Jogável',
-        campanha: '',
+        campanhas: [],
       }),
     );
     await screen.findByText('Ficha aberta');

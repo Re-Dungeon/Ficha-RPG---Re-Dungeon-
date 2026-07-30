@@ -11,6 +11,8 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
+import Checkbox from '@mui/material/Checkbox';
+import ListItemText from '@mui/material/ListItemText';
 import FormHelperText from '@mui/material/FormHelperText';
 import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
@@ -28,7 +30,7 @@ const novoPersonagemSchema = yup.object({
   nome: nomeSchema,
   universo: yup.string().required('Universo é obrigatório'),
   tipo: yup.string().required('Tipo é obrigatório'),
-  campanha: yup.string(),
+  campanhas: yup.array().of(yup.string()),
 });
 
 const CriarPersonagemModal = ({ open, onClose, onCreated }) => {
@@ -75,9 +77,9 @@ const CriarPersonagemModal = ({ open, onClose, onCreated }) => {
   }, [open]);
 
   const handleSubmit = useCallback(
-    async ({ nome, universo, tipo, campanha }, { setSubmitting }) => {
+    async ({ nome, universo, tipo, campanhas }, { setSubmitting }) => {
       try {
-        await addPersonagem({ uid: currentUser.uid, nome, universo, tipo, campanha });
+        await addPersonagem({ uid: currentUser.uid, nome, universo, tipo, campanhas });
         onCreated();
         onClose();
       } catch (error) {
@@ -165,7 +167,7 @@ const CriarPersonagemModal = ({ open, onClose, onCreated }) => {
         </div>
 
         <Formik
-          initialValues={{ nome: '', universo: '', tipo: TIPOS_PERSONAGEM[0], campanha: '' }}
+          initialValues={{ nome: '', universo: '', tipo: TIPOS_PERSONAGEM[0], campanhas: [] }}
           validationSchema={novoPersonagemSchema}
           onSubmit={handleSubmit}
         >
@@ -217,7 +219,7 @@ const CriarPersonagemModal = ({ open, onClose, onCreated }) => {
                   onChange={e => {
                     handleChange(e);
                     setUniversoSelecionado(e.target.value);
-                    setFieldValue('campanha', '');
+                    setFieldValue('campanhas', []);
                   }}
                   onBlur={handleBlur}
                   MenuProps={{
@@ -323,14 +325,23 @@ const CriarPersonagemModal = ({ open, onClose, onCreated }) => {
               </FormControl>
 
               <FormControl size="small" fullWidth sx={{ mb: 1.5 }} disabled={!values.universo}>
-                <InputLabel id="novo-personagem-campanha-label">Campanha</InputLabel>
+                <InputLabel id="novo-personagem-campanhas-label">Campanha</InputLabel>
                 <Select
-                  labelId="novo-personagem-campanha-label"
-                  name="campanha"
+                  labelId="novo-personagem-campanhas-label"
+                  name="campanhas"
                   label="Campanha"
-                  value={values.campanha}
+                  multiple
+                  value={values.campanhas}
                   onChange={handleChange}
                   onBlur={handleBlur}
+                  renderValue={selected =>
+                    selected.length === 0
+                      ? 'Nenhuma'
+                      : selected
+                          .map(id => getNome(campanhas.find(item => item.id === id)))
+                          .filter(Boolean)
+                          .join(', ')
+                  }
                   MenuProps={{
                     slotProps: {
                       paper: {
@@ -352,15 +363,12 @@ const CriarPersonagemModal = ({ open, onClose, onCreated }) => {
                     },
                   }}
                 >
-                  <MenuItem value="">
-                    <em>Nenhuma</em>
-                  </MenuItem>
                   {campanhas.map(item => (
                     <MenuItem
                       key={item.id}
                       value={item.id}
                       sx={{
-                        py: 1.5,
+                        py: 0.5,
                         '&.Mui-selected': {
                           backgroundColor: 'rgba(91, 124, 250, 0.16)',
                         },
@@ -369,7 +377,8 @@ const CriarPersonagemModal = ({ open, onClose, onCreated }) => {
                         },
                       }}
                     >
-                      {getNome(item)}
+                      <Checkbox size="small" checked={values.campanhas.includes(item.id)} />
+                      <ListItemText primary={getNome(item)} />
                     </MenuItem>
                   ))}
                 </Select>

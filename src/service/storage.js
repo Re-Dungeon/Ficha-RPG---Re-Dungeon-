@@ -256,8 +256,10 @@ export const getDivindades = () => getFirestoreItems('divindades');
 export const getRacasPorUniverso = universoId =>
   getColecaoPorUniverso('racas', universoId);
 
+// `rmCampanhas` é do módulo Re:Master e usa `universoId` (não `universo`
+// como os catálogos do Re-Dungeon acima) — não reaproveita getColecaoPorUniverso.
 export const getRmCampanhasPorUniverso = universoId =>
-  getColecaoPorUniverso('rmCampanhas', universoId);
+  getFirestoreItems('rmCampanhas', where('universoId', '==', universoId));
 
 export const getOrigensPorUniverso = universoId =>
   getColecaoPorUniverso('origens', universoId);
