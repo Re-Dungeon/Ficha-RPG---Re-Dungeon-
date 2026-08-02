@@ -72,4 +72,31 @@ describe('InfoModal / PerfilTab', () => {
 
     await waitFor(() => expect(onSave).toHaveBeenCalledWith({ corpoEspecial: 'ce1' }));
   });
+
+  it('renderiza corpo especial com bonus estruturado como objeto', async () => {
+    getCorposEspeciaisPorUniverso.mockResolvedValue([
+      {
+        id: 'ce2',
+        nome: 'Corpo Escarlate',
+        descricao: 'Descrição teste',
+        bonus: [
+          { tipo: 'vantagem', descricao: 'Vantagem especial' },
+          { tipo: 'desvantagem', descricao: 'Desvantagem pesada' },
+        ],
+      },
+    ]);
+    const onSave = vi.fn().mockResolvedValue();
+    render(
+      <SavingProvider>
+        <InfoModal open onClose={vi.fn()} personagem={{ ...personagem, corpoEspecial: 'ce2' }} onSave={onSave} />
+      </SavingProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Corpo Especial' }));
+
+    expect(await screen.findByText('Vantagens')).toBeInTheDocument();
+    expect(screen.getByText('Vantagem especial')).toBeInTheDocument();
+    expect(screen.getByText('Desvantagens')).toBeInTheDocument();
+    expect(screen.getByText('Desvantagem pesada')).toBeInTheDocument();
+  });
 });

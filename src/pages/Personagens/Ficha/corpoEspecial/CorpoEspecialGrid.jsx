@@ -128,6 +128,81 @@ const CorpoEspecialGridWrapper = styled(EnciclopediaGrid)`
   }
 `;
 
+const CorpoEspecialColumns = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+
+  @media (max-width: 860px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const CorpoEspecialColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+const getBonusTexto = bonus => {
+  if (bonus == null) {
+    return '';
+  }
+  if (typeof bonus === 'string') {
+    return bonus;
+  }
+  if (typeof bonus === 'object') {
+    return (
+      bonus.descricao ??
+      bonus.descricaoCompleta ??
+      bonus.nome ??
+      bonus.titulo ??
+      bonus.texto ??
+      bonus.label ??
+      bonus.title ??
+      JSON.stringify(bonus)
+    );
+  }
+  return String(bonus);
+};
+
+const bonusLinhaEhDesvantagem = bonus => {
+  const tipo = bonus?.tipo ?? bonus?.type ?? bonus?.categoria ?? bonus?.category;
+  if (typeof tipo === 'string') {
+    const tipoLower = tipo.toLowerCase();
+    if (tipoLower.includes('desvant')) {
+      return true;
+    }
+    if (tipoLower.includes('vantag')) {
+      return false;
+    }
+    if (tipoLower.includes('disadv')) {
+      return true;
+    }
+    if (tipoLower.includes('advant')) {
+      return false;
+    }
+  }
+
+  const texto = getBonusTexto(bonus).toLowerCase().trim();
+  return texto.startsWith('desvantagem');
+};
+
+const extrairBonusLinhas = bonusData => {
+  if (Array.isArray(bonusData)) {
+    return bonusData;
+  }
+  if (bonusData && typeof bonusData === 'object') {
+    const vantagens = bonusData.vantagens ?? bonusData.advantages;
+    const desvantagens = bonusData.desvantagens ?? bonusData.disadvantages;
+    if (Array.isArray(vantagens) || Array.isArray(desvantagens)) {
+      return [ ...(Array.isArray(vantagens) ? vantagens : []), ...(Array.isArray(desvantagens) ? desvantagens : []) ];
+    }
+  }
+  return [];
+};
+
 const CorpoEspecialGrid = ({ personagem, onSave }) => {
   const [catalogo, setCatalogo] = useState([]);
   // Alterna pra grade mesmo já tendo um corpo especial escolhido, pra permitir trocar.
@@ -174,12 +249,9 @@ const CorpoEspecialGrid = ({ personagem, onSave }) => {
   }
 
   if (corpoEspecialAtual && !mostrarCatalogo) {
-    const vantagens = (corpoEspecialAtual.bonus ?? []).filter(
-      linha => !linha.trim().toLowerCase().startsWith('desvantagem'),
-    );
-    const desvantagens = (corpoEspecialAtual.bonus ?? []).filter(linha =>
-      linha.trim().toLowerCase().startsWith('desvantagem'),
-    );
+    const bonusLinhas = extrairBonusLinhas(corpoEspecialAtual.bonus);
+    const vantagens = bonusLinhas.filter(linha => !bonusLinhaEhDesvantagem(linha));
+    const desvantagens = bonusLinhas.filter(linha => bonusLinhaEhDesvantagem(linha));
 
     return (
       <div style={{ marginTop: 16 }}>
@@ -197,33 +269,39 @@ const CorpoEspecialGrid = ({ personagem, onSave }) => {
         <SecaoTitulo>Descrição</SecaoTitulo>
         <DescricaoBox>{corpoEspecialAtual.descricao || 'Sem descrição cadastrada.'}</DescricaoBox>
 
-        {vantagens.length > 0 && (
-          <>
+        <CorpoEspecialColumns>
+          <CorpoEspecialColumn>
             <SecaoTitulo>Vantagens</SecaoTitulo>
-            <BonusLista>
-              {vantagens.map((linha, index) => (
-                <BonusItem key={index} $variante="check">
-                  <CheckIcon fontSize="inherit" />
-                  {linha}
-                </BonusItem>
-              ))}
-            </BonusLista>
-          </>
-        )}
+            {vantagens.length > 0 ? (
+              <BonusLista>
+                {vantagens.map((linha, index) => (
+                  <BonusItem key={`vantagem-${index}`} $variante="check">
+                    <CheckIcon fontSize="inherit" />
+                    {getBonusTexto(linha)}
+                  </BonusItem>
+                ))}
+              </BonusLista>
+            ) : (
+              <DescricaoBox>Sem vantagens cadastradas.</DescricaoBox>
+            )}
+          </CorpoEspecialColumn>
 
-        {desvantagens.length > 0 && (
-          <>
+          <CorpoEspecialColumn>
             <SecaoTitulo>Desvantagens</SecaoTitulo>
-            <BonusLista>
-              {desvantagens.map((linha, index) => (
-                <BonusItem key={index}>
-                  <RemoveIcon fontSize="inherit" />
-                  {linha}
-                </BonusItem>
-              ))}
-            </BonusLista>
-          </>
-        )}
+            {desvantagens.length > 0 ? (
+              <BonusLista>
+                {desvantagens.map((linha, index) => (
+                  <BonusItem key={`desvantagem-${index}`}>
+                    <RemoveIcon fontSize="inherit" />
+                    {getBonusTexto(linha)}
+                  </BonusItem>
+                ))}
+              </BonusLista>
+            ) : (
+              <DescricaoBox>Sem desvantagens cadastradas.</DescricaoBox>
+            )}
+          </CorpoEspecialColumn>
+        </CorpoEspecialColumns>
       </div>
     );
   }

@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
@@ -15,16 +16,6 @@ import { campoCurtoSchema, descricaoSchema, nomeSchema, urlImagemSchema } from '
 
 import { ITEM_AUTORAL_INICIAL, QUALIDADE_OPTIONS } from './constants';
 import HabilidadesEspeciaisEditor from './HabilidadesEspeciaisEditor';
-
-const StyledDialog = styled(Dialog)`
-  & .MuiPaper-root {
-    background: linear-gradient(180deg, #17142a 0%, #211a38 100%);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow: 0 32px 80px rgba(0, 0, 0, 0.55);
-    border-radius: 22px;
-    overflow: hidden;
-  }
-`;
 
 const FormSection = styled.div`
   background: rgba(255, 255, 255, 0.03);
