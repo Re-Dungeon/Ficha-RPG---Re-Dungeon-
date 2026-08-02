@@ -309,49 +309,65 @@ export const calcularPcDisponivel = (powerCombatAtual, powerCombatGasto = 0) =>
   Math.max(0, powerCombatAtual - powerCombatGasto);
 
 // Ao clicar num nó bloqueado, o custo real inclui todos os nós-pai ainda
-// bloqueados no caminho até ele (subindo por `parentId` até a raiz ou até
-// achar um nó já desbloqueado). `nos` é a lista plana de nós da constelação.
+// bloqueados no caminho até ele (subindo por `parentIds` — um nó pode ter 2+
+// pais, então isso é uma busca em largura sobre um grafo, não uma cadeia
+// linear — até a(s) raiz(es) ou até achar um nó já desbloqueado). `nos` é a
+// lista plana de nós da constelação. `visitados` também deduplica pais
+// compartilhados por mais de um descendente (ex. A é requisito de B e de C,
+// que por sua vez são ambos requisito de D): A entra na cadeia uma única vez.
 export const calcularCustoDesbloqueio = (nos, nodeId, idsDesbloqueados = []) => {
   const porId = new Map(nos.map(no => [no.id, no]));
   const cadeia = [];
   const visitados = new Set();
-  let atualId = nodeId;
+  const fila = [nodeId];
 
-  while (atualId && !idsDesbloqueados.includes(atualId) && !visitados.has(atualId)) {
-    visitados.add(atualId);
+  while (fila.length > 0) {
+    const atualId = fila.shift();
+    if (!atualId || visitados.has(atualId) || idsDesbloqueados.includes(atualId)) {
+      continue;
+    }
     const no = porId.get(atualId);
     if (!no) {
-      break;
+      continue;
     }
+    visitados.add(atualId);
     cadeia.push(no);
-    atualId = no.parentId;
+    fila.push(...(no.parentIds ?? []));
   }
 
   return { cadeia, custoTotal: cadeia.reduce((total, no) => total + (no.custo ?? 0), 0) };
 };
 
 // Ao bloquear um nó já desbloqueado, todo nó desbloqueado que dependa dele
-// (filho, neto etc. — via `parentId`, descendo a árvore) perde seu
-// requisito e precisa ser bloqueado junto, devolvendo o PC de todos eles.
-// Só desce por ramos já desbloqueados: um filho bloqueado nunca teria um
-// neto desbloqueado (a cadeia de requisito impede isso).
+// (filho, neto etc. — via `parentIds`, descendo o grafo) perde um dos seus
+// requisitos e precisa ser bloqueado junto, devolvendo o PC de todos eles —
+// mesmo que o filho tenha outro pai que continue desbloqueado, já que TODOS
+// os requisitos precisam estar satisfeitos. `bloqueados` evita processar o
+// mesmo descendente duas vezes quando ele é alcançado por mais de um pai
+// bloqueado nesta cascata (ex. D exige B e C, e ambos descendem de A).
 export const calcularCadeiaBloqueio = (nos, nodeId, idsDesbloqueados = []) => {
   const porId = new Map(nos.map(no => [no.id, no]));
   const filhosPorPai = new Map();
   nos.forEach(no => {
-    const pai = no.parentId ?? null;
-    if (!filhosPorPai.has(pai)) {
-      filhosPorPai.set(pai, []);
-    }
-    filhosPorPai.get(pai).push(no);
+    (no.parentIds ?? []).forEach(pai => {
+      if (!filhosPorPai.has(pai)) {
+        filhosPorPai.set(pai, []);
+      }
+      filhosPorPai.get(pai).push(no);
+    });
   });
 
   const cadeia = [];
+  const bloqueados = new Set();
   const coletar = id => {
+    if (bloqueados.has(id)) {
+      return;
+    }
     const no = porId.get(id);
     if (!no || !idsDesbloqueados.includes(id)) {
       return;
     }
+    bloqueados.add(id);
     cadeia.push(no);
     (filhosPorPai.get(id) ?? []).forEach(filho => coletar(filho.id));
   };

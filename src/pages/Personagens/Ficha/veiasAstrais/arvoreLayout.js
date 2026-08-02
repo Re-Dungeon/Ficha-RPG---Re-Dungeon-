@@ -1,16 +1,18 @@
-// Layout puro (sem dependência de React) de uma árvore/floresta de nós ligados
-// por `parentId` — usado pelo ConstelacaoArvoreModal pra posicionar cada nó em
-// x/y antes de desenhar os círculos e as linhas de conexão em SVG.
+// Layout puro (sem dependência de React) de um grafo acíclico de nós ligados
+// por `parentIds` (um nó pode exigir 2+ veias-pai) — usado pelo
+// ConstelacaoArvoreModal pra posicionar cada nó em x/y antes de desenhar os
+// círculos e as linhas de conexão em SVG.
 const COLUMN_WIDTH = 150;
 const ROW_HEIGHT = 110;
 
-// Profundidade calculada a partir da cadeia real de `parentId` (não do campo
-// `camada`, que é só um rótulo do catálogo) — garante que todo filho fique
-// estritamente à direita do pai na árvore desenhada.
+// Profundidade calculada a partir da cadeia real de `parentIds` (não do campo
+// `camada`, que é só um rótulo do catálogo) — quando há múltiplos pais, usa o
+// mais profundo deles, garantindo que o nó fique estritamente à direita de
+// TODOS os seus pais na árvore desenhada.
 const calcularProfundidades = (nos, porId) => {
   const profundidade = new Map();
   // `visitando` guarda os nós no caminho de recursão atual: dado de catálogo é
-  // admin-managed e este site só lê, então um `parentId` formando ciclo (ex. A
+  // admin-managed e este site só lê, então um `parentIds` formando ciclo (ex. A
   // aponta pra B e B aponta de volta pra A) não pode virar recursão infinita —
   // trata o nó que fecha o ciclo como raiz (profundidade 0) em vez de travar.
   const visitando = new Set();
@@ -23,8 +25,8 @@ const calcularProfundidades = (nos, porId) => {
       return 0;
     }
     visitando.add(no.id);
-    const pai = no.parentId ? porId.get(no.parentId) : null;
-    const valor = pai ? resolver(pai) + 1 : 0;
+    const pais = (no.parentIds ?? []).map(id => porId.get(id)).filter(Boolean);
+    const valor = pais.length === 0 ? 0 : Math.max(...pais.map(resolver)) + 1;
     visitando.delete(no.id);
     profundidade.set(no.id, valor);
     return valor;
@@ -35,13 +37,20 @@ const calcularProfundidades = (nos, porId) => {
 
 export const calcularLayoutArvore = nos => {
   const porId = new Map(nos.map(no => [no.id, no]));
+  // Um nó com múltiplos pais entra na lista de filhos de CADA um deles — o
+  // `atribuirLinha` abaixo memoiza por id, então a linha é decidida na
+  // primeira vez que o nó é alcançado e as visitas seguintes (via outro pai)
+  // só reaproveitam o valor já calculado.
   const filhosPorPai = new Map();
   nos.forEach(no => {
-    const chave = no.parentId && porId.has(no.parentId) ? no.parentId : null;
-    if (!filhosPorPai.has(chave)) {
-      filhosPorPai.set(chave, []);
-    }
-    filhosPorPai.get(chave).push(no);
+    const pais = (no.parentIds ?? []).filter(id => porId.has(id));
+    const chaves = pais.length > 0 ? pais : [null];
+    chaves.forEach(chave => {
+      if (!filhosPorPai.has(chave)) {
+        filhosPorPai.set(chave, []);
+      }
+      filhosPorPai.get(chave).push(no);
+    });
   });
 
   const profundidade = calcularProfundidades(nos, porId);

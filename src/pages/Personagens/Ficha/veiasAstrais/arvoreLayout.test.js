@@ -3,11 +3,11 @@ import { describe, expect, it } from 'vitest';
 import { calcularLayoutArvore } from './arvoreLayout';
 
 describe('calcularLayoutArvore', () => {
-  it('posiciona uma árvore simples com profundidade crescente por parentId', () => {
+  it('posiciona uma árvore simples com profundidade crescente por parentIds', () => {
     const nos = [
-      { id: 'raiz', parentId: null },
-      { id: 'filho', parentId: 'raiz' },
-      { id: 'neto', parentId: 'filho' },
+      { id: 'raiz', parentIds: [] },
+      { id: 'filho', parentIds: ['raiz'] },
+      { id: 'neto', parentIds: ['filho'] },
     ];
 
     const { posicoes } = calcularLayoutArvore(nos);
@@ -16,11 +16,11 @@ describe('calcularLayoutArvore', () => {
     expect(posicoes.get('filho').x).toBeLessThan(posicoes.get('neto').x);
   });
 
-  it('não trava em recursão infinita quando parentId forma um ciclo (dado de catálogo malformado)', () => {
+  it('não trava em recursão infinita quando parentIds forma um ciclo (dado de catálogo malformado)', () => {
     const nos = [
-      { id: 'a', parentId: 'b' },
-      { id: 'b', parentId: 'a' },
-      { id: 'solto', parentId: null },
+      { id: 'a', parentIds: ['b'] },
+      { id: 'b', parentIds: ['a'] },
+      { id: 'solto', parentIds: [] },
     ];
 
     const resultado = calcularLayoutArvore(nos);
@@ -30,5 +30,21 @@ describe('calcularLayoutArvore', () => {
     expect(Number.isFinite(resultado.posicoes.get('b').x)).toBe(true);
     expect(Number.isFinite(resultado.posicoes.get('a').y)).toBe(true);
     expect(Number.isFinite(resultado.posicoes.get('b').y)).toBe(true);
+  });
+
+  it('posiciona um nó com 2+ pais estritamente à direita do pai mais profundo (requisito duplo)', () => {
+    // raiz -> a -> b, raiz -> c (mais raso); confluencia exige a e c ambos.
+    const nos = [
+      { id: 'raiz', parentIds: [] },
+      { id: 'a', parentIds: ['raiz'] },
+      { id: 'b', parentIds: ['a'] },
+      { id: 'c', parentIds: ['raiz'] },
+      { id: 'confluencia', parentIds: ['b', 'c'] },
+    ];
+
+    const { posicoes } = calcularLayoutArvore(nos);
+
+    expect(posicoes.get('confluencia').x).toBeGreaterThan(posicoes.get('b').x);
+    expect(posicoes.get('confluencia').x).toBeGreaterThan(posicoes.get('c').x);
   });
 });

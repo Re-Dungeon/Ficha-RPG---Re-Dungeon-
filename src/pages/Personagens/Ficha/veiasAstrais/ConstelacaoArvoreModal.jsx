@@ -93,30 +93,33 @@ const ConstelacaoArvoreModal = ({
                   height={layout.altura}
                   style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
                 >
-                  {nos
-                    .filter(no => no.parentId && layout.posicoes.has(no.parentId))
-                    .map(no => {
-                      const de = layout.posicoes.get(no.parentId);
-                      const ate = layout.posicoes.get(no.id);
-                      const desbloqueado = idsDesbloqueados.includes(no.id);
-                      return (
-                        <line
-                          key={no.id}
-                          x1={de.x}
-                          y1={de.y}
-                          x2={ate.x}
-                          y2={ate.y}
-                          strokeWidth={2}
-                          style={{ stroke: desbloqueado ? cor : 'rgba(255, 255, 255, 0.15)' }}
-                        />
-                      );
-                    })}
+                  {nos.flatMap(no =>
+                    (no.parentIds ?? [])
+                      .filter(parentId => layout.posicoes.has(parentId))
+                      .map(parentId => {
+                        const de = layout.posicoes.get(parentId);
+                        const ate = layout.posicoes.get(no.id);
+                        const desbloqueado = idsDesbloqueados.includes(no.id);
+                        return (
+                          <line
+                            key={`${parentId}-${no.id}`}
+                            x1={de.x}
+                            y1={de.y}
+                            x2={ate.x}
+                            y2={ate.y}
+                            strokeWidth={2}
+                            style={{ stroke: desbloqueado ? cor : 'rgba(255, 255, 255, 0.15)' }}
+                          />
+                        );
+                      }),
+                  )}
                 </svg>
 
                 {nos.map(no => {
                   const pos = layout.posicoes.get(no.id);
                   const desbloqueado = idsDesbloqueados.includes(no.id);
-                  const disponivel = !desbloqueado && (!no.parentId || idsDesbloqueados.includes(no.parentId));
+                  const disponivel =
+                    !desbloqueado && (no.parentIds ?? []).every(parentId => idsDesbloqueados.includes(parentId));
                   return (
                     <NoNode
                       key={no.id}

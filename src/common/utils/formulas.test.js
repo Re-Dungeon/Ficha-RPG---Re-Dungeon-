@@ -485,9 +485,9 @@ describe('calcularPcDisponivel', () => {
 
 describe('calcularCustoDesbloqueio', () => {
   const nos = [
-    { id: 'a', custo: 5, parentId: null },
-    { id: 'b', custo: 3, parentId: 'a' },
-    { id: 'c', custo: 2, parentId: 'b' },
+    { id: 'a', custo: 5, parentIds: [] },
+    { id: 'b', custo: 3, parentIds: ['a'] },
+    { id: 'c', custo: 2, parentIds: ['b'] },
   ];
 
   it('soma o custo de toda a cadeia até a raiz quando nada está desbloqueado (§20)', () => {
@@ -507,15 +507,44 @@ describe('calcularCustoDesbloqueio', () => {
     expect(resultado.cadeia).toEqual([]);
     expect(resultado.custoTotal).toBe(0);
   });
+
+  it('soma o custo de 2+ requisitos (nó com múltiplos pais) sem duplicar ancestral compartilhado', () => {
+    // raiz -> b, raiz -> c, e d exige b e c simultaneamente.
+    const nosComConfluencia = [
+      { id: 'raiz', custo: 5, parentIds: [] },
+      { id: 'b', custo: 3, parentIds: ['raiz'] },
+      { id: 'c', custo: 2, parentIds: ['raiz'] },
+      { id: 'd', custo: 4, parentIds: ['b', 'c'] },
+    ];
+
+    const resultado = calcularCustoDesbloqueio(nosComConfluencia, 'd', []);
+
+    expect(resultado.cadeia.map(no => no.id).sort()).toEqual(['b', 'c', 'd', 'raiz']);
+    expect(resultado.custoTotal).toBe(14);
+  });
+
+  it('não inclui um pai já desbloqueado mesmo quando alcançável por outro pai ainda bloqueado', () => {
+    const nosComConfluencia = [
+      { id: 'raiz', custo: 5, parentIds: [] },
+      { id: 'b', custo: 3, parentIds: ['raiz'] },
+      { id: 'c', custo: 2, parentIds: ['raiz'] },
+      { id: 'd', custo: 4, parentIds: ['b', 'c'] },
+    ];
+
+    const resultado = calcularCustoDesbloqueio(nosComConfluencia, 'd', ['raiz', 'b']);
+
+    expect(resultado.cadeia.map(no => no.id).sort()).toEqual(['c', 'd']);
+    expect(resultado.custoTotal).toBe(6);
+  });
 });
 
 describe('calcularCadeiaBloqueio', () => {
   // a -> b -> c (cadeia linear) e a -> d (outro ramo, ainda bloqueado)
   const nos = [
-    { id: 'a', custo: 5, parentId: null },
-    { id: 'b', custo: 3, parentId: 'a' },
-    { id: 'c', custo: 2, parentId: 'b' },
-    { id: 'd', custo: 4, parentId: 'a' },
+    { id: 'a', custo: 5, parentIds: [] },
+    { id: 'b', custo: 3, parentIds: ['a'] },
+    { id: 'c', custo: 2, parentIds: ['b'] },
+    { id: 'd', custo: 4, parentIds: ['a'] },
   ];
 
   it('bloqueia o nó e todos os descendentes desbloqueados em cascata (§20)', () => {
@@ -540,6 +569,36 @@ describe('calcularCadeiaBloqueio', () => {
     const resultado = calcularCadeiaBloqueio(nos, 'c', []);
     expect(resultado.cadeia).toEqual([]);
     expect(resultado.custoRecuperado).toBe(0);
+  });
+
+  it('bloqueia em cascata um descendente que exige o nó bloqueado junto de outro pai ainda desbloqueado', () => {
+    // raiz -> b, raiz -> c, e d exige b e c simultaneamente (ambos desbloqueados).
+    const nosComConfluencia = [
+      { id: 'raiz', custo: 5, parentIds: [] },
+      { id: 'b', custo: 3, parentIds: ['raiz'] },
+      { id: 'c', custo: 2, parentIds: ['raiz'] },
+      { id: 'd', custo: 4, parentIds: ['b', 'c'] },
+    ];
+
+    const resultado = calcularCadeiaBloqueio(nosComConfluencia, 'b', ['raiz', 'b', 'c', 'd']);
+
+    // c continua desbloqueado (não dependia de b), mas d cai junto: precisava dos dois.
+    expect(resultado.cadeia.map(no => no.id).sort()).toEqual(['b', 'd']);
+    expect(resultado.custoRecuperado).toBe(7);
+  });
+
+  it('não processa o mesmo descendente duas vezes quando ele converge de dois pais bloqueados na mesma cascata', () => {
+    const nosComConfluencia = [
+      { id: 'raiz', custo: 5, parentIds: [] },
+      { id: 'b', custo: 3, parentIds: ['raiz'] },
+      { id: 'c', custo: 2, parentIds: ['raiz'] },
+      { id: 'd', custo: 4, parentIds: ['b', 'c'] },
+    ];
+
+    const resultado = calcularCadeiaBloqueio(nosComConfluencia, 'raiz', ['raiz', 'b', 'c', 'd']);
+
+    expect(resultado.cadeia.map(no => no.id).sort()).toEqual(['b', 'c', 'd', 'raiz']);
+    expect(resultado.custoRecuperado).toBe(14);
   });
 });
 

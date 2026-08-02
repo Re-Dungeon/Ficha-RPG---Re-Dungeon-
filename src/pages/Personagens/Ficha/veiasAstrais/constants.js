@@ -3,14 +3,16 @@
 // — o agrupamento por divindade e a árvore são só computados aqui, no client.
 // Campos reais confirmados direto no Firestore: `nome`, `descricao` (frase
 // curta de categoria, ex. "Poder básico de Aune"), `custo` (STRING, às vezes
-// vazia), `divindade` (id de `divindades`), `requisito` (id da veia-pai,
-// string vazia na raiz — não existe `parentId`) e `aprimoramento` (texto
-// livre com o efeito completo — não existe `bonusAtributo` estruturado, o
-// mesmo padrão de texto solto usado em `habilidade.bonus` das Classes).
+// vazia), `divindade` (id de `divindades`), `requisitos` (array de ids de
+// veias-pai, vazio na raiz — um nó pode exigir 2+ veias desbloqueadas
+// simultaneamente, então a árvore é na verdade um grafo acíclico) e
+// `aprimoramento` (texto livre com o efeito completo — não existe
+// `bonusAtributo` estruturado, o mesmo padrão de texto solto usado em
+// `habilidade.bonus` das Classes).
 export const normalizarVeia = veia => ({
   ...veia,
   custo: Number(veia.custo) || 0,
-  parentId: veia.requisito || null,
+  parentIds: Array.isArray(veia.requisitos) ? veia.requisitos.filter(Boolean) : [],
   divindadeId: veia.divindade || null,
 });
 

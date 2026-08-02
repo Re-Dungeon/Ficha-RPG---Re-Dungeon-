@@ -93,7 +93,7 @@ const DesbloquearNoDialog = ({
 
         {!jaDesbloqueado && cadeia.length > 1 && (
           <VeiaSecaoTexto style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
-            Inclui {cadeia.length - 1} veia(s) de requisito ainda bloqueada(s) no caminho até a raiz.
+            Inclui {cadeia.length - 1} veia(s) de requisito ainda bloqueada(s) no(s) caminho(s) até a(s) raiz(es).
           </VeiaSecaoTexto>
         )}
 

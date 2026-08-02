@@ -13,7 +13,7 @@ vi.mock('service/storage', () => ({
 }));
 
 const divindade = { id: 'd1', nome: 'Solara' };
-const veia = { id: 'v1', divindade: 'd1', parentId: null, custo: 5, camada: 1 };
+const veia = { id: 'v1', divindade: 'd1', requisitos: [], custo: 5, camada: 1 };
 
 const personagem = {
   id: 'p1',
