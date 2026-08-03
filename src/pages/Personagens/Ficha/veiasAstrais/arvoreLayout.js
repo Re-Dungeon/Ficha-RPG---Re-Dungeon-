@@ -5,10 +5,14 @@
 const COLUMN_WIDTH = 150;
 const ROW_HEIGHT = 110;
 
-// Profundidade calculada a partir da cadeia real de `parentIds` (não do campo
-// `camada`, que é só um rótulo do catálogo) — quando há múltiplos pais, usa o
-// mais profundo deles, garantindo que o nó fique estritamente à direita de
-// TODOS os seus pais na árvore desenhada.
+// Profundidade (coluna) determinada primariamente por `nivel` do catálogo
+// (coluna = nivel - 1, então dois nós de mesmo nivel sempre caem na mesma
+// coluna, e um nó nivel 3 sem nenhum `parentIds` ainda vai pra 3ª coluna) —
+// mas nunca antes de qualquer um de seus pais: se o catálogo tiver um nó cujo
+// nivel é MENOR que o de algum pré-requisito seu (dado real observado: uma
+// veia nivel 3 exigindo 2 veias nivel 4), a cadeia de `parentIds` vence e o
+// nó é empurrado pra estritamente à direita do pai mais profundo, evitando
+// uma seta desenhada "voltando" pra esquerda.
 const calcularProfundidades = (nos, porId) => {
   const profundidade = new Map();
   // `visitando` guarda os nós no caminho de recursão atual: dado de catálogo é
@@ -26,7 +30,9 @@ const calcularProfundidades = (nos, porId) => {
     }
     visitando.add(no.id);
     const pais = (no.parentIds ?? []).map(id => porId.get(id)).filter(Boolean);
-    const valor = pais.length === 0 ? 0 : Math.max(...pais.map(resolver)) + 1;
+    const pisoPorNivel = (no.nivel ?? 1) - 1;
+    const pisoPorPais = pais.length === 0 ? 0 : Math.max(...pais.map(resolver)) + 1;
+    const valor = Math.max(pisoPorNivel, pisoPorPais);
     visitando.delete(no.id);
     profundidade.set(no.id, valor);
     return valor;
@@ -35,29 +41,33 @@ const calcularProfundidades = (nos, porId) => {
   return profundidade;
 };
 
+// Resolve colisões dentro de UMA coluna (nós que acabariam com linhas iguais
+// ou próximas demais), empurrando pra a próxima linha livre e preservando a
+// ordem relativa das linhas "ideais" já atribuídas em `linhaPorId`.
+const resolverColisoesNaColuna = (nosDaColuna, linhaPorId) => {
+  const ordenados = [...nosDaColuna].sort((a, b) => linhaPorId.get(a.id) - linhaPorId.get(b.id));
+  let linhaAnterior = -Infinity;
+  ordenados.forEach(no => {
+    const linhaFinal = Math.max(linhaPorId.get(no.id), linhaAnterior + 1);
+    linhaPorId.set(no.id, linhaFinal);
+    linhaAnterior = linhaFinal;
+  });
+};
+
 export const calcularLayoutArvore = nos => {
   const porId = new Map(nos.map(no => [no.id, no]));
   const profundidade = calcularProfundidades(nos, porId);
 
-  // `profundidade(filho)` é sempre estritamente maior que a de QUALQUER pai
-  // seu (é `max(profundidade dos pais) + 1`), então processar as colunas da
-  // mais profunda pra mais rasa garante que, ao chegar num nó, todos os seus
-  // filhos (que moram em colunas mais profundas) já têm linha definitiva —
-  // isso permite centralizar cada pai na média dos filhos JÁ REALOCADOS (após
-  // resolver colisões), em vez de só na posição "ideal" pré-colisão. Um nó com
-  // 2+ pais (requisito duplo) aparece na lista de filhos de cada um deles, o
-  // que é justamente o que permite pais distintos convergirem no mesmo filho
-  // sem perder a centralização.
   const filhosPorPai = new Map();
+  const paisPorFilho = new Map();
   nos.forEach(no => {
-    (no.parentIds ?? []).forEach(paiId => {
-      if (!porId.has(paiId)) {
-        return;
+    const pais = (no.parentIds ?? []).map(id => porId.get(id)).filter(Boolean);
+    paisPorFilho.set(no.id, pais);
+    pais.forEach(pai => {
+      if (!filhosPorPai.has(pai.id)) {
+        filhosPorPai.set(pai.id, []);
       }
-      if (!filhosPorPai.has(paiId)) {
-        filhosPorPai.set(paiId, []);
-      }
-      filhosPorPai.get(paiId).push(no);
+      filhosPorPai.get(pai.id).push(no);
     });
   });
 
@@ -69,13 +79,19 @@ export const calcularLayoutArvore = nos => {
     }
     colunas.get(coluna).push(no);
   });
+  const colunasCrescentes = [...colunas.keys()].sort((a, b) => a - b);
   const colunasDecrescentes = [...colunas.keys()].sort((a, b) => b - a);
 
   const linhaPorId = new Map();
+
+  // FASE 1 (direita pra esquerda): `profundidade(filho)` é sempre
+  // estritamente maior que a de QUALQUER pai seu, então processar as colunas
+  // da mais profunda pra mais rasa garante que, ao chegar num nó, todos os
+  // seus filhos já têm linha definitiva — isso centraliza um nó de
+  // ramificação (2+ filhos, ex. a raiz) na média deles.
   let proximaLinhaLivre = 0;
   colunasDecrescentes.forEach(coluna => {
     const nosDaColuna = colunas.get(coluna);
-
     nosDaColuna.forEach(no => {
       // Só considera filhos que já têm linha definitiva — um `parentIds`
       // formando ciclo (dado de catálogo malformado) pode apontar pra um nó
@@ -90,17 +106,25 @@ export const calcularLayoutArvore = nos => {
         linhaPorId.set(no.id, soma / filhos.length);
       }
     });
+    resolverColisoesNaColuna(nosDaColuna, linhaPorId);
+  });
 
-    // Resolve colisões dentro da própria coluna (ex. dois pais que convergem
-    // pro mesmo filho e por isso calculariam a mesma linha "ideal"),
-    // preservando a ordem relativa das linhas calculadas acima.
-    const ordenados = [...nosDaColuna].sort((a, b) => linhaPorId.get(a.id) - linhaPorId.get(b.id));
-    let linhaAnterior = -Infinity;
-    ordenados.forEach(no => {
-      const linhaFinal = Math.max(linhaPorId.get(no.id), linhaAnterior + 1);
-      linhaPorId.set(no.id, linhaFinal);
-      linhaAnterior = linhaFinal;
+  // FASE 2 (esquerda pra direita): um nó com 2+ pais (requisito duplo) deve
+  // ficar centralizado entre ESSES pais, não na posição herdada dos seus
+  // próprios filhos calculada na fase 1 — sobrescreve a linha dele pela média
+  // das linhas dos pais (já definitivas: pais moram em colunas mais rasas,
+  // processadas antes nesta mesma fase). Nós com 0 ou 1 pai mantêm a linha da
+  // fase 1 (raiz continua centralizada nos filhos; cadeia simples só herda).
+  colunasCrescentes.forEach(coluna => {
+    const nosDaColuna = colunas.get(coluna);
+    nosDaColuna.forEach(no => {
+      const pais = (paisPorFilho.get(no.id) ?? []).filter(pai => linhaPorId.has(pai.id));
+      if (pais.length >= 2) {
+        const soma = pais.reduce((total, pai) => total + linhaPorId.get(pai.id), 0);
+        linhaPorId.set(no.id, soma / pais.length);
+      }
     });
+    resolverColisoesNaColuna(nosDaColuna, linhaPorId);
   });
 
   const posicoes = new Map(
