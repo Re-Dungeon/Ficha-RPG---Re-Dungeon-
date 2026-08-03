@@ -97,6 +97,32 @@ export const calcularLayoutArvore = nos => {
     }
   });
 
+  // Um nó com 2+ pais (requisito duplo) é alcançado por mais de uma entrada em
+  // `filhosPorPai` mas só tem sua linha calculada UMA vez (memoizada) — cada
+  // pai que o referencia centraliza sua própria linha nesse mesmo valor
+  // memoizado, então pais distintos que convergem pro mesmo filho acabam
+  // recebendo a linha idêntica (e tudo que penda deles também), colapsando o
+  // ramo inteiro numa única linha visual. Esta passagem final agrupa os nós
+  // por coluna (profundidade) e empurra qualquer colisão pra a próxima linha
+  // livre, preservando a ordem relativa das linhas "ideais" calculadas acima.
+  const porColuna = new Map();
+  nos.forEach(no => {
+    const coluna = profundidade.get(no.id);
+    if (!porColuna.has(coluna)) {
+      porColuna.set(coluna, []);
+    }
+    porColuna.get(coluna).push(no);
+  });
+  porColuna.forEach(nosDaColuna => {
+    const ordenados = [...nosDaColuna].sort((a, b) => linhaPorId.get(a.id) - linhaPorId.get(b.id));
+    let linhaAnterior = -Infinity;
+    ordenados.forEach(no => {
+      const linhaFinal = Math.max(linhaPorId.get(no.id), linhaAnterior + 1);
+      linhaPorId.set(no.id, linhaFinal);
+      linhaAnterior = linhaFinal;
+    });
+  });
+
   const posicoes = new Map(
     nos.map(no => [
       no.id,
@@ -109,7 +135,8 @@ export const calcularLayoutArvore = nos => {
 
   const maiorProfundidade = nos.length === 0 ? 0 : Math.max(...nos.map(no => profundidade.get(no.id)));
   const largura = (maiorProfundidade + 1) * COLUMN_WIDTH;
-  const altura = Math.max(proximaLinha, 1) * ROW_HEIGHT;
+  const maiorLinha = nos.length === 0 ? 0 : Math.max(...nos.map(no => linhaPorId.get(no.id)));
+  const altura = (maiorLinha + 1) * ROW_HEIGHT;
 
   return { posicoes, largura, altura };
 };

@@ -47,4 +47,22 @@ describe('calcularLayoutArvore', () => {
     expect(posicoes.get('confluencia').x).toBeGreaterThan(posicoes.get('b').x);
     expect(posicoes.get('confluencia').x).toBeGreaterThan(posicoes.get('c').x);
   });
+
+  it('não empilha nós de colunas diferentes na mesma linha quando um requisito duplo converge (regressão)', () => {
+    // raiz -> a -> b, raiz -> c (mais raso); confluencia exige b e c. Sem a
+    // separação de colisão, `a`, `b` e `c` colapsavam todos na mesma linha de
+    // `raiz` porque `confluencia` (filho compartilhado) só tem sua linha
+    // calculada uma vez e ambos os pais centralizam nela.
+    const nos = [
+      { id: 'raiz', parentIds: [] },
+      { id: 'a', parentIds: ['raiz'] },
+      { id: 'b', parentIds: ['a'] },
+      { id: 'c', parentIds: ['raiz'] },
+      { id: 'confluencia', parentIds: ['b', 'c'] },
+    ];
+
+    const { posicoes } = calcularLayoutArvore(nos);
+
+    expect(posicoes.get('a').y).not.toBe(posicoes.get('c').y);
+  });
 });
