@@ -37,83 +37,63 @@ const calcularProfundidades = (nos, porId) => {
 
 export const calcularLayoutArvore = nos => {
   const porId = new Map(nos.map(no => [no.id, no]));
-  // Um nó com múltiplos pais entra na lista de filhos de CADA um deles — o
-  // `atribuirLinha` abaixo memoiza por id, então a linha é decidida na
-  // primeira vez que o nó é alcançado e as visitas seguintes (via outro pai)
-  // só reaproveitam o valor já calculado.
+  const profundidade = calcularProfundidades(nos, porId);
+
+  // `profundidade(filho)` é sempre estritamente maior que a de QUALQUER pai
+  // seu (é `max(profundidade dos pais) + 1`), então processar as colunas da
+  // mais profunda pra mais rasa garante que, ao chegar num nó, todos os seus
+  // filhos (que moram em colunas mais profundas) já têm linha definitiva —
+  // isso permite centralizar cada pai na média dos filhos JÁ REALOCADOS (após
+  // resolver colisões), em vez de só na posição "ideal" pré-colisão. Um nó com
+  // 2+ pais (requisito duplo) aparece na lista de filhos de cada um deles, o
+  // que é justamente o que permite pais distintos convergirem no mesmo filho
+  // sem perder a centralização.
   const filhosPorPai = new Map();
   nos.forEach(no => {
-    const pais = (no.parentIds ?? []).filter(id => porId.has(id));
-    const chaves = pais.length > 0 ? pais : [null];
-    chaves.forEach(chave => {
-      if (!filhosPorPai.has(chave)) {
-        filhosPorPai.set(chave, []);
+    (no.parentIds ?? []).forEach(paiId => {
+      if (!porId.has(paiId)) {
+        return;
       }
-      filhosPorPai.get(chave).push(no);
+      if (!filhosPorPai.has(paiId)) {
+        filhosPorPai.set(paiId, []);
+      }
+      filhosPorPai.get(paiId).push(no);
     });
   });
 
-  const profundidade = calcularProfundidades(nos, porId);
-
-  const linhaPorId = new Map();
-  const visitandoLinha = new Set();
-  let proximaLinha = 0;
-  const atribuirLinha = no => {
-    if (linhaPorId.has(no.id)) {
-      return linhaPorId.get(no.id);
-    }
-    // Mesma proteção contra ciclo de calcularProfundidades: se `no` já está no
-    // caminho de recursão atual, trata como folha em vez de recursar pra sempre.
-    if (visitandoLinha.has(no.id)) {
-      const linha = proximaLinha;
-      proximaLinha += 1;
-      linhaPorId.set(no.id, linha);
-      return linha;
-    }
-    visitandoLinha.add(no.id);
-    const filhos = filhosPorPai.get(no.id) ?? [];
-    let linha;
-    if (filhos.length === 0) {
-      linha = proximaLinha;
-      proximaLinha += 1;
-    } else {
-      const linhas = filhos.map(atribuirLinha);
-      linha = linhas.reduce((total, valor) => total + valor, 0) / linhas.length;
-    }
-    visitandoLinha.delete(no.id);
-    linhaPorId.set(no.id, linha);
-    return linha;
-  };
-  (filhosPorPai.get(null) ?? []).forEach(atribuirLinha);
-
-  // Nós presos num ciclo puro (ex. A aponta pra B e B aponta de volta pra A,
-  // sem nenhum deles descender de uma raiz real) nunca são alcançados pela
-  // varredura a partir de `filhosPorPai.get(null)` acima — sem isso, ficariam
-  // sem linha atribuída (`y: NaN` no SVG). Varre o que sobrou e força a
-  // atribuição de linha pra esses nós isolados também.
-  nos.forEach(no => {
-    if (!linhaPorId.has(no.id)) {
-      atribuirLinha(no);
-    }
-  });
-
-  // Um nó com 2+ pais (requisito duplo) é alcançado por mais de uma entrada em
-  // `filhosPorPai` mas só tem sua linha calculada UMA vez (memoizada) — cada
-  // pai que o referencia centraliza sua própria linha nesse mesmo valor
-  // memoizado, então pais distintos que convergem pro mesmo filho acabam
-  // recebendo a linha idêntica (e tudo que penda deles também), colapsando o
-  // ramo inteiro numa única linha visual. Esta passagem final agrupa os nós
-  // por coluna (profundidade) e empurra qualquer colisão pra a próxima linha
-  // livre, preservando a ordem relativa das linhas "ideais" calculadas acima.
-  const porColuna = new Map();
+  const colunas = new Map();
   nos.forEach(no => {
     const coluna = profundidade.get(no.id);
-    if (!porColuna.has(coluna)) {
-      porColuna.set(coluna, []);
+    if (!colunas.has(coluna)) {
+      colunas.set(coluna, []);
     }
-    porColuna.get(coluna).push(no);
+    colunas.get(coluna).push(no);
   });
-  porColuna.forEach(nosDaColuna => {
+  const colunasDecrescentes = [...colunas.keys()].sort((a, b) => b - a);
+
+  const linhaPorId = new Map();
+  let proximaLinhaLivre = 0;
+  colunasDecrescentes.forEach(coluna => {
+    const nosDaColuna = colunas.get(coluna);
+
+    nosDaColuna.forEach(no => {
+      // Só considera filhos que já têm linha definitiva — um `parentIds`
+      // formando ciclo (dado de catálogo malformado) pode apontar pra um nó
+      // na mesma coluna ou numa coluna ainda não processada; nesse caso trata
+      // como se não tivesse filho, em vez de centralizar num valor ausente.
+      const filhos = (filhosPorPai.get(no.id) ?? []).filter(filho => linhaPorId.has(filho.id));
+      if (filhos.length === 0) {
+        linhaPorId.set(no.id, proximaLinhaLivre);
+        proximaLinhaLivre += 1;
+      } else {
+        const soma = filhos.reduce((total, filho) => total + linhaPorId.get(filho.id), 0);
+        linhaPorId.set(no.id, soma / filhos.length);
+      }
+    });
+
+    // Resolve colisões dentro da própria coluna (ex. dois pais que convergem
+    // pro mesmo filho e por isso calculariam a mesma linha "ideal"),
+    // preservando a ordem relativa das linhas calculadas acima.
     const ordenados = [...nosDaColuna].sort((a, b) => linhaPorId.get(a.id) - linhaPorId.get(b.id));
     let linhaAnterior = -Infinity;
     ordenados.forEach(no => {

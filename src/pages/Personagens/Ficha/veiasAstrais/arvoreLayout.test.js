@@ -65,4 +65,23 @@ describe('calcularLayoutArvore', () => {
 
     expect(posicoes.get('a').y).not.toBe(posicoes.get('c').y);
   });
+
+  it('centraliza o nó pai na altura média dos filhos, mesmo após a resolução de colisão (regressão)', () => {
+    // raiz -> a -> b, raiz -> c (mais raso); confluencia exige b e c. `a` e
+    // `c` são empurrados pra linhas diferentes pra não colidir — mas `raiz`
+    // (pai de ambos) precisa ficar centralizada na média das posições FINAIS
+    // deles, não na posição "ideal" pré-colisão.
+    const nos = [
+      { id: 'raiz', parentIds: [] },
+      { id: 'a', parentIds: ['raiz'] },
+      { id: 'b', parentIds: ['a'] },
+      { id: 'c', parentIds: ['raiz'] },
+      { id: 'confluencia', parentIds: ['b', 'c'] },
+    ];
+
+    const { posicoes } = calcularLayoutArvore(nos);
+
+    const mediaFilhos = (posicoes.get('a').y + posicoes.get('c').y) / 2;
+    expect(posicoes.get('raiz').y).toBe(mediaFilhos);
+  });
 });
