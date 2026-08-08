@@ -5,6 +5,7 @@ import Button from '@mui/material/Button';
 import { getNome } from 'common/utils/resolveNome';
 
 import { ART_STAT_CAMPOS, DOMINIO_LABELS, TIPO_ACAO_META, TIPO_ART_META } from './constants';
+import CondicaoViewDialog from '../condicoes/CondicaoViewDialog';
 import {
   ArtCardBody,
   ArtCardFooter,
@@ -22,6 +23,10 @@ import {
   StatGridCell,
   StatGridLabel,
   StatGridValue,
+  ConditionList,
+  ConditionItem,
+  ConditionIcon,
+  ConditionName,
 } from './styles';
 
 const ArtCard = ({ art, nucleo, condicoes, onVer, onEditar, onRemover, onToggleAtiva }) => {
@@ -34,6 +39,11 @@ const ArtCard = ({ art, nucleo, condicoes, onVer, onEditar, onRemover, onToggleA
   }, [art.condicoesAplicadas, condicoes]);
 
   const [tab, setTab] = useState('descricao');
+  const [condicaoVisualizadaId, setCondicaoVisualizadaId] = useState(null);
+
+  const condicaoVisualizada = condicoesAplicadas.find(
+    condicao => condicao.id === condicaoVisualizadaId,
+  );
 
   return (
     <ArtCardWrapper data-bloqueada={!art.ativa}>
@@ -65,15 +75,6 @@ const ArtCard = ({ art, nucleo, condicoes, onVer, onEditar, onRemover, onToggleA
             {art.circuloMagico && <Badge $cor="#5b7cfa">🔵 Círculo: {art.circuloMagico}</Badge>}
             {!art.ativa && <Badge $cor="#ef4444">🔒 Bloqueada</Badge>}
           </BadgeRow>
-          {condicoesAplicadas.length > 0 && (
-            <BadgeRow>
-              {condicoesAplicadas.map(condicao => (
-                <Badge key={condicao.id} $cor="#ef4444">
-                  ⚠️ {getNome(condicao)}
-                </Badge>
-              ))}
-            </BadgeRow>
-          )}
         </ArtCardHeaderInfo>
       </ArtCardHeader>
 
@@ -86,8 +87,8 @@ const ArtCard = ({ art, nucleo, condicoes, onVer, onEditar, onRemover, onToggleA
         ))}
       </StatGrid>
 
-      {/* Descrição / Cântico tabs (apresentação somente) */}
-      {(art.descricao !== undefined || art.cantico !== undefined) && (
+      {/* Descrição / Cântico / Condições tabs (apresentação somente) */}
+      {(art.descricao !== undefined || art.cantico !== undefined || condicoesAplicadas.length > 0) && (
         <ArtCardBody>
           <ArtTabs>
             <Button
@@ -118,17 +119,54 @@ const ArtCard = ({ art, nucleo, condicoes, onVer, onEditar, onRemover, onToggleA
             >
               Cântico
             </Button>
+            {condicoesAplicadas.length > 0 && (
+              <Button
+                size="small"
+                variant={tab === 'condicoes' ? 'contained' : 'outlined'}
+                onClick={() => setTab('condicoes')}
+                sx={{
+                  borderRadius: 999,
+                  textTransform: 'none',
+                  fontWeight: 700,
+                  px: 1,
+                  py: 0.3,
+                }}
+              >
+                Condições
+              </Button>
+            )}
           </ArtTabs>
 
           {tab === 'descricao' ? (
             <ArtDescricao>{art.descricao || ''}</ArtDescricao>
-          ) : (
+          ) : tab === 'cantigo' ? (
             <ArtDescricao>
               <strong>🎵 Cântico:</strong> {art.cantico || ''}
             </ArtDescricao>
+          ) : (
+            <ConditionList>
+              {condicoesAplicadas.map(condicao => (
+                <ConditionItem
+                  key={condicao.id}
+                  type="button"
+                  onClick={() => setCondicaoVisualizadaId(condicao.id)}
+                >
+                  <ConditionIcon>
+                    {condicao.linkImagem ? <img src={condicao.linkImagem} alt={getNome(condicao)} /> : '⚠️'}
+                  </ConditionIcon>
+                  <ConditionName>{getNome(condicao)}</ConditionName>
+                </ConditionItem>
+              ))}
+            </ConditionList>
           )}
         </ArtCardBody>
       )}
+
+      <CondicaoViewDialog
+        open={Boolean(condicaoVisualizada)}
+        onClose={() => setCondicaoVisualizadaId(null)}
+        condicao={condicaoVisualizada}
+      />
 
       <ArtCardFooter>
         <Button

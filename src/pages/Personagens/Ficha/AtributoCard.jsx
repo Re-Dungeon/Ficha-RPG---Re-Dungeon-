@@ -52,6 +52,11 @@ const AtributoCard = ({ label, total, baseName, extraName, bonusName }) => {
     setAberto(false);
   };
 
+  const salvar = event => {
+    event.preventDefault();
+    setAberto(false);
+  };
+
   return (
     <>
       <AtributoGemaButton type="button" aria-label={label} onClick={abrir}>
@@ -72,28 +77,30 @@ const AtributoCard = ({ label, total, baseName, extraName, bonusName }) => {
             <CloseIcon fontSize="small" />
           </DialogFecharButton>
         </DialogHeaderRow>
-        <DialogContent style={{ paddingTop: 8 }}>
-          <FieldsRow>
-            <NumberField name={baseName} label="Base" />
-            <NumberField name={extraName} label="Extra" />
-          </FieldsRow>
-          <FieldsRow style={{ marginTop: 16 }}>
-            <NumberFieldWrapper>
-              <NumberFieldLabel as="span">
-                Total
-                <LockIcon fontSize="inherit" />
-              </NumberFieldLabel>
-              <NumberFieldBox value={total} disabled />
-            </NumberFieldWrapper>
-            <NumberField name={bonusName} label="Bônus" />
-          </FieldsRow>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={cancelar}>Cancelar</Button>
-          <Button variant="contained" onClick={() => setAberto(false)}>
-            Salvar
-          </Button>
-        </DialogActions>
+        <form onSubmit={salvar}>
+          <DialogContent style={{ paddingTop: 8 }}>
+            <FieldsRow>
+              <NumberField name={baseName} label="Base" />
+              <NumberField name={extraName} label="Extra" />
+            </FieldsRow>
+            <FieldsRow style={{ marginTop: 16 }}>
+              <NumberFieldWrapper>
+                <NumberFieldLabel as="span">
+                  Total
+                  <LockIcon fontSize="inherit" />
+                </NumberFieldLabel>
+                <NumberFieldBox value={total} disabled />
+              </NumberFieldWrapper>
+              <NumberField name={bonusName} label="Bônus" />
+            </FieldsRow>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={cancelar}>Cancelar</Button>
+            <Button type="submit" variant="contained">
+              Salvar
+            </Button>
+          </DialogActions>
+        </form>
       </Dialog>
     </>
   );

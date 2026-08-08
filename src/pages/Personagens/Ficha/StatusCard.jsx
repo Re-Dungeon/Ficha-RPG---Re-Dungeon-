@@ -60,6 +60,11 @@ const StatusCard = ({ label, variante, grande, maximo, atual, atualName, baseNam
     setAberto(false);
   };
 
+  const salvar = event => {
+    event.preventDefault();
+    setAberto(false);
+  };
+
   return (
     <>
       <StatusColunaButton type="button" onClick={abrir}>
@@ -80,31 +85,33 @@ const StatusCard = ({ label, variante, grande, maximo, atual, atualName, baseNam
             <CloseIcon fontSize="small" />
           </DialogFecharButton>
         </DialogHeaderRow>
-        <DialogContent style={{ paddingTop: 8 }}>
-          <FieldsRow>
-            <NumberFieldWrapper>
-              <NumberFieldLabel as="span">
-                Máximo
-                <LockIcon fontSize="inherit" />
-              </NumberFieldLabel>
-              <NumberFieldBox value={maximo} disabled />
-            </NumberFieldWrapper>
-            <NumberField name={atualName} label="Atual" />
-          </FieldsRow>
-          <FieldsRow style={{ marginTop: 16 }}>
-            <NumberField name={baseName} label="Base" />
-            <NumberField name={extraName} label="Extra" />
-          </FieldsRow>
-          <FieldsRow style={{ marginTop: 16 }}>
-            <NumberField name={bonusName} label="Bônus" />
-          </FieldsRow>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={cancelar}>Cancelar</Button>
-          <Button variant="contained" onClick={() => setAberto(false)}>
-            Salvar
-          </Button>
-        </DialogActions>
+        <form onSubmit={salvar}>
+          <DialogContent style={{ paddingTop: 8 }}>
+            <FieldsRow>
+              <NumberFieldWrapper>
+                <NumberFieldLabel as="span">
+                  Máximo
+                  <LockIcon fontSize="inherit" />
+                </NumberFieldLabel>
+                <NumberFieldBox value={maximo} disabled />
+              </NumberFieldWrapper>
+              <NumberField name={atualName} label="Atual" />
+            </FieldsRow>
+            <FieldsRow style={{ marginTop: 16 }}>
+              <NumberField name={baseName} label="Base" />
+              <NumberField name={extraName} label="Extra" />
+            </FieldsRow>
+            <FieldsRow style={{ marginTop: 16 }}>
+              <NumberField name={bonusName} label="Bônus" />
+            </FieldsRow>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={cancelar}>Cancelar</Button>
+            <Button type="submit" variant="contained">
+              Salvar
+            </Button>
+          </DialogActions>
+        </form>
       </Dialog>
     </>
   );

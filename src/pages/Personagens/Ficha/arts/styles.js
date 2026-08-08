@@ -89,23 +89,19 @@ export const SectionActions = styled.div`
 
 export const CardsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(260px, 1fr));
   gap: 18px;
   margin-top: 16px;
 
-  @media (max-width: 1800px) {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+  @media (max-width: 1700px) {
+    grid-template-columns: repeat(3, minmax(260px, 1fr));
   }
 
-  @media (max-width: 1400px) {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  @media (max-width: 1200px) {
+    grid-template-columns: repeat(2, minmax(260px, 1fr));
   }
 
-  @media (max-width: 1000px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  @media (max-width: 700px) {
+  @media (max-width: 750px) {
     grid-template-columns: 1fr;
   }
 `;
@@ -281,10 +277,12 @@ export const EssenciaTitle = styled.h5`
 export const EssenciaTexto = styled.p`
   margin: 0;
   padding: 18px 20px;
-  max-height: calc(1.85em * 10 + 36px);
+  max-height: calc(1.5em * 4 + 36px);
   font-size: 0.95rem;
   color: #E8E6F5;
-  line-height: 1.85;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
   background: rgba(10, 9, 20, 0.76);
   border: 1px solid rgba(232, 203, 133, 0.16);
   border-left: 4px solid rgba(232, 203, 133, 0.9);
@@ -357,6 +355,7 @@ export const NucleoStatCard = styled.div`
   padding: 16px 18px;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 18px 48px rgba(0, 0, 0, 0.18);
   transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+  min-width: 0;
 
   &:hover {
     transform: translateY(-2px);
@@ -377,6 +376,9 @@ export const NucleoStatValue = styled.div`
   color: var(--text-primary);
   font-weight: 700;
   line-height: 1.3;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 `;
 
 export const NucleoEssenceCard = styled.div`
@@ -657,6 +659,84 @@ export const ArtDescricao = styled.p`
   white-space: pre-wrap;
   word-break: break-word;
   overflow-wrap: anywhere;
+`;
+
+export const ConditionList = styled.div`
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  padding: 16px;
+  background: rgba(10, 10, 20, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  flex: 1 1 auto;
+  min-height: 0;
+
+  @media (max-width: 1400px) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  @media (max-width: 1200px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (max-width: 700px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+export const ConditionItem = styled.button`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 76px;
+  background: rgba(18, 18, 34, 0.85);
+  color: var(--text-primary);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 10px 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    border-color: rgba(91, 124, 250, 0.3);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.14);
+    background: rgba(255, 255, 255, 0.08);
+  }
+`;
+
+export const ConditionIcon = styled.div`
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(135deg, rgba(91, 124, 250, 0.16), rgba(232, 203, 133, 0.12));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-size: 0.95rem;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border-radius: 50%;
+  }
+`;
+
+export const ConditionName = styled.span`
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  line-height: 1.2;
 `;
 
 export const ArtCardFooter = styled.div`

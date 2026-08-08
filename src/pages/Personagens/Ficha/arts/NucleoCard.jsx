@@ -21,16 +21,13 @@ const NucleoCard = ({ nucleo, artsCount, onVer, onEditar, onRemover }) => (
     <NucleoArtsBadge>📜 {artsCount} art(s)</NucleoArtsBadge>
 
     <NucleoTopRow>
-      <ImageThumb $size={80}>
+      <ImageThumb $size={100}>
         {nucleo.imagem ? <img src={nucleo.imagem} alt={nucleo.nome} /> : '🎨'}
       </ImageThumb>
       <NucleoInfo>
         <NucleoNome>{nucleo.nome}</NucleoNome>
         <NucleoMeta>
           <strong>Tipo:</strong> {nucleo.tipo || 'Sem tipo'}
-        </NucleoMeta>
-        <NucleoMeta>
-          <strong>Essência:</strong> {nucleo.bonus || 'Não definida'}
         </NucleoMeta>
         {nucleo.classeId && (
           <NucleoMeta style={{ fontSize: '0.7rem' }}>🏫 Vinculado à classe</NucleoMeta>
@@ -42,11 +39,12 @@ const NucleoCard = ({ nucleo, artsCount, onVer, onEditar, onRemover }) => (
 
     <div>
       <EssenciaTitle>✨ Essência</EssenciaTitle>
-      <EssenciaTexto>
-        {nucleo.descricao
-          ? nucleo.descricao.slice(0, 150) + (nucleo.descricao.length > 150 ? '...' : '')
-          : 'Sem descrição'}
-      </EssenciaTexto>
+      <EssenciaTexto>{nucleo.descricao || 'Sem descrição'}</EssenciaTexto>
+    </div>
+
+    <div>
+      <EssenciaTitle>Bônus</EssenciaTitle>
+      <EssenciaTexto>{nucleo.bonus || 'Não definido'}</EssenciaTexto>
     </div>
 
     <Divider />

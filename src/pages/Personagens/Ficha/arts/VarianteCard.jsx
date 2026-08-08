@@ -5,6 +5,7 @@ import Button from '@mui/material/Button';
 import { getNome } from 'common/utils/resolveNome';
 
 import { DOMINIO_LABELS, TIPO_ACAO_META, TIPO_ART_META } from './constants';
+import CondicaoViewDialog from '../condicoes/CondicaoViewDialog';
 import {
   ArtCardBody,
   ArtCardFooter,
@@ -21,6 +22,10 @@ import {
   StatGridCell,
   StatGridLabel,
   StatGridValue,
+  ConditionList,
+  ConditionItem,
+  ConditionIcon,
+  ConditionName,
 } from './styles';
 
 const CAMPOS_GRID = [
@@ -43,6 +48,11 @@ const VarianteCard = ({ variante, art, nucleo, condicoes, onVer, onEditar, onRem
   }, [variante.condicoesAplicadas, condicoes]);
 
   const [tab, setTab] = useState('descricao');
+  const [condicaoVisualizadaId, setCondicaoVisualizadaId] = useState(null);
+
+  const condicaoVisualizada = condicoesAplicadas.find(
+    condicao => condicao.id === condicaoVisualizadaId,
+  );
 
   return (
     <ArtCardWrapper>
@@ -76,15 +86,6 @@ const VarianteCard = ({ variante, art, nucleo, condicoes, onVer, onEditar, onRem
             )}
             {variante.circuloMagico && <Badge $cor="#5b7cfa">🔵 Círculo: {variante.circuloMagico}</Badge>}
           </BadgeRow>
-          {condicoesAplicadas.length > 0 && (
-            <BadgeRow>
-              {condicoesAplicadas.map(condicao => (
-                <Badge key={condicao.id} $cor="#ef4444">
-                  ⚠️ {getNome(condicao)}
-                </Badge>
-              ))}
-            </BadgeRow>
-          )}
         </ArtCardHeaderInfo>
       </ArtCardHeader>
 
@@ -97,7 +98,7 @@ const VarianteCard = ({ variante, art, nucleo, condicoes, onVer, onEditar, onRem
         ))}
       </StatGrid>
 
-      {(variante.descricao !== undefined || variante.cantico !== undefined) && (
+      {(variante.descricao !== undefined || variante.cantico !== undefined || condicoesAplicadas.length > 0) && (
         <ArtCardBody>
           <ArtTabs>
             <Button
@@ -128,17 +129,54 @@ const VarianteCard = ({ variante, art, nucleo, condicoes, onVer, onEditar, onRem
             >
               Cântico
             </Button>
+            {condicoesAplicadas.length > 0 && (
+              <Button
+                size="small"
+                variant={tab === 'condicoes' ? 'contained' : 'outlined'}
+                onClick={() => setTab('condicoes')}
+                sx={{
+                  borderRadius: 999,
+                  textTransform: 'none',
+                  fontWeight: 700,
+                  px: 1,
+                  py: 0.3,
+                }}
+              >
+                Condições
+              </Button>
+            )}
           </ArtTabs>
 
           {tab === 'descricao' ? (
             <ArtDescricao>{variante.descricao || ''}</ArtDescricao>
-          ) : (
+          ) : tab === 'cantigo' ? (
             <ArtDescricao>
               <strong>🎵 Cântico:</strong> {variante.cantico || ''}
             </ArtDescricao>
+          ) : (
+            <ConditionList>
+              {condicoesAplicadas.map(condicao => (
+                <ConditionItem
+                  key={condicao.id}
+                  type="button"
+                  onClick={() => setCondicaoVisualizadaId(condicao.id)}
+                >
+                  <ConditionIcon>
+                    {condicao.linkImagem ? <img src={condicao.linkImagem} alt={getNome(condicao)} /> : '⚠️'}
+                  </ConditionIcon>
+                  <ConditionName>{getNome(condicao)}</ConditionName>
+                </ConditionItem>
+              ))}
+            </ConditionList>
           )}
         </ArtCardBody>
       )}
+
+      <CondicaoViewDialog
+        open={Boolean(condicaoVisualizada)}
+        onClose={() => setCondicaoVisualizadaId(null)}
+        condicao={condicaoVisualizada}
+      />
 
       <ArtCardFooter>
         <Button size="small" variant="outlined" onClick={onVer}>
