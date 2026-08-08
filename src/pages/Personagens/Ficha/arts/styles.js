@@ -654,6 +654,9 @@ export const ArtDescricao = styled.p`
   display: block;
   overflow-x: hidden;
   overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 `;
 
 export const ArtCardFooter = styled.div`
