@@ -7,7 +7,7 @@ import ErrorSnackbar from 'components/ErrorSnackbar/ErrorSnackbar';
 
 const SavingContext = createContext(null);
 
-const DURACAO_MINIMA_MS = 2000;
+const DURACAO_MINIMA_MS = 1000;
 const MENSAGEM_ERRO_PADRAO = 'Não foi possível salvar. Verifique sua conexão e tente novamente.';
 
 export const SavingProvider = ({ children }) => {

@@ -260,7 +260,7 @@ const CriarArtDialog = ({ open, onClose, personagem, nucleos, condicoes, onCreat
     [onCreate, onClose, nucleoId],
   );
 
-  const handeEscolherDoCatalogo = useCallback(
+  const handleEscolherDoCatalogo = useCallback(
     item => {
       onCreate({
         origem: 'catalogo',
@@ -619,7 +619,7 @@ const CriarArtDialog = ({ open, onClose, personagem, nucleos, condicoes, onCreat
                   art={{ nome: getNome(item), ...extrairCamposArt(item) }}
                   condicoes={condicoes}
                   disabled={!nucleoId}
-                  onEscolher={() => handeEscolherDoCatalogo(item)}
+                  onEscolher={() => handleEscolherDoCatalogo(item)}
                 />
               ))}
             </CatalogArtsGrid>

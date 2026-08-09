@@ -38,7 +38,13 @@ const NovoPersonagem = () => {
   const [erro, setErro] = useState(null);
 
   useEffect(() => {
-    getUniverso().then(setUniversos);
+    getUniverso()
+      .then(setUniversos)
+      .catch(error => {
+        // eslint-disable-next-line no-console
+        console.error('Falha ao carregar universos:', error);
+        setErro('Não foi possível carregar a lista de universos. Tente novamente.');
+      });
   }, []);
 
   const handleSubmit = useCallback(

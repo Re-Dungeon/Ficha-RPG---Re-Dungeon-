@@ -8,6 +8,7 @@ import CriarPersonagemModal from './CriarPersonagemModal';
 
 import { useAuth } from 'context/AuthContext';
 import { getPersonagens } from 'service/storage';
+import ErrorSnackbar from 'components/ErrorSnackbar/ErrorSnackbar';
 
 import PersonagemCardItem from './PersonagemCardItem';
 import { TIPOS_PERSONAGEM } from './Ficha/constants';
@@ -39,17 +40,27 @@ const Personagens = () => {
   const navigate = useNavigate();
   const [personagens, setPersonagens] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [erro, setErro] = useState(null);
   const [selectedPersonagemId, setSelectedPersonagemId] = useState(null);
   const [aba, setAba] = useState(TIPOS_PERSONAGEM[0]);
 
   useEffect(() => {
     let isMounted = true;
-    getPersonagens(currentUser.uid).then(items => {
-      if (isMounted) {
-        setPersonagens(items);
-        setLoading(false);
-      }
-    });
+    getPersonagens(currentUser.uid)
+      .then(items => {
+        if (isMounted) {
+          setPersonagens(items);
+          setLoading(false);
+        }
+      })
+      .catch(error => {
+        // eslint-disable-next-line no-console
+        console.error('Falha ao carregar personagens:', error);
+        if (isMounted) {
+          setErro('Não foi possível carregar seus personagens. Tente novamente.');
+          setLoading(false);
+        }
+      });
     return () => {
       isMounted = false;
     };
@@ -67,10 +78,17 @@ const Personagens = () => {
 
   const handleCreated = useCallback(() => {
     setLoading(true);
-    getPersonagens(currentUser.uid).then(items => {
-      setPersonagens(items);
-      setLoading(false);
-    });
+    getPersonagens(currentUser.uid)
+      .then(items => {
+        setPersonagens(items);
+        setLoading(false);
+      })
+      .catch(error => {
+        // eslint-disable-next-line no-console
+        console.error('Falha ao recarregar personagens:', error);
+        setErro('Não foi possível recarregar seus personagens. Tente novamente.');
+        setLoading(false);
+      });
   }, [currentUser.uid]);
 
   const handleOpenPersonagem = useCallback(
@@ -143,6 +161,8 @@ const Personagens = () => {
         onClose={handleCloseModal}
         onCreated={handleCreated}
       />
+
+      <ErrorSnackbar open={!!erro} mensagem={erro} onClose={() => setErro(null)} />
     </PageWrapper>
   );
 };
