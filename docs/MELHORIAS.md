@@ -1,6 +1,6 @@
 # Melhorias Propostas — ReDungeon Player Site
 
-Este documento lista melhorias concretas para o projeto, priorizadas por impacto/esforço, com passo a passo de implementação para cada uma. Todas foram levantadas observando o estado atual do código (`2026-07-20`) — não são hipotéticas.
+Este documento lista melhorias concretas para o projeto, priorizadas por impacto/esforço, com passo a passo de implementação para cada uma. Todas foram levantadas observando o estado atual do código (varreduras em `2026-07-20`/`2026-07-22` e `2026-08-09`) — não são hipotéticas.
 
 Leia também [MIGRACAO-REACT-FIREBASE.md](./MIGRACAO-REACT-FIREBASE.md) (seção "Status da implementação") para saber o que já foi feito; este documento cobre o que falta **além** do roadmap de migração, que já está 100% implementado, incluindo o deploy (GitHub Pages via `.github/workflows/deploy.yml`).
 
@@ -25,6 +25,19 @@ Leia também [MIGRACAO-REACT-FIREBASE.md](./MIGRACAO-REACT-FIREBASE.md) (seção
 | 14  | Botão "Voltar" morto (chama o mesmo `onClose` que "Fechar") em 3 modais — ✅ feito | Baixo | Baixo |
 | 15  | Leituras de catálogo sem `.catch` prendem a UI em loading permanente em erro — ✅ feito | Médio | Médio |
 | 16  | `InventarioTab`/`ArtsTab` exigem `onSave` via PropTypes mas nunca chamam — ✅ feito | Baixo | Baixo |
+| 17  | `Personagens.jsx`: leituras de `getPersonagens` sem `.catch` — ✅ feito ([detalhe](#17-personagensjsx-leituras-sem-catch--loading-permanente-em-erro--feito-em-2026-08-09)) | Alto | Baixo |
+| 18  | `NovoPersonagem.jsx`/rota órfã duplicando `CriarPersonagemModal.jsx` — 🟡 parcial ([detalhe](#18-novopersonagemjsx-órfã-e-duplicando-criarpersonagemmodaljsx--parcial-em-2026-08-09)) | Médio | Baixo |
+| 19  | Assets PNG não otimizados (~3,5 MB) — 🔴 pendente ([detalhe](#19-assets-png-não-otimizados)) | Médio | Baixo |
+| 20  | Bundle inicial sem `manualChunks` (~1,3 MB) — ✅ feito ([detalhe](#20-bundle-inicial-ainda-grande--manualchunks-feito-em-2026-08-09)) | Médio | Médio |
+| 21  | `defaultProps` depreciado no React 19 (28 arquivos) — 🔴 pendente ([detalhe](#21-defaultprops-em-componente-de-função--depreciado-no-react-19)) | Baixo | Médio |
+| 22  | Styled-components inline fora do `styles.js` da pasta — 🔴 pendente ([detalhe](#22-styled-components-inline-fora-do-stylesjs-da-pasta)) | Baixo | Médio |
+| 23  | Typo `handeEscolherDoCatalogo` — ✅ feito ([detalhe](#23-typo-handeescolherdocatalogo--feito-em-2026-08-09)) | Baixo | Baixo |
+| 24  | `CorpoEspecialGrid.jsx`: heurística de campo de bônus — 🔴 pendente, depende do outro projeto ([detalhe](#24-corpoespecialgridjsx-heurística-de-nome-de-campo-para-bônusdesvantagem--pendente-depende-do-projeto-administrativo)) | Baixo | Baixo* |
+| 25  | Tempo mínimo do overlay de "Salvando" (2s → 1s) — ✅ feito ([detalhe](#25-tempo-mínimo-do-overlay-de-salvando-reduzido-de-2s-para-1s--feito-em-2026-08-09)) | Baixo | Baixo |
+
+_\* item 24 depende de mudança no projeto administrativo, fora deste repositório._
+
+Ver seção **"Varredura de 2026-08-09"** no fim do documento para o detalhamento dos itens 17–25.
 
 ---
 
@@ -172,3 +185,96 @@ Adicionado `.catch` (com `console.error` e, quando existia um estado `carregando
 ### 16. `InventarioTab`/`ArtsTab` exigem `onSave` via PropTypes mas nunca chamam — ✅ feito
 
 Removida a prop `onSave` de `InventarioTab.jsx` e `ArtsTab.jsx` (destructuring, `PropTypes`, e o `Ficha.jsx` que as renderiza) — nenhuma das duas nunca chamava, ambas escrevem via helpers de subcoleção próprios (`addItemInventario`/`addArt`/etc.).
+
+---
+
+## Varredura de 2026-08-09
+
+Entre 2026-07-22 (última varredura) e hoje o projeto ganhou várias features novas (Nível, Cultivo, Corpos Especiais, separação de fichas por `tipo`/NPC/Criatura, vínculo com Campanhas do Re:Master, reforma visual de Arts e Veias Astrais — ver `git log --oneline` do período). `npm run lint`, `npm run test` (143 testes) e `npm run build` passam limpos hoje, então os itens abaixo são achados novos de uma varredura de código, não regressões dos itens 1–16.
+
+| #   | Melhoria                                                                 | Impacto | Esforço | Status |
+| --- | ------------------------------------------------------------------------- | ------- | ------- | ------ |
+| 17  | `Personagens.jsx`: leituras de `getPersonagens` sem `.catch` (loading trava para sempre em erro) | Alto    | Baixo   | ✅ feito |
+| 18  | `NovoPersonagem.jsx`/rota `/personagens/novo` órfã e duplicando `CriarPersonagemModal.jsx` já divergente | Médio   | Baixo   | 🟡 parcial |
+| 19  | Assets PNG não otimizados (~3,5 MB, maior arquivo 1,5 MB) inflando o bundle | Médio   | Baixo   | 🔴 pendente |
+| 20  | Bundle inicial (`index-*.js`) ainda ~1,3 MB minificado — sem `manualChunks` para MUI/Firebase | Médio   | Médio   | ✅ feito |
+| 21  | `defaultProps` em componente de função — depreciado no React 19 (28 arquivos) | Baixo   | Médio   | 🔴 pendente |
+| 22  | `arts/CriarArtDialog.jsx` e `sidebar/NivelModal.jsx`: styled-components inline em vez do `styles.js` da pasta; sem teste | Baixo   | Médio   | 🔴 pendente |
+| 23  | Typo `handeEscolherDoCatalogo` em `CriarArtDialog.jsx:263`               | Baixo   | Baixo   | ✅ feito |
+| 24  | `CorpoEspecialGrid.jsx`: heurística de nome de campo para classificar bônus/desvantagem indica schema não fechado no catálogo administrativo | Baixo   | Baixo (mas depende do outro projeto) | 🔴 pendente |
+
+---
+
+### 17. `Personagens.jsx`: leituras sem `.catch` — loading permanente em erro — ✅ feito em 2026-08-09
+
+**Achado**: `Personagens.jsx:47` (carga inicial) e `Personagens.jsx:70` (`handleCreated`, recarrega após criar personagem) chamavam `getPersonagens(currentUser.uid).then(...)` sem `.catch`. Se a leitura falhasse (ex. offline), `setLoading(false)` nunca rodava e a tela "Meus Personagens" — a primeira coisa que qualquer jogador vê depois do login — ficava com o spinner girando para sempre, sem nenhuma mensagem de erro. Era exatamente o bug que o item 15 (varredura de 2026-07-22) já tinha corrigido em 27+11 outros pontos do app; esses dois pontos ficaram de fora porque `Personagens.jsx` não fica dentro de `Ficha/` nem `hooks/`, os únicos caminhos cobertos pelo grep usado naquela varredura.
+
+**O que foi feito**: os dois `.then` ganharam `.catch(error => { console.error(...); setErro('...'); setLoading(false); })`, novo estado `erro` + `<ErrorSnackbar>` renderizado no fim do componente — mesmo padrão de `RacaModal.jsx`/`CriarPersonagemModal.jsx`.
+
+---
+
+### 18. `NovoPersonagem.jsx` órfã e duplicando `CriarPersonagemModal.jsx` — 🟡 parcial em 2026-08-09
+
+**Achado**: `Personagens.jsx` hoje abre a criação de personagem via `CriarPersonagemModal` (um modal), não navegando mais para `/personagens/novo` — nenhum lugar da UI linka para essa rota. Mesmo assim, `routes/index.jsx:24` ainda a registra e o `NovoPersonagem.jsx` continua existindo, com seu próprio `getUniverso().then(setUniversos)` sem `.catch` (mesmo bug do item 17) — os dois arquivos têm essencialmente o mesmo schema Yup e `handleSubmit`, mas já tinham divergido.
+
+**O que foi feito**: só a paridade de tratamento de erro — `getUniverso()` em `NovoPersonagem.jsx` agora tem `.catch` preenchendo o `erro`/`ErrorSnackbar` que o arquivo já tinha (mas não usava nesse ponto), igual `CriarPersonagemModal.jsx`. **Não foi removida** a rota nem o arquivo — decidir se `/personagens/novo` ainda tem uso (link direto/bookmark) é uma decisão de produto, não só de engenharia, então ficou fora desta aplicação automática das melhorias.
+
+**Falta só**: com o responsável do projeto confirmando que a rota pode sair, remover `NovoPersonagem.jsx`, `NovoPersonagem.test.jsx` e a entrada em `routes/index.jsx`. Se precisar continuar existindo, extrair o formulário compartilhado (schema + `handleSubmit` + carregamento de universos/campanhas) para um hook ou componente comum reaproveitado pelos dois, em vez de manter duas cópias que só uma recebe correção de bug.
+
+---
+
+### 19. Assets PNG não otimizados
+
+**Achado**: `src/pages/Personagens/Ficha/assets/` tem 4 PNGs somando ~3,5 MB (`estrela-atributos.png` 1,5 MB, `moldura-retrato.png` 976 KB, `gema-atributo.png` 920 KB, `planeta-redungeon.png` 212 KB — usados em `Ficha/styles.js`/`AtributoEstrela.jsx`, não são código morto). O `npm run build` copia todos sem compressão adicional para `dist/assets/`, então mesmo com o code splitting por rota do item 6, qualquer usuário que abra uma ficha baixa esses ~3,5 MB de imagem.
+
+**Passo a passo**: converter para WebP (ou AVIF) com um otimizador (`squoosh`/`sharp`/`vite-plugin-image-optimizer`) mantendo fallback PNG só se precisar de compatibilidade; para `estrela-atributos.png`/`gema-atributo.png` (usados em tamanho pequeno na tela, a julgar pelo nome), considerar também redimensionar a imagem de origem em vez de só recomprimir — 1,5 MB é grande demais para um elemento decorativo de UI.
+
+---
+
+### 20. Bundle inicial ainda grande — ✅ `manualChunks` feito em 2026-08-09
+
+**Achado**: o item 6 (2026-07-22) já fez code splitting por rota e deixou registrado que o aviso "chunk maior que 500 kB" do Vite persistia por não separar as dependências de terceiros. `npm run build` mostrava `index-*.js` em 1.313,60 kB minificados (375,89 kB gzip) — o próprio Vite avisava. Sem esse item resolvido, praticamente todo o custo de MUI + Firebase + styled-components caía no carregamento inicial (tela de Login), antes mesmo do usuário logar.
+
+**O que foi feito**: `vite.config.js` ganhou `build.rollupOptions.output.manualChunks` separando `firebase` (`firebase/app`+`firebase/auth`+`firebase/firestore`) e `mui` (`@mui/material`+`@mui/icons-material`) do restante do vendor. Resultado medido: `index-*.js` caiu de 1.313,60 kB para 382,68 kB minificados — os 692,13 kB de `firebase-*.js` e 370,85 kB de `mui-*.js` viraram chunks próprios, carregados em paralelo e cacheáveis independentemente (ex. um deploy que só mexe em código de app não invalida o cache do chunk `firebase`). O aviso de "chunk > 500 kB" ainda aparece só para `firebase-*.js` — é o próprio SDK do Firebase, não dá pra reduzir sem trocar de biblioteca ou usar imports mais granulares (fora do escopo desta melhoria).
+
+**Não coberto**: `styled-components` não ganhou chunk próprio (fica junto do vendor restante em `index-*.js`) — não valeu a pena separar um pacote pequeno (~13 kB) num chunk HTTP adicional.
+
+---
+
+### 21. `defaultProps` em componente de função — depreciado no React 19
+
+**Achado**: o projeto está em React `^19.2.7`. Desde o React 18.3, `defaultProps` em componentes de função gera aviso de depreciação no console e será removido numa versão futura — 28 arquivos ainda usam esse padrão (`grep -rn "defaultProps" src`), incluindo componentes tocados nesta última leva de features (`PerfilTab.jsx`, `ConstelacaoArvoreModal.jsx`, `DesbloquearNoDialog.jsx`, `PersonagemCardItem.jsx`) — ou seja, o padrão antigo continua sendo copiado em código novo em vez de migrar.
+
+**Passo a passo**: trocar `Componente.defaultProps = { prop: valor }` por parâmetro default na desestruturação (`const Componente = ({ prop = valor }) => ...`), um arquivo por vez (mudança mecânica, sem risco funcional); vale rodar `npm run lint` + `npm run test` depois de cada lote para garantir que nenhum teste dependia do comportamento de `defaultProps` com `undefined` explícito (que se comporta diferente de default de parâmetro em um detalhe: `defaultProps` também cobre `null`, default de parâmetro não).
+
+---
+
+### 22. Styled-components inline fora do `styles.js` da pasta
+
+**Achado**: `sidebar/NivelModal.jsx` (1042 linhas) define ~600 linhas de styled-components próprios em vez de usar um `sidebar/nivel/styles.js` dedicado, ao contrário do padrão que `CultivoModal.jsx` segue corretamente (estilos em `cultivo/styles.js`) e do que `CLAUDE.md` documenta ("styles.js — styled components, quando há muitos"). `arts/CriarArtDialog.jsx` tem o mesmo problema: define ~90 linhas de styled-components próprios (`DialogHeader`, `SectionCard`, `StyledTextField` etc.) apesar de já importar `arts/styles.js` na linha seguinte para outro componente (`CatalogArtsGrid`). Nenhum dos dois arquivos tem teste (`NivelModal.test.jsx`/`CriarArtDialog` não existem), diferente dos demais modais de `sidebar/` (`ClasseModal`, `InfoModal`, `LojaModal`, `RacaModal`, `ReputacaoModal` — todos têm `.test.jsx`).
+
+**Passo a passo**: mover os styled-components de `NivelModal.jsx` para um `styles.js` novo na mesma pasta (ou reaproveitar `Ficha/styles.js` onde já existir um equivalente, ex. `SectionTitle`/`AtributoCardWrapper`); mover os de `CriarArtDialog.jsx` para dentro do `arts/styles.js` já existente. Ambos os componentes fazem mais de uma coisa (`NivelModal` mistura layout + cálculo de progressão; `CriarArtDialog` mistura formulário autoral + seletor de habilidade de classe + seletor de catálogo) — vale considerar quebrar em subcomponentes ao mesmo tempo que se resolve o teste faltante, já que testar um componente de 600–1000 linhas de uma vez é mais custoso do que testar peças menores.
+
+---
+
+### 23. Typo `handeEscolherDoCatalogo` — ✅ feito em 2026-08-09
+
+**Achado**: `arts/CriarArtDialog.jsx:263` definia `const handeEscolherDoCatalogo = useCallback(...)` (faltando o "l" de "handle"), usado em `CriarArtDialog.jsx:622`. Não era um bug funcional — só o nome do identificador.
+
+**O que foi feito**: renomeado para `handleEscolherDoCatalogo` nos dois pontos (definição e uso). Mudança isolada de nome, sem alterar comportamento.
+
+---
+
+### 24. `CorpoEspecialGrid.jsx`: heurística de nome de campo para bônus/desvantagem — 🔴 pendente (depende do projeto administrativo)
+
+**Achado**: `getBonusTexto`/`bonusLinhaEhDesvantagem` em `corpoEspecial/CorpoEspecialGrid.jsx:148-190` tentam ler o texto de um bônus testando 7-8 nomes de campo possíveis (`descricao`, `descricaoCompleta`, `nome`, `titulo`, `texto`, `label`, `title`) e classificam vantagem/desvantagem fazendo `includes` de substrings (`"desvant"`, `"vantag"`, `"disadv"`, `"advant"`) no texto. Isso é sintoma de o catálogo `corposEspeciais` (mantido pelo projeto administrativo, fora deste repo) ainda não ter um schema fechado para esse campo — o código está compensando no cliente em vez de o catálogo garantir um formato único.
+
+**Passo a passo**: não é algo que este repositório resolve sozinho (ver seção "Visão Geral" do `CLAUDE.md` — catálogos são somente leitura aqui). Sinalizar ao responsável do projeto administrativo para padronizar o campo de bônus de Corpo Especial num formato único (ex. sempre `{ texto, tipo: 'vantagem' | 'desvantagem' }`); depois de padronizado lá, simplificar `getBonusTexto`/`bonusLinhaEhDesvantagem` para ler direto sem heurística.
+
+---
+
+### 25. Tempo mínimo do overlay de "Salvando" reduzido de 2s para 1s — ✅ feito em 2026-08-09
+
+**Contexto**: não veio da varredura de código — foi um pedido direto do usuário ("diminua o tempo mínimo de load das telas para 1 segundo"). O único ponto do app com um piso artificial de duração é `context/SavingContext.jsx`: toda escrita que passa por `useSaving().executar()` (~15 componentes de escrita da ficha — Aptidões, Arts, Condições, Lojas, Veias Astrais, Progressão etc.) mostra o `SavingOverlay` (spinner de tela cheia) por no mínimo `DURACAO_MINIMA_MS`, mesmo que o Firestore responda mais rápido — existe para o overlay não "piscar" em conexões rápidas.
+
+**O que foi feito**: `DURACAO_MINIMA_MS` em `SavingContext.jsx` mudou de `2000` para `1000`. Não há teste que dependa do valor exato (`grep` confirmou), e a lógica de espera (`Math.max` implícito via `if (espera > 0)`) não precisou mudar — só a constante. Abas com "Salvar" explícito via Formik (Atributos, Perfil) não passam por este overlay, então não são afetadas por esta mudança.
