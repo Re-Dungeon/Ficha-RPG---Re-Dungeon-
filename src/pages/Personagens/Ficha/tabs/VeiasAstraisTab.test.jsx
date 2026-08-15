@@ -60,6 +60,8 @@ describe('VeiasAstraisTab', () => {
     );
 
     fireEvent.click(await screen.findByRole('button', { name: /solara/i }));
-    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+    const dialog = await screen.findByRole('dialog');
+    expect(dialog).toBeInTheDocument();
+    expect(dialog).toHaveClass('MuiDialog-paperWidthXl');
   });
 });
