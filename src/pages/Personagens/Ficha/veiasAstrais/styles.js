@@ -1,5 +1,7 @@
 import styled from 'styled-components';
 
+/* Keyframes will be declared inside the component to scope them */
+
 // ── Cards de Divindade (grade na aba) ───────────────────────────────────
 
 export const DivindadeGrid = styled.div`
@@ -15,17 +17,72 @@ export const DivindadeCardButton = styled.button`
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  background: var(--bg-card);
-  border: 1px solid var(--border-primary);
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));
+  border: 1px solid rgba(255,255,255,0.06);
   border-radius: 14px;
   overflow: hidden;
+  position: relative;
   transition:
-    border-color 0.15s ease,
-    transform 0.15s ease;
+    border-color 0.18s ease,
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.02);
 
   &:hover {
     border-color: var(--border-hover);
-    transform: translateY(-2px);
+    transform: translateY(-6px);
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45), 0 0 22px rgba(82, 104, 255, 0.06);
+  }
+
+  /* aura behind the card */
+  @keyframes pulse {
+    0% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 0.85; transform: scale(1.03); }
+    100% { opacity: 0.6; transform: scale(1); }
+  }
+
+  @keyframes slowFlow {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -6% -10% -18% -10%;
+    z-index: 0;
+    border-radius: 18px;
+    pointer-events: none;
+    background: radial-gradient(closest-side, rgba(0,0,0,0) 40%, var(--cor, var(--color-accent))22 60%, rgba(0,0,0,0) 100%);
+    filter: blur(22px) saturate(1.05);
+    opacity: 0.28;
+    transform: scale(1);
+    transition: opacity 400ms ease, transform 600ms ease;
+    animation: pulse 6.5s ease-in-out infinite;
+  }
+
+  /* subtle rim glow using accent color (animated) */
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: 14px;
+    box-shadow: 0 0 14px rgba(0,0,0,0.18) inset, 0 0 22px var(--cor, var(--color-accent))33;
+    opacity: 0.75;
+    transition: opacity 350ms ease, box-shadow 350ms ease;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.02) 40%, transparent 100%);
+    background-size: 200% 100%;
+    animation: slowFlow 9s linear infinite;
+  }
+
+  &:hover::before {
+    opacity: 0.42;
+    transform: scale(1.02);
+  }
+
+  &:hover::after {
+    box-shadow: 0 0 26px var(--cor, var(--color-accent))66, 0 20px 40px rgba(0,0,0,0.48);
   }
 `;
 
@@ -38,48 +95,141 @@ export const DivindadeImagem = styled.div`
   justify-content: center;
   font-size: 2rem;
   overflow: hidden;
-
+  position: relative;
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    display: block;
+    transition: transform 0.45s ease, filter 0.45s ease;
+    filter: saturate(1.03) contrast(0.98);
+  }
+
+  /* soft dark gradient at bottom so the title and text read better */
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 36%;
+    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(2,6,10,0.66) 100%);
+    pointer-events: none;
+  }
+
+  ${DivindadeCardButton}:hover & img {
+    transform: scale(1.04);
   }
 `;
 
 export const DivindadeInfo = styled.div`
-  padding: 14px 16px;
+  padding: 12px 16px 16px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 `;
 
 export const DivindadeNomeTitulo = styled.h3`
   margin: 0;
   font-family: 'Cinzel', Georgia, 'Times New Roman', serif;
-  font-size: 1rem;
-  color: var(--status-gold-strong);
+  font-size: 1.06rem;
+  color: var(--cor, var(--status-gold-strong));
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-shadow: 0 0 10px rgba(232, 203, 133, 0.08);
+  transition: text-shadow 260ms ease, transform 220ms ease;
+
+  ${DivindadeCardButton}:hover & {
+    text-shadow: 0 0 18px rgba(0,0,0,0), 0 0 18px var(--cor, rgba(232,203,133,0.16));
+    transform: translateY(-1px);
+  }
+
+  /* center the title inside the info column without changing other layout */
+  align-self: center;
+  text-align: center;
+
+  /* subtle luminous underline (premium detail) */
+  &::after {
+    content: '';
+    display: block;
+    width: 44px;
+    height: 3px;
+    margin: 8px auto 0;
+    border-radius: 3px;
+    background: linear-gradient(90deg, transparent, var(--cor, var(--color-accent)), transparent);
+    opacity: 0.9;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.45), 0 0 12px var(--cor, rgba(82,104,255,0.12));
+    transition: transform 320ms cubic-bezier(.2,.8,.2,1), opacity 260ms ease, box-shadow 300ms ease;
+    transform: scaleX(1);
+  }
+
+  ${DivindadeCardButton}:hover &::after {
+    opacity: 1;
+    transform: scaleX(1.06);
+    box-shadow: 0 8px 22px rgba(0,0,0,0.5), 0 0 18px var(--cor, rgba(82,104,255,0.18));
+  }
 `;
 
 export const DivindadeDescricaoTexto = styled.p`
   margin: 0;
-  font-size: 0.82rem;
+  font-size: 0.9rem;
   color: var(--text-secondary);
-  line-height: 1.4;
+  line-height: 1.45;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  margin-top: 4px;
 `;
 
 export const DivindadeProgressoBadge = styled.span`
-  align-self: flex-start;
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--color-accent);
-  background: rgba(34, 211, 238, 0.1);
-  border: 1px solid rgba(34, 211, 238, 0.3);
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border: 1px solid rgba(255,255,255,0.04);
   border-radius: 999px;
-  padding: 3px 10px;
+  padding: 6px 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.18) inset;
+  position: relative;
+
+  &::before {
+    content: '✦';
+    color: var(--color-accent);
+    font-size: 0.98rem;
+    margin-right: 6px;
+    display: inline-block;
+  }
+
+  /* visual track under the badge */
+  &::after {
+    content: '';
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    bottom: -10px;
+    height: 6px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.03);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+  }
+
+  /* fill element: direct child span[aria-hidden='progress-fill'] */
+  & > span[aria-hidden='progress-fill'] {
+    position: absolute;
+    left: 8px;
+    bottom: -10px;
+    height: 6px;
+    border-radius: 6px;
+    background: linear-gradient(90deg, var(--cor, var(--color-accent)), rgba(255,255,255,0.08));
+    width: var(--progress, 0%);
+    transition: width 600ms cubic-bezier(.2,.8,.2,1), opacity 350ms ease;
+  }
 `;
 
 // ── Árvore de veias (modal) ──────────────────────────────────────────────
@@ -271,10 +421,13 @@ export const VeiaDialogFechar = styled.button`
 `;
 
 export const VeiaDialogBody = styled.div`
-  padding: 18px 20px 20px;
+  padding: 16px 20px 20px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
+  /* centraliza o corpo e limita largura de leitura para melhorar hierarquia */
+  max-width: 760px;
+  margin: 0 auto;
 `;
 
 export const VeiaSecaoLabel = styled.span`
@@ -289,9 +442,11 @@ export const VeiaSecaoLabel = styled.span`
 
 export const VeiaSecaoTexto = styled.p`
   margin: 0;
-  font-size: 0.88rem;
-  line-height: 1.5;
+  font-size: 0.95rem;
+  line-height: 1.6;
   color: var(--text-primary);
+  /* evita que o texto fique comprimido em telas muito largas */
+  max-width: 720px;
 `;
 
 export const VeiaStatsRow = styled.div`

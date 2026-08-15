@@ -45,7 +45,7 @@ const DesbloquearNoDialog = ({
       open={open}
       onClose={onClose}
       fullWidth
-      maxWidth="xs"
+      maxWidth="sm"
       slotProps={{
         paper: {
           style: {
@@ -53,6 +53,8 @@ const DesbloquearNoDialog = ({
             border: `1px solid ${cor}`,
             boxShadow: `0 0 28px ${cor}40`,
             borderRadius: 14,
+            width: 'min(880px, 92vw)',
+            maxWidth: '880px',
           },
         },
       }}
