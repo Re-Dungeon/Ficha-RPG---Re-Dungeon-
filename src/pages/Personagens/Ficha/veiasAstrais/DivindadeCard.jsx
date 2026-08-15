@@ -5,27 +5,32 @@ import { getNome } from 'common/utils/resolveNome';
 
 import {
   DivindadeCardButton,
-  DivindadeDescricaoTexto,
   DivindadeImagem,
   DivindadeInfo,
   DivindadeNomeTitulo,
   DivindadeProgressoBadge,
 } from './styles';
 
-const RESUMO_TAMANHO = 140;
-
 const DivindadeCard = ({ divindade, veias, totalDesbloqueados, onClick }) => {
-  const descricao = divindade?.descricao ?? '';
-  const resumo = descricao.length > RESUMO_TAMANHO ? `${descricao.slice(0, RESUMO_TAMANHO)}...` : descricao;
+
+  const total = veias.length || 0;
+  const pct = total > 0 ? Math.round((totalDesbloqueados / total) * 100) : 0;
+
+  // expose CSS vars for color and progress only for visual styling
+  const cssVars = {
+    '--cor': divindade?.cor ?? 'var(--color-accent)',
+    '--progress': `${pct}%`,
+  };
 
   return (
-    <DivindadeCardButton type="button" onClick={onClick}>
+    <DivindadeCardButton type="button" onClick={onClick} style={cssVars}>
       <DivindadeImagem>{divindade?.linkImagem ? <img src={divindade.linkImagem} alt="" /> : '✨'}</DivindadeImagem>
       <DivindadeInfo>
         <DivindadeNomeTitulo>{getNome(divindade) || 'Divindade desconhecida'}</DivindadeNomeTitulo>
-        {resumo && <DivindadeDescricaoTexto>{resumo}</DivindadeDescricaoTexto>}
+        {/* descrição removida do card: mantemos todos os dados intactos (visual-only) */}
         <DivindadeProgressoBadge>
-          {totalDesbloqueados} / {veias.length} veias desbloqueadas
+          {totalDesbloqueados} / {total} veias desbloqueadas
+          <span aria-hidden={true} />
         </DivindadeProgressoBadge>
       </DivindadeInfo>
     </DivindadeCardButton>
