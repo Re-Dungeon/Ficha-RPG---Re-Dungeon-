@@ -12,7 +12,7 @@ import NoNode from './NoNode';
 import { calcularLayoutArvore } from './arvoreLayout';
 import { ARVORE_FUNDO_OPACIDADE, ARVORE_FUNDO_SATURACAO, corDivindade } from './constants';
 import { ArvoreCanvas, ArvoreFundoImagem, ArvoreScrollArea } from './styles';
-import { DialogFecharButton, DialogHeaderRow, DialogHeaderTitle, PowerCombatBadge, StatusValueRow } from '../styles';
+import { PowerCombatBadge, StatusValueRow } from '../styles';
 
 const ConstelacaoArvoreModal = ({
   open,
@@ -36,6 +36,7 @@ const ConstelacaoArvoreModal = ({
     noSelecionado && !jaDesbloqueado ? calcularCustoDesbloqueio(nos, noSelecionado.id, idsDesbloqueados) : null;
   const bloqueioInfo =
     noSelecionado && jaDesbloqueado ? calcularCadeiaBloqueio(nos, noSelecionado.id, idsDesbloqueados) : null;
+  const nomeDivindade = (getNome(divindade) || 'Veias Astrais').toUpperCase();
 
   const handleDesbloquear = async () => {
     if (!desbloqueioInfo || desbloqueioInfo.cadeia.length === 0) {
@@ -58,22 +59,173 @@ const ConstelacaoArvoreModal = ({
 
   return (
     <>
-      <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg">
-        <DialogHeaderRow style={{ borderBottomColor: `${cor}55` }}>
-          <DialogHeaderTitle style={{ flex: 1, color: cor, textShadow: `0 0 12px ${cor}66` }}>
-            {getNome(divindade) || 'Veias Astrais'}
-          </DialogHeaderTitle>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <PowerCombatBadge>PC disponível: {pcDisponivel}</PowerCombatBadge>
-            <DialogFecharButton type="button" aria-label="Fechar" onClick={onClose}>
-              <CloseIcon fontSize="small" />
-            </DialogFecharButton>
-          </div>
-        </DialogHeaderRow>
+      <Dialog
+        open={open}
+        onClose={onClose}
+        fullWidth
+        maxWidth="xl"
+        scroll="paper"
+        slotProps={{
+          paper: {
+            sx: {
+              width: 'min(95vw, 1500px)',
+              maxWidth: '95vw',
+              maxHeight: '92vh',
+              m: 2,
+              overflow: 'hidden',
+              borderRadius: '22px',
+              background: 'linear-gradient(180deg, rgba(33, 27, 52, 0.94), rgba(18, 14, 28, 0.94))',
+              border: '1px solid rgba(255, 255, 255, 0.10)',
+              boxShadow: '0 24px 60px rgba(8, 6, 17, 0.38)',
+            },
+          },
+        }}
+      >
+        <div
+          style={{
+            position: 'relative',
+            padding: '22px 24px 18px',
+            background: `linear-gradient(180deg, rgba(17, 13, 24, 0.98) 0%, rgba(13, 10, 20, 0.92) 100%)`,
+            borderBottom: `1px solid ${cor}55`,
+            boxShadow: `inset 0 -1px 0 ${cor}22, 0 18px 32px rgba(0, 0, 0, 0.18)`,
+          }}
+        >
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background: `radial-gradient(circle at 50% 20%, ${cor}28 0%, transparent 52%)`,
+              pointerEvents: 'none',
+            }}
+          />
 
-        <DialogContent>
+          <div
+            style={{
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minHeight: 94,
+            }}
+          >
+            <div
+              style={{
+                width: '100%',
+                textAlign: 'center',
+                minWidth: 0,
+                paddingRight: 190,
+                paddingLeft: 190,
+              }}
+            >
+              <div
+                style={{
+                  margin: 0,
+                  fontFamily: "'Cinzel', Georgia, 'Times New Roman', serif",
+                  fontSize: 'clamp(1.3rem, 2.1vw, 2.7rem)',
+                  lineHeight: 1.08,
+                  letterSpacing: '0.12em',
+                  color: cor,
+                  textTransform: 'uppercase',
+                  textShadow: `0 0 18px ${cor}66, 0 0 42px ${cor}33`,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+              >
+                {nomeDivindade}
+              </div>
+
+            </div>
+
+            <div
+              style={{
+                position: 'absolute',
+                right: 0,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+              }}
+            >
+              <PowerCombatBadge
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '7px 12px',
+                  background: `linear-gradient(180deg, rgba(15, 20, 35, 0.9), rgba(17, 14, 24, 0.8))`,
+                  border: `1px solid ${cor}88`,
+                  boxShadow: `0 0 18px ${cor}33, inset 0 0 10px rgba(255,255,255,0.04)`,
+                  fontSize: '0.76rem',
+                  letterSpacing: '0.08em',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                <span aria-hidden="true">✦</span>
+                {pcDisponivel} PC
+              </PowerCombatBadge>
+
+              <button
+                type="button"
+                aria-label="Fechar"
+                onClick={onClose}
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 10,
+                  border: `1px solid ${cor}88`,
+                  background: `rgba(15, 18, 30, 0.68)`,
+                  color: cor,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s ease',
+                  boxShadow: `0 0 12px ${cor}22`,
+                  flexShrink: 0,
+                }}
+                onMouseEnter={event => {
+                  event.currentTarget.style.background = `rgba(255,255,255,0.06)`;
+                  event.currentTarget.style.boxShadow = `0 0 18px ${cor}55`;
+                  event.currentTarget.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={event => {
+                  event.currentTarget.style.background = 'rgba(15, 18, 30, 0.68)';
+                  event.currentTarget.style.boxShadow = `0 0 12px ${cor}22`;
+                  event.currentTarget.style.transform = 'translateY(0)';
+                }}
+              >
+                <CloseIcon fontSize="small" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <DialogContent sx={{ p: '18px 20px 20px', background: 'rgba(8, 7, 14, 0.4)' }}>
           {divindade?.descricao && (
-            <StatusValueRow style={{ display: 'block', margin: '8px 0 16px' }}>{divindade.descricao}</StatusValueRow>
+            <div
+              style={{
+                margin: '0 0 18px',
+                padding: '14px 18px',
+                borderRadius: 12,
+                border: `1px solid ${cor}33`,
+                background: `linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01))`,
+                boxShadow: `inset 0 0 0 1px rgba(255,255,255,0.02), 0 10px 24px rgba(0,0,0,0.12)`,
+              }}
+            >
+              <StatusValueRow
+                style={{
+                  display: 'block',
+                  lineHeight: 1.75,
+                  fontSize: '0.98rem',
+                  letterSpacing: '0.02em',
+                  color: 'rgba(255,255,255,0.86)',
+                }}
+              >
+                {divindade.descricao}
+              </StatusValueRow>
+            </div>
           )}
 
           {nos.length === 0 ? (

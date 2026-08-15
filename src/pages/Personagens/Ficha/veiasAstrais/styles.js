@@ -87,10 +87,65 @@ export const DivindadeProgressoBadge = styled.span`
 export const ArvoreScrollArea = styled.div`
   position: relative;
   overflow: auto;
-  padding: 32px 16px;
-  background: radial-gradient(circle at 50% 0%, rgba(139, 92, 246, 0.08), transparent 60%);
-  border-radius: 12px;
-  border: 1px solid var(--border-primary);
+  min-height: min(72vh, 860px);
+  padding: 28px 18px 20px;
+  background:
+    linear-gradient(180deg, rgba(25, 20, 36, 0.36) 0%, rgba(17, 13, 25, 0.46) 100%),
+    radial-gradient(circle at 50% 0%, rgba(139, 92, 246, 0.14), transparent 60%);
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02), 0 12px 26px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(1px);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(120, 157, 255, 0.9) rgba(18, 14, 28, 0.45);
+
+  &::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: linear-gradient(180deg, rgba(18, 14, 28, 0.7), rgba(22, 18, 35, 0.45));
+    border: 1px solid rgba(103, 118, 255, 0.18);
+    border-radius: 999px;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgba(108, 146, 255, 0.9), rgba(82, 104, 255, 0.8));
+    border: 2px solid rgba(12, 13, 26, 0.7);
+    border-radius: 999px;
+    box-shadow:
+      0 0 10px rgba(88, 130, 255, 0.45),
+      inset 0 0 10px rgba(255, 255, 255, 0.14);
+    transition: all 0.2s ease;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, rgba(134, 166, 255, 0.96), rgba(98, 117, 255, 0.88));
+    box-shadow:
+      0 0 12px rgba(116, 154, 255, 0.7),
+      inset 0 0 12px rgba(255, 255, 255, 0.18);
+  }
+
+  &::-webkit-scrollbar-thumb:active {
+    background: linear-gradient(180deg, rgba(156, 189, 255, 1), rgba(111, 131, 255, 0.95));
+    box-shadow:
+      0 0 16px rgba(137, 176, 255, 0.9),
+      inset 0 0 12px rgba(255, 255, 255, 0.22);
+  }
+
+  &::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(0, 0, 0, 0.06));
+    pointer-events: none;
+  }
 `;
 
 // Marca d'água com a imagem da divindade — fixa (não rola com a árvore, já
@@ -98,10 +153,10 @@ export const ArvoreScrollArea = styled.div`
 // `ARVORE_FUNDO_OPACIDADE`/`ARVORE_FUNDO_SATURACAO` em `constants.js`.
 export const ArvoreFundoImagem = styled.div`
   position: absolute;
-  inset: 0;
+  inset: -4%;
   z-index: 0;
   background-image: ${({ $src }) => ($src ? `url(${$src})` : 'none')};
-  background-position: center;
+  background-position: center center;
   background-repeat: no-repeat;
   background-size: cover;
   opacity: ${({ $opacidade }) => $opacidade};
