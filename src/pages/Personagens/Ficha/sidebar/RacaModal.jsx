@@ -383,23 +383,71 @@ const RacaModal = ({ open, onClose, personagem, onSave }) => {
                                 <AutoAwesomeIcon fontSize="inherit" />
                                 {habilidade.nome}
                               </HabilidadeNome>
-                              {ehRacaAtual && (
-                                <StatusValueRow>
-                                  {ativo ? 'Ativa' : bloqueado ? 'Limite atingido' : 'Toque p/ ativar'}
-                                </StatusValueRow>
-                              )}
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                {habilidade.acao && (
+                                  <AcaoBadge $cor={obterCorAcao(habilidade.acao)}>
+                                    {habilidade.acao}
+                                  </AcaoBadge>
+                                )}
+                                {ehRacaAtual && (
+                                  <StatusValueRow>
+                                    {ativo ? 'Ativa' : bloqueado ? 'Limite atingido' : 'Toque p/ ativar'}
+                                  </StatusValueRow>
+                                )}
+                              </div>
                             </HabilidadeHeader>
-                            <HabilidadeDescricao>{habilidade.descricao}</HabilidadeDescricao>
-                            {Array.isArray(habilidade.bonus) && habilidade.bonus.length > 0 && (
-                              <BonusLista>
-                                {habilidade.bonus.map((linha, linhaIndex) => (
-                                  <BonusItem key={linhaIndex}>
-                                    <RemoveIcon fontSize="inherit" />
-                                    {linha}
-                                  </BonusItem>
-                                ))}
-                              </BonusLista>
-                            )}
+
+                              <HabilidadeDescricao>{habilidade.descricao}</HabilidadeDescricao>
+
+                              <HabilidadeChipsGrid>
+                                {habilidade.alcance && (
+                                  <HabilidadeChip>
+                                    <PlaceIcon fontSize="inherit" />
+                                    <span>{habilidade.alcance}</span>
+                                  </HabilidadeChip>
+                                )}
+                                {habilidade.alvo && (
+                                  <HabilidadeChip>
+                                    <GpsFixedIcon fontSize="inherit" />
+                                    <span>{habilidade.alvo}</span>
+                                  </HabilidadeChip>
+                                )}
+                                {habilidade.custo && (
+                                  <HabilidadeChip>
+                                    <BoltIcon fontSize="inherit" />
+                                    <span>{habilidade.custo}</span>
+                                  </HabilidadeChip>
+                                )}
+                                {habilidade.recarga && (
+                                  <HabilidadeChip>
+                                    <UpdateIcon fontSize="inherit" />
+                                    <span>{habilidade.recarga}</span>
+                                  </HabilidadeChip>
+                                )}
+                                {habilidade.dados && (
+                                  <HabilidadeChip>
+                                    <CasinoIcon fontSize="inherit" />
+                                    <span>{habilidade.dados}</span>
+                                  </HabilidadeChip>
+                                )}
+                                {habilidade.duracao && (
+                                  <HabilidadeChip>
+                                    <TimerIcon fontSize="inherit" />
+                                    <span>{habilidade.duracao}</span>
+                                  </HabilidadeChip>
+                                )}
+                              </HabilidadeChipsGrid>
+
+                              {Array.isArray(habilidade.bonus) && habilidade.bonus.length > 0 && (
+                                <BonusLista>
+                                  {habilidade.bonus.map((linha, linhaIndex) => (
+                                    <BonusItem key={linhaIndex}>
+                                      <RemoveIcon fontSize="inherit" />
+                                      {linha}
+                                    </BonusItem>
+                                  ))}
+                                </BonusLista>
+                              )}
                             {ativo && (
                               <HabilidadeCheckboxBottom>
                                 <CheckIcon fontSize="inherit" />

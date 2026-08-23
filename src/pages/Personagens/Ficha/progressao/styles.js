@@ -196,6 +196,9 @@ export const DescricaoBox = styled.p`
   font-size: 0.88rem;
   line-height: 1.5;
   color: var(--text-secondary);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 `;
 
 export const AtributosBaseGrid = styled.div`
@@ -377,6 +380,30 @@ export const HabilidadeDescricao = styled.p`
   font-size: 0.85rem;
   color: var(--text-secondary);
   line-height: 1.4;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  max-height: calc(1.4em * 4);
+  overflow-y: auto;
+  padding-right: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-accent) transparent;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgba(91,124,250,0.92), rgba(91,124,250,0.6));
+    border-radius: 6px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
 `;
 
 export const HabilidadeChipsGrid = styled.div`
