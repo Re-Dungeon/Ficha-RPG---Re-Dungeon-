@@ -15,6 +15,7 @@ import CasinoIcon from '@mui/icons-material/Casino';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import HealthAndSafetyIcon from '@mui/icons-material/HealthAndSafety';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
+import StickyNote2Icon from '@mui/icons-material/StickyNote2';
 
 import {
   SidebarGrupo,
@@ -41,6 +42,7 @@ const construirGrupos = () => [
       { chave: 'reputacao', label: 'Reputação', Icon: PublicIcon },
       { chave: 'nivel', label: 'Nível', Icon: TrendingUpIcon },
       { chave: 'cultivo', label: 'Cultivo', Icon: SelfImprovementIcon },
+      { chave: 'notas', label: 'Notas', Icon: StickyNote2Icon },
     ],
   },
   {
