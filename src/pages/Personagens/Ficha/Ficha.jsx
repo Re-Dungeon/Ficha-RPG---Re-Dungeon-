@@ -41,6 +41,7 @@ import SorteModal from './sidebar/SorteModal';
 import LojaModal from './sidebar/LojaModal';
 import CondicoesModal from './sidebar/CondicoesModal';
 import CodexModal from './sidebar/CodexModal';
+import NotesModal from './notes/NotesModal';
 import { FichaLayout, FichaMain, TabsBar } from './styles';
 
 const Ficha = () => {
@@ -233,6 +234,7 @@ const Ficha = () => {
             onSave={handleSave}
           />
           <CodexModal open={modalAtivo === 'codex'} onClose={fecharModal} personagem={personagem} />
+          <NotesModal open={modalAtivo === 'notas'} onClose={fecharModal} personagem={personagem} />
 
           <ErrorSnackbar
             open={!!erroExclusao}

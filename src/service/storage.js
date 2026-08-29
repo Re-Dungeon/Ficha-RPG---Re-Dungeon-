@@ -242,6 +242,46 @@ export const updateReceitaInventario = (personagemId, receitaInventarioId, data)
 export const removeReceitaInventario = (personagemId, receitaInventarioId) =>
   deleteDoc(doc(db, 'personagens', personagemId, 'receitasInventario', receitaInventarioId));
 
+// ── notas — subcoleção personagens/{id}/notas (novas notas do personagem)
+// Estrutura: { title, content, plainText, coverImage, isFavorite, createdAt, updatedAt }
+export const getNotas = personagemId => getSubcolecaoItems('personagens', personagemId, 'notas');
+
+export const getNota = async (personagemId, notaId) => {
+  const snapshot = await getDoc(doc(db, 'personagens', personagemId, 'notas', notaId));
+  return snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null;
+};
+
+export const addNota = (personagemId, data) =>
+  addDoc(collection(db, 'personagens', personagemId, 'notas'), {
+    ...data,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+
+export const updateNota = (personagemId, notaId, data) =>
+  updateDoc(doc(db, 'personagens', personagemId, 'notas', notaId), {
+    ...data,
+    updatedAt: serverTimestamp(),
+  });
+
+export const removeNota = (personagemId, notaId) =>
+  deleteDoc(doc(db, 'personagens', personagemId, 'notas', notaId));
+
+export const duplicateNota = async (personagemId, notaId) => {
+  const nota = await getNota(personagemId, notaId);
+  if (!nota) return null;
+  const rest = { ...nota };
+  delete rest.id;
+  delete rest.createdAt;
+  delete rest.updatedAt;
+  const ref = await addDoc(collection(db, 'personagens', personagemId, 'notas'), {
+    ...rest,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  return ref.id;
+};
+
 // ── Coleções de referência do projeto administrativo — somente leitura ─────
 // Compartilhadas no mesmo Firestore; nunca add*/update*/remove* a partir
 // deste site (ver MIGRACAO-REACT-FIREBASE.md §4).
