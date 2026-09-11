@@ -65,8 +65,40 @@ import {
   ReinoTitulo,
 } from '../cultivo/styles';
 
+const CHAVE_CULTIVO_PADRAO = 'principal';
+
 const expTotalReino = reino =>
   Math.max(0, reino?.quantidadeSubReinos ?? 0) * Math.max(0, reino?.experienciaPorSubReino ?? 0);
+
+const normalizarChaveCultivo = chave => {
+  if (!chave || typeof chave !== 'string') {
+    return CHAVE_CULTIVO_PADRAO;
+  }
+
+  const chaveTrim = chave.trim();
+  if (!chaveTrim || chaveTrim.startsWith('__') || chaveTrim.endsWith('__')) {
+    return CHAVE_CULTIVO_PADRAO;
+  }
+
+  return chaveTrim;
+};
+
+const normalizarMapaCultivo = mapa => {
+  if (!mapa || typeof mapa !== 'object') {
+    return {};
+  }
+
+  return Object.entries(mapa).reduce((acc, [chave, valor]) => {
+    const chaveNormalizada = normalizarChaveCultivo(chave);
+    acc[chaveNormalizada] = valor;
+    return acc;
+  }, {});
+};
+
+const criarPatchCultivo = (mapaAtual, chave, valor) => {
+  const mapaNormalizado = normalizarMapaCultivo(mapaAtual);
+  return { ...mapaNormalizado, [normalizarChaveCultivo(chave)]: valor };
+};
 
 const CultivoModal = ({ open, onClose, personagem, onSave }) => {
   const { executar } = useSaving();
@@ -82,11 +114,10 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
   const [estrelasPerdidasInput, setEstrelasPerdidasInput] = useState('');
 
   const universoId = personagem.universo;
-  // `cultivo` é um mapa keyed por subUniverso ('' pro universo sem múltiplos
-  // sistemas) — cada chave guarda a progressão independente daquele sistema,
-  // permitindo cultivar em mais de um sistema/subUniverso ao mesmo tempo sem
-  // perder progresso ao trocar de aba (ver docs/MIGRACAO-REACT-FIREBASE.md §5).
-  const cultivoMap = useMemo(() => personagem.cultivo ?? {}, [personagem.cultivo]);
+  // `cultivo` é um mapa keyed por subUniverso; em universos sem múltiplos
+  // sistemas usamos uma chave interna estável em vez de `''`, porque Firestore
+  // rejeita chaves vazias em objetos aninhados.
+  const cultivoMap = useMemo(() => normalizarMapaCultivo(personagem.cultivo), [personagem.cultivo]);
   // Universos com múltiplos sistemas paralelos (ex.: Cultivo → "Doupo
   // Cangqiong", "Martial Peak") têm o campo `SubUniversos` no doc `Universo` e
   // exigem escolher um antes de ver os Reinos. Universos sem esse campo vão
@@ -103,7 +134,7 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
     () => subUniversos.filter(nome => !cultivoMap[nome]),
     [subUniversos, cultivoMap],
   );
-  const chaveAtual = temSistemas ? subUniversoSelecionado : '';
+  const chaveAtual = temSistemas ? subUniversoSelecionado : CHAVE_CULTIVO_PADRAO;
   const cultivoReinoId = cultivoMap[chaveAtual]?.reinoId ?? '';
   const cultivoXp = cultivoMap[chaveAtual]?.xpAtual ?? 0;
 
@@ -147,7 +178,7 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
     }
     let isMounted = true;
     setCarregandoReinos(true);
-    getReinosCultivo(universoId, chaveAtual)
+    getReinosCultivo(universoId, temSistemas ? chaveAtual : '')
       .then(itens => {
         if (isMounted) {
           setReinos(ordenarReinosCultivo(itens));
@@ -164,7 +195,7 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
     return () => {
       isMounted = false;
     };
-  }, [open, carregandoSistemas, sistemaSelecionadoValido, chaveAtual, universoId]);
+  }, [open, carregandoSistemas, sistemaSelecionadoValido, chaveAtual, temSistemas, universoId]);
 
   useEffect(() => {
     if (open) {
@@ -249,7 +280,11 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
         reinoAtual.quantidadeSubReinos,
         reinoAtual.experienciaPorSubReino,
       );
-      await onSave({ cultivo: { ...cultivoMap, [chaveAtual]: { reinoId: reinoAtual.id, xpAtual } } });
+      const patchCultivo = criarPatchCultivo(cultivoMap, chaveAtual, {
+        reinoId: reinoAtual.id,
+        xpAtual,
+      });
+      await onSave({ cultivo: patchCultivo });
       setXpGanhoInput('');
     });
   }, [xpGanhoInput, reinoAtual, cultivoXp, cultivoMap, chaveAtual, onSave, executar]);
@@ -259,7 +294,11 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
       return undefined;
     }
     return executar(async () => {
-      await onSave({ cultivo: { ...cultivoMap, [chaveAtual]: { reinoId: proximoReino.id, xpAtual: 0 } } });
+      const patchCultivo = criarPatchCultivo(cultivoMap, chaveAtual, {
+        reinoId: proximoReino.id,
+        xpAtual: 0,
+      });
+      await onSave({ cultivo: patchCultivo });
       setTribulacaoAberta(false);
     });
   }, [proximoReino, cultivoMap, chaveAtual, onSave, executar]);
@@ -277,7 +316,11 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
     }
     return executar(async () => {
       const xpAtual = aplicarFalhaTribulacao(cultivoXp, estrelasPerdidas, reinoAtual.experienciaPorSubReino);
-      await onSave({ cultivo: { ...cultivoMap, [chaveAtual]: { reinoId: reinoAtual.id, xpAtual } } });
+      const patchCultivo = criarPatchCultivo(cultivoMap, chaveAtual, {
+        reinoId: reinoAtual.id,
+        xpAtual,
+      });
+      await onSave({ cultivo: patchCultivo });
       setFalhaTribulacaoAberta(false);
       setEstrelasPerdidasInput('');
     });
