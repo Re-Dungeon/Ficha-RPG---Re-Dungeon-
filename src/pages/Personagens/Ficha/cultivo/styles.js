@@ -117,12 +117,155 @@ export const ProximoReinoRow = styled.div`
 `;
 
 export const CaminhoTitulo = styled.h3`
-  margin: 0 0 4px;
+  margin: 0 0 12px;
   font-family: 'Cinzel', Georgia, 'Times New Roman', serif;
   font-size: 0.9rem;
   letter-spacing: 2px;
   text-transform: uppercase;
+  text-align: center;
   color: var(--status-gold-strong);
+`;
+
+export const ResetList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 18px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 4px;
+`;
+
+export const ResetCard = styled.button`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: ${({ $selected, $atual }) =>
+    $selected ? 'rgba(232, 203, 133, 0.12)' : $atual ? 'rgba(255, 255, 255, 0.04)' : 'rgba(17, 15, 28, 0.72)'};
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  box-shadow: ${({ $selected }) => ($selected ? '0 10px 24px rgba(232, 203, 133, 0.12)' : 'none')};
+
+  &:hover {
+    border-color: rgba(232, 203, 133, 0.45);
+    background: rgba(255, 255, 255, 0.06);
+    transform: translateY(-1px);
+  }
+`;
+
+export const ResetCardIconWrap = styled.div`
+  position: relative;
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 1px solid rgba(232, 203, 133, 0.45);
+  overflow: hidden;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.15), rgba(13, 12, 20, 0.9));
+`;
+
+export const ResetCardImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+`;
+
+export const ResetCardContent = styled.div`
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+`;
+
+export const ResetCardTitleRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+`;
+
+export const ResetCardTitle = styled.span`
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.3;
+`;
+
+export const ResetCardBadge = styled.span`
+  flex-shrink: 0;
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 0.62rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: rgba(232, 203, 133, 0.12);
+  color: var(--status-gold-strong);
+  border: 1px solid rgba(232, 203, 133, 0.35);
+`;
+
+export const ResetCardSubtitle = styled.span`
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+`;
+
+export const ResetCardHint = styled.span`
+  margin-top: 6px;
+  font-size: 0.69rem;
+  color: var(--status-gold-strong);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+`;
+
+export const ResetActionDivider = styled.div`
+  margin: 12px 0 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+`;
+
+export const ResetCompleteAction = styled.button`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(232, 203, 133, 0.3);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    border-color: rgba(232, 203, 133, 0.5);
+    background: rgba(232, 203, 133, 0.08);
+    transform: translateY(-1px);
+  }
+`;
+
+export const ResetCompleteTitle = styled.span`
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--status-gold-strong);
+`;
+
+export const ResetCompleteText = styled.span`
+  font-size: 0.74rem;
+  color: var(--text-secondary);
 `;
 
 // Um item da trilha. `$status`: 'concluido' | 'atual' | 'bloqueado'.

@@ -237,3 +237,32 @@ export const FormWrapper = styled.div`
   flex-direction: column;
   gap: 16px;
 `;
+
+export const TabsHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+
+  /* ensure Tabs stay left and filter stays right */
+  > .tabs-wrapper {
+    flex: 1 1 auto;
+    min-width: 220px;
+  }
+
+  > .filter-wrapper {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  @media (max-width: 720px) {
+    flex-direction: column;
+    align-items: stretch;
+    > .filter-wrapper {
+      justify-content: flex-start;
+    }
+  }
+`;
