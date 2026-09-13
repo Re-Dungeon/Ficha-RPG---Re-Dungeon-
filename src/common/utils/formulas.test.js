@@ -4,6 +4,7 @@ import {
   aplicarXpCultivo,
   aplicarXpNivel,
   aplicarXpTreino,
+  calcularBonusCultivoPorAtributo,
   calcularBonusNivel,
   calcularBonusPorSorte,
   calcularCadeiaBloqueio,
@@ -30,7 +31,255 @@ import {
   ordenarReinosCultivo,
   podeRolarFortunaHoje,
   reorganizarArts,
+  removerBonusCultivoPorRank,
+  podeAdicionarPontoCultivo,
+  resolverPermissaoCultivoPorAtributo,
+  resolverLimiteCultivoPorAtributo,
 } from './formulas';
+
+describe('regra de limite e permissão de cultivo', () => {
+  it('retorna undefined quando o atributo não possui limite configurado', () => {
+    const reino = {
+      regras: {
+        permissoes: {
+          primarios: { forca: { permitido: true } },
+        },
+      },
+    };
+
+    expect(resolverLimiteCultivoPorAtributo(reino, 'primarios', 'forca')).toBeUndefined();
+  });
+
+  it('permite incrementar normalmente quando o atributo é permitido e não há limite', () => {
+    const reino = {
+      regras: {
+        permissoes: {
+          primarios: { forca: { permitido: true } },
+        },
+      },
+    };
+
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'primarios', 'forca')).toBe(true);
+    expect(podeAdicionarPontoCultivo({ atual: 0, limite: undefined, permitido: true })).toBe(true);
+    expect(podeAdicionarPontoCultivo({ atual: 4, limite: undefined, permitido: true })).toBe(true);
+  });
+
+  it('bloqueia apenas a ultrapassagem do limite por atributo e preserva o valor anterior', () => {
+    const reino = {
+      regras: {
+        permissoes: {
+          primarios: { forca: { permitido: true, limite: 5 } },
+        },
+      },
+    };
+
+    expect(resolverLimiteCultivoPorAtributo(reino, 'primarios', 'forca')).toBe(5);
+    expect(podeAdicionarPontoCultivo({ atual: 0, limite: 5, permitido: true })).toBe(true);
+    expect(podeAdicionarPontoCultivo({ atual: 5, limite: 5, permitido: true })).toBe(false);
+    expect(podeAdicionarPontoCultivo({ atual: 0, limite: 5, permitido: false })).toBe(false);
+  });
+
+  it('não mistura permissão com limite entre atributos diferentes', () => {
+    expect(podeAdicionarPontoCultivo({ atual: 2, limite: 5, permitido: true })).toBe(true);
+    expect(podeAdicionarPontoCultivo({ atual: 3, limite: 3, permitido: true })).toBe(false);
+    expect(podeAdicionarPontoCultivo({ atual: 1, limite: 5, permitido: true })).toBe(true);
+  });
+});
+
+describe('resolverPermissaoCultivoPorAtributo', () => {
+  it('resolve permissões em regras.permissoes por categoria e alias do reino atual', () => {
+    const reino = {
+      regras: {
+        permissoes: {
+          primarios: { forca: true, agilidade: false },
+          secundarios: { prontidao: true },
+          status: { hp: true },
+        },
+      },
+    };
+
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'primarios', 'forca')).toBe(true);
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'primarios', 'agilidade')).toBe(false);
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'secundarios', 'prontidao')).toBe(true);
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'status', 'hp')).toBe(true);
+  });
+
+  it('libera todos os atributos do tópico quando o grupo inteiro está liberado', () => {
+    const reino = { regras: { permissoes: { primarios: true } } };
+
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'primarios', 'forca')).toBe(true);
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'primarios', 'vitalidade')).toBe(true);
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'secundarios', 'prontidao')).toBe(false);
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'status', 'hp')).toBe(false);
+  });
+
+  it('libera o tópico secundário inteiro quando o grupo está liberado sem permissão individual', () => {
+    const reino = { regras: { permissoes: { secundarios: true } } };
+
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'primarios', 'forca')).toBe(false);
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'secundarios', 'prontidao')).toBe(true);
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'status', 'hp')).toBe(false);
+  });
+
+  it('libera status quando o grupo está liberado e a regra do atributo não existe', () => {
+    const reino = { regras: { permissoes: { status: true } } };
+
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'primarios', 'forca')).toBe(false);
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'secundarios', 'prontidao')).toBe(false);
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'status', 'hp')).toBe(true);
+  });
+
+  it('respeita alias de saúde bloqueada em status (saude/saúde/hp)', () => {
+    const reino = {
+      regras: {
+        permissoes: {
+          status: { saude: false },
+        },
+      },
+    };
+
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'status', 'hp')).toBe(false);
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'status', 'saude')).toBe(false);
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'status', 'saúde')).toBe(false);
+  });
+
+  it('usa regrasCultivo quando o reino vem em formato alternativo e a saúde está liberada', () => {
+    const reino = {
+      regras: {},
+      regrasCultivo: {
+        permissoes: {
+          status: { saude: true },
+        },
+      },
+    };
+
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'status', 'hp')).toBe(true);
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'status', 'saude')).toBe(true);
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'status', 'saúde')).toBe(true);
+  });
+
+  it('respeita uma combinação de primários + status com atributo explicitamente permitido', () => {
+    const reino = {
+      regras: {
+        permissoes: {
+          primarios: { forca: true },
+          status: { hp: true },
+        },
+      },
+    };
+
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'primarios', 'forca')).toBe(true);
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'primarios', 'vitalidade')).toBe(false);
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'status', 'hp')).toBe(true);
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'status', 'energia')).toBe(false);
+  });
+
+  it('libera o grupo inteiro quando ele está habilitado e não bloqueia por conflitos de outros grupos', () => {
+    const reino = {
+      regras: {
+        permissoes: {
+          primarios: true,
+          secundarios: { prontidao: true },
+        },
+      },
+    };
+
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'primarios', 'forca')).toBe(true);
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'primarios', 'vitalidade')).toBe(true);
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'primarios', 'agilidade')).toBe(true);
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'secundarios', 'ataque')).toBe(false);
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'secundarios', 'prontidao')).toBe(true);
+  });
+
+  it('aceita listas individuais específicas, como força + agilidade + saúde', () => {
+    const reino = {
+      regras: {
+        permissoes: {
+          primarios: { forca: true, agilidade: true },
+          status: { hp: true },
+        },
+      },
+    };
+
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'primarios', 'forca')).toBe(true);
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'primarios', 'agilidade')).toBe(true);
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'primarios', 'vitalidade')).toBe(false);
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'status', 'hp')).toBe(true);
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'status', 'energia')).toBe(false);
+  });
+
+  it('resolve saúde permitida/limitada na lista plana `atributos` (formato real do catálogo, id "saude")', () => {
+    const reino = {
+      regrasCultivo: {
+        pontos: 150,
+        atributos: [
+          { id: 'inteligencia', permitido: true, limite: 5 },
+          { id: 'saude', permitido: true, limite: 100 },
+          { id: 'energia', permitido: true, limite: 50 },
+          { id: 'fadiga', permitido: false, limite: '' },
+        ],
+      },
+    };
+
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'status', 'hp')).toBe(true);
+    expect(resolverLimiteCultivoPorAtributo(reino, 'status', 'hp')).toBe(100);
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'status', 'energia')).toBe(true);
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'status', 'fadiga')).toBe(false);
+  });
+
+  it('bloqueia a saúde na lista plana `atributos` quando permitido é false', () => {
+    const reino = {
+      regrasCultivo: {
+        pontos: 25,
+        atributos: [{ id: 'saude', permitido: false, limite: '' }],
+      },
+    };
+
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'status', 'hp')).toBe(false);
+    expect(resolverLimiteCultivoPorAtributo(reino, 'status', 'hp')).toBeUndefined();
+  });
+});
+
+describe('calcularBonusCultivoPorAtributo', () => {
+  it('soma os pontos de cultivo por atributo sem duplicar valores de outros ranks', () => {
+    const cultivoBonus = {
+      primarios: {
+        forca: { rank1: 5, rank2: 3 },
+        agilidade: { rank1: 2 },
+      },
+    };
+
+    expect(calcularBonusCultivoPorAtributo(cultivoBonus, 'primarios', 'forca')).toBe(8);
+    expect(calcularBonusCultivoPorAtributo(cultivoBonus, 'primarios', 'agilidade')).toBe(2);
+  });
+
+  it('ignora valores aninhados não numéricos e soma somente os números reais do bônus', () => {
+    const cultivoBonus = {
+      primarios: {
+        forca: { rank1: { valor: 5 }, rank2: 3 },
+        agilidade: { rank1: { valor: 2 }, rank2: { bonus: '4' } },
+      },
+    };
+
+    expect(calcularBonusCultivoPorAtributo(cultivoBonus, 'primarios', 'forca')).toBe(8);
+    expect(calcularBonusCultivoPorAtributo(cultivoBonus, 'primarios', 'agilidade')).toBe(6);
+  });
+
+  it('remove somente o rank selecionado e preserva os demais', () => {
+    const cultivoBonus = {
+      primarios: {
+        forca: { rank1: 5, rank2: 3, rank3: 7 },
+      },
+    };
+
+    const resultado = removerBonusCultivoPorRank(cultivoBonus, 'primarios', 'forca', 'rank2');
+
+    expect(resultado.primarios.forca.rank1).toBe(5);
+    expect(resultado.primarios.forca.rank2).toBeUndefined();
+    expect(resultado.primarios.forca.rank3).toBe(7);
+    expect(calcularBonusCultivoPorAtributo(resultado, 'primarios', 'forca')).toBe(12);
+  });
+});
 
 describe('calcularPrimariosTotais', () => {
   it('soma base + extra + bônus de cada atributo primário', () => {
@@ -48,6 +297,17 @@ describe('calcularPrimariosTotais', () => {
       percepcao: 0,
       sorte: 0,
     });
+  });
+
+  it('inclui o bônus de cultivo como fonte complementar sem misturar no bônus manual', () => {
+    const totais = calcularPrimariosTotais(
+      { forca: 20 },
+      { forca: 2 },
+      { forca: 3 },
+      { forca: 5 },
+    );
+
+    expect(totais.forca).toBe(30);
   });
 });
 
@@ -94,6 +354,25 @@ describe('calcularSecundarios', () => {
       precisao: 0,
       evasao: 0,
     });
+  });
+
+  it('soma o bônus de cultivo aplicado aos atributos secundários', () => {
+    const primariosTotais = {
+      forca: 50,
+      vitalidade: 40,
+      agilidade: 60,
+      inteligencia: 30,
+      percepcao: 45,
+      sorte: 20,
+    };
+
+    const resultado = calcularSecundarios(primariosTotais, {}, {}, {}, {
+      ataque: 5,
+      defesa: 2,
+    });
+
+    expect(resultado.ataque).toBe(9);
+    expect(resultado.defesa).toBe(5);
   });
 });
 

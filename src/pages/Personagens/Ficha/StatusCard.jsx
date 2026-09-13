@@ -28,7 +28,7 @@ import {
   StatusTitulo,
 } from './styles';
 
-const StatusCard = ({ label, variante, grande, maximo, atual, atualName, baseName, extraName, bonusName }) => {
+const StatusCard = ({ label, variante, grande, maximo, atual, atualName, baseName, extraName, bonusName, bonusCultivo }) => {
   const tituloId = `dialog-titulo-${atualName}`;
   const [aberto, setAberto] = useState(false);
   const [atualField, , atualHelpers] = useField(atualName);
@@ -36,6 +36,7 @@ const StatusCard = ({ label, variante, grande, maximo, atual, atualName, baseNam
   const [extraField, , extraHelpers] = useField(extraName);
   const [bonusField, , bonusHelpers] = useField(bonusName);
   const snapshotRef = useRef(null);
+  const bonusCultivoTotal = Number(bonusCultivo ?? 0);
 
   const percentual = maximo > 0 ? Math.min(100, Math.max(0, (atual / maximo) * 100)) : 0;
 
@@ -102,7 +103,11 @@ const StatusCard = ({ label, variante, grande, maximo, atual, atualName, baseNam
               <NumberField name={extraName} label="Extra" />
             </FieldsRow>
             <FieldsRow style={{ marginTop: 16 }}>
-              <NumberField name={bonusName} label="Bônus" />
+              <NumberField
+                name={bonusName}
+                label="Bônus"
+                displayValue={Number(bonusField.value ?? 0) + bonusCultivoTotal}
+              />
             </FieldsRow>
           </DialogContent>
           <DialogActions>
@@ -127,10 +132,12 @@ StatusCard.propTypes = {
   baseName: PropTypes.string.isRequired,
   extraName: PropTypes.string.isRequired,
   bonusName: PropTypes.string.isRequired,
+  bonusCultivo: PropTypes.number,
 };
 
 StatusCard.defaultProps = {
   grande: false,
+  bonusCultivo: 0,
 };
 
 export default StatusCard;

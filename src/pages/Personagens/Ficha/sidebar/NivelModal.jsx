@@ -29,6 +29,7 @@ import TrackChangesIcon from '@mui/icons-material/TrackChanges';
 
 import {
   aplicarXpNivel,
+  calcularBonusCultivoTotal,
   calcularGanhoSecundarioPorNivel,
   calcularPrimariosTotais,
   calcularSecundarios,
@@ -665,10 +666,20 @@ const NivelModal = ({ open, onClose, personagem, onSave }) => {
   const percentualXp = Math.min(100, Math.round((nivelInfo.xpAtual / xpNecessario) * 100));
   const xpFaltante = Math.max(0, xpNecessario - nivelInfo.xpAtual);
 
+  const bonusCultivoTotal = useMemo(
+    () => calcularBonusCultivoTotal(personagem.cultivoBonus ?? {}),
+    [personagem.cultivoBonus],
+  );
+
   const primariosTotais = useMemo(
     () =>
-      calcularPrimariosTotais(personagem.atributosBase, personagem.atributosExtra, personagem.atributosBonus),
-    [personagem.atributosBase, personagem.atributosExtra, personagem.atributosBonus],
+      calcularPrimariosTotais(
+        personagem.atributosBase,
+        personagem.atributosExtra,
+        personagem.atributosBonus,
+        bonusCultivoTotal.primarios,
+      ),
+    [bonusCultivoTotal.primarios, personagem.atributosBase, personagem.atributosExtra, personagem.atributosBonus],
   );
 
   const secundariosTotais = useMemo(
@@ -678,8 +689,15 @@ const NivelModal = ({ open, onClose, personagem, onSave }) => {
         personagem.secundariosBase,
         personagem.secundariosExtra,
         personagem.secundariosBonus,
+        bonusCultivoTotal.secundarios,
       ),
-    [primariosTotais, personagem.secundariosBase, personagem.secundariosExtra, personagem.secundariosBonus],
+    [
+      bonusCultivoTotal.secundarios,
+      primariosTotais,
+      personagem.secundariosBase,
+      personagem.secundariosExtra,
+      personagem.secundariosBonus,
+    ],
   );
 
   const handleAdicionarXp = useCallback(() => {

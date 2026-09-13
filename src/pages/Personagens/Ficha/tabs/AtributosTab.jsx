@@ -3,6 +3,7 @@ import { Formik } from 'formik';
 import PropTypes from 'prop-types';
 
 import {
+  calcularBonusCultivoTotal,
   calcularPowerCombat,
   calcularPrimariosTotais,
   calcularSecundarios,
@@ -50,18 +51,21 @@ const AtributosFormBody = ({
     }
   }, [values, dirty, salvarRascunho]);
 
+  const bonusCultivoTotal = calcularBonusCultivoTotal(personagem.cultivoBonus ?? {});
   const primariosTotais = calcularPrimariosTotais(
     values.atributosBase,
     values.atributosExtra,
     values.atributosBonus,
+    bonusCultivoTotal.primarios,
   );
   const secundariosTotais = calcularSecundarios(
     primariosTotais,
     values.secundariosBase,
     values.secundariosExtra,
     values.secundariosBonus,
+    bonusCultivoTotal.secundarios,
   );
-  const statusMaximos = calcularStatusMaximos(primariosTotais, values.status);
+  const statusMaximos = calcularStatusMaximos(primariosTotais, values.status, bonusCultivoTotal.status);
   const powerCombat = calcularPowerCombat(primariosTotais, secundariosTotais);
   const pontosPrimarios = Object.values(primariosTotais).reduce(
     (total, valor) => total + valor,
@@ -81,6 +85,7 @@ const AtributosFormBody = ({
           bonusTipo="atributosBonus"
           centroLabel="Pontos"
           centroValor={pontosPrimarios}
+          bonusCultivo={bonusCultivoTotal.primarios}
         />
 
         <PersonagemHeroCard
@@ -100,6 +105,7 @@ const AtributosFormBody = ({
           bonusTipo="secundariosBonus"
           centroLabel="Power Combat"
           centroValor={powerCombat}
+          bonusCultivo={bonusCultivoTotal.secundarios}
         />
       </HeroRow>
 
@@ -114,6 +120,7 @@ const AtributosFormBody = ({
           baseName={`status.${STATUS_PRINCIPAL_CHAVE}.base`}
           extraName={`status.${STATUS_PRINCIPAL_CHAVE}.extra`}
           bonusName={`status.${STATUS_PRINCIPAL_CHAVE}.bonus`}
+          bonusCultivo={bonusCultivoTotal.status[STATUS_PRINCIPAL_CHAVE] ?? 0}
         />
 
         <StatusParRow>
@@ -128,6 +135,7 @@ const AtributosFormBody = ({
               baseName={`status.${chave}.base`}
               extraName={`status.${chave}.extra`}
               bonusName={`status.${chave}.bonus`}
+              bonusCultivo={bonusCultivoTotal.status[chave] ?? 0}
             />
           ))}
         </StatusParRow>
@@ -175,22 +183,25 @@ const AtributosTab = ({ personagem, onSave, onExcluir }) => {
   const handleSubmit = useCallback(
     async (values, { setSubmitting }) => {
       try {
+        const bonusCultivoTotal = calcularBonusCultivoTotal(personagem.cultivoBonus ?? {});
         const primariosTotais = calcularPrimariosTotais(
           values.atributosBase,
           values.atributosExtra,
           values.atributosBonus,
+          bonusCultivoTotal.primarios,
         );
         const secundariosTotais = calcularSecundarios(
           primariosTotais,
           values.secundariosBase,
           values.secundariosExtra,
           values.secundariosBonus,
+          bonusCultivoTotal.secundarios,
         );
         const payload = {
           ...values,
           atributosTotais: primariosTotais,
           secundariosTotais,
-          statusMaximos: calcularStatusMaximos(primariosTotais, values.status),
+          statusMaximos: calcularStatusMaximos(primariosTotais, values.status, bonusCultivoTotal.status),
           powerCombat: calcularPowerCombat(primariosTotais, secundariosTotais),
         };
         await executar(() => onSave(payload));
@@ -202,7 +213,7 @@ const AtributosTab = ({ personagem, onSave, onExcluir }) => {
         setSubmitting(false);
       }
     },
-    [onSave, limparRascunho, executar],
+    [onSave, limparRascunho, executar, personagem.cultivoBonus],
   );
 
   return (

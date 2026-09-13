@@ -54,6 +54,7 @@ export const PersonagemCard = styled.button`
   display: flex;
   flex-direction: column;
   gap: 0;
+  min-height: 360px;
   padding: 0;
   overflow: hidden;
   text-align: left;
@@ -109,7 +110,7 @@ export const PersonagemCard = styled.button`
 
 export const PersonagemMedia = styled.div`
   position: relative;
-  height: 78%;
+  flex: 1;
   min-height: 260px;
   overflow: hidden;
   background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(5,8,16,0.92));
@@ -119,6 +120,7 @@ export const PersonagemCardImage = styled.img`
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
   display: block;
   transition: transform 0.25s ease;
 
@@ -144,6 +146,7 @@ export const PersonagemCardImagePlaceholder = styled.div`
     width: 88%;
     height: 88%;
     object-fit: cover;
+    object-position: center;
     border-radius: 16px;
     opacity: 0.95;
   }
@@ -236,4 +239,33 @@ export const FormWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 16px;
+`;
+
+export const TabsHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+
+  /* ensure Tabs stay left and filter stays right */
+  > .tabs-wrapper {
+    flex: 1 1 auto;
+    min-width: 220px;
+  }
+
+  > .filter-wrapper {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  @media (max-width: 720px) {
+    flex-direction: column;
+    align-items: stretch;
+    > .filter-wrapper {
+      justify-content: flex-start;
+    }
+  }
 `;
