@@ -207,6 +207,37 @@ describe('resolverPermissaoCultivoPorAtributo', () => {
     expect(resolverPermissaoCultivoPorAtributo(reino, 'status', 'hp')).toBe(true);
     expect(resolverPermissaoCultivoPorAtributo(reino, 'status', 'energia')).toBe(false);
   });
+
+  it('resolve saúde permitida/limitada na lista plana `atributos` (formato real do catálogo, id "saude")', () => {
+    const reino = {
+      regrasCultivo: {
+        pontos: 150,
+        atributos: [
+          { id: 'inteligencia', permitido: true, limite: 5 },
+          { id: 'saude', permitido: true, limite: 100 },
+          { id: 'energia', permitido: true, limite: 50 },
+          { id: 'fadiga', permitido: false, limite: '' },
+        ],
+      },
+    };
+
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'status', 'hp')).toBe(true);
+    expect(resolverLimiteCultivoPorAtributo(reino, 'status', 'hp')).toBe(100);
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'status', 'energia')).toBe(true);
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'status', 'fadiga')).toBe(false);
+  });
+
+  it('bloqueia a saúde na lista plana `atributos` quando permitido é false', () => {
+    const reino = {
+      regrasCultivo: {
+        pontos: 25,
+        atributos: [{ id: 'saude', permitido: false, limite: '' }],
+      },
+    };
+
+    expect(resolverPermissaoCultivoPorAtributo(reino, 'status', 'hp')).toBe(false);
+    expect(resolverLimiteCultivoPorAtributo(reino, 'status', 'hp')).toBeUndefined();
+  });
 });
 
 describe('calcularBonusCultivoPorAtributo', () => {

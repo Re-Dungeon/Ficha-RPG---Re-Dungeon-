@@ -234,15 +234,9 @@ export const resolverPermissaoCultivoPorAtributo = (reino, grupo, chave) => {
       : [];
 
   const item = listaAtributos.find(entry => {
-    const ids = [
-      String(entry?.id ?? '').trim().toLowerCase(),
-      String(entry?.chave ?? '').trim().toLowerCase(),
-      String(entry?.nome ?? '').trim().toLowerCase(),
-      String(entry?.atributo ?? '').trim().toLowerCase(),
-      String(entry?.key ?? '').trim().toLowerCase(),
-    ].filter(Boolean);
+    const ids = [entry?.id, entry?.chave, entry?.nome, entry?.atributo, entry?.key].filter(Boolean);
 
-    return ids.includes(normalizarChaveCultivo(chave)) || ids.includes(normalizarChaveCultivo(chave).replace(/_/g, ' '));
+    return ids.some(id => chavesEquivalentesCultivo(id, chave));
   });
 
   if (item && item.permitido !== undefined) {
@@ -368,15 +362,9 @@ export const resolverLimiteCultivoPorAtributo = (reino, grupo, chave) => {
       : [];
 
   const item = listaAtributos.find(entry => {
-    const ids = [
-      String(entry?.id ?? '').trim().toLowerCase(),
-      String(entry?.chave ?? '').trim().toLowerCase(),
-      String(entry?.nome ?? '').trim().toLowerCase(),
-      String(entry?.atributo ?? '').trim().toLowerCase(),
-      String(entry?.key ?? '').trim().toLowerCase(),
-    ].filter(Boolean);
+    const ids = [entry?.id, entry?.chave, entry?.nome, entry?.atributo, entry?.key].filter(Boolean);
 
-    return ids.includes(normalizarChaveCultivo(chave)) || ids.includes(normalizarChaveCultivo(chave).replace(/_/g, ' '));
+    return ids.some(id => chavesEquivalentesCultivo(id, chave));
   });
 
   if (item && item.limite !== undefined) {
