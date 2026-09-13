@@ -7,22 +7,473 @@ const PRIMARIOS = [
   'sorte',
 ];
 
+export const normalizarPermissaoCultivo = valor => {
+  if (typeof valor === 'boolean') {
+    return valor;
+  }
+
+  if (typeof valor === 'number') {
+    return valor > 0;
+  }
+
+  if (typeof valor === 'string') {
+    const texto = valor.trim().toLowerCase();
+    return ['true', 'yes', 'allow', 'allowed', 'permitido', 'permitida', 'ativo', 'enabled', 'on'].includes(
+      texto,
+    );
+  }
+
+  if (Array.isArray(valor)) {
+    return valor.length > 0;
+  }
+
+  if (valor && typeof valor === 'object') {
+    return Object.values(valor).some(item => normalizarPermissaoCultivo(item));
+  }
+
+  return false;
+};
+
+const normalizarChaveCultivo = texto =>
+  String(texto ?? '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[_\s]+/g, '');
+
+const chavesEquivalentesCultivo = (chaveA, chaveB) => {
+  const normalizadas = [chaveA, chaveB].map(normalizarChaveCultivo);
+  const alias = {
+    hp: ['hp', 'saude', 'saúde', 'health', 'vida'],
+    energia: ['energia', 'energy'],
+    fadiga: ['fadiga', 'fatiga', 'fatigue'],
+    prontidao: ['prontidao', 'prontidão'],
+    ataque: ['ataque', 'attack'],
+    defesa: ['defesa', 'defense'],
+    reacao: ['reacao', 'reaction'],
+    precisao: ['precisao', 'precision'],
+    evasao: ['evasao', 'evade', 'evasão'],
+    forca: ['forca', 'strength'],
+    vitalidade: ['vitalidade', 'vitality'],
+    agilidade: ['agilidade', 'agility'],
+    inteligencia: ['inteligencia', 'intelligence'],
+    percepcao: ['percepcao', 'perception'],
+    sorte: ['sorte', 'luck'],
+  };
+
+  return normalizadas.some(chave =>
+    Object.values(alias).some(valor => {
+      const conjunto = new Set(valor);
+      return conjunto.has(chave) && normalizadas.every(item => conjunto.has(item) || item === chave);
+    }),
+  );
+};
+
+const mesclarObjetosCultivo = (alvo, origem) => {
+  if (!origem || typeof origem !== 'object') {
+    return alvo;
+  }
+
+  Object.entries(origem).forEach(([chave, valor]) => {
+    if (valor && typeof valor === 'object' && !Array.isArray(valor) && valor.constructor === Object) {
+      alvo[chave] = alvo[chave] && typeof alvo[chave] === 'object' && !Array.isArray(alvo[chave])
+        ? mesclarObjetosCultivo(alvo[chave], valor)
+        : mesclarObjetosCultivo({}, valor);
+      return;
+    }
+
+    alvo[chave] = valor;
+  });
+
+  return alvo;
+};
+
+export const resolverPermissaoCultivoPorAtributo = (reino, grupo, chave) => {
+  const base = mesclarObjetosCultivo(
+    {},
+    reino?.regrasCultivo ?? {},
+  );
+  mesclarObjetosCultivo(base, reino?.regras ?? {});
+  const gruposMap = {
+    primarios: ['atributosPrincipais', 'principais', 'primarios'],
+    secundarios: ['atributosSecundarios', 'secundarios'],
+    status: ['status', 'statusPermitidos'],
+  };
+
+  const normalizarGrupo = valor => normalizarChaveCultivo(valor);
+  const grupoBusca = normalizarGrupo(grupo);
+  const aliases = (gruposMap[grupo] ?? [grupo]).map(normalizarGrupo);
+
+  const extrairPermissaoDireta = valor => {
+    if (valor === undefined || valor === null) {
+      return undefined;
+    }
+
+    if (typeof valor === 'boolean' || typeof valor === 'number' || typeof valor === 'string') {
+      return normalizarPermissaoCultivo(valor);
+    }
+
+    if (Array.isArray(valor)) {
+      return valor.some(item => extrairPermissaoDireta(item) === true) ? true : undefined;
+    }
+
+    if (typeof valor === 'object') {
+      const camposPermissao = ['permitido', 'permitida', 'enabled', 'ativo', 'allowed', 'valor', 'status'];
+      for (const campo of camposPermissao) {
+        if (valor[campo] !== undefined) {
+          return normalizarPermissaoCultivo(valor[campo]);
+        }
+      }
+      return undefined;
+    }
+
+    return undefined;
+  };
+
+  const encontrarPermissaoAtributoNoGrupo = (valorGrupo, chaveBusca) => {
+    if (valorGrupo === undefined || valorGrupo === null) {
+      return undefined;
+    }
+
+    if (typeof valorGrupo === 'boolean' || typeof valorGrupo === 'number' || typeof valorGrupo === 'string') {
+      return undefined;
+    }
+
+    if (Array.isArray(valorGrupo)) {
+      for (const item of valorGrupo) {
+        const encontrado = encontrarPermissaoAtributoNoGrupo(item, chaveBusca);
+        if (encontrado !== undefined) {
+          return encontrado;
+        }
+      }
+      return undefined;
+    }
+
+    if (typeof valorGrupo !== 'object') {
+      return undefined;
+    }
+
+    for (const [chaveAtual, valor] of Object.entries(valorGrupo)) {
+      if (chavesEquivalentesCultivo(chaveAtual, chaveBusca)) {
+        return extrairPermissaoDireta(valor) ?? normalizarPermissaoCultivo(valor);
+      }
+
+      const encontrado = encontrarPermissaoAtributoNoGrupo(valor, chaveBusca);
+      if (encontrado !== undefined) {
+        return encontrado;
+      }
+    }
+
+    return undefined;
+  };
+
+  const permissoesExplicitas = [
+    base?.permissoes,
+    base?.categorias,
+    base?.configuracao,
+    base?.rules,
+    base,
+  ].filter(item => item && typeof item === 'object');
+
+  const grupoExplicito = permissoesExplicitas.find(item => {
+    const entrada =
+      item[grupoBusca] ??
+      Object.entries(item).find(([key]) => chavesEquivalentesCultivo(key, grupoBusca))?.[1];
+    return entrada !== undefined;
+  });
+
+  if (grupoExplicito) {
+    const valorGrupo =
+      grupoExplicito[grupoBusca] ??
+      Object.entries(grupoExplicito).find(([key]) => chavesEquivalentesCultivo(key, grupoBusca))?.[1];
+
+    if (
+      typeof valorGrupo === 'boolean' ||
+      typeof valorGrupo === 'number' ||
+      typeof valorGrupo === 'string'
+    ) {
+      return normalizarPermissaoCultivo(valorGrupo);
+    }
+
+    const grupoPermitido = extrairPermissaoDireta(valorGrupo) ?? (valorGrupo && typeof valorGrupo === 'object' ? true : false);
+    const permissaoAtributo = encontrarPermissaoAtributoNoGrupo(valorGrupo, chave);
+
+    if (grupoPermitido === false) {
+      return false;
+    }
+
+    if (permissaoAtributo === undefined) {
+      return false;
+    }
+
+    return Boolean(grupoPermitido) && Boolean(permissaoAtributo);
+  }
+
+  const gruposEscolhidos = new Set([
+    ...aliases,
+    ...Object.keys(gruposMap).map(normalizarGrupo),
+  ]);
+
+  const grupoDiferenteExplicito = permissoesExplicitas.some(item => {
+    const entradas = Object.entries(item).filter(([key]) => gruposEscolhidos.has(normalizarGrupo(key)));
+    return entradas.some(([, valor]) => {
+      const valorNormalizado = valor;
+      return typeof valorNormalizado === 'boolean' || typeof valorNormalizado === 'number' || typeof valorNormalizado === 'string';
+    });
+  });
+
+  if (grupoDiferenteExplicito) {
+    return false;
+  }
+
+  const listaAtributos = Array.isArray(base?.atributos)
+    ? base.atributos
+    : Array.isArray(base?.atributosPermitidos)
+      ? base.atributosPermitidos
+      : [];
+
+  const item = listaAtributos.find(entry => {
+    const ids = [
+      String(entry?.id ?? '').trim().toLowerCase(),
+      String(entry?.chave ?? '').trim().toLowerCase(),
+      String(entry?.nome ?? '').trim().toLowerCase(),
+      String(entry?.atributo ?? '').trim().toLowerCase(),
+      String(entry?.key ?? '').trim().toLowerCase(),
+    ].filter(Boolean);
+
+    return ids.includes(normalizarChaveCultivo(chave)) || ids.includes(normalizarChaveCultivo(chave).replace(/_/g, ' '));
+  });
+
+  if (item && item.permitido !== undefined) {
+    return normalizarPermissaoCultivo(item.permitido);
+  }
+
+  return false;
+};
+
+// Extrai um número válido de um valor que pode representar um limite.
+// Retorna `undefined` quando não há limite válido (null/undefined/''/não-numérico).
+export const extrairNumeroLimite = valor => {
+  if (valor === null || valor === undefined) return undefined;
+  if (typeof valor === 'number') return Number.isFinite(valor) ? valor : undefined;
+  if (typeof valor === 'string') {
+    const s = valor.trim();
+    if (s === '') return undefined;
+    const n = Number(s);
+    return Number.isFinite(n) ? n : undefined;
+  }
+  return undefined;
+};
+
+export const podeAdicionarPontoCultivo = ({
+  atual = 0,
+  proximo = atual + 1,
+  limite,
+  permitido = true,
+}) => {
+  if (permitido === false) {
+    return false;
+  }
+
+  const limiteNumero = extrairNumeroLimite(limite);
+  if (limiteNumero === undefined) {
+    return true;
+  }
+
+  return Number(proximo) <= Number(limiteNumero);
+};
+
+// Resolve o limite (se existir) de Pontos de Cultivo para um atributo específico
+// dentro da configuração de um Reino. Retorna um número (0 é válido) ou
+// `undefined` quando não há limite configurado.
+export const resolverLimiteCultivoPorAtributo = (reino, grupo, chave) => {
+  const base = mesclarObjetosCultivo({}, reino?.regrasCultivo ?? {});
+  mesclarObjetosCultivo(base, reino?.regras ?? {});
+
+  const normalizarGrupo = valor => normalizarChaveCultivo(valor);
+  const grupoBusca = normalizarGrupo(grupo);
+
+  const extrairLimiteDireto = valor => {
+    if (valor === undefined || valor === null) return undefined;
+    if (typeof valor === 'object') {
+      if (valor.limite !== undefined) return extrairNumeroLimite(valor.limite);
+      if (valor.limit !== undefined) return extrairNumeroLimite(valor.limit);
+      if (valor.max !== undefined) return extrairNumeroLimite(valor.max);
+      return undefined;
+    }
+    return extrairNumeroLimite(valor);
+  };
+
+  const encontrarLimiteAtributoNoGrupo = (valorGrupo, chaveBusca) => {
+    if (valorGrupo === undefined || valorGrupo === null) return undefined;
+    if (typeof valorGrupo === 'boolean' || typeof valorGrupo === 'number' || typeof valorGrupo === 'string') {
+      return undefined;
+    }
+    if (Array.isArray(valorGrupo)) {
+      for (const item of valorGrupo) {
+        const encontrado = encontrarLimiteAtributoNoGrupo(item, chaveBusca);
+        if (encontrado !== undefined) return encontrado;
+      }
+      return undefined;
+    }
+    if (typeof valorGrupo !== 'object') return undefined;
+
+    for (const [chaveAtual, valor] of Object.entries(valorGrupo)) {
+      if (chavesEquivalentesCultivo(chaveAtual, chaveBusca)) {
+        const direto = extrairLimiteDireto(valor);
+        if (direto !== undefined) return direto;
+        // Se não houver campo `limite` direto, mas o objeto for numérico/primário,
+        // tente extrair diretamente (ex.: { forca: 5 }).
+        const tentativa = extrairNumeroLimite(valor);
+        if (tentativa !== undefined) return tentativa;
+      }
+
+      const encontrado = encontrarLimiteAtributoNoGrupo(valor, chaveBusca);
+      if (encontrado !== undefined) return encontrado;
+    }
+
+    return undefined;
+  };
+
+  const permissoesExplicitas = [
+    base?.permissoes,
+    base?.categorias,
+    base?.configuracao,
+    base?.rules,
+    base,
+  ].filter(item => item && typeof item === 'object');
+
+  const grupoExplicito = permissoesExplicitas.find(item => {
+    const entrada =
+      item[grupoBusca] ?? Object.entries(item).find(([key]) => chavesEquivalentesCultivo(key, grupoBusca))?.[1];
+    return entrada !== undefined;
+  });
+
+  if (grupoExplicito) {
+    const valorGrupo =
+      grupoExplicito[grupoBusca] ??
+      Object.entries(grupoExplicito).find(([key]) => chavesEquivalentesCultivo(key, grupoBusca))?.[1];
+
+    const limiteAtributo = encontrarLimiteAtributoNoGrupo(valorGrupo, chave);
+    if (limiteAtributo !== undefined) return limiteAtributo;
+    return undefined;
+  }
+
+  // Busca fallback na lista plana `atributos`/`atributosPermitidos` como último recurso.
+  const listaAtributos = Array.isArray(base?.atributos)
+    ? base.atributos
+    : Array.isArray(base?.atributosPermitidos)
+      ? base.atributosPermitidos
+      : [];
+
+  const item = listaAtributos.find(entry => {
+    const ids = [
+      String(entry?.id ?? '').trim().toLowerCase(),
+      String(entry?.chave ?? '').trim().toLowerCase(),
+      String(entry?.nome ?? '').trim().toLowerCase(),
+      String(entry?.atributo ?? '').trim().toLowerCase(),
+      String(entry?.key ?? '').trim().toLowerCase(),
+    ].filter(Boolean);
+
+    return ids.includes(normalizarChaveCultivo(chave)) || ids.includes(normalizarChaveCultivo(chave).replace(/_/g, ' '));
+  });
+
+  if (item && item.limite !== undefined) {
+    return extrairNumeroLimite(item.limite);
+  }
+
+  return undefined;
+};
+
 const somar = (...campos) => campos.reduce((total, valor) => total + (valor ?? 0), 0);
 
-export const calcularPrimariosTotais = (base = {}, extra = {}, bonus = {}) =>
+export const calcularPrimariosTotais = (base = {}, extra = {}, bonus = {}, bonusCultivo = {}) =>
   Object.fromEntries(
-    PRIMARIOS.map(chave => [chave, somar(base[chave], extra[chave], bonus[chave])]),
+    PRIMARIOS.map(chave => [
+      chave,
+      somar(base[chave], extra[chave], bonus[chave], bonusCultivo[chave]),
+    ]),
   );
+
+const somarValoresNumericos = valor => {
+  if (typeof valor === 'number') {
+    return Number.isFinite(valor) ? valor : 0;
+  }
+
+  if (typeof valor === 'string') {
+    const numero = Number(valor);
+    return Number.isFinite(numero) ? numero : 0;
+  }
+
+  if (Array.isArray(valor)) {
+    return valor.reduce((total, item) => total + somarValoresNumericos(item), 0);
+  }
+
+  if (valor && typeof valor === 'object') {
+    return Object.values(valor).reduce(
+      (total, item) => total + somarValoresNumericos(item),
+      0,
+    );
+  }
+
+  return 0;
+};
+
+export const calcularBonusCultivoPorAtributo = (bonusCultivo = {}, categoria, atributo) => {
+  const origem = bonusCultivo?.[categoria]?.[atributo];
+  return somarValoresNumericos(origem);
+};
+
+export const calcularBonusCultivoTotal = (bonusCultivo = {}) => {
+  const resultado = { primarios: {}, secundarios: {}, status: {} };
+  const categorias = ['primarios', 'secundarios', 'status'];
+
+  categorias.forEach(categoria => {
+    const grupo = bonusCultivo?.[categoria] ?? {};
+    Object.keys(grupo).forEach(atributo => {
+      const total = calcularBonusCultivoPorAtributo(bonusCultivo, categoria, atributo);
+      resultado[categoria][atributo] = total;
+    });
+  });
+
+  return resultado;
+};
+
+export const removerBonusCultivoPorRank = (bonusCultivo = {}, categoria, atributo, rankKey) => {
+  const proximo = JSON.parse(JSON.stringify(bonusCultivo ?? {}));
+  const grupoCategoria = proximo?.[categoria];
+  const grupoAtributo = grupoCategoria?.[atributo];
+
+  if (!grupoAtributo || typeof grupoAtributo === 'number') {
+    return proximo;
+  }
+
+  if (rankKey in grupoAtributo) {
+    delete grupoAtributo[rankKey];
+  }
+
+  if (Object.keys(grupoAtributo).length === 0) {
+    delete grupoCategoria[atributo];
+  }
+
+  if (grupoCategoria && Object.keys(grupoCategoria).length === 0) {
+    delete proximo[categoria];
+  }
+
+  return proximo;
+};
 
 export const calcularSecundarios = (
   primariosTotais,
   base = {},
   extra = {},
   bonus = {},
+  bonusCultivo = {},
 ) => {
   const { forca, vitalidade, agilidade, inteligencia, percepcao, sorte } =
     primariosTotais;
-  const ajuste = chave => somar(base[chave], extra[chave], bonus[chave]);
+  const ajuste = chave => somar(base[chave], extra[chave], bonus[chave], bonusCultivo[chave]);
 
   return {
     prontidao:
@@ -45,11 +496,11 @@ export const calcularSecundarios = (
   };
 };
 
-export const calcularStatusMaximos = (primariosTotais, status = {}) => {
+export const calcularStatusMaximos = (primariosTotais, status = {}, bonusCultivo = {}) => {
   const { forca, vitalidade, inteligencia, percepcao, sorte } = primariosTotais;
   const ajuste = chave => {
     const campo = status[chave] ?? {};
-    return somar(campo.base, campo.extra, campo.bonus);
+    return somar(campo.base, campo.extra, campo.bonus, bonusCultivo[chave]);
   };
 
   return {

@@ -54,6 +54,7 @@ export const PersonagemCard = styled.button`
   display: flex;
   flex-direction: column;
   gap: 0;
+  min-height: 360px;
   padding: 0;
   overflow: hidden;
   text-align: left;
@@ -109,7 +110,7 @@ export const PersonagemCard = styled.button`
 
 export const PersonagemMedia = styled.div`
   position: relative;
-  height: 78%;
+  flex: 1;
   min-height: 260px;
   overflow: hidden;
   background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(5,8,16,0.92));
@@ -119,6 +120,7 @@ export const PersonagemCardImage = styled.img`
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
   display: block;
   transition: transform 0.25s ease;
 
@@ -144,6 +146,7 @@ export const PersonagemCardImagePlaceholder = styled.div`
     width: 88%;
     height: 88%;
     object-fit: cover;
+    object-position: center;
     border-radius: 16px;
     opacity: 0.95;
   }

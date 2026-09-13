@@ -15,7 +15,7 @@ const POSICOES_PONTAS = [
   { top: 33, left: 22 },
 ];
 
-const AtributoEstrela = ({ labels, totais, baseTipo, extraTipo, bonusTipo, centroLabel, centroValor }) => (
+const AtributoEstrela = ({ labels, totais, baseTipo, extraTipo, bonusTipo, centroLabel, centroValor, bonusCultivo }) => (
   <EstrelaWrapper>
     <EstrelaCentro>
       <EstrelaCentroValor>{centroValor}</EstrelaCentroValor>
@@ -30,6 +30,7 @@ const AtributoEstrela = ({ labels, totais, baseTipo, extraTipo, bonusTipo, centr
           baseName={`${baseTipo}.${chave}`}
           extraName={`${extraTipo}.${chave}`}
           bonusName={`${bonusTipo}.${chave}`}
+          bonusCultivo={bonusCultivo?.[chave] ?? 0}
         />
       </EstrelaGemaSlot>
     ))}
@@ -44,6 +45,11 @@ AtributoEstrela.propTypes = {
   bonusTipo: PropTypes.string.isRequired,
   centroLabel: PropTypes.string.isRequired,
   centroValor: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  bonusCultivo: PropTypes.object,
+};
+
+AtributoEstrela.defaultProps = {
+  bonusCultivo: {},
 };
 
 export default AtributoEstrela;

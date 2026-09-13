@@ -4,7 +4,7 @@ import { useField } from 'formik';
 
 import { NumberFieldBox, NumberFieldLabel, NumberFieldWrapper } from './styles';
 
-const NumberField = ({ name, label }) => {
+const NumberField = ({ name, label, displayValue }) => {
   const [field, , helpers] = useField(name);
   // Texto bruto do input, separado do valor numérico do Formik: digitar "-" (primeiro
   // caractere de um valor negativo válido, ex. penalidade de atributo) precisa ficar
@@ -35,10 +35,12 @@ const NumberField = ({ name, label }) => {
     setRaw(String(field.value ?? 0));
   };
 
+  const inputValue = displayValue !== undefined ? String(displayValue ?? 0) : raw;
+
   return (
     <NumberFieldWrapper>
       <NumberFieldLabel htmlFor={name}>{label}</NumberFieldLabel>
-      <NumberFieldBox id={name} type="number" name={name} value={raw} onChange={handleChange} onBlur={handleBlur} />
+      <NumberFieldBox id={name} type="number" name={name} value={inputValue} onChange={handleChange} onBlur={handleBlur} />
     </NumberFieldWrapper>
   );
 };
@@ -46,6 +48,11 @@ const NumberField = ({ name, label }) => {
 NumberField.propTypes = {
   name: PropTypes.string.isRequired,
   label: PropTypes.string.isRequired,
+  displayValue: PropTypes.number,
+};
+
+NumberField.defaultProps = {
+  displayValue: undefined,
 };
 
 export default NumberField;

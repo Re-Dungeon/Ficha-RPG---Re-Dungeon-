@@ -28,11 +28,15 @@ import { getFirestoreItem, getReinosCultivo } from 'service/storage';
 import {
   aplicarFalhaTribulacao,
   aplicarXpCultivo,
+  calcularBonusCultivoTotal,
   calcularPrimariosTotais,
   calcularProgressoCultivo,
   calcularSecundarios,
   calcularStatusMaximos,
   ordenarReinosCultivo,
+  podeAdicionarPontoCultivo,
+  resolverLimiteCultivoPorAtributo,
+  resolverPermissaoCultivoPorAtributo,
 } from 'common/utils/formulas';
 import { getNome } from 'common/utils/resolveNome';
 import { useSaving } from 'context/SavingContext';
@@ -189,6 +193,27 @@ const HighlightWarning = styled.div`
 
 const CHAVE_CULTIVO_PADRAO = 'principal';
 
+const normalizarNumero = valor => {
+  if (typeof valor === 'number') {
+    return Number.isFinite(valor) ? valor : 0;
+  }
+
+  if (typeof valor === 'string') {
+    const numero = Number(valor);
+    return Number.isFinite(numero) ? numero : 0;
+  }
+
+  if (Array.isArray(valor)) {
+    return valor.reduce((total, item) => total + normalizarNumero(item), 0);
+  }
+
+  if (valor && typeof valor === 'object') {
+    return Object.values(valor).reduce((total, item) => total + normalizarNumero(item), 0);
+  }
+
+  return 0;
+};
+
 const expTotalReino = reino =>
   Math.max(0, reino?.quantidadeSubReinos ?? 0) * Math.max(0, reino?.experienciaPorSubReino ?? 0);
 
@@ -222,160 +247,99 @@ const criarPatchCultivo = (mapaAtual, chave, valor) => {
   return { ...mapaNormalizado, [normalizarChaveCultivo(chave)]: valor };
 };
 
-const normalizarPermissao = valor => {
-  if (typeof valor === 'boolean') {
-    return valor;
+const normalizarAliasAtributo = chave => {
+  const texto = String(chave ?? '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[_\s]+/g, '');
+
+  if (['hp', 'saude', 'health', 'vida'].includes(texto)) {
+    return 'hp';
   }
 
-  if (typeof valor === 'number') {
-    return valor > 0;
+  if (['energia', 'energy'].includes(texto)) {
+    return 'energia';
   }
 
-  if (typeof valor === 'string') {
-    const texto = valor.trim().toLowerCase();
-    return ['true', 'yes', 'allow', 'allowed', 'permitido', 'permitida', 'ativo', 'enabled', 'on'].includes(
-      texto,
-    );
+  if (['fadiga', 'fatiga', 'fatigue'].includes(texto)) {
+    return 'fadiga';
   }
 
-  if (Array.isArray(valor)) {
-    return valor.length > 0;
+  return texto;
+};
+
+const obterCategoriaDoAtributo = chave => {
+  const texto = normalizarAliasAtributo(chave);
+
+  if (Object.prototype.hasOwnProperty.call(PRIMARIOS_LABELS, texto)) {
+    return 'primarios';
   }
 
-  if (valor && typeof valor === 'object') {
-    return Object.values(valor).some(normalizarPermissao);
+  if (Object.prototype.hasOwnProperty.call(SECUNDARIOS_LABELS, texto)) {
+    return 'secundarios';
+  }
+
+  if (Object.prototype.hasOwnProperty.call(STATUS_LABELS, texto)) {
+    return 'status';
+  }
+
+  return 'primarios';
+};
+
+const extrairPermissaoPorChave = (reino, grupo, chave) => {
+  const permissaoBase = resolverPermissaoCultivoPorAtributo(reino, grupo, chave);
+  if (permissaoBase !== false || grupo !== 'status' || !chave) {
+    return permissaoBase;
+  }
+
+  const origem = reino?.regras ?? reino?.regrasCultivo ?? {};
+  const permissoesStatus =
+    origem?.permissoes?.status ??
+    origem?.status ??
+    origem?.categorias?.status ??
+    origem?.configuracao?.status ??
+    origem?.rules?.status ??
+    {};
+
+  const aliasesStatus = {
+    hp: ['hp', 'saude', 'saúde'],
+    energia: ['energia'],
+    fadiga: ['fadiga'],
+  };
+
+  const chavesPossiveis = aliasesStatus[chave] ?? [chave];
+
+  for (const chavePossivel of chavesPossiveis) {
+    const valor = permissoesStatus[chavePossivel];
+    if (valor === undefined) {
+      continue;
+    }
+
+    if (typeof valor === 'object') {
+      const valorPermitido =
+        valor.permitido ??
+        valor.permitida ??
+        valor.enabled ??
+        valor.ativo ??
+        valor.allowed ??
+        valor.valor ??
+        valor.status;
+      if (valorPermitido !== undefined) {
+        return Boolean(valorPermitido);
+      }
+      return Boolean(valor);
+    }
+
+    return Boolean(valor);
   }
 
   return false;
 };
 
-const normalizarOpcoesAtributos = lista => {
-  if (!Array.isArray(lista)) {
-    return [];
-  }
-
-  return lista.map(item => {
-    if (!item || typeof item !== 'object') {
-      return { id: String(item ?? ''), permitido: normalizarPermissao(item) };
-    }
-
-    return {
-      ...item,
-      id: item.id ?? item.chave ?? item.nome ?? item.atributo ?? '',
-      permitido: item.permitido ?? item.permitida ?? item.enabled ?? item.ativo ?? item.allowed ?? false,
-    };
-  });
-};
-
-const obterListaAtributosReino = reino => {
-  const base = reino?.regras ?? reino?.regrasCultivo ?? {};
-  const candidatos = [
-    base?.atributos,
-    base?.atributosPermitidos,
-    base?.permissoes?.atributos,
-    base?.categorias?.atributos,
-    base?.categorias?.primarios,
-    base?.categorias?.secundarios,
-    base?.categorias?.status,
-  ];
-
-  for (const candidato of candidatos) {
-    if (Array.isArray(candidato)) {
-      return normalizarOpcoesAtributos(candidato);
-    }
-
-    if (candidato && typeof candidato === 'object') {
-      const entradas = Object.entries(candidato).map(([chave, valor]) => {
-        if (valor && typeof valor === 'object' && !Array.isArray(valor)) {
-          return { id: chave, ...valor, permitido: valor.permitido ?? valor.permitida ?? valor.enabled ?? valor.ativo };
-        }
-
-        return { id: chave, permitido: normalizarPermissao(valor) };
-      });
-
-      if (entradas.length > 0) {
-        return entradas;
-      }
-    }
-  }
-
-  return [];
-};
-
-const extrairPermissaoPorChave = (reino, grupo, chave) => {
-  const base = reino?.regras ?? reino?.regrasCultivo ?? {};
-  const listaAtributos = obterListaAtributosReino(reino);
-  const chaveBusca = String(chave).trim().toLowerCase();
-  const item = listaAtributos.find(entry => {
-    const ids = [
-      String(entry?.id ?? '').trim().toLowerCase(),
-      String(entry?.chave ?? '').trim().toLowerCase(),
-      String(entry?.nome ?? '').trim().toLowerCase(),
-      String(entry?.atributo ?? '').trim().toLowerCase(),
-      String(entry?.key ?? '').trim().toLowerCase(),
-    ].filter(Boolean);
-
-    return ids.includes(chaveBusca) || ids.includes(chaveBusca.replace(/_/g, ' '));
-  });
-
-  if (item && item.permitido !== undefined) {
-    return normalizarPermissao(item.permitido);
-  }
-
-  const gruposMap = {
-    primarios: ['atributosPrincipais', 'principais', 'primarios'],
-    secundarios: ['atributosSecundarios', 'secundarios'],
-    status: ['status', 'statusPermitidos'],
-  };
-
-  const candidatos = [
-    base,
-    base?.categorias,
-    base?.permissoes,
-    base?.configuracao,
-    base?.rules,
-    base?.[grupo],
-    base?.[gruposMap[grupo]?.[0]],
-    ...((gruposMap[grupo] ?? []).map(alias => base?.[alias])),
-  ];
-
-  for (const candidato of candidatos) {
-    if (!candidato || typeof candidato !== 'object') {
-      continue;
-    }
-
-    const valores = [
-      candidato[chave],
-      candidato[chave]?.permitido,
-      candidato[chave]?.permitida,
-      candidato[chave]?.enabled,
-      candidato[chave]?.ativo,
-      candidato[chave]?.valor,
-      candidato[chave]?.status,
-    ];
-
-    const valor = valores.find(item => item !== undefined && item !== null);
-    if (valor !== undefined) {
-      return normalizarPermissao(valor);
-    }
-
-    if (Array.isArray(candidato)) {
-      if (candidato.includes(chave)) {
-        return true;
-      }
-      const etiqueta = chave.replace(/_/g, ' ');
-      if (candidato.some(item => String(item).toLowerCase() === etiqueta)) {
-        return true;
-      }
-    }
-  }
-
-  return undefined;
-};
-
-
-
 const getIconeAtributo = chave => {
+  const chaveNormalizada = normalizarAliasAtributo(chave);
   const icones = {
     forca: '⚔',
     vitalidade: '❤️',
@@ -394,7 +358,7 @@ const getIconeAtributo = chave => {
     fadiga: '🌙',
   };
 
-  return icones[chave] ?? '✦';
+  return icones[chaveNormalizada] ?? '✦';
 };
 
 const CultivoModal = ({ open, onClose, personagem, onSave }) => {
@@ -422,6 +386,8 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
   const [resetConfirmAberto, setResetConfirmAberto] = useState(false);
   const [destinoResetId, setDestinoResetId] = useState('');
   const [resetCompleto, setResetCompleto] = useState(false);
+  const [limiteDialogAberto, setLimiteDialogAberto] = useState(false);
+  const [limiteDialogInfo, setLimiteDialogInfo] = useState(null);
 
   const universoId = personagem.universo;
   // `cultivo` é um mapa keyed por subUniverso; em universos sem múltiplos
@@ -550,17 +516,38 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
     [reinos, indexAtual],
   );
   const regrasCultivo = reinoAtual?.regras ?? reinoAtual?.regrasCultivo ?? null;
+  const bonusCultivoTotal = useMemo(
+    () => calcularBonusCultivoTotal(personagem.cultivoBonus ?? {}),
+    [personagem.cultivoBonus],
+  );
+  const bonusCultivoPrimarios = bonusCultivoTotal.primarios;
+  const bonusCultivoSecundarios = bonusCultivoTotal.secundarios;
+  const bonusCultivoStatus = bonusCultivoTotal.status;
+
   const primariosTotais = useMemo(
-    () => calcularPrimariosTotais(personagem.atributosBase, personagem.atributosExtra, personagem.atributosBonus),
-    [personagem.atributosBase, personagem.atributosExtra, personagem.atributosBonus],
+    () =>
+      calcularPrimariosTotais(
+        personagem.atributosBase,
+        personagem.atributosExtra,
+        personagem.atributosBonus,
+        bonusCultivoPrimarios,
+      ),
+    [bonusCultivoPrimarios, personagem.atributosBase, personagem.atributosBonus, personagem.atributosExtra],
   );
   const secundariosTotais = useMemo(
-    () => calcularSecundarios(primariosTotais, personagem.secundariosBase, personagem.secundariosExtra, personagem.secundariosBonus),
-    [primariosTotais, personagem.secundariosBase, personagem.secundariosExtra, personagem.secundariosBonus],
+    () =>
+      calcularSecundarios(
+        primariosTotais,
+        personagem.secundariosBase,
+        personagem.secundariosExtra,
+        personagem.secundariosBonus,
+        bonusCultivoSecundarios,
+      ),
+    [bonusCultivoSecundarios, personagem.secundariosBase, personagem.secundariosBonus, personagem.secundariosExtra, primariosTotais],
   );
   const statusMaximos = useMemo(
-    () => calcularStatusMaximos(primariosTotais, personagem.status ?? {}),
-    [primariosTotais, personagem.status],
+    () => calcularStatusMaximos(primariosTotais, personagem.status ?? {}, bonusCultivoStatus),
+    [bonusCultivoStatus, personagem.status, primariosTotais],
   );
   // A interface visual de Pontos mostrará sempre as três categorias (primários, secundários, status).
   // Os arrays e valores usados na renderização abaixo vêm diretamente dos constantes/valores calculados
@@ -653,32 +640,81 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
     });
   }, [xpGanhoInput, reinoAtual, cultivoXp, cultivoMap, chaveAtual, onSave, executar]);
 
+  useEffect(() => {
+    if (!open || !reinoAtual) {
+      return;
+    }
+
+    const mapa = {};
+    const categorias = [
+      { categoria: 'primarios', chaves: Object.keys(PRIMARIOS_LABELS) },
+      { categoria: 'secundarios', chaves: Object.keys(SECUNDARIOS_LABELS) },
+      { categoria: 'status', chaves: Object.keys(STATUS_LABELS) },
+    ];
+
+    categorias.forEach(({ categoria, chaves }) => {
+      chaves.forEach(chave => {
+        const valor = normalizarNumero(
+          personagem?.cultivoBonus?.[categoria]?.[chave]?.[reinoAtual.id] ??
+            personagem?.cultivoBonus?.[categoria]?.[chave]?.[reinoAtual?.id ?? ''] ??
+            0,
+        );
+        if (valor > 0) {
+          mapa[chave] = valor;
+        }
+      });
+    });
+
+    setAlocacoesPontos(mapa);
+  }, [open, personagem?.cultivoBonus, reinoAtual]);
+
   const handleAjustarPonto = useCallback(
     (chave, delta) => {
       if (!reinoAtual) {
         return;
       }
 
-      const permitido = extrairPermissaoPorChave(reinoAtual, 'primarios', chave);
+      const categoria = obterCategoriaDoAtributo(chave);
+      const permitido = extrairPermissaoPorChave(reinoAtual, categoria, chave);
       if (permitido === false) {
         return;
       }
 
       setAlocacoesPontos(prev => {
-        const atual = Number(prev[chave] ?? 0);
+        const atual = normalizarNumero(prev[chave]);
         const proximo = atual + delta;
 
         if (proximo < 0) {
           return prev;
         }
 
-        const total = Object.values({ ...prev, [chave]: proximo }).reduce(
-          (soma, valor) => soma + Number(valor || 0),
-          0,
-        );
+        if (delta > 0) {
+          const totalAtual = Object.values(prev).reduce((soma, valor) => soma + normalizarNumero(valor), 0);
+          const totalProximo = totalAtual + delta;
 
-        if (delta > 0 && total > pontosDisponiveis) {
-          return prev;
+          if (totalProximo > pontosDisponiveis) {
+            return prev;
+          }
+
+          try {
+            const limite = resolverLimiteCultivoPorAtributo(reinoAtual, categoria, chave);
+            const podeAdicionar = podeAdicionarPontoCultivo({
+              atual,
+              proximo,
+              limite,
+              permitido,
+            });
+
+            if (!podeAdicionar) {
+              setLimiteDialogInfo({ chave, limite, anterior: atual, tentativa: proximo, categoria });
+              setLimiteDialogAberto(true);
+              return prev;
+            }
+          } catch (e) {
+            // Em caso de erro na resolução do limite, não bloqueia a ação — preserva comportamento atual
+            // eslint-disable-next-line no-console
+            console.error('Erro ao resolver limite de cultivo:', e);
+          }
         }
 
         return { ...prev, [chave]: proximo };
@@ -686,6 +722,49 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
     },
     [pontosDisponiveis, reinoAtual],
   );
+
+  const handleAplicarPontos = useCallback(async () => {
+    if (!reinoAtual) {
+      return;
+    }
+
+    const proximoBonus = JSON.parse(JSON.stringify(personagem.cultivoBonus ?? {}));
+    const rankKey = reinoAtual.id;
+    const categorias = [
+      { categoria: 'primarios', chaves: Object.keys(PRIMARIOS_LABELS) },
+      { categoria: 'secundarios', chaves: Object.keys(SECUNDARIOS_LABELS) },
+      { categoria: 'status', chaves: Object.keys(STATUS_LABELS) },
+    ];
+
+    categorias.forEach(({ categoria, chaves }) => {
+      const grupo = proximoBonus[categoria] ?? {};
+      chaves.forEach(chave => {
+        const valor = Number(alocacoesPontos[chave] ?? 0);
+        const atributo = grupo[chave] ?? {};
+
+        if (valor > 0) {
+          atributo[rankKey] = valor;
+          grupo[chave] = atributo;
+        } else {
+          if (atributo && typeof atributo === 'object' && rankKey in atributo) {
+            delete atributo[rankKey];
+          }
+          if (Object.keys(atributo ?? {}).length === 0) {
+            delete grupo[chave];
+          }
+        }
+      });
+
+      if (Object.keys(grupo).length > 0) {
+        proximoBonus[categoria] = grupo;
+      } else {
+        delete proximoBonus[categoria];
+      }
+    });
+
+    await onSave({ cultivoBonus: proximoBonus });
+    setPontosDialogAberto(false);
+  }, [alocacoesPontos, onSave, personagem.cultivoBonus, reinoAtual]);
 
   const handleConfirmarReset = useCallback(() => {
     if (!reinos.length) {
@@ -701,13 +780,39 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
         reinoId: destinoReino.id,
         xpAtual: 0,
       });
-      await onSave({ cultivo: patchCultivo });
+
+      const categorias = ['primarios', 'secundarios', 'status'];
+      let bonusSemReset = JSON.parse(JSON.stringify(personagem.cultivoBonus ?? {}));
+
+      if (!resetCompleto) {
+        categorias.forEach(categoria => {
+          const grupo = bonusSemReset[categoria] ?? {};
+          Object.keys(grupo).forEach(atributo => {
+            const rankMap = grupo[atributo] ?? {};
+            if (rankMap && typeof rankMap === 'object' && destinoReino.id in rankMap) {
+              delete rankMap[destinoReino.id];
+            }
+            if (Object.keys(rankMap ?? {}).length === 0) {
+              delete grupo[atributo];
+            }
+          });
+          if (Object.keys(grupo).length === 0) {
+            delete bonusSemReset[categoria];
+          } else {
+            bonusSemReset[categoria] = grupo;
+          }
+        });
+      } else {
+        bonusSemReset = {};
+      }
+
+      await onSave({ cultivo: patchCultivo, cultivoBonus: bonusSemReset });
       setResetConfirmAberto(false);
       setResetDialogAberto(false);
       setDestinoResetId('');
       setResetCompleto(false);
     });
-  }, [reinos, resetCompleto, destinoResetId, cultivoMap, chaveAtual, onSave, executar]);
+  }, [reinos, resetCompleto, destinoResetId, cultivoMap, chaveAtual, onSave, executar, personagem.cultivoBonus]);
 
   const handleConfirmarRuptura = useCallback(() => {
     if (!proximoReino) {
@@ -1047,6 +1152,42 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
         </DialogActions>
       </Dialog>
 
+      <Dialog open={limiteDialogAberto} onClose={() => { setLimiteDialogAberto(false); setLimiteDialogInfo(null); }}>
+        <div style={{ ...TribulacaoPaperStyles, padding: '14px 20px', maxWidth: 560 }}>
+          <ModalTitle>TALENTO LIMITADO</ModalTitle>
+          <TitleDivider />
+
+          <DialogContent>
+            <ModalDescription>
+              Este atributo está limitado a <strong>{limiteDialogInfo?.limite}</strong> pontos neste Reino.
+              <br />
+              Você deseja ajustar a distribuição para utilizar somente os {limiteDialogInfo?.limite} pontos permitidos?
+            </ModalDescription>
+          </DialogContent>
+
+          <div style={{ paddingTop: 12 }}>
+            <ActionsRow>
+              <CancelButton onClick={() => { setLimiteDialogAberto(false); setLimiteDialogInfo(null); }}>Cancelar</CancelButton>
+
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <PrimaryButton
+                  variant="contained"
+                  onClick={() => {
+                    if (limiteDialogInfo && limiteDialogInfo.chave) {
+                      setAlocacoesPontos(prev => ({ ...prev, [limiteDialogInfo.chave]: Number(limiteDialogInfo.limite) }));
+                    }
+                    setLimiteDialogAberto(false);
+                    setLimiteDialogInfo(null);
+                  }}
+                >
+                  {`APLICAR ${limiteDialogInfo?.limite ?? ''} PONTOS`}
+                </PrimaryButton>
+              </div>
+            </ActionsRow>
+          </div>
+        </div>
+      </Dialog>
+
       <Dialog open={pontosDialogAberto} onClose={() => setPontosDialogAberto(false)} fullWidth maxWidth="lg">
         <DialogHeaderRow>
           <DialogHeaderTitle style={{ flex: 1, textTransform: 'uppercase', letterSpacing: '0.12em' }}>
@@ -1059,51 +1200,116 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
         <DialogContent sx={{ px: { xs: 2, sm: 3 }, py: 2 }}>
           <div
             style={{
-              background: 'linear-gradient(180deg, rgba(232,203,133,0.08), rgba(16,12,24,0.4))',
-              border: '1px solid rgba(232, 203, 133, 0.18)',
-              borderRadius: '18px',
-              padding: '20px 18px',
+              backgroundImage:
+                "linear-gradient(180deg, rgba(8, 10, 18, 0.7), rgba(12, 8, 18, 0.88)), url('https://i.imgur.com/fr1bk5b.png')",
+              backgroundSize: 'cover',
+              backgroundPosition: 'center center',
+              backgroundRepeat: 'no-repeat',
+              border: '1px solid rgba(232, 203, 133, 0.22)',
+              borderRadius: '22px',
+              padding: '20px 18px 18px',
               marginBottom: '18px',
-              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)',
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), 0 14px 28px rgba(0,0,0,0.22)',
+              minHeight: '180px',
+              position: 'relative',
+              overflow: 'hidden',
             }}
           >
             <div
               style={{
-                textTransform: 'uppercase',
-                letterSpacing: '0.12em',
-                fontSize: '0.72rem',
-                color: 'var(--text-secondary)',
-                textAlign: 'center',
+                position: 'absolute',
+                inset: '0',
+                background: 'radial-gradient(circle at top, rgba(232,203,133,0.16), transparent 42%)',
+                pointerEvents: 'none',
               }}
-            >
-              Pontos disponíveis
-            </div>
+            />
+
             <div
               style={{
-                textAlign: 'center',
-                fontSize: '2.4rem',
-                fontWeight: 700,
-                color: 'var(--status-gold-strong)',
-                marginTop: '8px',
-                lineHeight: 1,
-              }}
-            >
-              {pontosDisponiveis}
-            </div>
-            <div
-              style={{
+                position: 'relative',
+                zIndex: 1,
                 display: 'flex',
-                justifyContent: 'space-between',
-                gap: '8px',
-                flexWrap: 'wrap',
-                marginTop: '16px',
-                color: 'var(--text-secondary)',
-                fontSize: '0.82rem',
+                flexDirection: 'column',
+                gap: '16px',
+                alignItems: 'center',
               }}
             >
-              <span>Disponíveis: <strong style={{ color: 'var(--text-primary)' }}>{pontosDisponiveis}</strong></span>
-              <span>Distribuídos: <strong style={{ color: 'var(--text-primary)' }}>{pontosDistribuidos}</strong></span>
-              <span>Restantes: <strong style={{ color: 'var(--text-primary)' }}>{pontosRestantes}</strong></span>
+              <div
+                style={{
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.18em',
+                  fontSize: '0.7rem',
+                  color: 'rgba(255,255,255,0.75)',
+                  textAlign: 'center',
+                  fontWeight: 700,
+                }}
+              >
+                Pontos disponíveis
+              </div>
+
+              <div
+                style={{
+                  minWidth: '140px',
+                  padding: '18px 26px',
+                  borderRadius: '20px',
+                  background: 'linear-gradient(180deg, rgba(18,16,26,0.68), rgba(30,18,18,0.25))',
+                  border: '1px solid rgba(232,203,133,0.25)',
+                  boxShadow: '0 10px 25px rgba(0,0,0,0.18)',
+                  textAlign: 'center',
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: '2.8rem',
+                    fontWeight: 700,
+                    lineHeight: 1,
+                    color: 'var(--status-gold-strong)',
+                    textShadow: '0 0 18px rgba(232,203,133,0.34)',
+                  }}
+                >
+                  {pontosDisponiveis}
+                </div>
+              </div>
+
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(3, minmax(90px, 1fr))',
+                  gap: '10px',
+                  width: '100%',
+                }}
+              >
+                {[
+                  { label: 'Disponíveis', value: pontosDisponiveis },
+                  { label: 'Distribuídos', value: pontosDistribuidos },
+                  { label: 'Restantes', value: pontosRestantes },
+                ].map(item => (
+                  <div
+                    key={item.label}
+                    style={{
+                      background: 'rgba(15, 18, 26, 0.52)',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      borderRadius: '12px',
+                      padding: '9px 10px',
+                      textAlign: 'center',
+                      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: '0.64rem',
+                        letterSpacing: '0.12em',
+                        textTransform: 'uppercase',
+                        color: 'var(--text-secondary)',
+                        marginBottom: '6px',
+                      }}
+                    >
+                      {item.label}
+                    </div>
+                    <strong style={{ color: 'var(--text-primary)', fontSize: '1.05rem' }}>{item.value}</strong>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -1148,27 +1354,93 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
               {openPrimarios && (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginTop: 12 }}>
                   {Object.entries(PRIMARIOS_LABELS).map(([chave, label]) => {
-                    const valor = primariosTotais[chave] ?? 0;
-                    const bonus = Number(alocacoesPontos[chave] ?? 0);
+                    const categoria = obterCategoriaDoAtributo(chave);
+                    const permitido = extrairPermissaoPorChave(reinoAtual, categoria, chave);
+                    const valor = normalizarNumero(primariosTotais[chave]);
+                    const bonus = normalizarNumero(
+                      alocacoesPontos[chave] ?? bonusCultivoTotal[categoria]?.[chave] ?? 0,
+                    );
+                    const quantidadeAtual = Number(alocacoesPontos[chave] ?? 0);
                     return (
-                      <div key={chave} style={{ borderRadius: 12, padding: 12, background: 'rgba(12,10,16,0.6)', border: '1px solid rgba(255,255,255,0.04)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', transition: 'box-shadow 160ms ease' }}>
+                      <div
+                        key={chave}
+                        title={permitido ? 'Disponível neste Rank' : '🔒 Não permitido neste Rank'}
+                        style={{
+                          borderRadius: 12,
+                          padding: 12,
+                          background: permitido
+                            ? 'rgba(12,10,16,0.6)'
+                            : 'linear-gradient(180deg, rgba(28,16,21,0.9) 0%, rgba(12,10,16,0.82) 100%)',
+                          border: permitido
+                            ? '1px solid rgba(255,255,255,0.04)'
+                            : '1px solid rgba(150,102,118,0.38)',
+                          boxShadow: permitido
+                            ? 'none'
+                            : 'inset 0 0 0 1px rgba(124, 72, 92, 0.14), 0 0 0 1px rgba(86, 43, 56, 0.14), 0 10px 22px rgba(18, 8, 12, 0.22)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'space-between',
+                          transition: 'box-shadow 160ms ease',
+                          opacity: permitido ? 1 : 0.8,
+                          filter: permitido ? 'none' : 'saturate(0.8)',
+                          position: 'relative',
+                        }}
+                      >
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: 800, textTransform: 'uppercase', fontSize: '0.78rem' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><span aria-hidden style={{ opacity: 0.95 }}>{getIconeAtributo(chave)}</span><span style={{ letterSpacing: '0.02em' }}>{label}</span></div>
-                        </div>
-
-                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'baseline', gap: 8, marginTop: 6 }}>
-                          <div style={{ fontWeight: 900, fontSize: '1.6rem', color: 'var(--text-primary)', lineHeight: 1 }}>{valor}</div>
-                          <div style={{ color: 'var(--text-muted)', fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <span style={{ fontSize: 12, opacity: 0.9 }}>✦</span>
-                            <strong style={{ color: 'var(--text-primary)', fontWeight: 800 }}>+{bonus}</strong>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <span
+                              aria-hidden
+                              style={{
+                                opacity: permitido ? 0.95 : 0.82,
+                                color: permitido ? 'inherit' : '#cc9aa3',
+                                textShadow: permitido ? 'none' : '0 0 12px rgba(176, 103, 122, 0.25)',
+                              }}
+                            >
+                              {permitido ? getIconeAtributo(chave) : '🔒'}
+                            </span>
+                            <span style={{ letterSpacing: '0.02em', color: permitido ? 'inherit' : 'rgba(218, 210, 214, 0.88)' }}>{label}</span>
                           </div>
                         </div>
 
-                        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 12 }}>
-                          <button type="button" onClick={() => handleAjustarPonto(chave, -1)} disabled={Number(alocacoesPontos[chave] ?? 0) <= 0} style={{ width: 34, height: 34, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.06)', background: 'transparent', color: 'var(--text-primary)' }}>−</button>
-                          <div style={{ minWidth: 34, textAlign: 'center', fontWeight: 800 }}>{Number(alocacoesPontos[chave] ?? 0)}</div>
-                          <button type="button" onClick={() => handleAjustarPonto(chave, 1)} style={{ width: 34, height: 34, borderRadius: '50%', border: '1px solid rgba(232,203,133,0.28)', background: 'rgba(232,203,133,0.04)', color: 'var(--status-gold-strong)' }}>+</button>
+                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'baseline', gap: 8, marginTop: 6 }}>
+                          <div
+                            style={{
+                              fontWeight: 900,
+                              fontSize: '1.6rem',
+                              color: permitido ? 'var(--text-primary)' : 'rgba(230, 220, 224, 0.78)',
+                              lineHeight: 1,
+                              textShadow: permitido ? 'none' : '0 0 10px rgba(154, 98, 111, 0.15)',
+                            }}
+                          >
+                            {valor}
+                          </div>
+                          <div style={{ color: permitido ? 'var(--text-muted)' : 'rgba(175,168,177,0.7)', fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <span style={{ fontSize: 12, opacity: 0.9 }}>✦</span>
+                            <strong style={{ color: permitido ? 'var(--text-primary)' : 'rgba(219, 213, 218, 0.78)', fontWeight: 800 }}>+{bonus}</strong>
+                          </div>
                         </div>
+
+                        {permitido ? (
+                          <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 12 }}>
+                            <button type="button" onClick={() => handleAjustarPonto(chave, -1)} disabled={quantidadeAtual <= 0} style={{ width: 34, height: 34, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.06)', background: 'transparent', color: 'var(--text-primary)' }}>−</button>
+                            <div style={{ minWidth: 34, textAlign: 'center', fontWeight: 800 }}>{quantidadeAtual}</div>
+                            <button type="button" onClick={() => handleAjustarPonto(chave, 1)} style={{ width: 34, height: 34, borderRadius: '50%', border: '1px solid rgba(232,203,133,0.28)', background: 'rgba(232,203,133,0.04)', color: 'var(--status-gold-strong)' }}>+</button>
+                          </div>
+                        ) : (
+                          <div
+                            style={{
+                              marginTop: 12,
+                              textAlign: 'center',
+                              fontSize: '0.72rem',
+                              color: 'rgba(199, 183, 188, 0.8)',
+                              letterSpacing: '0.08em',
+                              textTransform: 'uppercase',
+                              lineHeight: 1.4,
+                            }}
+                          >
+                            Não permitido neste Rank
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -1209,27 +1481,91 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
               {openSecundarios && (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginTop: 12 }}>
                   {Object.entries(SECUNDARIOS_LABELS).map(([chave, label]) => {
-                    const valor = secundariosTotais[chave] ?? 0;
-                    const bonus = Number(alocacoesPontos[chave] ?? 0);
+                    const categoria = obterCategoriaDoAtributo(chave);
+                    const permitido = extrairPermissaoPorChave(reinoAtual, categoria, chave);
+                    const valor = normalizarNumero(secundariosTotais[chave]);
+                    const bonus = normalizarNumero(
+                      alocacoesPontos[chave] ?? bonusCultivoTotal[categoria]?.[chave] ?? 0,
+                    );
+                    const quantidadeAtual = Number(alocacoesPontos[chave] ?? 0);
                     return (
-                      <div key={chave} style={{ borderRadius: 12, padding: 12, background: 'rgba(12,10,16,0.55)', border: '1px solid rgba(255,255,255,0.03)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                      <div
+                        key={chave}
+                        title={permitido ? 'Disponível neste Rank' : '🔒 Não permitido neste Rank'}
+                        style={{
+                          borderRadius: 12,
+                          padding: 12,
+                          background: permitido
+                            ? 'rgba(12,10,16,0.55)'
+                            : 'linear-gradient(180deg, rgba(26,15,21,0.92) 0%, rgba(12,10,16,0.8) 100%)',
+                          border: permitido
+                            ? '1px solid rgba(255,255,255,0.03)'
+                            : '1px solid rgba(150,102,118,0.34)',
+                          boxShadow: permitido
+                            ? 'none'
+                            : 'inset 0 0 0 1px rgba(116, 70, 88, 0.12), 0 0 0 1px rgba(88, 43, 59, 0.12)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'space-between',
+                          opacity: permitido ? 1 : 0.8,
+                          filter: permitido ? 'none' : 'saturate(0.78)',
+                        }}
+                      >
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: 800, textTransform: 'uppercase', fontSize: '0.78rem' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>{label}</div>
-                        </div>
-
-                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'baseline', gap: 8, marginTop: 6 }}>
-                          <div style={{ fontWeight: 900, fontSize: '1.3rem', color: 'var(--text-primary)', lineHeight: 1 }}>{valor}</div>
-                          <div style={{ color: 'var(--text-muted)', fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <span style={{ fontSize: 12, opacity: 0.9 }}>✦</span>
-                            <strong style={{ color: 'var(--text-primary)', fontWeight: 800 }}>+{bonus}</strong>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <span
+                              aria-hidden
+                              style={{
+                                color: permitido ? 'inherit' : '#d29aa5',
+                                opacity: permitido ? 1 : 0.8,
+                                textShadow: permitido ? 'none' : '0 0 10px rgba(176, 103, 122, 0.24)',
+                              }}
+                            >
+                              {permitido ? '◈' : '🔒'}
+                            </span>
+                            <span style={{ color: permitido ? 'inherit' : 'rgba(218, 210, 214, 0.88)' }}>{label}</span>
                           </div>
                         </div>
 
-                        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 12 }}>
-                          <button type="button" onClick={() => handleAjustarPonto(chave, -1)} disabled={Number(alocacoesPontos[chave] ?? 0) <= 0} style={{ width: 34, height: 34, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.06)', background: 'transparent', color: 'var(--text-primary)' }}>−</button>
-                          <div style={{ minWidth: 32, textAlign: 'center', fontWeight: 800 }}>{Number(alocacoesPontos[chave] ?? 0)}</div>
-                          <button type="button" onClick={() => handleAjustarPonto(chave, 1)} style={{ width: 34, height: 34, borderRadius: '50%', border: '1px solid rgba(232,203,133,0.22)', background: 'rgba(232,203,133,0.03)', color: 'var(--status-gold-strong)' }}>+</button>
+                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'baseline', gap: 8, marginTop: 6 }}>
+                          <div
+                            style={{
+                              fontWeight: 900,
+                              fontSize: '1.3rem',
+                              color: permitido ? 'var(--text-primary)' : 'rgba(230, 220, 224, 0.78)',
+                              lineHeight: 1,
+                              textShadow: permitido ? 'none' : '0 0 10px rgba(154, 98, 111, 0.15)',
+                            }}
+                          >
+                            {valor}
+                          </div>
+                          <div style={{ color: permitido ? 'var(--text-muted)' : 'rgba(175,168,177,0.7)', fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <span style={{ fontSize: 12, opacity: 0.9 }}>✦</span>
+                            <strong style={{ color: permitido ? 'var(--text-primary)' : 'rgba(219, 213, 218, 0.78)', fontWeight: 800 }}>+{bonus}</strong>
+                          </div>
                         </div>
+
+                        {permitido ? (
+                          <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 12 }}>
+                            <button type="button" onClick={() => handleAjustarPonto(chave, -1)} disabled={quantidadeAtual <= 0} style={{ width: 34, height: 34, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.06)', background: 'transparent', color: 'var(--text-primary)' }}>−</button>
+                            <div style={{ minWidth: 32, textAlign: 'center', fontWeight: 800 }}>{quantidadeAtual}</div>
+                            <button type="button" onClick={() => handleAjustarPonto(chave, 1)} style={{ width: 34, height: 34, borderRadius: '50%', border: '1px solid rgba(232,203,133,0.22)', background: 'rgba(232,203,133,0.03)', color: 'var(--status-gold-strong)' }}>+</button>
+                          </div>
+                        ) : (
+                          <div
+                            style={{
+                              marginTop: 12,
+                              textAlign: 'center',
+                              fontSize: '0.72rem',
+                              color: 'rgba(199, 183, 188, 0.8)',
+                              letterSpacing: '0.08em',
+                              textTransform: 'uppercase',
+                              lineHeight: 1.4,
+                            }}
+                          >
+                            Não permitido neste Rank
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -1270,27 +1606,91 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
               {openStatus && (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, marginTop: 12 }}>
                   {Object.entries(STATUS_LABELS).map(([chave, label]) => {
-                    const valor = statusMaximos[chave] ?? 0;
-                    const bonus = Number(alocacoesPontos[chave] ?? 0);
+                    const categoria = obterCategoriaDoAtributo(chave);
+                    const permitido = extrairPermissaoPorChave(reinoAtual, categoria, chave);
+                    const valor = normalizarNumero(statusMaximos[chave]);
+                    const bonus = normalizarNumero(
+                      alocacoesPontos[chave] ?? bonusCultivoTotal[categoria]?.[chave] ?? 0,
+                    );
+                    const quantidadeAtual = Number(alocacoesPontos[chave] ?? 0);
                     return (
-                      <div key={chave} style={{ borderRadius: 12, padding: 12, background: 'rgba(12,10,16,0.6)', border: '1px solid rgba(255,255,255,0.04)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                      <div
+                        key={chave}
+                        title={permitido ? 'Disponível neste Rank' : '🔒 Não permitido neste Rank'}
+                        style={{
+                          borderRadius: 12,
+                          padding: 12,
+                          background: permitido
+                            ? 'rgba(12,10,16,0.6)'
+                            : 'linear-gradient(180deg, rgba(28,16,21,0.9) 0%, rgba(12,10,16,0.82) 100%)',
+                          border: permitido
+                            ? '1px solid rgba(255,255,255,0.04)'
+                            : '1px solid rgba(150,102,118,0.38)',
+                          boxShadow: permitido
+                            ? 'none'
+                            : 'inset 0 0 0 1px rgba(124, 72, 92, 0.14), 0 0 0 1px rgba(86, 43, 56, 0.14), 0 10px 22px rgba(18, 8, 12, 0.22)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'space-between',
+                          opacity: permitido ? 1 : 0.8,
+                          filter: permitido ? 'none' : 'saturate(0.8)',
+                        }}
+                      >
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: 800, textTransform: 'uppercase', fontSize: '0.78rem' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>{label}</div>
-                        </div>
-
-                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'baseline', gap: 8, marginTop: 6 }}>
-                          <div style={{ fontWeight: 900, fontSize: '1.3rem', color: 'var(--text-primary)', lineHeight: 1 }}>{valor}</div>
-                          <div style={{ color: 'var(--text-muted)', fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <span style={{ fontSize: 12, opacity: 0.9 }}>✦</span>
-                            <strong style={{ color: 'var(--text-primary)', fontWeight: 800 }}>+{bonus}</strong>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <span
+                              aria-hidden
+                              style={{
+                                color: permitido ? 'inherit' : '#cc9aa3',
+                                opacity: permitido ? 1 : 0.82,
+                                textShadow: permitido ? 'none' : '0 0 12px rgba(176, 103, 122, 0.25)',
+                              }}
+                            >
+                              {permitido ? '♥' : '🔒'}
+                            </span>
+                            <span style={{ color: permitido ? 'inherit' : 'rgba(218, 210, 214, 0.88)' }}>{label}</span>
                           </div>
                         </div>
 
-                        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 12 }}>
-                          <button type="button" onClick={() => handleAjustarPonto(chave, -1)} disabled={Number(alocacoesPontos[chave] ?? 0) <= 0} style={{ width: 34, height: 34, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.06)', background: 'transparent', color: 'var(--text-primary)' }}>−</button>
-                          <div style={{ minWidth: 32, textAlign: 'center', fontWeight: 800 }}>{Number(alocacoesPontos[chave] ?? 0)}</div>
-                          <button type="button" onClick={() => handleAjustarPonto(chave, 1)} style={{ width: 34, height: 34, borderRadius: '50%', border: '1px solid rgba(232,203,133,0.22)', background: 'rgba(232,203,133,0.03)', color: 'var(--status-gold-strong)' }}>+</button>
+                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'baseline', gap: 8, marginTop: 6 }}>
+                          <div
+                            style={{
+                              fontWeight: 900,
+                              fontSize: '1.3rem',
+                              color: permitido ? 'var(--text-primary)' : 'rgba(230, 220, 224, 0.78)',
+                              lineHeight: 1,
+                              textShadow: permitido ? 'none' : '0 0 10px rgba(154, 98, 111, 0.15)',
+                            }}
+                          >
+                            {valor}
+                          </div>
+                          <div style={{ color: permitido ? 'var(--text-muted)' : 'rgba(175,168,177,0.7)', fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <span style={{ fontSize: 12, opacity: 0.9 }}>✦</span>
+                            <strong style={{ color: permitido ? 'var(--text-primary)' : 'rgba(219, 213, 218, 0.78)', fontWeight: 800 }}>+{bonus}</strong>
+                          </div>
                         </div>
+
+                        {permitido ? (
+                          <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 12 }}>
+                            <button type="button" onClick={() => handleAjustarPonto(chave, -1)} disabled={quantidadeAtual <= 0} style={{ width: 34, height: 34, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.06)', background: 'transparent', color: 'var(--text-primary)' }}>−</button>
+                            <div style={{ minWidth: 32, textAlign: 'center', fontWeight: 800 }}>{quantidadeAtual}</div>
+                            <button type="button" onClick={() => handleAjustarPonto(chave, 1)} style={{ width: 34, height: 34, borderRadius: '50%', border: '1px solid rgba(232,203,133,0.22)', background: 'rgba(232,203,133,0.03)', color: 'var(--status-gold-strong)' }}>+</button>
+                          </div>
+                        ) : (
+                          <div
+                            style={{
+                              marginTop: 12,
+                              textAlign: 'center',
+                              fontSize: '0.72rem',
+                              color: 'rgba(199, 183, 188, 0.8)',
+                              letterSpacing: '0.08em',
+                              textTransform: 'uppercase',
+                              lineHeight: 1.4,
+                            }}
+                          >
+                            Não permitido neste Rank
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -1302,10 +1702,7 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button
             variant="contained"
-            onClick={() => {
-              // Aplicar apenas visualmente: fecha o diálogo e mantém as alocações em memória
-              setPontosDialogAberto(false);
-            }}
+            onClick={handleAplicarPontos}
             sx={{ borderRadius: '14px', minWidth: 160 }}
           >
             Aplicar
