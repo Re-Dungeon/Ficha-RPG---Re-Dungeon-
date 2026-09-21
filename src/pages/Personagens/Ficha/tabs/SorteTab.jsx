@@ -5,6 +5,7 @@ import Button from '@mui/material/Button';
 
 import { addHistoricoSorte, getHistoricoSorte } from 'service/storage';
 import {
+  calcularBonusCultivoTotal,
   calcularBonusPorSorte,
   calcularPrimariosTotais,
   calcularRolagemFortuna,
@@ -182,10 +183,12 @@ const SorteTab = ({ personagem, onSave }) => {
     };
   }, [personagem.id]);
 
+  const bonusCultivoTotal = calcularBonusCultivoTotal(personagem.cultivoBonus ?? {});
   const primariosTotais = calcularPrimariosTotais(
     personagem.atributosBase,
     personagem.atributosExtra,
     personagem.atributosBonus,
+    bonusCultivoTotal.primarios,
   );
   const sorteTotal = primariosTotais.sorte;
   const bonusBase = calcularBonusPorSorte(sorteTotal);

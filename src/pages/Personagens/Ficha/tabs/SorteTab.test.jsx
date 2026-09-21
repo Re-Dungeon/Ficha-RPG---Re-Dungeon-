@@ -38,6 +38,22 @@ const personagem = {
 };
 
 describe('SorteTab', () => {
+  it('soma o bônus de cultivo na sorte total exibida', async () => {
+    getHistoricoSorte.mockResolvedValue([]);
+    const personagemComCultivo = {
+      ...personagem,
+      cultivoBonus: { primarios: { sorte: 7 } },
+    };
+
+    render(
+      <SavingProvider>
+        <SorteTab personagem={personagemComCultivo} onSave={vi.fn()} />
+      </SavingProvider>,
+    );
+
+    expect(await screen.findByText('17')).toBeInTheDocument();
+  });
+
   it('rola a fortuna, salva o novo saldo e registra o evento no histórico', async () => {
     getHistoricoSorte.mockResolvedValue([]);
     addHistoricoSorte.mockResolvedValue();

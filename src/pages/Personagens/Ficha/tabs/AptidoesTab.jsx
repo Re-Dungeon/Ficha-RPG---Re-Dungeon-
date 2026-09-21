@@ -12,6 +12,7 @@ import {
   setAptidaoAdquirida,
 } from 'service/storage';
 import {
+  calcularBonusCultivoTotal,
   calcularMaximoAptidoes,
   calcularPrimariosTotais,
   calcularProximoAptidaoEm,
@@ -60,13 +61,16 @@ const AptidoesTab = ({ personagem, onSave }) => {
   }, [personagem.id, personagem.aptidoesGanhas]);
 
   const primariosTotais = useMemo(
-    () =>
-      calcularPrimariosTotais(
+    () => {
+      const bonusCultivoTotal = calcularBonusCultivoTotal(personagem.cultivoBonus ?? {});
+      return calcularPrimariosTotais(
         personagem.atributosBase,
         personagem.atributosExtra,
         personagem.atributosBonus,
-      ),
-    [personagem.atributosBase, personagem.atributosExtra, personagem.atributosBonus],
+        bonusCultivoTotal.primarios,
+      );
+    },
+    [personagem.atributosBase, personagem.atributosBonus, personagem.atributosExtra, personagem.cultivoBonus],
   );
 
   const maximo = calcularMaximoAptidoes(primariosTotais, ganhas);
