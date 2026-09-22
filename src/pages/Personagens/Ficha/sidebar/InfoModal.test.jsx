@@ -57,6 +57,27 @@ describe('InfoModal / PerfilTab', () => {
     );
   });
 
+  it('permite pesquisar e filtrar universos por digitação no campo de universo', async () => {
+    getUniverso.mockResolvedValue([
+      { id: 'u1', Nome: 'The Chaotic Gate' },
+      { id: 'u2', Nome: 'Re:Connect' },
+      { id: 'u3', Nome: 'Bleach' },
+    ]);
+
+    render(
+      <SavingProvider>
+        <InfoModal open onClose={vi.fn()} personagem={personagem} onSave={vi.fn()} />
+      </SavingProvider>,
+    );
+
+    const inputUniverso = await screen.findByRole('combobox', { name: /universo/i });
+    fireEvent.focus(inputUniverso);
+    fireEvent.change(inputUniverso, { target: { value: 'cha' } });
+
+    expect(await screen.findByRole('option', { name: /the chaotic gate/i })).toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: /re:connect/i })).not.toBeInTheDocument();
+  });
+
   it('escolhe um corpo especial do catálogo do universo', async () => {
     getCorposEspeciaisPorUniverso.mockResolvedValue([{ id: 'ce1', nome: 'Corpo Fênix' }]);
     const onSave = vi.fn().mockResolvedValue();

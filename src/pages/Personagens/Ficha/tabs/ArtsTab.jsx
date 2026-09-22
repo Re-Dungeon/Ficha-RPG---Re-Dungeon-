@@ -364,6 +364,7 @@ const ArtsTab = ({ personagem }) => {
         variante={varianteEmEdicao}
         arts={arts}
         condicoes={condicoes}
+        personagem={personagem}
         onSubmit={handleSalvarVariante}
       />
       <VarianteViewDialog

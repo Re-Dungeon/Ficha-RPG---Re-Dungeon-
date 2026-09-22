@@ -47,6 +47,30 @@ describe('AptidoesTab — fluxo de aquisição/remoção', () => {
     removeAptidaoAdquirida.mockResolvedValue();
   });
 
+  it('inclui o bônus de cultivo no cálculo do máximo de aptidões', async () => {
+    getAptidoesPorUniverso.mockResolvedValue([]);
+    getAptidoesAdquiridas.mockResolvedValue([]);
+
+    const personagemComCultivo = {
+      ...personagem,
+      atributosBase: {
+        forca: 18,
+        vitalidade: 18,
+        agilidade: 17,
+        inteligencia: 18,
+        percepcao: 18,
+      },
+      cultivoBonus: { primarios: { agilidade: 10 } },
+      aptidoesGanhas: 0,
+    };
+
+    render(<AptidoesTab personagem={personagemComCultivo} onSave={vi.fn()} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('8')).toBeInTheDocument();
+    });
+  });
+
   it('faz upgrade de nível salvando otimisticamente e chamando setAptidaoAdquirida', async () => {
     const onSave = vi.fn().mockResolvedValue();
     render(<AptidoesTab personagem={personagem} onSave={onSave} />);

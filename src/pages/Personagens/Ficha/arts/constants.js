@@ -84,7 +84,7 @@ export const VARIANTE_INICIAL = {
   nome: '',
   tipo: TIPO_ART_OPTIONS[0],
   tipoAcao: TIPO_ACAO_OPTIONS[0],
-  dominio: 1,
+  dominio: '',
   recarga: '',
   duracao: '',
   alcance: '',
