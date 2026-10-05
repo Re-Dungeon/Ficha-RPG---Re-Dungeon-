@@ -50,4 +50,15 @@ describe('NumberField', () => {
     fireEvent.blur(input);
     await waitFor(() => expect(input).toHaveValue(0));
   });
+
+  it('usa incremento unitário em rolagem e setas do input numérico', () => {
+    render(
+      <Formik initialValues={{ valor: 0 }} onSubmit={() => {}}>
+        <NumberField name="valor" label="Valor" />
+      </Formik>,
+    );
+
+    const input = screen.getByLabelText('Valor');
+    expect(input).toHaveAttribute('step', '1');
+  });
 });

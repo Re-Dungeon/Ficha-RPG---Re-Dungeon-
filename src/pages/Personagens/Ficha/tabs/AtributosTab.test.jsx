@@ -66,10 +66,13 @@ describe('AtributosTab — fluxo de edição', () => {
     expect(within(dialogReaberto).getByLabelText('Base')).toHaveValue(0);
   });
 
-  it('mostra o bônus de cultivo no campo editável dos atributos secundários', async () => {
+  it('mantém o valor bruto do bônus no campo editável mesmo quando há bônus de cultivo', async () => {
     const onSave = vi.fn().mockResolvedValue();
     const personagemComBonus = {
       ...personagem,
+      secundariosBonus: {
+        prontidao: 3,
+      },
       cultivoBonus: {
         secundarios: {
           prontidao: 4,
@@ -84,7 +87,7 @@ describe('AtributosTab — fluxo de edição', () => {
     fireEvent.click(screen.getByRole('button', { name: /prontidão/i }));
     const dialog = await screen.findByRole('dialog', { name: /configurar prontidão/i });
 
-    expect(within(dialog).getByLabelText('Bônus')).toHaveValue(4);
+    expect(within(dialog).getByLabelText('Bônus')).toHaveValue(3);
   });
 
   it('mostra uma mensagem de erro e reabilita o botão Salvar quando onSave falha', async () => {

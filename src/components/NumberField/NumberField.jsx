@@ -40,7 +40,15 @@ const NumberField = ({ name, label, displayValue }) => {
   return (
     <NumberFieldWrapper>
       <NumberFieldLabel htmlFor={name}>{label}</NumberFieldLabel>
-      <NumberFieldBox id={name} type="number" name={name} value={inputValue} onChange={handleChange} onBlur={handleBlur} />
+      <NumberFieldBox
+        id={name}
+        type="number"
+        name={name}
+        value={inputValue}
+        step={1}
+        onChange={handleChange}
+        onBlur={handleBlur}
+      />
     </NumberFieldWrapper>
   );
 };
