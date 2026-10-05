@@ -25,14 +25,13 @@ import {
   FieldsRow,
 } from './styles';
 
-const AtributoCard = ({ label, total, baseName, extraName, bonusName, bonusCultivo }) => {
+const AtributoCard = ({ label, total, baseName, extraName, bonusName }) => {
   const tituloId = `dialog-titulo-${baseName}`;
   const [aberto, setAberto] = useState(false);
   const [baseField, , baseHelpers] = useField(baseName);
   const [extraField, , extraHelpers] = useField(extraName);
   const [bonusField, , bonusHelpers] = useField(bonusName);
   const snapshotRef = useRef(null);
-  const bonusCultivoTotal = Number.isFinite(Number(bonusCultivo)) ? Number(bonusCultivo) : 0;
 
   const abrir = () => {
     snapshotRef.current = {
@@ -92,11 +91,7 @@ const AtributoCard = ({ label, total, baseName, extraName, bonusName, bonusCulti
                 </NumberFieldLabel>
                 <NumberFieldBox value={total} disabled />
               </NumberFieldWrapper>
-              <NumberField
-                name={bonusName}
-                label="Bônus"
-                displayValue={Number(bonusField.value ?? 0) + bonusCultivoTotal}
-              />
+              <NumberField name={bonusName} label="Bônus" />
             </FieldsRow>
           </DialogContent>
           <DialogActions>
