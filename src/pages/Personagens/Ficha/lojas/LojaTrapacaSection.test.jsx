@@ -6,6 +6,15 @@ import { SavingProvider } from 'context/SavingContext';
 import LojaTrapacaSection from './LojaTrapacaSection';
 import { getBeneficiosPorUniverso, getEfeitosGuardados, getUniverso, setEfeitoGuardado } from 'service/storage';
 
+const mockAuth = vi.hoisted(() => ({
+  currentUser: { uid: 'user-123', email: 'teste@re-dungeon.com' },
+}));
+
+vi.mock('service/firebase', () => ({
+  auth: mockAuth,
+  db: {},
+}));
+
 vi.mock('service/storage', () => ({
   getBeneficiosPorUniverso: vi.fn(),
   getEfeitosGuardados: vi.fn(),
