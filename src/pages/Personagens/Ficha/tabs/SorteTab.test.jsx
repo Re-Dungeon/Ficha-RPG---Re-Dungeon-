@@ -8,6 +8,15 @@ import * as formulas from 'common/utils/formulas';
 
 import SorteTab from './SorteTab';
 
+const mockAuth = vi.hoisted(() => ({
+  currentUser: { uid: 'user-123', email: 'teste@re-dungeon.com' },
+}));
+
+vi.mock('service/firebase', () => ({
+  auth: mockAuth,
+  db: {},
+}));
+
 vi.mock('service/storage', () => ({
   getHistoricoSorte: vi.fn(),
   addHistoricoSorte: vi.fn(),

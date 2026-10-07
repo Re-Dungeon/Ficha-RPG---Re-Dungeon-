@@ -6,6 +6,15 @@ import { SavingProvider } from 'context/SavingContext';
 import LojaTrapacaSection from './LojaTrapacaSection';
 import { getBeneficiosPorUniverso, getEfeitosGuardados, getUniverso, setEfeitoGuardado } from 'service/storage';
 
+const mockAuth = vi.hoisted(() => ({
+  currentUser: { uid: 'user-123', email: 'teste@re-dungeon.com' },
+}));
+
+vi.mock('service/firebase', () => ({
+  auth: mockAuth,
+  db: {},
+}));
+
 vi.mock('service/storage', () => ({
   getBeneficiosPorUniverso: vi.fn(),
   getEfeitosGuardados: vi.fn(),
@@ -27,6 +36,147 @@ describe('LojaTrapacaSection', () => {
     vi.clearAllMocks();
     getUniverso.mockResolvedValue([{ id: 'universo-1', Nome: 'Re-Dungeon' }]);
     getEfeitosGuardados.mockResolvedValue([]);
+  });
+
+  it('mantém benefício inativo visível e bloqueado quando o status é false', async () => {
+    getBeneficiosPorUniverso.mockResolvedValue([
+      {
+        id: 'benedicao-inativa',
+        nome: 'Abençoado pelos Céus',
+        categoria: 'Bênçãos Únicas',
+        tag: 'Divino',
+        tipoBonus: 'Bônus',
+        descricao: 'Benefício reservado para cenário especial.',
+        bonus: '+1 em testes',
+        custo: 7,
+        tokens: ['Divino'],
+        ativo: false,
+        acumulavel: false,
+        limiteAcumulo: 0,
+        limitePeriodo: 0,
+        periodo: 'Nenhum',
+        universos: ['universo-1'],
+        imagem: '',
+        tipoAtivacao: 'manual',
+      },
+    ]);
+
+    const onSave = vi.fn().mockResolvedValue();
+
+    render(
+      <SavingProvider>
+        <LojaTrapacaSection personagem={personagem} onSave={onSave} />
+      </SavingProvider>,
+    );
+
+    expect(await screen.findByText(/abençoado pelos céus/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/inativo/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/desativado/i).length).toBeGreaterThan(0);
+
+    const botao = screen.getByRole('button', { name: /desativado/i });
+    expect(botao).toBeDisabled();
+
+    fireEvent.click(botao);
+    expect(onSave).not.toHaveBeenCalled();
+  });
+
+  it('mantém benefício inativo visível quando filtrado pela categoria correspondente', async () => {
+    getBeneficiosPorUniverso.mockResolvedValue([
+      {
+        id: 'benedicao-inativa',
+        nome: 'Abençoado pelos Céus',
+        categoria: 'Bênçãos Únicas',
+        tag: 'Divino',
+        tipoBonus: 'Bônus',
+        descricao: 'Benefício reservado para cenário especial.',
+        bonus: '+1 em testes',
+        custo: 7,
+        tokens: ['Divino'],
+        ativo: false,
+        acumulavel: false,
+        limiteAcumulo: 0,
+        limitePeriodo: 0,
+        periodo: 'Nenhum',
+        universos: ['universo-1'],
+        imagem: '',
+        tipoAtivacao: 'manual',
+      },
+    ]);
+
+    render(
+      <SavingProvider>
+        <LojaTrapacaSection personagem={personagem} onSave={vi.fn().mockResolvedValue()} />
+      </SavingProvider>,
+    );
+
+    fireEvent.click(await screen.findByRole('button', { name: /bênçãos únicas/i }));
+    expect(screen.getByText(/abençoado pelos céus/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/desativado/i).length).toBeGreaterThan(0);
+  });
+
+  it('remove o overlay quando o benefício reativa no próximo carregamento', async () => {
+    getBeneficiosPorUniverso.mockResolvedValue([
+      {
+        id: 'benedicao-reativada',
+        nome: 'Abençoado pelos Céus',
+        categoria: 'Bênçãos Únicas',
+        tag: 'Divino',
+        tipoBonus: 'Bônus',
+        descricao: 'Benefício reativado no admin.',
+        bonus: '+1 em testes',
+        custo: 7,
+        tokens: ['Divino'],
+        ativo: false,
+        acumulavel: false,
+        limiteAcumulo: 0,
+        limitePeriodo: 0,
+        periodo: 'Nenhum',
+        universos: ['universo-1'],
+        imagem: '',
+        tipoAtivacao: 'manual',
+      },
+    ]);
+
+    const { rerender } = render(
+      <SavingProvider>
+        <LojaTrapacaSection personagem={personagem} onSave={vi.fn().mockResolvedValue()} />
+      </SavingProvider>,
+    );
+
+    expect((await screen.findAllByText(/desativado/i)).length).toBeGreaterThan(0);
+
+    getBeneficiosPorUniverso.mockResolvedValue([
+      {
+        id: 'benedicao-reativada',
+        nome: 'Abençoado pelos Céus',
+        categoria: 'Bênçãos Únicas',
+        tag: 'Divino',
+        tipoBonus: 'Bônus',
+        descricao: 'Benefício reativado no admin.',
+        bonus: '+1 em testes',
+        custo: 7,
+        tokens: ['Divino'],
+        ativo: true,
+        acumulavel: false,
+        limiteAcumulo: 0,
+        limitePeriodo: 0,
+        periodo: 'Nenhum',
+        universos: ['universo-2'],
+        imagem: '',
+        tipoAtivacao: 'manual',
+      },
+    ]);
+
+    rerender(
+      <SavingProvider>
+        <LojaTrapacaSection personagem={{ ...personagem, universo: 'universo-2' }} onSave={vi.fn().mockResolvedValue()} />
+      </SavingProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.queryByText(/desativado/i)).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /comprar/i })).toBeEnabled();
+    });
   });
 
   it('não cria efeito guardado para benefício imediato sem regras de uso', async () => {

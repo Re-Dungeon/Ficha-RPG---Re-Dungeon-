@@ -12,6 +12,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 
 import { getNome } from 'common/utils/resolveNome';
+import { auth } from 'service/firebase';
 import {
   addHistoricoSorte,
   getBeneficiosPorUniverso,
@@ -148,12 +149,32 @@ const normalizeBonusValue = value => {
   return String(value).trim() ? [{ texto: String(value).trim(), tipo: '' }] : [];
 };
 
+const resolveBenefitActiveFlag = beneficio => {
+  if (!beneficio || typeof beneficio !== 'object') {
+    return true;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(beneficio, 'ativo')) {
+    return parseBooleanFlag(beneficio.ativo);
+  }
+
+  if (Object.prototype.hasOwnProperty.call(beneficio, 'enabled')) {
+    return parseBooleanFlag(beneficio.enabled);
+  }
+
+  if (Object.prototype.hasOwnProperty.call(beneficio, 'status')) {
+    return parseBooleanFlag(beneficio.status);
+  }
+
+  return true;
+};
+
 const normalizeBenefit = beneficio => {
   const categoria = normalizeCategoria(beneficio?.categoria ?? beneficio?.tag ?? beneficio?.tipo ?? beneficio?.grupo);
   const universos = normalizeList(beneficio?.universos ?? beneficio?.universo ?? []);
   const tokens = normalizeList(beneficio?.tokens ?? beneficio?.tags ?? beneficio?.tipoBonus ?? beneficio?.tag ?? []);
   const tipoAtivacao = beneficio?.tipoAtivacao ?? beneficio?.tipoDeAtivacao ?? (categoria === 'Benefícios Menores' ? 'imediata' : 'manual');
-  const ativo = beneficio?.ativo ?? beneficio?.enabled ?? beneficio?.status !== 'inativo';
+  const ativo = resolveBenefitActiveFlag(beneficio);
   const acumulavel = Boolean(beneficio?.acumulavel ?? beneficio?.acumulável ?? false);
   const bonusBruto = beneficio?.bonus ?? beneficio?.efeito ?? beneficio?.resultado ?? beneficio?.beneficio ?? [];
   const bonusLista = normalizeBonusValue(bonusBruto);
@@ -406,6 +427,7 @@ const CategoryTab = styled.button`
 `;
 
 const BenefitCard = styled.div`
+  position: relative;
   display: flex;
   flex-direction: column;
   border: 1px solid rgba(232, 203, 133, 0.2);
@@ -418,11 +440,43 @@ const BenefitCard = styled.div`
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: 0 14px 26px rgba(8, 12, 18, 0.26);
+  filter: ${({ $inativo }) => ($inativo ? 'saturate(0.7) brightness(0.75)' : 'none')};
 
   &:hover {
-    border-color: rgba(232, 203, 133, 0.5);
-    transform: translateY(-3px);
+    border-color: ${({ $inativo }) => ($inativo ? 'rgba(248, 113, 113, 0.5)' : 'rgba(232, 203, 133, 0.5)')};
+    transform: ${({ $inativo }) => ($inativo ? 'none' : 'translateY(-3px)')};
   }
+`;
+
+const InactiveBenefitOverlay = styled.div`
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, rgba(80, 0, 10, 0.42), rgba(180, 20, 35, 0.58), rgba(60, 0, 10, 0.78));
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(0.5px) saturate(0.7);
+`;
+
+const InactiveBenefitBadge = styled.div`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(254, 202, 202, 0.45);
+  background: rgba(80, 0, 10, 0.46);
+  color: #ffe4e6;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-shadow: 0 0 10px rgba(251, 113, 133, 0.45);
+  box-shadow: 0 0 20px rgba(127, 29, 29, 0.28);
 `;
 
 const CardImage = styled.div`
@@ -915,6 +969,15 @@ const DetailHeaderClose = styled(IconButton)`
 const LojaTrapacaSection = ({ personagem, onSave, aba = 'trapaca' }) => {
   const fortunaAtual = personagem.sorte?.fortunaAtual ?? 0;
   const { executar } = useSaving();
+  useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.log('[FORTUNA][STATE]', {
+      uid: auth.currentUser?.uid,
+      email: auth.currentUser?.email,
+      universo: personagem.universo,
+      fortunaAtual,
+    });
+  }, [fortunaAtual, personagem.universo]);
   const [categoriaAtiva, setCategoriaAtiva] = useState('Todos');
   const [beneficios, setBeneficios] = useState([]);
   const [efeitosGuardados, setEfeitosGuardados] = useState([]);
@@ -961,11 +1024,25 @@ const LojaTrapacaSection = ({ personagem, onSave, aba = 'trapaca' }) => {
     const requestId = ++carregamentoGuardadosRef.current;
     let ativo = true;
 
+    // eslint-disable-next-line no-console
+    console.log('[EFFECTS_GUARDADOS][LOAD START]', {
+      uid: auth.currentUser?.uid,
+      email: auth.currentUser?.email,
+      personagemId: personagem.id,
+    });
+
     getEfeitosGuardados(personagem.id)
       .then(items => {
         if (!ativo || requestId !== carregamentoGuardadosRef.current) {
           return;
         }
+
+        // eslint-disable-next-line no-console
+        console.log('[EFFECTS_GUARDADOS][FIRESTORE SUCCESS]', {
+          quantidade: Array.isArray(items) ? items.length : 0,
+          uid: auth.currentUser?.uid,
+          email: auth.currentUser?.email,
+        });
 
         const itensValidos = (items ?? []).filter(item => {
           const beneficioId = item?.beneficioId ?? item?.id;
@@ -980,7 +1057,15 @@ const LojaTrapacaSection = ({ personagem, onSave, aba = 'trapaca' }) => {
 
         setEfeitosGuardados(mergeEfeitosGuardados(itensValidos));
       })
-      .catch(() => {
+      .catch(error => {
+        // eslint-disable-next-line no-console
+        console.error('[EFFECTS_GUARDADOS][FIRESTORE ERROR]', {
+          code: error?.code,
+          message: error?.message,
+          uid: auth.currentUser?.uid,
+          email: auth.currentUser?.email,
+        });
+
         if (ativo && requestId === carregamentoGuardadosRef.current) {
           setEfeitosGuardados([]);
         }
@@ -1020,15 +1105,33 @@ const LojaTrapacaSection = ({ personagem, onSave, aba = 'trapaca' }) => {
       setCarregando(true);
       setErro(null);
 
+      // eslint-disable-next-line no-console
+      console.log('[TRICKSTER][UI LOAD START]', {
+        uid: auth.currentUser?.uid,
+        email: auth.currentUser?.email,
+        universo: personagem.universo,
+      });
+
       try {
         const itens = await getBeneficiosPorUniverso(personagem.universo);
         if (!ativo) {
           return;
         }
 
-        const normalizados = itens
+        // eslint-disable-next-line no-console
+        console.log('[TRICKSTER][FIRESTORE SUCCESS]', {
+          quantidade: Array.isArray(itens) ? itens.length : 0,
+          uid: auth.currentUser?.uid,
+          email: auth.currentUser?.email,
+          universo: personagem.universo,
+        });
+
+        const depoisUniverso = (itens ?? []).filter(beneficio => beneficioTemUniversoCompativel(beneficio, personagem.universo));
+
+        const normalizados = depoisUniverso
           .map(normalizeBenefit)
-          .filter(beneficio => beneficio.ativo && beneficioTemUniversoCompativel(beneficio, personagem.universo));
+          .filter(beneficio => beneficioTemUniversoCompativel(beneficio, personagem.universo));
+
         setBeneficios(normalizados);
 
         if (normalizados.length > 0) {
@@ -1041,7 +1144,16 @@ const LojaTrapacaSection = ({ personagem, onSave, aba = 'trapaca' }) => {
         } else {
           setCategoriaAtiva('Todos');
         }
-      } catch {
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('[TRICKSTER][UI LOAD ERROR]', {
+          code: error?.code,
+          message: error?.message,
+          uid: auth.currentUser?.uid,
+          email: auth.currentUser?.email,
+          universo: personagem.universo,
+        });
+
         if (!ativo) {
           return;
         }
@@ -1122,11 +1234,15 @@ const LojaTrapacaSection = ({ personagem, onSave, aba = 'trapaca' }) => {
       const valorLimitePeriodo = Number(beneficio?.limitePeriodo ?? 0);
       const proximaQuantidade = quantidadeAtual + 1;
 
+      if (beneficio.ativo === false) {
+        return undefined;
+      }
+
       if (fortunaAtual < custo) {
         return undefined;
       }
 
-      if (beneficio.ativo === false || !beneficioTemUniversoCompativel(beneficio, personagem.universo)) {
+      if (!beneficioTemUniversoCompativel(beneficio, personagem.universo)) {
         return undefined;
       }
 
@@ -1392,11 +1508,19 @@ const LojaTrapacaSection = ({ personagem, onSave, aba = 'trapaca' }) => {
           {!carregando && !erro && beneficiosFiltrados.length > 0 && (
             <LojaGrid>
               {beneficiosFiltrados.map(beneficio => {
-                const semSaldo = fortunaAtual < beneficio.custo;
+                const semSaldo = beneficio.ativo !== false && fortunaAtual < beneficio.custo;
                 const limite = LIMITE_POR_CATEGORIA[beneficio.categoria] ?? Infinity;
                 const limiteAtingido =
                   beneficio.tipoAtivacao === 'manual' && contagemPorCategoria(beneficio.categoria) >= limite;
-                const indisponivel = !beneficio.ativo || !beneficioTemUniversoCompativel(beneficio, personagem.universo);
+                const indisponivel = !beneficioTemUniversoCompativel(beneficio, personagem.universo);
+                const bloqueado = beneficio.ativo === false;
+                const textoBotao = bloqueado
+                  ? 'Desativado'
+                  : limiteAtingido
+                    ? 'Limite atingido'
+                    : semSaldo
+                      ? 'Saldo insuficiente'
+                      : 'Comprar';
 
                 return (
                   <BenefitCard
@@ -1411,7 +1535,13 @@ const LojaTrapacaSection = ({ personagem, onSave, aba = 'trapaca' }) => {
                       }
                     }}
                     aria-label={`Abrir detalhes de ${beneficio.nome}`}
+                    $inativo={bloqueado}
                   >
+                    {bloqueado && (
+                      <InactiveBenefitOverlay aria-hidden="true">
+                        <InactiveBenefitBadge>Desativado</InactiveBenefitBadge>
+                      </InactiveBenefitOverlay>
+                    )}
                     <CardImage>
                       {beneficio.imagem ? (
                         <img
@@ -1463,19 +1593,13 @@ const LojaTrapacaSection = ({ personagem, onSave, aba = 'trapaca' }) => {
                       <Button
                         fullWidth
                         variant="contained"
-                        disabled={semSaldo || limiteAtingido || indisponivel}
+                        disabled={bloqueado || semSaldo || limiteAtingido || indisponivel}
                         onClick={event => {
                           event.stopPropagation();
                           handleComprar(beneficio);
                         }}
                       >
-                        {indisponivel
-                          ? 'Indisponível'
-                          : limiteAtingido
-                            ? 'Limite atingido'
-                            : semSaldo
-                              ? 'Saldo insuficiente'
-                              : 'Comprar'}
+                        {textoBotao}
                       </Button>
                     </CardBody>
                   </BenefitCard>
@@ -1664,12 +1788,15 @@ const LojaTrapacaSection = ({ personagem, onSave, aba = 'trapaca' }) => {
                 variant="contained"
                 startIcon={<MonetizationOnIcon />}
                 onClick={() => {
+                  if (beneficioSelecionado.ativo === false) {
+                    return;
+                  }
                   setBeneficioSelecionado(null);
                   handleComprar(beneficioSelecionado);
                 }}
-                disabled={fortunaAtual < beneficioSelecionado.custo}
+                disabled={beneficioSelecionado.ativo === false || fortunaAtual < beneficioSelecionado.custo || !beneficioTemUniversoCompativel(beneficioSelecionado, personagem.universo)}
               >
-                Comprar por {beneficioSelecionado.custo}
+                {beneficioSelecionado.ativo === false ? 'Desativado' : `Comprar por ${beneficioSelecionado.custo}`}
               </Button>
             </DetailFooter>
           </DetailDialogContent>
