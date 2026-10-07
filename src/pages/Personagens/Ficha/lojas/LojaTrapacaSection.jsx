@@ -12,6 +12,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 
 import { getNome } from 'common/utils/resolveNome';
+import { auth } from 'service/firebase';
 import {
   addHistoricoSorte,
   getBeneficiosPorUniverso,
@@ -915,6 +916,15 @@ const DetailHeaderClose = styled(IconButton)`
 const LojaTrapacaSection = ({ personagem, onSave, aba = 'trapaca' }) => {
   const fortunaAtual = personagem.sorte?.fortunaAtual ?? 0;
   const { executar } = useSaving();
+  useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.log('[FORTUNA][STATE]', {
+      uid: auth.currentUser?.uid,
+      email: auth.currentUser?.email,
+      universo: personagem.universo,
+      fortunaAtual,
+    });
+  }, [fortunaAtual, personagem.universo]);
   const [categoriaAtiva, setCategoriaAtiva] = useState('Todos');
   const [beneficios, setBeneficios] = useState([]);
   const [efeitosGuardados, setEfeitosGuardados] = useState([]);
@@ -961,11 +971,25 @@ const LojaTrapacaSection = ({ personagem, onSave, aba = 'trapaca' }) => {
     const requestId = ++carregamentoGuardadosRef.current;
     let ativo = true;
 
+    // eslint-disable-next-line no-console
+    console.log('[EFFECTS_GUARDADOS][LOAD START]', {
+      uid: auth.currentUser?.uid,
+      email: auth.currentUser?.email,
+      personagemId: personagem.id,
+    });
+
     getEfeitosGuardados(personagem.id)
       .then(items => {
         if (!ativo || requestId !== carregamentoGuardadosRef.current) {
           return;
         }
+
+        // eslint-disable-next-line no-console
+        console.log('[EFFECTS_GUARDADOS][FIRESTORE SUCCESS]', {
+          quantidade: Array.isArray(items) ? items.length : 0,
+          uid: auth.currentUser?.uid,
+          email: auth.currentUser?.email,
+        });
 
         const itensValidos = (items ?? []).filter(item => {
           const beneficioId = item?.beneficioId ?? item?.id;
@@ -980,7 +1004,15 @@ const LojaTrapacaSection = ({ personagem, onSave, aba = 'trapaca' }) => {
 
         setEfeitosGuardados(mergeEfeitosGuardados(itensValidos));
       })
-      .catch(() => {
+      .catch(error => {
+        // eslint-disable-next-line no-console
+        console.error('[EFFECTS_GUARDADOS][FIRESTORE ERROR]', {
+          code: error?.code,
+          message: error?.message,
+          uid: auth.currentUser?.uid,
+          email: auth.currentUser?.email,
+        });
+
         if (ativo && requestId === carregamentoGuardadosRef.current) {
           setEfeitosGuardados([]);
         }
@@ -1020,15 +1052,69 @@ const LojaTrapacaSection = ({ personagem, onSave, aba = 'trapaca' }) => {
       setCarregando(true);
       setErro(null);
 
+      // eslint-disable-next-line no-console
+      console.log('[TRICKSTER][UI LOAD START]', {
+        uid: auth.currentUser?.uid,
+        email: auth.currentUser?.email,
+        universo: personagem.universo,
+      });
+
       try {
         const itens = await getBeneficiosPorUniverso(personagem.universo);
         if (!ativo) {
           return;
         }
 
-        const normalizados = itens
+        // eslint-disable-next-line no-console
+        console.log('[TRICKSTER][FIRESTORE SUCCESS]', {
+          quantidade: Array.isArray(itens) ? itens.length : 0,
+          uid: auth.currentUser?.uid,
+          email: auth.currentUser?.email,
+          universo: personagem.universo,
+        });
+
+        const depoisStatus = (itens ?? []).filter(beneficio => beneficio?.ativo !== false);
+        const depoisUniverso = depoisStatus.filter(beneficio => beneficioTemUniversoCompativel(beneficio, personagem.universo));
+        const depoisCategoria = depoisUniverso.filter(beneficio => {
+          const categoria = normalizeCategoria(beneficio?.categoria ?? beneficio?.tag ?? beneficio?.tipo);
+          return Boolean(categoria && categoria !== 'Sem categoria');
+        });
+
+        for (const beneficio of itens ?? []) {
+          const passouStatus = beneficio?.ativo !== false;
+          const passouUniverso = beneficioTemUniversoCompativel(beneficio, personagem.universo);
+          const categoria = normalizeCategoria(beneficio?.categoria ?? beneficio?.tag ?? beneficio?.tipo);
+          const passouCategoria = Boolean(categoria && categoria !== 'Sem categoria');
+
+          if (!passouStatus || !passouUniverso || !passouCategoria) {
+            // eslint-disable-next-line no-console
+            console.log('[TRICKSTER][FILTER ITEM]', {
+              id: beneficio?.id,
+              nome: beneficio?.nome,
+              ativo: beneficio?.ativo,
+              status: beneficio?.status,
+              universos: beneficio?.universos,
+              universoPersonagem: personagem.universo,
+              passouStatus,
+              passouUniverso,
+              passouCategoria,
+            });
+          }
+        }
+
+        const normalizados = depoisUniverso
           .map(normalizeBenefit)
           .filter(beneficio => beneficio.ativo && beneficioTemUniversoCompativel(beneficio, personagem.universo));
+
+        // eslint-disable-next-line no-console
+        console.log('[TRICKSTER][PIPELINE]', {
+          firestore: Array.isArray(itens) ? itens.length : 0,
+          depoisStatus: depoisStatus.length,
+          depoisUniverso: depoisUniverso.length,
+          depoisCategoria: depoisCategoria.length,
+          final: normalizados.length,
+        });
+
         setBeneficios(normalizados);
 
         if (normalizados.length > 0) {
@@ -1041,7 +1127,16 @@ const LojaTrapacaSection = ({ personagem, onSave, aba = 'trapaca' }) => {
         } else {
           setCategoriaAtiva('Todos');
         }
-      } catch {
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('[TRICKSTER][UI LOAD ERROR]', {
+          code: error?.code,
+          message: error?.message,
+          uid: auth.currentUser?.uid,
+          email: auth.currentUser?.email,
+          universo: personagem.universo,
+        });
+
         if (!ativo) {
           return;
         }

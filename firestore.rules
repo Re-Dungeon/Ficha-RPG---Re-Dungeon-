@@ -75,6 +75,32 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // ── Trickster Coin (catálogo público) ─────────────────────────────────────
+    // O catálogo de benefícios é leitura pública para jogadores autenticados;
+    // escrita administrativa continua restrita ao admin do Firestore.
+    // O nome exato da coleção pode variar no projeto administrativo, então as
+    // variantes mais comuns são permitidas aqui sem abrir as coleções de
+    // personagem para escrita de jogador.
+    match /beneficios/{beneficioId} {
+      allow read: if isAuth();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /beneficiosTricksterCoin/{beneficioId} {
+      allow read: if isAuth();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /tricksterCoin/{beneficioId} {
+      allow read: if isAuth();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /trickster/{beneficioId} {
+      allow read: if isAuth();
+      allow create, update, delete: if isAdmin();
+    }
+
     // ── racas ──────────────────────────────────────────────────────────────────
     // Leitura para qualquer usuário autenticado.
     // Escrita (create/update/delete) baseada no campo `universo` do documento.

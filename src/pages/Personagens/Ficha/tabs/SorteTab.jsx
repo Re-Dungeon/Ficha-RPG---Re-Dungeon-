@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import Button from '@mui/material/Button';
 
+import { auth } from 'service/firebase';
 import { addHistoricoSorte, getHistoricoSorte } from 'service/storage';
 import {
   calcularBonusCultivoTotal,
@@ -168,15 +169,32 @@ const SorteTab = ({ personagem, onSave }) => {
 
   useEffect(() => {
     let isMounted = true;
+    // eslint-disable-next-line no-console
+    console.log('[SORT_HISTORY][LOAD START]', {
+      uid: auth.currentUser?.uid,
+      email: auth.currentUser?.email,
+      personagemId: personagem.id,
+    });
     getHistoricoSorte(personagem.id)
       .then(itens => {
+        // eslint-disable-next-line no-console
+        console.log('[SORT_HISTORY][FIRESTORE SUCCESS]', {
+          quantidade: Array.isArray(itens) ? itens.length : 0,
+          uid: auth.currentUser?.uid,
+          email: auth.currentUser?.email,
+        });
         if (isMounted) {
           setHistorico(itens);
         }
       })
       .catch(erro => {
         // eslint-disable-next-line no-console
-        console.error('Falha ao carregar histórico de sorte:', erro);
+        console.error('[SORT_HISTORY][FIRESTORE ERROR]', {
+          code: erro?.code,
+          message: erro?.message,
+          uid: auth.currentUser?.uid,
+          email: auth.currentUser?.email,
+        });
       });
     return () => {
       isMounted = false;

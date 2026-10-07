@@ -13,7 +13,7 @@ import {
   updateDoc,
   where,
 } from 'firebase/firestore';
-import { db } from 'service/firebase';
+import { auth, db } from 'service/firebase';
 
 export const getFirestoreItems = async (collectionName, ...queryConstraints) => {
   const itemsQuery = query(collection(db, collectionName), ...queryConstraints);
@@ -422,29 +422,55 @@ export const getBeneficios = async () => {
 };
 
 export const getBeneficiosPorUniverso = async universoId => {
-  if (!universoId) {
-    return [];
-  }
-
   const collectionNames = ['beneficios', 'beneficiosTricksterCoin', 'tricksterCoin', 'trickster'];
   const vistos = new Set();
   const itens = [];
 
+  // eslint-disable-next-line no-console
+  console.log('[TRICKSTER][LOAD START]', {
+    uid: auth.currentUser?.uid,
+    email: auth.currentUser?.email,
+    universoId,
+    collectionNames,
+  });
+
+  if (!universoId) {
+    // eslint-disable-next-line no-console
+    console.log('[TRICKSTER][NO UNIVERSE]', { uid: auth.currentUser?.uid, email: auth.currentUser?.email });
+    return [];
+  }
+
   for (const collectionName of collectionNames) {
     try {
       const dados = await getColecaoMultiUniversoPorUniverso(collectionName, universoId);
+      // eslint-disable-next-line no-console
+      console.log('[TRICKSTER][FIRESTORE SUCCESS]', {
+        collectionName,
+        quantidade: dados.length,
+        uid: auth.currentUser?.uid,
+        email: auth.currentUser?.email,
+      });
+
       for (const item of dados) {
         if (!vistos.has(item.id)) {
           vistos.add(item.id);
           itens.push(item);
         }
       }
-    } catch {
-      // Alguns nomes de coleção podem existir só no admin ou não estar acessíveis
-      // com a sessão atual; a loja assim continua segura e sem quebra.
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('[TRICKSTER][FIRESTORE ERROR]', {
+        collectionName,
+        code: error?.code,
+        message: error?.message,
+        uid: auth.currentUser?.uid,
+        email: auth.currentUser?.email,
+      });
     }
   }
 
+  // eslint-disable-next-line no-console
+  console.log('[TRICKSTER][RAW BENEFITS]', itens);
   return itens;
 };
 
