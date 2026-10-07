@@ -80,6 +80,31 @@ export const addHistoricoSorte = (personagemId, evento) =>
     timestamp: serverTimestamp(),
   });
 
+// ── efeitosGuardados — subcoleção personagens/{id}/efeitosGuardados (§15) ─
+// Guarda cada benefício comprado em uma entrada própria da ficha, com
+// `beneficioId` + `quantidade` + timestamps. Mantém o layout compatível com os
+// dados antigos em `personagem.lojaTrapaça.efeitosAtivos` sem duplicar o
+// catálogo em si.
+export const getEfeitosGuardados = personagemId =>
+  getSubcolecaoItems('personagens', personagemId, 'efeitosGuardados');
+
+export const setEfeitoGuardado = (personagemId, beneficioId, data) =>
+  setDoc(doc(db, 'personagens', personagemId, 'efeitosGuardados', beneficioId), {
+    beneficioId,
+    quantidade: Number(data.quantidade ?? 0),
+    usosPeriodo: Number(data.usosPeriodo ?? 0),
+    referenciaPeriodo: data.referenciaPeriodo ?? null,
+    nome: data.nome ?? null,
+    categoria: data.categoria ?? null,
+    adquiridoEm: data.adquiridoEm ?? null,
+    ...data,
+    createdAt: data.createdAt ?? serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+
+export const removeEfeitoGuardado = (personagemId, beneficioId) =>
+  deleteDoc(doc(db, 'personagens', personagemId, 'efeitosGuardados', beneficioId));
+
 const getSubcolecaoItems = async (parentCollection, parentId, subcollectionName) => {
   const snapshot = await getDocs(collection(db, parentCollection, parentId, subcollectionName));
   return snapshot.docs.map(docSnapshot => ({ id: docSnapshot.id, ...docSnapshot.data() }));
@@ -368,6 +393,60 @@ export const getArtesPorUniverso = universoId =>
 // Usada pelo Códex Mágico (§21).
 export const getRegrasPorUniverso = universoId =>
   getColecaoMultiUniversoPorUniverso('regras', universoId);
+
+// `beneficios` é o catálogo de benefícios do projeto administrativo Trickster
+// Coin. Ele também pode vir em `universos`/`universo` legado, como os demais
+// catálogos de referência do site. O nome exato da coleção pode variar no banco
+// administrativo, então tentamos as variantes mais prováveis sem alterar a
+// estrutura do personagem nem o sistema de compra existente.
+export const getBeneficios = async () => {
+  const collectionNames = ['beneficios', 'beneficiosTricksterCoin', 'tricksterCoin', 'trickster'];
+  const vistos = new Set();
+  const itens = [];
+
+  for (const collectionName of collectionNames) {
+    try {
+      const dados = await getFirestoreItems(collectionName);
+      for (const item of dados) {
+        if (!vistos.has(item.id)) {
+          vistos.add(item.id);
+          itens.push(item);
+        }
+      }
+    } catch {
+      // A coleção pode não existir no banco ou estar indisponível para a sessão.
+    }
+  }
+
+  return itens;
+};
+
+export const getBeneficiosPorUniverso = async universoId => {
+  if (!universoId) {
+    return [];
+  }
+
+  const collectionNames = ['beneficios', 'beneficiosTricksterCoin', 'tricksterCoin', 'trickster'];
+  const vistos = new Set();
+  const itens = [];
+
+  for (const collectionName of collectionNames) {
+    try {
+      const dados = await getColecaoMultiUniversoPorUniverso(collectionName, universoId);
+      for (const item of dados) {
+        if (!vistos.has(item.id)) {
+          vistos.add(item.id);
+          itens.push(item);
+        }
+      }
+    } catch {
+      // Alguns nomes de coleção podem existir só no admin ou não estar acessíveis
+      // com a sessão atual; a loja assim continua segura e sem quebra.
+    }
+  }
+
+  return itens;
+};
 
 // `reinosCultivo` — catálogo dos Reinos do Sistema de Cultivo. Deixou de ser
 // exclusivo do universo Cultivo (confirmado por doc de teste em `reinosCultivo`

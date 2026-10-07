@@ -116,12 +116,14 @@ const SorteModal = ({ open, onClose, personagem, onSave }) => {
       >
         <Tab value="sorte" label="Sorte" />
         <Tab value="trapaca" label="Loja da Trapaça" />
+        <Tab value="guardados" label="Efeitos Guardados" />
       </Tabs>
       <DialogContent sx={{ px: { xs: 2, sm: 3 }, pb: 3, pt: 0 }}>
         <SortePanel>
           <SorteContent>
             {subAba === 'sorte' && <SorteTab personagem={personagem} onSave={onSave} />}
-            {subAba === 'trapaca' && <LojaTrapacaSection personagem={personagem} onSave={onSave} />}
+            {subAba === 'trapaca' && <LojaTrapacaSection personagem={personagem} onSave={onSave} aba="trapaca" />}
+            {subAba === 'guardados' && <LojaTrapacaSection personagem={personagem} onSave={onSave} aba="guardados" />}
           </SorteContent>
         </SortePanel>
       </DialogContent>
