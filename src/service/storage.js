@@ -13,7 +13,7 @@ import {
   updateDoc,
   where,
 } from 'firebase/firestore';
-import { auth, db } from 'service/firebase';
+import { db } from 'service/firebase';
 
 export const getFirestoreItems = async (collectionName, ...queryConstraints) => {
   const itemsQuery = query(collection(db, collectionName), ...queryConstraints);
@@ -394,84 +394,28 @@ export const getArtesPorUniverso = universoId =>
 export const getRegrasPorUniverso = universoId =>
   getColecaoMultiUniversoPorUniverso('regras', universoId);
 
-// `beneficios` é o catálogo de benefícios do projeto administrativo Trickster
-// Coin. Ele também pode vir em `universos`/`universo` legado, como os demais
-// catálogos de referência do site. O nome exato da coleção pode variar no banco
-// administrativo, então tentamos as variantes mais prováveis sem alterar a
-// estrutura do personagem nem o sistema de compra existente.
+// `tricksterCoin` é a coleção oficial do catálogo de benefícios no projeto
+// administrativo Re. A ficha do jogador usa o mesmo formato de catálogo em
+// `universos`/`universo` legado, mas a fonte de dados deve ser única para evitar
+// consultas redundantes e erros de permissão em coleções antigas.
 export const getBeneficios = async () => {
-  const collectionNames = ['beneficios', 'beneficiosTricksterCoin', 'tricksterCoin', 'trickster'];
-  const vistos = new Set();
-  const itens = [];
-
-  for (const collectionName of collectionNames) {
-    try {
-      const dados = await getFirestoreItems(collectionName);
-      for (const item of dados) {
-        if (!vistos.has(item.id)) {
-          vistos.add(item.id);
-          itens.push(item);
-        }
-      }
-    } catch {
-      // A coleção pode não existir no banco ou estar indisponível para a sessão.
-    }
+  try {
+    return await getFirestoreItems('tricksterCoin');
+  } catch {
+    return [];
   }
-
-  return itens;
 };
 
 export const getBeneficiosPorUniverso = async universoId => {
-  const collectionNames = ['beneficios', 'beneficiosTricksterCoin', 'tricksterCoin', 'trickster'];
-  const vistos = new Set();
-  const itens = [];
-
-  // eslint-disable-next-line no-console
-  console.log('[TRICKSTER][LOAD START]', {
-    uid: auth.currentUser?.uid,
-    email: auth.currentUser?.email,
-    universoId,
-    collectionNames,
-  });
-
   if (!universoId) {
-    // eslint-disable-next-line no-console
-    console.log('[TRICKSTER][NO UNIVERSE]', { uid: auth.currentUser?.uid, email: auth.currentUser?.email });
     return [];
   }
 
-  for (const collectionName of collectionNames) {
-    try {
-      const dados = await getColecaoMultiUniversoPorUniverso(collectionName, universoId);
-      // eslint-disable-next-line no-console
-      console.log('[TRICKSTER][FIRESTORE SUCCESS]', {
-        collectionName,
-        quantidade: dados.length,
-        uid: auth.currentUser?.uid,
-        email: auth.currentUser?.email,
-      });
-
-      for (const item of dados) {
-        if (!vistos.has(item.id)) {
-          vistos.add(item.id);
-          itens.push(item);
-        }
-      }
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('[TRICKSTER][FIRESTORE ERROR]', {
-        collectionName,
-        code: error?.code,
-        message: error?.message,
-        uid: auth.currentUser?.uid,
-        email: auth.currentUser?.email,
-      });
-    }
+  try {
+    return await getColecaoMultiUniversoPorUniverso('tricksterCoin', universoId);
+  } catch {
+    return [];
   }
-
-  // eslint-disable-next-line no-console
-  console.log('[TRICKSTER][RAW BENEFITS]', itens);
-  return itens;
 };
 
 // `reinosCultivo` — catálogo dos Reinos do Sistema de Cultivo. Deixou de ser
