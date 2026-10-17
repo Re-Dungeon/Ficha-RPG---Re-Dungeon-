@@ -76,29 +76,14 @@ service cloud.firestore {
     }
 
     // ── Trickster Coin (catálogo público) ─────────────────────────────────────
-    // O catálogo de benefícios é leitura pública para jogadores autenticados;
-    // escrita administrativa continua restrita ao admin do Firestore.
-    // O nome exato da coleção pode variar no projeto administrativo, então as
-    // variantes mais comuns são permitidas aqui sem abrir as coleções de
-    // personagem para escrita de jogador.
-    match /beneficios/{beneficioId} {
+    // A coleção oficial do projeto administrativo Re é `tricksterCoin`.
+    // Leitura para jogadores autenticados; criação, edição e exclusão apenas
+    // para administradores do Firestore.
+    match /tricksterCoin/{benefitId} {
       allow read: if isAuth();
-      allow create, update, delete: if isAdmin();
-    }
-
-    match /beneficiosTricksterCoin/{beneficioId} {
-      allow read: if isAuth();
-      allow create, update, delete: if isAdmin();
-    }
-
-    match /tricksterCoin/{beneficioId} {
-      allow read: if isAuth();
-      allow create, update, delete: if isAdmin();
-    }
-
-    match /trickster/{beneficioId} {
-      allow read: if isAuth();
-      allow create, update, delete: if isAdmin();
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
     }
 
     // ── racas ──────────────────────────────────────────────────────────────────
