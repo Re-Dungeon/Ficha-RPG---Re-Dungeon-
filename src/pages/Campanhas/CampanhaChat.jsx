@@ -160,6 +160,7 @@ const CampanhaChat = () => {
         podeApagarTodas={isMestre}
         onEnviarTexto={chat.enviarTexto}
         onEnviarImagem={chat.enviarImagem}
+        onRolar={chat.rolar}
         onApagar={chat.apagar}
         cabecalho={cabecalho}
       />

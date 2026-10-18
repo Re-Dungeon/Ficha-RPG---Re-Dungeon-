@@ -1,19 +1,32 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import {
   addChatMensagem,
+  addChatRolagemSecreta,
   removeChatMensagem,
+  removeChatRolagemSecreta,
   setChatMembro,
   subscribeChatMensagens,
+  subscribeChatSecretasDoMestre,
+  subscribeChatSecretasDoUsuario,
 } from 'service/storage';
-import { montarMensagemImagem, montarMensagemTexto } from 'common/utils/chat';
+import {
+  mesclarMensagens,
+  montarMensagemImagem,
+  montarMensagemRolagem,
+  montarMensagemTexto,
+} from 'common/utils/chat';
+import { rolarEspecificacao } from 'common/utils/dados';
 
 // Liga um componente ao chat de uma campanha (rmCampanhas/{id}/chatMensagens):
 // registra o ponteiro chatMembros/{uid} do jogador, ouve as mensagens em tempo
-// real e expõe enviar/apagar. Usado pela página /campanhas/:id/chat e pelo
-// modal "Chat" da ficha. `autor` = campos de montarMensagem* (uid,
+// real (públicas + rolagens secretas visíveis a ele) e expõe
+// enviar/rolar/apagar. Usado pela página /campanhas/:id/chat e pelo modal
+// "Chat" da ficha. `autor` = campos de montarMensagem* (uid,
 // personagemId, autorNome, autorAvatar, isMestre); `null` deixa o hook inativo
 // (ex.: enquanto a campanha ainda carrega).
+const SEM_MENSAGENS = [];
+
 const useChatCampanha = (campanhaId, autor) => {
   const uid = autor?.uid ?? null;
   const personagemId = autor?.personagemId ?? null;
@@ -26,6 +39,7 @@ const useChatCampanha = (campanhaId, autor) => {
   // Mensagens guardadas junto da campanha a que pertencem: ao trocar de
   // campanha, `carregando` volta a true sem setState síncrono no efeito.
   const [recebido, setRecebido] = useState({ campanhaId: null, mensagens: [] });
+  const [secretasRecebidas, setSecretasRecebidas] = useState({ campanhaId: null, mensagens: [] });
   const [erro, setErro] = useState(null);
 
   useEffect(() => {
@@ -64,6 +78,21 @@ const useChatCampanha = (campanhaId, autor) => {
     );
   }, [campanhaId, podeOuvir]);
 
+  // Rolagens secretas: o jogador vê só as dele; quem fala como mestre vê as
+  // de todos os membros (chatSecretas/{uid}/rolagens de cada um).
+  useEffect(() => {
+    if (!podeOuvir) return undefined;
+    const aoMudar = mensagens => setSecretasRecebidas({ campanhaId, mensagens });
+    const aoErrar = error => {
+      // eslint-disable-next-line no-console
+      console.error('Falha ao ouvir rolagens secretas:', error);
+      setErro('Não foi possível carregar as rolagens secretas.');
+    };
+    return isMestre
+      ? subscribeChatSecretasDoMestre(campanhaId, uid, aoMudar, aoErrar)
+      : subscribeChatSecretasDoUsuario(campanhaId, uid, aoMudar, aoErrar);
+  }, [campanhaId, podeOuvir, isMestre, uid]);
+
   const enviar = useCallback(
     async mensagem => {
       try {
@@ -81,11 +110,33 @@ const useChatCampanha = (campanhaId, autor) => {
   const enviarTexto = useCallback(texto => enviar(montarMensagemTexto(autor, texto)), [enviar, autor]);
   const enviarImagem = useCallback(url => enviar(montarMensagemImagem(autor, url)), [enviar, autor]);
 
+  // Rola no cliente (crypto) e grava: pública em chatMensagens, secreta na
+  // pasta do próprio usuário.
+  const rolar = useCallback(
+    async especificacao => {
+      const rolagem = rolarEspecificacao(especificacao);
+      const mensagem = montarMensagemRolagem(autor, rolagem, especificacao.secreta);
+      try {
+        await (especificacao.secreta
+          ? addChatRolagemSecreta(campanhaId, uid, mensagem)
+          : addChatMensagem(campanhaId, mensagem));
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('Falha ao enviar rolagem:', error);
+        setErro('Não foi possível enviar a rolagem.');
+        throw error;
+      }
+    },
+    [campanhaId, uid, autor],
+  );
+
   const apagar = useCallback(
     async mensagem => {
       if (!window.confirm('Apagar esta mensagem?')) return;
       try {
-        await removeChatMensagem(campanhaId, mensagem.id);
+        await (mensagem.secreta
+          ? removeChatRolagemSecreta(campanhaId, mensagem.donoUid, mensagem.id)
+          : removeChatMensagem(campanhaId, mensagem.id));
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error('Falha ao apagar mensagem:', error);
@@ -98,14 +149,20 @@ const useChatCampanha = (campanhaId, autor) => {
   const limparErro = useCallback(() => setErro(null), []);
 
   const carregando = recebido.campanhaId !== campanhaId;
+  const secretas = secretasRecebidas.campanhaId === campanhaId ? secretasRecebidas.mensagens : SEM_MENSAGENS;
+  const mensagens = useMemo(
+    () => (carregando ? [] : mesclarMensagens(recebido.mensagens, secretas)),
+    [carregando, recebido.mensagens, secretas],
+  );
 
   return {
-    mensagens: carregando ? [] : recebido.mensagens,
+    mensagens,
     carregando,
     erro,
     limparErro,
     enviarTexto,
     enviarImagem,
+    rolar,
     apagar,
   };
 };

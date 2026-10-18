@@ -138,6 +138,7 @@ const ChatModalConteudo = ({ personagem }) => {
         podeApagarTodas={campanha.mestreId === currentUser.uid}
         onEnviarTexto={chat.enviarTexto}
         onEnviarImagem={chat.enviarImagem}
+        onRolar={chat.rolar}
         onApagar={chat.apagar}
         cabecalho={cabecalho}
       />

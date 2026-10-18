@@ -485,3 +485,73 @@ export const addChatMensagem = (campanhaId, mensagem) =>
 
 export const removeChatMensagem = (campanhaId, mensagemId) =>
   deleteDoc(doc(db, 'rmCampanhas', campanhaId, 'chatMensagens', mensagemId));
+
+// ── Rolagens secretas — rmCampanhas/{id}/chatSecretas/{uid}/rolagens ──────
+// Uma pasta por usuário (só ele e o mestre leem): consultas de lista numa
+// coleção única seriam recusadas inteiras pelas regras para quem não pode ver
+// todas as secretas, e uma coleção por usuário dispensa índice composto.
+export const CHAT_LIMITE_SECRETAS = 50;
+
+const rolagensSecretasRef = (campanhaId, donoUid) =>
+  collection(db, 'rmCampanhas', campanhaId, 'chatSecretas', donoUid, 'rolagens');
+
+// Mensagens chegam marcadas com `secreta: true` e `donoUid` (necessário para
+// apagar). Ordem: mais recente primeiro (quem consome mescla com
+// `mesclarMensagens` de common/utils/chat.js).
+export const subscribeChatSecretasDoUsuario = (campanhaId, donoUid, onChange, onError) =>
+  onSnapshot(
+    query(rolagensSecretasRef(campanhaId, donoUid), orderBy('createdAt', 'desc'), limit(CHAT_LIMITE_SECRETAS)),
+    snapshot =>
+      onChange(
+        snapshot.docs.map(docSnapshot => ({
+          id: docSnapshot.id,
+          ...docSnapshot.data({ serverTimestamps: 'estimate' }),
+          secreta: true,
+          donoUid,
+        })),
+      ),
+    onError,
+  );
+
+// Mestre: ouve as próprias secretas e as de cada jogador em `chatMembros`
+// (acompanha membros novos em tempo real). Devolve um único `unsubscribe`.
+export const subscribeChatSecretasDoMestre = (campanhaId, mestreUid, onChange, onError) => {
+  const porDono = new Map();
+  const emitir = () => onChange([...porDono.values()].flatMap(entrada => entrada.mensagens));
+  const ouvir = donoUid => {
+    if (porDono.has(donoUid)) return;
+    const entrada = { mensagens: [], unsubscribe: () => {} };
+    porDono.set(donoUid, entrada);
+    entrada.unsubscribe = subscribeChatSecretasDoUsuario(
+      campanhaId,
+      donoUid,
+      mensagens => {
+        entrada.mensagens = mensagens;
+        emitir();
+      },
+      onError,
+    );
+  };
+
+  ouvir(mestreUid);
+  const pararMembros = onSnapshot(
+    collection(db, 'rmCampanhas', campanhaId, 'chatMembros'),
+    snapshot => snapshot.docs.forEach(docSnapshot => ouvir(docSnapshot.id)),
+    onError,
+  );
+
+  return () => {
+    pararMembros();
+    porDono.forEach(entrada => entrada.unsubscribe());
+    porDono.clear();
+  };
+};
+
+export const addChatRolagemSecreta = (campanhaId, donoUid, mensagem) =>
+  addDoc(rolagensSecretasRef(campanhaId, donoUid), {
+    ...mensagem,
+    createdAt: serverTimestamp(),
+  });
+
+export const removeChatRolagemSecreta = (campanhaId, donoUid, rolagemId) =>
+  deleteDoc(doc(db, 'rmCampanhas', campanhaId, 'chatSecretas', donoUid, 'rolagens', rolagemId));
