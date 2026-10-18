@@ -25,9 +25,9 @@ vi.mock('service/storage', () => ({
 
 const LayoutFake = () => <Outlet context={{ setHeaderExtra: vi.fn() }} />;
 
-const renderChat = () =>
+const renderChat = (state = null) =>
   render(
-    <MemoryRouter initialEntries={['/campanhas/camp-1/chat']}>
+    <MemoryRouter initialEntries={[{ pathname: '/campanhas/camp-1/chat', state }]}>
       <Routes>
         <Route element={<LayoutFake />}>
           <Route path="/campanhas/:id/chat" element={<CampanhaChat />} />
@@ -129,6 +129,18 @@ describe('CampanhaChat', () => {
         expect.objectContaining({ tipo: 'imagem', url: 'https://ex.com/mapa.gif', personagemId: 'p-1' }),
       ),
     );
+  });
+
+  it('vindo da ficha, já fala como o personagem dela', async () => {
+    getPersonagens.mockResolvedValue([
+      { id: 'p-1', nome: 'Aldric', campanhas: ['camp-1'] },
+      { id: 'p-3', nome: 'Wesley Chase', campanhas: ['camp-1'] },
+    ]);
+    renderChat({ personagemId: 'p-3' });
+
+    await screen.findByText('Bem-vindos à taverna.');
+    expect(setChatMembro).toHaveBeenCalledWith('camp-1', 'uid-jogador', 'p-3');
+    expect(screen.getByLabelText(/falando como/i)).toHaveTextContent('Wesley Chase');
   });
 
   it('nega acesso a quem não tem personagem na campanha', async () => {

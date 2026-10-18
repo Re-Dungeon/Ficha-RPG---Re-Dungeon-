@@ -18,6 +18,7 @@ import HubIcon from '@mui/icons-material/Hub';
 import PetsIcon from '@mui/icons-material/Pets';
 
 import { getPersonagem, removePersonagem, updatePersonagem } from 'service/storage';
+import { useSelecao } from 'context/selecaoContext';
 import { SavingProvider } from 'context/SavingContext';
 import ErrorBoundary from 'components/ErrorBoundary/ErrorBoundary';
 import ErrorSnackbar from 'components/ErrorSnackbar/ErrorSnackbar';
@@ -48,6 +49,7 @@ const Ficha = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { setHeaderExtra } = useOutletContext();
+  const { selecionarPersonagem } = useSelecao();
   const [personagem, setPersonagem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [aba, setAba] = useState('atributos');
@@ -124,6 +126,12 @@ const Ficha = () => {
     setHeaderExtra({ nome: personagem.nome, onVoltar: handleVoltar });
     return () => setHeaderExtra(null);
   }, [personagem, handleVoltar, setHeaderExtra]);
+
+  // Lembra a ficha aberta para o link "Campanhas" do cabeçalho abrir o chat
+  // da campanha deste personagem (e "Fichas" voltar para cá depois).
+  useEffect(() => {
+    if (personagem) selecionarPersonagem(personagem);
+  }, [personagem, selecionarPersonagem]);
 
   if (loading || !personagem) {
     return (

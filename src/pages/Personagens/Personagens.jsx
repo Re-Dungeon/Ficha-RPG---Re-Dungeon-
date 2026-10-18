@@ -10,6 +10,7 @@ import MenuItem from '@mui/material/MenuItem';
 import CriarPersonagemModal from './CriarPersonagemModal';
 
 import { useAuth } from 'context/AuthContext';
+import { useSelecao } from 'context/selecaoContext';
 import { getPersonagens, getFirestoreItem } from 'service/storage';
 import ErrorSnackbar from 'components/ErrorSnackbar/ErrorSnackbar';
 
@@ -41,8 +42,15 @@ const MENSAGEM_VAZIO = {
 
 const Personagens = () => {
   const { currentUser } = useAuth();
+  const { limparPersonagem } = useSelecao();
   const navigate = useNavigate();
   const [personagens, setPersonagens] = useState([]);
+
+  // Abrir a lista = nenhuma ficha "em andamento": o link "Fichas" do
+  // cabeçalho volta a apontar para cá (o último chat aberto continua lembrado).
+  useEffect(() => {
+    limparPersonagem();
+  }, [limparPersonagem]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState(null);
   const [selectedPersonagemId, setSelectedPersonagemId] = useState(null);

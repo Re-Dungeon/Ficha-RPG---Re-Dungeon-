@@ -5,6 +5,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatOutlined';
 
 import { useAuth } from 'context/AuthContext';
+import { useSelecao } from 'context/selecaoContext';
 import { getPersonagens, getRmCampanha } from 'service/storage';
 import { campanhaIdsDosPersonagens, personagensNaCampanha } from 'common/utils/chat';
 import ErrorSnackbar from 'components/ErrorSnackbar/ErrorSnackbar';
@@ -16,8 +17,15 @@ import { CampanhaCard, CampanhaCardBody, CampanhaCardImagem, CampanhaPersonagens
 // ficha) — o doc da campanha não guarda a lista de jogadores.
 const Campanhas = () => {
   const { currentUser } = useAuth();
+  const { limparCampanha } = useSelecao();
   const navigate = useNavigate();
   const [campanhas, setCampanhas] = useState([]);
+
+  // Espelho da lista de fichas: esquece o chat aberto, mas mantém a ficha
+  // lembrada para o link "Fichas" voltar para ela.
+  useEffect(() => {
+    limparCampanha();
+  }, [limparCampanha]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState(null);
 

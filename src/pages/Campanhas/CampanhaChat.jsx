@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate, useOutletContext, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import CircularProgress from '@mui/material/CircularProgress';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
 import { useAuth } from 'context/AuthContext';
+import { useSelecao } from 'context/selecaoContext';
 import {
   addChatMensagem,
   getPersonagens,
@@ -28,6 +29,9 @@ const CampanhaChat = () => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   const { setHeaderExtra } = useOutletContext();
+  const { selecionarPersonagem, selecionarCampanha } = useSelecao();
+  // Vindo do link "Campanhas" com uma ficha aberta: já fala como esse personagem.
+  const personagemIdPreferido = useLocation().state?.personagemId ?? null;
 
   const [campanha, setCampanha] = useState(null);
   const [meusPersonagens, setMeusPersonagens] = useState([]);
@@ -49,7 +53,8 @@ const CampanhaChat = () => {
         const daCampanha = personagensNaCampanha(personagens, campanhaId);
         setCampanha(campanhaDoc);
         setMeusPersonagens(daCampanha);
-        if (daCampanha.length > 0) setFalandoComo(daCampanha[0].id);
+        const preferido = daCampanha.find(p => p.id === personagemIdPreferido);
+        if (daCampanha.length > 0) setFalandoComo((preferido ?? daCampanha[0]).id);
         else if (campanhaDoc?.mestreId === currentUser.uid) setFalandoComo(FALAR_COMO_MESTRE);
       })
       .catch(error => {
@@ -63,7 +68,18 @@ const CampanhaChat = () => {
     return () => {
       isMounted = false;
     };
-  }, [campanhaId, currentUser.uid]);
+  }, [campanhaId, currentUser.uid, personagemIdPreferido]);
+
+  // Lembra este chat (e o personagem com que se está falando) para os links
+  // "Fichas"/"Campanhas" do cabeçalho reabrirem aqui / na ficha dele.
+  useEffect(() => {
+    if (campanha) selecionarCampanha(campanhaId);
+  }, [campanha, campanhaId, selecionarCampanha]);
+
+  useEffect(() => {
+    const personagem = meusPersonagens.find(p => p.id === falandoComo);
+    if (personagem) selecionarPersonagem(personagem);
+  }, [falandoComo, meusPersonagens, selecionarPersonagem]);
 
   const handleVoltar = useCallback(() => navigate('/campanhas'), [navigate]);
 
