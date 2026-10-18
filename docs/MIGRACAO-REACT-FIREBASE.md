@@ -39,6 +39,7 @@ O schema da seção 5 abaixo ficou **um pouco mais completo** do que o desenhado
 - `lojaTrapaça` **não tem** `saldoFortuna` como a seção 5 sugeria — isso duplicaria `sorte.fortunaAtual` (mesma moeda, ver FUNCIONALIDADES.md §6). `lojaTrapaça` guarda só `efeitosAtivos`. Trate a seção 5 abaixo como desatualizada nesse ponto específico.
 - `historicoSorte` (subcoleção) registra tanto rolagens de Fortuna quanto compras na Loja da Trapaça — não é usado só para rolagens.
 - `cultivo` **virou um mapa keyed por subUniverso** (2026-07-29), a pedido do usuário — antes era um objeto único (`{subUniverso, reinoId, xpAtual}`) e trocar de sistema de cultivo (SubUniverso) zerava a progressão anterior, exigindo um diálogo de confirmação. Agora cada chave do mapa guarda sua própria progressão independente (`{reinoId, xpAtual}`), então um personagem pode cultivar em mais de um sistema/subUniverso ao mesmo tempo (ex.: "Doupo Cangqiong" e "Martial Peak" em paralelo) sem perder nada ao trocar de aba no `CultivoModal`. Sem ferramenta de migração pro formato antigo — o `personagem.cultivo` de personagens de teste criados antes dessa mudança fica órfão (o modal simplesmente não encontra progressão pra nenhum sistema até o jogador ganhar Cultivo de novo).
+  - **Trilhas paralelas detectadas (2026-10-18)**: universos **sem** `SubUniversos` também podem ter vários sistemas — basta os Reinos (`subUniverso: ''`) formarem mais de uma trilha, cada uma começando num Reino com `reinoAnterior` vazio (caso real: "Crônica da Luz e Sombras", com Aspirante…/Besta…/Dormant…). Antes o modal costurava tudo numa fila só, sem seletor. Agora `separarTrilhasCultivo` (`common/utils/formulas.js`) separa as trilhas e o `CultivoModal` usa as mesmas abas/"+" dos `SubUniversos`, com a **chave do mapa = id do Reino raiz** (rótulo da aba = nome dele). Só raízes estritas contam — um `reinoAnterior` apontando pra id inexistente (ex.: "Alma Nascente" em The Elder Gods) não vira sistema; o órfão vai pro fim da 1ª trilha. Progresso antigo em `principal` é migrado pra trilha que contém o `reinoId` salvo (`resolverMapaCultivoPorTrilhas`; persistido na próxima escrita). O Reset passou a remover só os `cultivoBonus` dos Reinos da trilha atual (do destino em diante, via `removerBonusCultivoDosReinos`) — antes o reset completo zerava o bônus de todos os sistemas.
 
 Outras simplificações deliberadas (escolhas de escopo, não bugs):
 
@@ -274,8 +275,10 @@ Em todo campo que referencia outra coleção (`universo`, `raca`, `classes`, `or
                // personagem (§ storage.js). Universos com múltiplos sistemas paralelos (ex.: Cultivo →
                // "Doupo Cangqiong", "Martial Peak" etc., campo `SubUniversos` do doc do universo em
                // `Universo`) exigem escolher um sistema antes de ver a trilha; universos sem esse campo
-               // vão direto pra trilha (Reinos com `subUniverso: ''`). Mapa keyed por subUniverso (ou ''
-               // pro universo sem múltiplos sistemas) — cada chave guarda a progressão independente
+               // vão direto pra trilha (Reinos com `subUniverso: ''`) — a menos que esses Reinos formem
+               // mais de uma trilha (várias raízes com reinoAnterior ''): aí cada trilha vira um sistema
+               // com chave = id do Reino raiz. Mapa keyed por subUniverso / id da raiz (ou 'principal'
+               // pro universo de trilha única) — cada chave guarda a progressão independente
                // daquele sistema, permitindo cultivar em mais de um sistema/subUniverso ao mesmo tempo
                // sem perder progresso ao trocar de aba no modal (antes era um objeto único, e trocar de
                // subUniverso zerava a progressão anterior). Guarda o mínimo por sistema; estrelas/Pico

@@ -426,7 +426,8 @@ export const getBeneficiosPorUniverso = async universoId => {
 // múltiplos sistemas paralelos (ex.: Cultivo, que tem "Doupo Cangqiong",
 // "Martial Peak" etc. no campo `SubUniversos` do doc `Universo`) também
 // filtram por `subUniverso`; universos sem esse campo não têm o seletor de
-// sistema — os Reinos têm `subUniverso: ''` e o filtro é só por `universo`.
+// sistema — os Reinos têm `subUniverso: ''` e o filtro é só por `universo`
+// (ainda assim podem formar várias trilhas paralelas — ver `separarTrilhasCultivo`).
 // A ordem da trilha NÃO vem de um campo de índice: cada Reino aponta o
 // anterior por `reinoAnterior` (id; "" no primeiro) — use `ordenarReinosCultivo`
 // (common/utils/formulas.js) para montar a sequência. Somente leitura.
