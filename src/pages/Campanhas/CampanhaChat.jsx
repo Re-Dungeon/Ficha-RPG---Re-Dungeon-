@@ -215,13 +215,17 @@ const CampanhaChat = ({ visao = 'chat' }) => {
   if (visao === 'grid') {
     let aviso = null;
     if (grid.carregando) aviso = 'Carregando o grid…';
-    else if (!grid.configurado && grid.tokens.length === 0)
-      aviso = 'O mestre ainda não montou o grid desta campanha.';
+    else if (grid.semCena) aviso = 'O mestre ainda não abriu uma cena.';
     return (
       <ChatPageWrapper>
         <MesaBarra>
           {seletorVisao}
           {falandoComoCampo}
+          {grid.nomeCena && (
+            <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
+              Cena: <strong>{grid.nomeCena}</strong>
+            </Typography>
+          )}
           <Button
             size="small"
             startIcon={<ChatOutlinedIcon fontSize="small" />}
@@ -233,7 +237,9 @@ const CampanhaChat = ({ visao = 'chat' }) => {
           </Button>
         </MesaBarra>
         <MesaCorpo>
+          {/* key: trocar de cena recomeça zoom/pan (mapa encaixado). */}
           <GridMapa
+            key={grid.cenaId ?? 'sem-cena'}
             config={grid.config}
             tokens={grid.tokens}
             podeMover={grid.podeMover}

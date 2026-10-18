@@ -1,6 +1,6 @@
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom';
 
 import { useAuth } from 'context/AuthContext';
@@ -12,7 +12,8 @@ import {
   getRmCampanha,
   moverGridToken,
   setChatMembro,
-  subscribeGrid,
+  subscribeGridCena,
+  subscribeGridCenaAtiva,
   subscribeGridTokens,
   subscribeChatMensagens,
   subscribeChatSecretasDoUsuario,
@@ -42,7 +43,8 @@ vi.mock('service/storage', () => ({
   addChatMacro: vi.fn(),
   updateChatMacro: vi.fn(),
   removeChatMacro: vi.fn(),
-  subscribeGrid: vi.fn(),
+  subscribeGridCenaAtiva: vi.fn(),
+  subscribeGridCena: vi.fn(),
   subscribeGridTokens: vi.fn(),
   moverGridToken: vi.fn(),
 }));
@@ -477,59 +479,86 @@ describe('CampanhaChat', () => {
   });
 
   describe('grid', () => {
-    const TOKENS = [
-      {
-        id: 't1',
-        nome: 'Aldric',
-        tipo: 'jogador',
-        col: 1,
-        lin: 1,
-        tamanho: 1,
-        donos: ['uid-jogador'],
-        oculto: false,
-      },
-      {
-        id: 't2',
-        nome: 'Ogro',
-        tipo: 'criatura',
-        col: 4,
-        lin: 1,
-        tamanho: 2,
-        donos: [],
-        oculto: false,
-      },
-    ];
+    const CONFIG = {
+      imagemUrl: null,
+      celula: 40,
+      deslocamentoX: 0,
+      deslocamentoY: 0,
+      mostrarGrade: true,
+      corGrade: '#ffffff',
+      opacidadeGrade: 0.3,
+    };
+    const CENAS = {
+      'cena-1': { ...CONFIG, nome: 'Taverna' },
+      'cena-2': { ...CONFIG, nome: 'Masmorra' },
+    };
+    const TOKENS_POR_CENA = {
+      'cena-1': [
+        {
+          id: 't1',
+          nome: 'Aldric',
+          tipo: 'jogador',
+          col: 1,
+          lin: 1,
+          tamanho: 1,
+          donos: ['uid-jogador'],
+          oculto: false,
+        },
+        {
+          id: 't2',
+          nome: 'Ogro',
+          tipo: 'criatura',
+          col: 4,
+          lin: 1,
+          tamanho: 2,
+          donos: [],
+          oculto: false,
+        },
+      ],
+      'cena-2': [
+        {
+          id: 't9',
+          nome: 'Esqueleto',
+          tipo: 'criatura',
+          col: 0,
+          lin: 0,
+          tamanho: 1,
+          donos: [],
+          oculto: false,
+        },
+      ],
+    };
+    let mudarCenaAtiva;
 
     beforeEach(() => {
-      subscribeGrid.mockImplementation((_campanhaId, onChange) => {
-        onChange({
-          imagemUrl: null,
-          celula: 40,
-          deslocamentoX: 0,
-          deslocamentoY: 0,
-          mostrarGrade: true,
-          corGrade: '#ffffff',
-          opacidadeGrade: 0.3,
-        });
+      subscribeGridCenaAtiva.mockImplementation((_campanhaId, onChange) => {
+        mudarCenaAtiva = onChange;
+        onChange('cena-1');
         return vi.fn();
       });
-      subscribeGridTokens.mockImplementation((_campanhaId, _opcoes, onChange) => {
-        onChange(TOKENS);
+      subscribeGridCena.mockImplementation((_campanhaId, cenaId, onChange) => {
+        onChange(CENAS[cenaId] ? { id: cenaId, ...CENAS[cenaId] } : null);
+        return vi.fn();
+      });
+      subscribeGridTokens.mockImplementation((_campanhaId, cenaId, _opcoes, onChange) => {
+        onChange(TOKENS_POR_CENA[cenaId] ?? []);
         return vi.fn();
       });
       moverGridToken.mockResolvedValue();
     });
 
-    it('jogador entra como membro, vê só os tokens visíveis e o chat ao lado', async () => {
+    it('jogador entra como membro, vê a cena ativa (tokens visíveis) e o chat ao lado', async () => {
       renderChat(null, '/campanhas/camp-1/grid');
 
       expect(
         await screen.findByRole('button', { name: 'Aldric, coluna 2, linha 2' }),
       ).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /Ogro/ })).toBeInTheDocument();
+      expect(screen.getByText('Taverna')).toBeInTheDocument();
       expect(setChatMembro).toHaveBeenCalledWith('camp-1', 'uid-jogador', 'p-1');
       expect(subscribeGridTokens).toHaveBeenCalledWith(
         'camp-1',
+        'cena-1',
         { incluirOcultos: false },
         expect.any(Function),
         expect.any(Function),
@@ -544,7 +573,7 @@ describe('CampanhaChat', () => {
         key: 'ArrowDown',
       });
       await waitFor(() =>
-        expect(moverGridToken).toHaveBeenCalledWith('camp-1', 't1', 1, 2),
+        expect(moverGridToken).toHaveBeenCalledWith('camp-1', 'cena-1', 't1', 1, 2),
       );
 
       fireEvent.keyDown(screen.getByRole('button', { name: /Ogro/ }), {
@@ -553,25 +582,37 @@ describe('CampanhaChat', () => {
       expect(moverGridToken).toHaveBeenCalledTimes(1);
     });
 
-    it('avisa quando o mestre ainda não montou o grid', async () => {
-      subscribeGrid.mockImplementation((_campanhaId, onChange) => {
+    it('troca sozinho quando o mestre mostra outra cena', async () => {
+      renderChat(null, '/campanhas/camp-1/grid');
+      await screen.findByRole('button', { name: /Aldric, coluna/ });
+
+      act(() => mudarCenaAtiva('cena-2'));
+
+      expect(
+        await screen.findByRole('button', { name: /Esqueleto/ }),
+      ).toBeInTheDocument();
+      expect(screen.getByText('Masmorra')).toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: /Aldric, coluna/ }),
+      ).not.toBeInTheDocument();
+    });
+
+    it('avisa quando não há cena ativa', async () => {
+      subscribeGridCenaAtiva.mockImplementation((_campanhaId, onChange) => {
         onChange(null);
-        return vi.fn();
-      });
-      subscribeGridTokens.mockImplementation((_campanhaId, _opcoes, onChange) => {
-        onChange([]);
         return vi.fn();
       });
       renderChat(null, '/campanhas/camp-1/grid');
       expect(
-        await screen.findByText('O mestre ainda não montou o grid desta campanha.'),
+        await screen.findByText('O mestre ainda não abriu uma cena.'),
       ).toBeInTheDocument();
+      expect(subscribeGridTokens).not.toHaveBeenCalled();
     });
 
     it('alterna entre chat e grid e oculta o painel do chat', async () => {
       renderChat();
       await screen.findByText('Bem-vindos à taverna.');
-      expect(subscribeGrid).not.toHaveBeenCalled();
+      expect(subscribeGridCenaAtiva).not.toHaveBeenCalled();
 
       fireEvent.click(screen.getByRole('button', { name: 'Grid' }));
       expect(await screen.findByRole('button', { name: /Ogro/ })).toBeInTheDocument();

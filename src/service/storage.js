@@ -19,7 +19,10 @@ import { db } from 'service/firebase';
 export const getFirestoreItems = async (collectionName, ...queryConstraints) => {
   const itemsQuery = query(collection(db, collectionName), ...queryConstraints);
   const snapshot = await getDocs(itemsQuery);
-  return snapshot.docs.map(docSnapshot => ({ id: docSnapshot.id, ...docSnapshot.data() }));
+  return snapshot.docs.map(docSnapshot => ({
+    id: docSnapshot.id,
+    ...docSnapshot.data(),
+  }));
 };
 
 export const getFirestoreItem = async (collectionName, id) => {
@@ -52,7 +55,8 @@ export const getPersonagem = id => getFirestoreItem('personagens', id);
 
 export const addPersonagem = data => addFirestoreItem('personagens', data);
 
-export const updatePersonagem = (id, data) => updateFirestoreItem('personagens', id, data);
+export const updatePersonagem = (id, data) =>
+  updateFirestoreItem('personagens', id, data);
 
 export const removePersonagem = id => removeFirestoreItem('personagens', id);
 
@@ -61,7 +65,11 @@ export const removePersonagem = id => removeFirestoreItem('personagens', id);
 // MIGRACAO-REACT-FIREBASE.md §5). Os dois filtros são necessários porque
 // `firestore.rules` restringe list queries a `uid == request.auth.uid`.
 export const getCompanheiros = (uid, personagemId) =>
-  getFirestoreItems('personagens', where('uid', '==', uid), where('companheiroDe', '==', personagemId));
+  getFirestoreItems(
+    'personagens',
+    where('uid', '==', uid),
+    where('companheiroDe', '==', personagemId),
+  );
 
 // ── historicoSorte — subcoleção personagens/{id}/historicoSorte (§6, §5.1) ──
 
@@ -72,7 +80,10 @@ export const getHistoricoSorte = async personagemId => {
     limit(10),
   );
   const snapshot = await getDocs(historicoQuery);
-  return snapshot.docs.map(docSnapshot => ({ id: docSnapshot.id, ...docSnapshot.data() }));
+  return snapshot.docs.map(docSnapshot => ({
+    id: docSnapshot.id,
+    ...docSnapshot.data(),
+  }));
 };
 
 export const addHistoricoSorte = (personagemId, evento) =>
@@ -107,8 +118,13 @@ export const removeEfeitoGuardado = (personagemId, beneficioId) =>
   deleteDoc(doc(db, 'personagens', personagemId, 'efeitosGuardados', beneficioId));
 
 const getSubcolecaoItems = async (parentCollection, parentId, subcollectionName) => {
-  const snapshot = await getDocs(collection(db, parentCollection, parentId, subcollectionName));
-  return snapshot.docs.map(docSnapshot => ({ id: docSnapshot.id, ...docSnapshot.data() }));
+  const snapshot = await getDocs(
+    collection(db, parentCollection, parentId, subcollectionName),
+  );
+  return snapshot.docs.map(docSnapshot => ({
+    id: docSnapshot.id,
+    ...docSnapshot.data(),
+  }));
 };
 
 // ── aptidoesAdquiridas — subcoleção personagens/{id}/aptidoesAdquiridas (§9) ─
@@ -153,7 +169,8 @@ export const removeNucleo = (personagemId, nucleoId) =>
 // correspondentes a essa origem, e sempre um `nucleoId` (obrigatório em
 // qualquer origem — ver MIGRACAO-REACT-FIREBASE.md §5.1).
 
-export const getArts = personagemId => getSubcolecaoItems('personagens', personagemId, 'arts');
+export const getArts = personagemId =>
+  getSubcolecaoItems('personagens', personagemId, 'arts');
 
 export const addArt = (personagemId, data) =>
   addDoc(collection(db, 'personagens', personagemId, 'arts'), {
@@ -237,13 +254,18 @@ export const addMaterialInventario = (personagemId, data) =>
   });
 
 export const updateMaterialInventario = (personagemId, materialInventarioId, data) =>
-  updateDoc(doc(db, 'personagens', personagemId, 'materiaisInventario', materialInventarioId), {
-    ...data,
-    updatedAt: serverTimestamp(),
-  });
+  updateDoc(
+    doc(db, 'personagens', personagemId, 'materiaisInventario', materialInventarioId),
+    {
+      ...data,
+      updatedAt: serverTimestamp(),
+    },
+  );
 
 export const removeMaterialInventario = (personagemId, materialInventarioId) =>
-  deleteDoc(doc(db, 'personagens', personagemId, 'materiaisInventario', materialInventarioId));
+  deleteDoc(
+    doc(db, 'personagens', personagemId, 'materiaisInventario', materialInventarioId),
+  );
 
 // ── receitasInventario — subcoleção personagens/{id}/receitasInventario ────
 // Mesmo padrão de itensInventario/materiaisInventario — `origem: 'autoral' |
@@ -260,17 +282,23 @@ export const addReceitaInventario = (personagemId, data) =>
   });
 
 export const updateReceitaInventario = (personagemId, receitaInventarioId, data) =>
-  updateDoc(doc(db, 'personagens', personagemId, 'receitasInventario', receitaInventarioId), {
-    ...data,
-    updatedAt: serverTimestamp(),
-  });
+  updateDoc(
+    doc(db, 'personagens', personagemId, 'receitasInventario', receitaInventarioId),
+    {
+      ...data,
+      updatedAt: serverTimestamp(),
+    },
+  );
 
 export const removeReceitaInventario = (personagemId, receitaInventarioId) =>
-  deleteDoc(doc(db, 'personagens', personagemId, 'receitasInventario', receitaInventarioId));
+  deleteDoc(
+    doc(db, 'personagens', personagemId, 'receitasInventario', receitaInventarioId),
+  );
 
 // ── notas — subcoleção personagens/{id}/notas (novas notas do personagem)
 // Estrutura: { title, content, plainText, coverImage, isFavorite, createdAt, updatedAt }
-export const getNotas = personagemId => getSubcolecaoItems('personagens', personagemId, 'notas');
+export const getNotas = personagemId =>
+  getSubcolecaoItems('personagens', personagemId, 'notas');
 
 export const getNota = async (personagemId, notaId) => {
   const snapshot = await getDoc(doc(db, 'personagens', personagemId, 'notas', notaId));
@@ -501,7 +529,11 @@ const rolagensSecretasRef = (campanhaId, donoUid) =>
 // `mesclarMensagens` de common/utils/chat.js).
 export const subscribeChatSecretasDoUsuario = (campanhaId, donoUid, onChange, onError) =>
   onSnapshot(
-    query(rolagensSecretasRef(campanhaId, donoUid), orderBy('createdAt', 'desc'), limit(CHAT_LIMITE_SECRETAS)),
+    query(
+      rolagensSecretasRef(campanhaId, donoUid),
+      orderBy('createdAt', 'desc'),
+      limit(CHAT_LIMITE_SECRETAS),
+    ),
     snapshot =>
       onChange(
         snapshot.docs.map(docSnapshot => ({
@@ -516,9 +548,15 @@ export const subscribeChatSecretasDoUsuario = (campanhaId, donoUid, onChange, on
 
 // Mestre: ouve as próprias secretas e as de cada jogador em `chatMembros`
 // (acompanha membros novos em tempo real). Devolve um único `unsubscribe`.
-export const subscribeChatSecretasDoMestre = (campanhaId, mestreUid, onChange, onError) => {
+export const subscribeChatSecretasDoMestre = (
+  campanhaId,
+  mestreUid,
+  onChange,
+  onError,
+) => {
   const porDono = new Map();
-  const emitir = () => onChange([...porDono.values()].flatMap(entrada => entrada.mensagens));
+  const emitir = () =>
+    onChange([...porDono.values()].flatMap(entrada => entrada.mensagens));
   const ouvir = donoUid => {
     if (porDono.has(donoUid)) return;
     const entrada = { mensagens: [], unsubscribe: () => {} };
@@ -555,7 +593,9 @@ export const addChatRolagemSecreta = (campanhaId, donoUid, mensagem) =>
   });
 
 export const removeChatRolagemSecreta = (campanhaId, donoUid, rolagemId) =>
-  deleteDoc(doc(db, 'rmCampanhas', campanhaId, 'chatSecretas', donoUid, 'rolagens', rolagemId));
+  deleteDoc(
+    doc(db, 'rmCampanhas', campanhaId, 'chatSecretas', donoUid, 'rolagens', rolagemId),
+  );
 
 // ── Macros Lua — rmCampanhas/{id}/macros ───────────────────────────────────
 // Só o mestre da campanha cria/edita/apaga (as regras garantem); membros leem
@@ -565,10 +605,16 @@ export const removeChatRolagemSecreta = (campanhaId, donoUid, rolagemId) =>
 // (common/utils/macros.js). Executar uma macro nunca grava aqui.
 const macrosRef = campanhaId => collection(db, 'rmCampanhas', campanhaId, 'macros');
 
-export const getChatMacros = async (campanhaId, { incluirSomenteMestre = false } = {}) => {
+export const getChatMacros = async (
+  campanhaId,
+  { incluirSomenteMestre = false } = {},
+) => {
   const filtros = incluirSomenteMestre ? [] : [where('somenteMestre', '==', false)];
   const snapshot = await getDocs(query(macrosRef(campanhaId), ...filtros));
-  return snapshot.docs.map(docSnapshot => ({ id: docSnapshot.id, ...docSnapshot.data() }));
+  return snapshot.docs.map(docSnapshot => ({
+    id: docSnapshot.id,
+    ...docSnapshot.data(),
+  }));
 };
 
 export const addChatMacro = async (campanhaId, macro) => {
@@ -589,27 +635,59 @@ export const updateChatMacro = (campanhaId, macroId, patch) =>
 export const removeChatMacro = (campanhaId, macroId) =>
   deleteDoc(doc(db, 'rmCampanhas', campanhaId, 'macros', macroId));
 
-// ── Grid da campanha — rmCampanhas/{id}/grid/atual e gridTokens ───────────
-// A configuração (imagem, células) e os tokens são do mestre, que os edita no
-// Re:Master. Daqui o jogador só LÊ (mesmo acesso do chat: precisa do ponteiro
+// ── Grid da campanha — rmCampanhas/{id}/grid/atual e gridCenas ────────────
+// Em CENAS: `gridCenas/{cenaId}` (nome, imagem, grade) com os próprios tokens
+// em `gridCenas/{cenaId}/tokens`; `grid/atual` = {cenaAtivaId}, a única cena
+// que os jogadores veem. Tudo é do mestre, que gerencia no Re:Master. Daqui
+// o jogador só LÊ a cena ativa (mesmo acesso do chat: ponteiro
 // chatMembros/{uid}) e MOVE os tokens atribuídos a ele (`donos`) — a regra só
 // deixa mudar `col`/`lin`. Tokens `oculto` não chegam ao jogador: a consulta
 // dele PRECISA filtrar `oculto == false` (senão a regra recusa a lista).
 const gridRef = campanhaId => doc(db, 'rmCampanhas', campanhaId, 'grid', 'atual');
-const gridTokensRef = campanhaId => collection(db, 'rmCampanhas', campanhaId, 'gridTokens');
+const gridCenaRef = (campanhaId, cenaId) =>
+  doc(db, 'rmCampanhas', campanhaId, 'gridCenas', cenaId);
+const gridTokensRef = (campanhaId, cenaId) =>
+  collection(db, 'rmCampanhas', campanhaId, 'gridCenas', cenaId, 'tokens');
 
-// Chama `onChange(dados | null)` — null enquanto o mestre não configurou.
-export const subscribeGrid = (campanhaId, onChange, onError) =>
-  onSnapshot(gridRef(campanhaId), snapshot => onChange(snapshot.exists() ? snapshot.data() : null), onError);
+// Chama `onChange(cenaAtivaId | null)`.
+export const subscribeGridCenaAtiva = (campanhaId, onChange, onError) =>
+  onSnapshot(
+    gridRef(campanhaId),
+    snapshot =>
+      onChange(snapshot.exists() ? (snapshot.data().cenaAtivaId ?? null) : null),
+    onError,
+  );
 
-export const subscribeGridTokens = (campanhaId, { incluirOcultos = false } = {}, onChange, onError) => {
+// Chama `onChange({ id, ...dados } | null)` — null se a cena não existe mais.
+export const subscribeGridCena = (campanhaId, cenaId, onChange, onError) =>
+  onSnapshot(
+    gridCenaRef(campanhaId, cenaId),
+    snapshot =>
+      onChange(snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null),
+    onError,
+  );
+
+export const subscribeGridTokens = (
+  campanhaId,
+  cenaId,
+  { incluirOcultos = false } = {},
+  onChange,
+  onError,
+) => {
   const filtros = incluirOcultos ? [] : [where('oculto', '==', false)];
   return onSnapshot(
-    query(gridTokensRef(campanhaId), ...filtros),
-    snapshot => onChange(snapshot.docs.map(docSnapshot => ({ id: docSnapshot.id, ...docSnapshot.data() }))),
+    query(gridTokensRef(campanhaId, cenaId), ...filtros),
+    snapshot =>
+      onChange(
+        snapshot.docs.map(docSnapshot => ({ id: docSnapshot.id, ...docSnapshot.data() })),
+      ),
     onError,
   );
 };
 
-export const moverGridToken = (campanhaId, tokenId, col, lin) =>
-  updateDoc(doc(gridTokensRef(campanhaId), tokenId), { col, lin, updatedAt: serverTimestamp() });
+export const moverGridToken = (campanhaId, cenaId, tokenId, col, lin) =>
+  updateDoc(doc(gridTokensRef(campanhaId, cenaId), tokenId), {
+    col,
+    lin,
+    updatedAt: serverTimestamp(),
+  });
