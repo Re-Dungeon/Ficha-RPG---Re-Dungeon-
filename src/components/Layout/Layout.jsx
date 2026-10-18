@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { NavLink, Outlet } from 'react-router-dom';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
@@ -8,6 +8,11 @@ import IconButton from '@mui/material/IconButton';
 import Box from '@mui/material/Box';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useAuth } from 'context/AuthContext';
+
+const NAV_LINKS = [
+  { to: '/personagens', label: 'Fichas' },
+  { to: '/campanhas', label: 'Campanhas' },
+];
 
 const Layout = () => {
   const { currentUser, logout } = useAuth();
@@ -92,6 +97,27 @@ const Layout = () => {
 
           {currentUser && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, ml: 'auto' }}>
+              <Box component="nav" sx={{ display: 'flex', gap: 0.5 }}>
+                {NAV_LINKS.map(({ to, label }) => (
+                  <Button
+                    key={to}
+                    component={NavLink}
+                    to={to}
+                    size="small"
+                    sx={{
+                      color: 'rgba(255,255,255,0.7)',
+                      fontSize: '0.72rem',
+                      letterSpacing: '0.08em',
+                      fontWeight: 700,
+                      minWidth: 'auto',
+                      '&.active': { color: 'var(--color-primary)' },
+                    }}
+                  >
+                    {label}
+                  </Button>
+                ))}
+              </Box>
+
               <Typography
                 variant="body2"
                 sx={{

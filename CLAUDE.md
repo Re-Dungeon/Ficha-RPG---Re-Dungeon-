@@ -19,7 +19,8 @@ Contexto completo da migração (este projeto nasceu da reescrita de um site van
 ### Persistência de Dados
 Toda a persistência é feita via **Firebase/Firestore** através de `src/service/storage.js`, que expõe:
 - Helpers genéricos: `getFirestoreItems`/`getFirestoreItem`/`addFirestoreItem`/`updateFirestoreItem`/`removeFirestoreItem` (top-level) e um helper interno de subcoleção usado por `getAptidoesAdquiridas`/`getArts`/`getHistoricoSorte`.
-- CRUD de `personagens` (a única coleção que este projeto **escreve**): `getPersonagens(uid)` (filtrado por dono), `getPersonagem(id)`, `addPersonagem`, `updatePersonagem`, `removePersonagem`.
+- CRUD de `personagens` (a única coleção top-level que este projeto **escreve**): `getPersonagens(uid)` (filtrado por dono), `getPersonagem(id)`, `addPersonagem`, `updatePersonagem`, `removePersonagem`.
+- **Exceção — chat de campanha**: as únicas escritas em `rm*` são as subcoleções `rmCampanhas/{id}/chatMensagens` e `rmCampanhas/{id}/chatMembros` (`addChatMensagem`/`removeChatMensagem`/`setChatMembro`), e o único listener em tempo real do projeto é `subscribeChatMensagens` (`onSnapshot`, retorna o `unsubscribe` — chame no cleanup do `useEffect`). `components/Chat/` e `common/utils/chat.js` são cópias dos do Re:Master — mudou um, mude o outro. Detalhes em `docs/MIGRACAO-REACT-FIREBASE.md` ("Chat de campanha").
 - CRUD das subcoleções de um personagem: `aptidoesAdquiridas` (doc id = id da aptidão no catálogo), `arts`, `historicoSorte` (rolagens de Fortuna **e** compras na Loja da Trapaça).
 - Leitura das coleções de referência do projeto administrativo, **sempre somente-leitura**: `getUniverso`/`getOrigens`/`getDivindades` (sem filtro) e `get{Racas,Classes,Condicoes,Aptidoes,VeiasAstrais,Itens,Artes,Regras}PorUniverso(universoId)` (filtradas por `where('universo', '==', universoId)`). **Nunca** adicione `add*`/`update*`/`remove*` para essas coleções — não é este site que as gerencia.
 
@@ -211,7 +212,7 @@ const meuSchema = yup.object({ nome: nomeSchema, descricao: descricaoSchema });
 
 ### Rotas
 
-Definidas direto em `src/routes/index.jsx` (`createBrowserRouter`), sem arquivo de constantes de rota separado (diferente do projeto administrativo). `/login` é pública; `/personagens`, `/personagens/novo` e `/personagens/:id` ficam aninhadas sob `<ProtectedRoute/>`. Para adicionar uma aba nova na ficha: crie o componente em `Ficha/tabs/`, importe em `Ficha.jsx`, adicione um `<Tab value="..." label="..."/>` e a renderização condicional `{aba === '...' && <MinhaAba personagem={personagem} onSave={handleSave} />}`.
+Definidas direto em `src/routes/index.jsx` (`createBrowserRouter`), sem arquivo de constantes de rota separado (diferente do projeto administrativo). `/login` é pública; `/personagens`, `/personagens/novo`, `/personagens/:id`, `/campanhas` e `/campanhas/:id/chat` ficam aninhadas sob `<ProtectedRoute/>` (links "Fichas"/"Campanhas" no cabeçalho do `Layout`). Para adicionar uma aba nova na ficha: crie o componente em `Ficha/tabs/`, importe em `Ficha.jsx`, adicione um `<Tab value="..." label="..."/>` e a renderização condicional `{aba === '...' && <MinhaAba personagem={personagem} onSave={handleSave} />}`.
 
 ---
 

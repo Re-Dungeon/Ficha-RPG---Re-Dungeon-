@@ -6,6 +6,7 @@ import {
   getDoc,
   getDocs,
   limit,
+  onSnapshot,
   orderBy,
   query,
   serverTimestamp,
@@ -436,3 +437,51 @@ export const getReinosCultivo = (universoId, subUniverso = '') => {
   }
   return getFirestoreItems('reinosCultivo', ...constraints);
 };
+
+// ── Chat da campanha — rmCampanhas/{id}/chatMembros e chatMensagens ───────
+// Única escrita do player site em coleções `rm*`: só essas duas subcoleções,
+// e o `firestore.rules` confere em cada operação que o personagem apontado é
+// do usuário e ainda tem a campanha em `campanhas` (o mestre acessa via
+// `mestreId`). `chatMembros/{uid}` é só um ponteiro `{uid, personagemId}`
+// usado pela regra de leitura — criado ao abrir o chat, sem migração.
+export const CHAT_LIMITE_MENSAGENS = 100;
+
+export const getRmCampanha = id => getFirestoreItem('rmCampanhas', id);
+
+export const setChatMembro = (campanhaId, uid, personagemId) =>
+  setDoc(doc(db, 'rmCampanhas', campanhaId, 'chatMembros', uid), {
+    uid,
+    personagemId,
+    updatedAt: serverTimestamp(),
+  });
+
+// Primeiro listener em tempo real do projeto: devolve o `unsubscribe` do
+// `onSnapshot` — chame-o no cleanup do `useEffect`. As mensagens chegam em
+// ordem cronológica (mais antiga primeiro), já limitadas às últimas 100.
+export const subscribeChatMensagens = (campanhaId, onChange, onError) => {
+  const mensagensQuery = query(
+    collection(db, 'rmCampanhas', campanhaId, 'chatMensagens'),
+    orderBy('createdAt', 'desc'),
+    limit(CHAT_LIMITE_MENSAGENS),
+  );
+  return onSnapshot(
+    mensagensQuery,
+    snapshot => {
+      const mensagens = snapshot.docs.map(docSnapshot => ({
+        id: docSnapshot.id,
+        ...docSnapshot.data({ serverTimestamps: 'estimate' }),
+      }));
+      onChange(mensagens.reverse());
+    },
+    onError,
+  );
+};
+
+export const addChatMensagem = (campanhaId, mensagem) =>
+  addDoc(collection(db, 'rmCampanhas', campanhaId, 'chatMensagens'), {
+    ...mensagem,
+    createdAt: serverTimestamp(),
+  });
+
+export const removeChatMensagem = (campanhaId, mensagemId) =>
+  deleteDoc(doc(db, 'rmCampanhas', campanhaId, 'chatMensagens', mensagemId));
