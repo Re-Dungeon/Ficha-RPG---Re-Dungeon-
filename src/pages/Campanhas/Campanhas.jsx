@@ -2,7 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
+import Box from '@mui/material/Box';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatOutlined';
+import GridOnIcon from '@mui/icons-material/GridOn';
 
 import { useAuth } from 'context/AuthContext';
 import { useSelecao } from 'context/selecaoContext';
@@ -89,13 +91,22 @@ const Campanhas = () => {
                 <CampanhaPersonagens>
                   {campanha.personagens.map(personagem => personagem.nome).join(', ')}
                 </CampanhaPersonagens>
-                <Button
-                  variant="contained"
-                  startIcon={<ChatBubbleOutlineIcon />}
-                  onClick={() => navigate(`/campanhas/${campanha.id}/chat`)}
-                >
-                  Abrir chat
-                </Button>
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                  <Button
+                    variant="contained"
+                    startIcon={<ChatBubbleOutlineIcon />}
+                    onClick={() => navigate(`/campanhas/${campanha.id}/chat`)}
+                  >
+                    Abrir chat
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    startIcon={<GridOnIcon />}
+                    onClick={() => navigate(`/campanhas/${campanha.id}/grid`)}
+                  >
+                    Abrir grid
+                  </Button>
+                </Box>
               </CampanhaCardBody>
             </CampanhaCard>
           ))}

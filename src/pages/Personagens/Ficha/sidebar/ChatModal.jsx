@@ -10,6 +10,7 @@ import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import CloseIcon from '@mui/icons-material/Close';
+import GridOnIcon from '@mui/icons-material/GridOn';
 import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 
 import { useAuth } from 'context/AuthContext';
@@ -118,6 +119,15 @@ const ChatModalConteudo = ({ personagem }) => {
         <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
           Falando como <strong>{personagem.nome}</strong>
         </Typography>
+        <Button
+          size="small"
+          startIcon={<GridOnIcon fontSize="small" />}
+          onClick={() =>
+            navigate(`/campanhas/${campanha.id}/grid`, { state: { personagemId: personagem.id } })
+          }
+        >
+          Abrir grid
+        </Button>
         <Button
           size="small"
           startIcon={<OpenInFullIcon fontSize="small" />}

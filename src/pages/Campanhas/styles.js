@@ -53,3 +53,37 @@ export const ChatPageWrapper = styled.div`
     padding: 8px;
   }
 `;
+
+// Visão "grid": barra (Chat|Grid, "Falando como", mostrar chat) + mapa com o
+// chat num painel lateral (abaixo do mapa em telas estreitas).
+export const MesaBarra = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+`;
+
+export const MesaCorpo = styled.div`
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  gap: 12px;
+
+  @media (max-width: 900px) {
+    flex-direction: column;
+  }
+`;
+
+export const MesaChatPainel = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 380px;
+  flex-shrink: 0;
+  min-height: 0;
+
+  @media (max-width: 900px) {
+    width: 100%;
+    height: 45%;
+  }
+`;

@@ -588,3 +588,28 @@ export const updateChatMacro = (campanhaId, macroId, patch) =>
 
 export const removeChatMacro = (campanhaId, macroId) =>
   deleteDoc(doc(db, 'rmCampanhas', campanhaId, 'macros', macroId));
+
+// ── Grid da campanha — rmCampanhas/{id}/grid/atual e gridTokens ───────────
+// A configuração (imagem, células) e os tokens são do mestre, que os edita no
+// Re:Master. Daqui o jogador só LÊ (mesmo acesso do chat: precisa do ponteiro
+// chatMembros/{uid}) e MOVE os tokens atribuídos a ele (`donos`) — a regra só
+// deixa mudar `col`/`lin`. Tokens `oculto` não chegam ao jogador: a consulta
+// dele PRECISA filtrar `oculto == false` (senão a regra recusa a lista).
+const gridRef = campanhaId => doc(db, 'rmCampanhas', campanhaId, 'grid', 'atual');
+const gridTokensRef = campanhaId => collection(db, 'rmCampanhas', campanhaId, 'gridTokens');
+
+// Chama `onChange(dados | null)` — null enquanto o mestre não configurou.
+export const subscribeGrid = (campanhaId, onChange, onError) =>
+  onSnapshot(gridRef(campanhaId), snapshot => onChange(snapshot.exists() ? snapshot.data() : null), onError);
+
+export const subscribeGridTokens = (campanhaId, { incluirOcultos = false } = {}, onChange, onError) => {
+  const filtros = incluirOcultos ? [] : [where('oculto', '==', false)];
+  return onSnapshot(
+    query(gridTokensRef(campanhaId), ...filtros),
+    snapshot => onChange(snapshot.docs.map(docSnapshot => ({ id: docSnapshot.id, ...docSnapshot.data() }))),
+    onError,
+  );
+};
+
+export const moverGridToken = (campanhaId, tokenId, col, lin) =>
+  updateDoc(doc(gridTokensRef(campanhaId), tokenId), { col, lin, updatedAt: serverTimestamp() });

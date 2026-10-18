@@ -10,7 +10,10 @@ import {
   getPersonagens,
   getChatMacros,
   getRmCampanha,
+  moverGridToken,
   setChatMembro,
+  subscribeGrid,
+  subscribeGridTokens,
   subscribeChatMensagens,
   subscribeChatSecretasDoUsuario,
 } from 'service/storage';
@@ -39,16 +42,20 @@ vi.mock('service/storage', () => ({
   addChatMacro: vi.fn(),
   updateChatMacro: vi.fn(),
   removeChatMacro: vi.fn(),
+  subscribeGrid: vi.fn(),
+  subscribeGridTokens: vi.fn(),
+  moverGridToken: vi.fn(),
 }));
 
 const LayoutFake = () => <Outlet context={{ setHeaderExtra: vi.fn() }} />;
 
-const renderChat = (state = null) =>
+const renderChat = (state = null, pathname = '/campanhas/camp-1/chat') =>
   render(
-    <MemoryRouter initialEntries={[{ pathname: '/campanhas/camp-1/chat', state }]}>
+    <MemoryRouter initialEntries={[{ pathname, state }]}>
       <Routes>
         <Route element={<LayoutFake />}>
           <Route path="/campanhas/:id/chat" element={<CampanhaChat />} />
+          <Route path="/campanhas/:id/grid" element={<CampanhaChat visao="grid" />} />
         </Route>
       </Routes>
     </MemoryRouter>,
@@ -92,9 +99,18 @@ describe('CampanhaChat', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     useAuth.mockReturnValue({ currentUser: { uid: 'uid-jogador' } });
-    getRmCampanha.mockResolvedValue({ id: 'camp-1', nome: 'A Torre', mestreId: 'uid-mestre' });
+    getRmCampanha.mockResolvedValue({
+      id: 'camp-1',
+      nome: 'A Torre',
+      mestreId: 'uid-mestre',
+    });
     getPersonagens.mockResolvedValue([
-      { id: 'p-1', nome: 'Aldric', linkImagem: 'https://ex.com/a.png', campanhas: ['camp-1'] },
+      {
+        id: 'p-1',
+        nome: 'Aldric',
+        linkImagem: 'https://ex.com/a.png',
+        campanhas: ['camp-1'],
+      },
       { id: 'p-2', nome: 'Outro', campanhas: ['camp-9'] },
     ]);
     setChatMembro.mockResolvedValue();
@@ -114,7 +130,9 @@ describe('CampanhaChat', () => {
 
     const imagem = screen.getByAltText('Imagem enviada por Brina');
     expect(imagem).toHaveAttribute('src', 'https://media.giphy.com/media/abc/giphy.gif');
-    expect(screen.queryByText('https://media.giphy.com/media/abc/giphy.gif')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('https://media.giphy.com/media/abc/giphy.gif'),
+    ).not.toBeInTheDocument();
   });
 
   it('mostra a etiqueta NPC quando o mestre fala como um NPC da mesa', async () => {
@@ -131,7 +149,9 @@ describe('CampanhaChat', () => {
     renderChat();
     await screen.findByText('Bem-vindos à taverna.');
 
-    fireEvent.change(screen.getByLabelText('Mensagem'), { target: { value: '  Peço uma cerveja  ' } });
+    fireEvent.change(screen.getByLabelText('Mensagem'), {
+      target: { value: '  Peço uma cerveja  ' },
+    });
     fireEvent.click(screen.getByRole('button', { name: /enviar mensagem/i }));
 
     await waitFor(() =>
@@ -166,7 +186,11 @@ describe('CampanhaChat', () => {
     await waitFor(() =>
       expect(addChatMensagem).toHaveBeenCalledWith(
         'camp-1',
-        expect.objectContaining({ tipo: 'imagem', url: 'https://ex.com/mapa.gif', personagemId: 'p-1' }),
+        expect.objectContaining({
+          tipo: 'imagem',
+          url: 'https://ex.com/mapa.gif',
+          personagemId: 'p-1',
+        }),
       ),
     );
   });
@@ -184,10 +208,14 @@ describe('CampanhaChat', () => {
   });
 
   it('nega acesso a quem não tem personagem na campanha', async () => {
-    getPersonagens.mockResolvedValue([{ id: 'p-2', nome: 'Outro', campanhas: ['camp-9'] }]);
+    getPersonagens.mockResolvedValue([
+      { id: 'p-2', nome: 'Outro', campanhas: ['camp-9'] },
+    ]);
     renderChat();
 
-    expect(await screen.findByText(/não tem um personagem nesta campanha/i)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/não tem um personagem nesta campanha/i),
+    ).toBeInTheDocument();
     expect(setChatMembro).not.toHaveBeenCalled();
     expect(subscribeChatMensagens).not.toHaveBeenCalled();
   });
@@ -237,7 +265,9 @@ describe('CampanhaChat', () => {
         ),
       );
       expect(addChatMensagem).not.toHaveBeenCalled();
-      expect(addChatRolagemSecreta.mock.calls[0][2].rolagem.grupos.map(g => g.faces)).toEqual([20, 4]);
+      expect(
+        addChatRolagemSecreta.mock.calls[0][2].rolagem.grupos.map(g => g.faces),
+      ).toEqual([20, 4]);
     });
 
     it('comando inválido não é enviado e mostra o erro', async () => {
@@ -274,7 +304,9 @@ describe('CampanhaChat', () => {
 
       fireEvent.click(screen.getByRole('button', { name: /rolar dados/i }));
       fireEvent.click(await screen.findByRole('button', { name: 'd20' }));
-      fireEvent.change(screen.getByLabelText('Quantidade de d20'), { target: { value: '2' } });
+      fireEvent.change(screen.getByLabelText('Quantidade de d20'), {
+        target: { value: '2' },
+      });
       fireEvent.click(screen.getByRole('button', { name: /adicionar outro dado/i }));
       fireEvent.click(await screen.findByRole('button', { name: 'd4' }));
       fireEvent.change(screen.getByLabelText('Obstáculo'), { target: { value: '1' } });
@@ -301,7 +333,12 @@ describe('CampanhaChat', () => {
         tipo: 'rolagem',
         texto: '',
         url: null,
-        rolagem: { grupos: [{ quantidade: 1, faces: 6, resultados: [6] }], termos: [8], modificador: 8, total: 14 },
+        rolagem: {
+          grupos: [{ quantidade: 1, faces: 6, resultados: [6] }],
+          termos: [8],
+          modificador: 8,
+          total: 14,
+        },
         createdAt: new Date(),
       };
       subscribeChatMensagens.mockImplementation((_id, onChange) => {
@@ -309,7 +346,16 @@ describe('CampanhaChat', () => {
         return vi.fn();
       });
       subscribeChatSecretasDoUsuario.mockImplementation((_id, _uid, onChange) => {
-        onChange([{ ...rolagem, id: 's1', uid: 'uid-jogador', autorNome: 'Aldric', secreta: true, donoUid: 'uid-jogador' }]);
+        onChange([
+          {
+            ...rolagem,
+            id: 's1',
+            uid: 'uid-jogador',
+            autorNome: 'Aldric',
+            secreta: true,
+            donoUid: 'uid-jogador',
+          },
+        ]);
         return vi.fn();
       });
       renderChat();
@@ -317,14 +363,28 @@ describe('CampanhaChat', () => {
       const linhas = await screen.findAllByText('rolou');
       const publica = linhas[0].closest('[data-testid="chat-mensagem"]');
       expect(publica).toHaveTextContent('Wesley Chase rolou 1d6 + 8 = 14 {[6] + 8}');
-      const secreta = within(screen.getByRole('log')).getByText('secreta').closest('[data-testid="chat-mensagem"]');
+      const secreta = within(screen.getByRole('log'))
+        .getByText('secreta')
+        .closest('[data-testid="chat-mensagem"]');
       expect(secreta).toHaveTextContent('Aldric');
-      expect(subscribeChatSecretasDoUsuario).toHaveBeenCalledWith('camp-1', 'uid-jogador', expect.any(Function), expect.any(Function));
+      expect(subscribeChatSecretasDoUsuario).toHaveBeenCalledWith(
+        'camp-1',
+        'uid-jogador',
+        expect.any(Function),
+        expect.any(Function),
+      );
     });
   });
 
   describe('macros', () => {
-    const MACRO = { id: 'mc1', nome: 'dano_impacto', descricao: '', codigo: 'enviar(1)', somenteMestre: false, ordem: 1 };
+    const MACRO = {
+      id: 'mc1',
+      nome: 'dano_impacto',
+      descricao: '',
+      codigo: 'enviar(1)',
+      somenteMestre: false,
+      ordem: 1,
+    };
 
     beforeEach(() => {
       getChatMacros.mockResolvedValue([MACRO]);
@@ -332,19 +392,37 @@ describe('CampanhaChat', () => {
 
     it('jogador busca só macros públicas, responde a pergunta e o resultado é publicado', async () => {
       rodarMacroNoWorker.mockImplementation(async (_codigo, { perguntar }) => {
-        const nome = await perguntar({ tipo: 'input', pergunta: 'Nome do personagem:', padrao: '' });
+        const nome = await perguntar({
+          tipo: 'input',
+          pergunta: 'Nome do personagem:',
+          padrao: '',
+        });
         return [
           { tipo: 'texto', texto: `DANO DE IMPACTO - ${nome}` },
-          { tipo: 'rolagem', rolagem: { grupos: [{ quantidade: 1, faces: 6, resultados: [4] }], termos: [], modificador: 0, total: 4 } },
+          {
+            tipo: 'rolagem',
+            rolagem: {
+              grupos: [{ quantidade: 1, faces: 6, resultados: [4] }],
+              termos: [],
+              modificador: 0,
+              total: 4,
+            },
+          },
         ];
       });
       renderChat();
       await screen.findByText('Bem-vindos à taverna.');
-      await waitFor(() => expect(getChatMacros).toHaveBeenCalledWith('camp-1', { incluirSomenteMestre: false }));
+      await waitFor(() =>
+        expect(getChatMacros).toHaveBeenCalledWith('camp-1', {
+          incluirSomenteMestre: false,
+        }),
+      );
 
       fireEvent.click(screen.getByRole('button', { name: 'Macros' }));
       fireEvent.click(await screen.findByRole('button', { name: 'Usar dano_impacto' }));
-      fireEvent.change(await screen.findByLabelText('Nome do personagem:'), { target: { value: 'Wesley' } });
+      fireEvent.change(await screen.findByLabelText('Nome do personagem:'), {
+        target: { value: 'Wesley' },
+      });
       fireEvent.click(screen.getByRole('button', { name: 'OK' }));
 
       await waitFor(() => expect(addChatMensagem).toHaveBeenCalledTimes(2));
@@ -354,7 +432,10 @@ describe('CampanhaChat', () => {
         texto: 'DANO DE IMPACTO - Wesley',
         autorNome: 'Aldric',
       });
-      expect(addChatMensagem.mock.calls[1][1]).toMatchObject({ tipo: 'rolagem', rolagem: { total: 4 } });
+      expect(addChatMensagem.mock.calls[1][1]).toMatchObject({
+        tipo: 'rolagem',
+        rolagem: { total: 4 },
+      });
     });
 
     it('cancelar a macro não publica nada', async () => {
@@ -364,26 +445,139 @@ describe('CampanhaChat', () => {
       });
       renderChat();
       await screen.findByText('Bem-vindos à taverna.');
-      fireEvent.change(screen.getByLabelText('Mensagem'), { target: { value: '/m dano_impacto' } });
+      fireEvent.change(screen.getByLabelText('Mensagem'), {
+        target: { value: '/m dano_impacto' },
+      });
       await waitFor(() => expect(getChatMacros).toHaveBeenCalled());
       fireEvent.click(screen.getByRole('button', { name: /enviar mensagem/i }));
 
       fireEvent.click(await screen.findByRole('button', { name: /cancelar macro/i }));
-      await waitFor(() => expect(screen.queryByLabelText('VIT:')).not.toBeInTheDocument());
+      await waitFor(() =>
+        expect(screen.queryByLabelText('VIT:')).not.toBeInTheDocument(),
+      );
       expect(addChatMensagem).not.toHaveBeenCalled();
     });
 
     it('erro na macro aparece para o jogador e nada é publicado', async () => {
-      rodarMacroNoWorker.mockRejectedValue(new Error('macro:12: attempt to index a nil value'));
+      rodarMacroNoWorker.mockRejectedValue(
+        new Error('macro:12: attempt to index a nil value'),
+      );
       renderChat();
       await screen.findByText('Bem-vindos à taverna.');
       fireEvent.click(screen.getByRole('button', { name: 'Macros' }));
       fireEvent.click(await screen.findByRole('button', { name: 'Usar dano_impacto' }));
 
       expect(
-        await screen.findByText('A macro "dano_impacto" falhou: macro:12: attempt to index a nil value'),
+        await screen.findByText(
+          'A macro "dano_impacto" falhou: macro:12: attempt to index a nil value',
+        ),
       ).toBeInTheDocument();
       expect(addChatMensagem).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('grid', () => {
+    const TOKENS = [
+      {
+        id: 't1',
+        nome: 'Aldric',
+        tipo: 'jogador',
+        col: 1,
+        lin: 1,
+        tamanho: 1,
+        donos: ['uid-jogador'],
+        oculto: false,
+      },
+      {
+        id: 't2',
+        nome: 'Ogro',
+        tipo: 'criatura',
+        col: 4,
+        lin: 1,
+        tamanho: 2,
+        donos: [],
+        oculto: false,
+      },
+    ];
+
+    beforeEach(() => {
+      subscribeGrid.mockImplementation((_campanhaId, onChange) => {
+        onChange({
+          imagemUrl: null,
+          celula: 40,
+          deslocamentoX: 0,
+          deslocamentoY: 0,
+          mostrarGrade: true,
+          corGrade: '#ffffff',
+          opacidadeGrade: 0.3,
+        });
+        return vi.fn();
+      });
+      subscribeGridTokens.mockImplementation((_campanhaId, _opcoes, onChange) => {
+        onChange(TOKENS);
+        return vi.fn();
+      });
+      moverGridToken.mockResolvedValue();
+    });
+
+    it('jogador entra como membro, vê só os tokens visíveis e o chat ao lado', async () => {
+      renderChat(null, '/campanhas/camp-1/grid');
+
+      expect(
+        await screen.findByRole('button', { name: 'Aldric, coluna 2, linha 2' }),
+      ).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Ogro/ })).toBeInTheDocument();
+      expect(setChatMembro).toHaveBeenCalledWith('camp-1', 'uid-jogador', 'p-1');
+      expect(subscribeGridTokens).toHaveBeenCalledWith(
+        'camp-1',
+        { incluirOcultos: false },
+        expect.any(Function),
+        expect.any(Function),
+      );
+      expect(screen.getByText('Bem-vindos à taverna.')).toBeInTheDocument();
+    });
+
+    it('jogador move o próprio token, mas não o do mestre', async () => {
+      renderChat(null, '/campanhas/camp-1/grid');
+
+      fireEvent.keyDown(await screen.findByRole('button', { name: /Aldric, coluna/ }), {
+        key: 'ArrowDown',
+      });
+      await waitFor(() =>
+        expect(moverGridToken).toHaveBeenCalledWith('camp-1', 't1', 1, 2),
+      );
+
+      fireEvent.keyDown(screen.getByRole('button', { name: /Ogro/ }), {
+        key: 'ArrowLeft',
+      });
+      expect(moverGridToken).toHaveBeenCalledTimes(1);
+    });
+
+    it('avisa quando o mestre ainda não montou o grid', async () => {
+      subscribeGrid.mockImplementation((_campanhaId, onChange) => {
+        onChange(null);
+        return vi.fn();
+      });
+      subscribeGridTokens.mockImplementation((_campanhaId, _opcoes, onChange) => {
+        onChange([]);
+        return vi.fn();
+      });
+      renderChat(null, '/campanhas/camp-1/grid');
+      expect(
+        await screen.findByText('O mestre ainda não montou o grid desta campanha.'),
+      ).toBeInTheDocument();
+    });
+
+    it('alterna entre chat e grid e oculta o painel do chat', async () => {
+      renderChat();
+      await screen.findByText('Bem-vindos à taverna.');
+      expect(subscribeGrid).not.toHaveBeenCalled();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Grid' }));
+      expect(await screen.findByRole('button', { name: /Ogro/ })).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Ocultar chat' }));
+      expect(screen.queryByText('Bem-vindos à taverna.')).not.toBeInTheDocument();
     });
   });
 });
