@@ -40,12 +40,18 @@ export const CampanhaPersonagens = styled.span`
   font-size: 0.85rem;
 `;
 
+// Altura fixa = janela − cabeçalho, para só a lista de mensagens (e o mapa)
+// rolar. `flex: none` é obrigatório: o <main> do Layout é um flex em coluna
+// de altura indefinida, e com `flex: 1` (base 0%) o navegador ignora o
+// `height` e a página cresce junto com as mensagens. `dvh` acompanha a barra
+// de endereço dos celulares (o `vh` fica de fallback).
 export const ChatPageWrapper = styled.div`
-  flex: 1;
+  flex: none;
   display: flex;
   flex-direction: column;
   min-height: 0;
   height: calc(100vh - 64px);
+  height: calc(100dvh - 64px);
   padding: 16px 24px 24px;
   box-sizing: border-box;
 
