@@ -62,9 +62,18 @@ service cloud.firestore {
     }
 
     // ── userPermissions ────────────────────────────────────────────────────────
-    // Cada usuário só lê o próprio documento; apenas admins podem escrever.
+    // Cada usuário lê o próprio documento; além disso, quem compartilha
+    // permissão de escrita em pelo menos um Universo com o dono do doc também
+    // pode ler (usado pelo Re:Master para resolver uid → nome do usuário que
+    // criou uma ficha de NPC/Criatura/Jogador, quando esse usuário não é quem
+    // está logado). Apenas admins podem escrever.
     match /userPermissions/{userId} {
-      allow read: if isAuth() && request.auth.uid == userId;
+      allow read: if isAuth() && (
+        request.auth.uid == userId ||
+        isAdmin() ||
+        (resource.data.universos is list &&
+         resource.data.universos.hasAny(perms().universos))
+      );
       allow write: if isAdmin();
     }
 
@@ -73,17 +82,6 @@ service cloud.firestore {
     match /Universo/{universoId} {
       allow read: if isAuth();
       allow write: if isAdmin();
-    }
-
-    // ── Trickster Coin (catálogo público) ─────────────────────────────────────
-    // A coleção oficial do projeto administrativo Re é `tricksterCoin`.
-    // Leitura para jogadores autenticados; criação, edição e exclusão apenas
-    // para administradores do Firestore.
-    match /tricksterCoin/{benefitId} {
-      allow read: if isAuth();
-      allow create: if isAdmin();
-      allow update: if isAdmin();
-      allow delete: if isAdmin();
     }
 
     // ── racas ──────────────────────────────────────────────────────────────────
@@ -234,6 +232,17 @@ service cloud.firestore {
       allow delete: if canWriteUniverso(resource.data.universo);
     }
 
+    // ── tricksterCoin ───────────────────────────────────────────────────────
+    // Coleção administrativa de benefícios da Trickster Coin. O acesso é
+    // restrito ao mesmo gate de administração já usado pelo banco:
+    // usuário autenticado + documento `userPermissions/{uid}` com `isAdmin == true`.
+    match /tricksterCoin/{benefitId} {
+      allow read: if isAuth();
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
     // ── personagens ──────────────────────────────────────────────────────
     // Cada usuário só escreve os próprios personagens (uid == request.auth.uid).
     // Leitura liberada para qualquer autenticado, independente do `tipo`: NPC
@@ -290,14 +299,10 @@ service cloud.firestore {
     // mesma — só muda o nome da coleção.
     match /rmCampanhas/{campanhaId} {
       allow read: if isAuth();
-      allow create: if canWriteUniverso(request.resource.data.universoId)
-                    && isCampanhaOwner(request.resource.data.mestreId);
+      allow create: if isAuth() && isCampanhaOwner(request.resource.data.mestreId);
       allow update: if isAdmin() ||
-        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId)
-         && canWriteUniverso(request.resource.data.universoId)
-         && isCampanhaOwner(request.resource.data.mestreId));
-      allow delete: if isAdmin() ||
-        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
+        (isCampanhaOwner(resource.data.mestreId) && isCampanhaOwner(request.resource.data.mestreId));
+      allow delete: if isAdmin() || isCampanhaOwner(resource.data.mestreId);
 
       // Clones de NPC específicos desta campanha (feitos a partir de um
       // personagem tipo NPC do Universo). Subcoleção — não coleção `rm`
@@ -305,143 +310,109 @@ service cloud.firestore {
       // docs denormalizam universoId/mestreId como as demais, então a
       // checagem é idêntica à do documento pai.
       match /npcs/{npcId} {
-        allow read: if isAdmin() ||
-          (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
-        allow create: if canWriteUniverso(request.resource.data.universoId)
-                      && isCampanhaOwner(request.resource.data.mestreId);
+        allow read: if isAdmin() || isCampanhaOwner(resource.data.mestreId);
+        allow create: if isAuth() && isCampanhaOwner(request.resource.data.mestreId);
         allow update: if isAdmin() ||
-          (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId)
-           && canWriteUniverso(request.resource.data.universoId)
-           && isCampanhaOwner(request.resource.data.mestreId));
-        allow delete: if isAdmin() ||
-          (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
+          (isCampanhaOwner(resource.data.mestreId) && isCampanhaOwner(request.resource.data.mestreId));
+        allow delete: if isAdmin() || isCampanhaOwner(resource.data.mestreId);
       }
 
       // Clones de Personagem Jogável específicos desta campanha (feitos a
       // partir de um personagem tipo Personagem Jogável do Universo) — mesmo
       // padrão da subcoleção `npcs` acima.
       match /jogadores/{jogadorId} {
-        allow read: if isAdmin() ||
-          (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
-        allow create: if canWriteUniverso(request.resource.data.universoId)
-                      && isCampanhaOwner(request.resource.data.mestreId);
+        allow read: if isAdmin() || isCampanhaOwner(resource.data.mestreId);
+        allow create: if isAuth() && isCampanhaOwner(request.resource.data.mestreId);
         allow update: if isAdmin() ||
-          (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId)
-           && canWriteUniverso(request.resource.data.universoId)
-           && isCampanhaOwner(request.resource.data.mestreId));
-        allow delete: if isAdmin() ||
-          (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
+          (isCampanhaOwner(resource.data.mestreId) && isCampanhaOwner(request.resource.data.mestreId));
+        allow delete: if isAdmin() || isCampanhaOwner(resource.data.mestreId);
       }
 
       // Clones de Criatura específicos desta campanha (feitos a partir de um
       // personagem tipo Criatura do Universo) — mesmo padrão das subcoleções
       // `npcs`/`jogadores` acima.
       match /criaturas/{criaturaId} {
-        allow read: if isAdmin() ||
-          (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
-        allow create: if canWriteUniverso(request.resource.data.universoId)
-                      && isCampanhaOwner(request.resource.data.mestreId);
+        allow read: if isAdmin() || isCampanhaOwner(resource.data.mestreId);
+        allow create: if isAuth() && isCampanhaOwner(request.resource.data.mestreId);
         allow update: if isAdmin() ||
-          (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId)
-           && canWriteUniverso(request.resource.data.universoId)
-           && isCampanhaOwner(request.resource.data.mestreId));
-        allow delete: if isAdmin() ||
-          (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
+          (isCampanhaOwner(resource.data.mestreId) && isCampanhaOwner(request.resource.data.mestreId));
+        allow delete: if isAdmin() || isCampanhaOwner(resource.data.mestreId);
       }
 
       // Participantes da tela de Luta desta campanha (cópias de NPC/Criatura
       // com estado de combate próprio, inclusive duplicatas do mesmo
       // personagem de origem) — mesmo padrão das subcoleções acima.
       match /lutaParticipantes/{participanteId} {
-        allow read: if isAdmin() ||
-          (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
-        allow create: if canWriteUniverso(request.resource.data.universoId)
-                      && isCampanhaOwner(request.resource.data.mestreId);
+        allow read: if isAdmin() || isCampanhaOwner(resource.data.mestreId);
+        allow create: if isAuth() && isCampanhaOwner(request.resource.data.mestreId);
         allow update: if isAdmin() ||
-          (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId)
-           && canWriteUniverso(request.resource.data.universoId)
-           && isCampanhaOwner(request.resource.data.mestreId));
-        allow delete: if isAdmin() ||
-          (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
+          (isCampanhaOwner(resource.data.mestreId) && isCampanhaOwner(request.resource.data.mestreId));
+        allow delete: if isAdmin() || isCampanhaOwner(resource.data.mestreId);
       }
     }
 
     match /rmCenas/{docId} {
-      allow read: if isAdmin() ||
-        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
-      allow create: if canWriteUniverso(request.resource.data.universoId)
-                    && isCampanhaOwner(request.resource.data.mestreId);
+      allow read: if isAdmin() || isCampanhaOwner(resource.data.mestreId);
+      allow create: if isAuth() && isCampanhaOwner(request.resource.data.mestreId);
       allow update: if isAdmin() ||
-        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId)
-         && canWriteUniverso(request.resource.data.universoId)
-         && isCampanhaOwner(request.resource.data.mestreId));
-      allow delete: if isAdmin() ||
-        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
+        (isCampanhaOwner(resource.data.mestreId) && isCampanhaOwner(request.resource.data.mestreId));
+      allow delete: if isAdmin() || isCampanhaOwner(resource.data.mestreId);
     }
 
     match /rmCenaConexoes/{docId} {
-      allow read: if isAdmin() ||
-        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
-      allow create: if canWriteUniverso(request.resource.data.universoId)
-                    && isCampanhaOwner(request.resource.data.mestreId);
+      allow read: if isAdmin() || isCampanhaOwner(resource.data.mestreId);
+      allow create: if isAuth() && isCampanhaOwner(request.resource.data.mestreId);
       allow update: if isAdmin() ||
-        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId)
-         && canWriteUniverso(request.resource.data.universoId)
-         && isCampanhaOwner(request.resource.data.mestreId));
-      allow delete: if isAdmin() ||
-        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
+        (isCampanhaOwner(resource.data.mestreId) && isCampanhaOwner(request.resource.data.mestreId));
+      allow delete: if isAdmin() || isCampanhaOwner(resource.data.mestreId);
     }
 
     match /rmMapas/{docId} {
-      allow read: if isAdmin() ||
-        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
-      allow create: if canWriteUniverso(request.resource.data.universoId)
-                    && isCampanhaOwner(request.resource.data.mestreId);
+      allow read: if isAdmin() || isCampanhaOwner(resource.data.mestreId);
+      allow create: if isAuth() && isCampanhaOwner(request.resource.data.mestreId);
       allow update: if isAdmin() ||
-        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId)
-         && canWriteUniverso(request.resource.data.universoId)
-         && isCampanhaOwner(request.resource.data.mestreId));
-      allow delete: if isAdmin() ||
-        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
+        (isCampanhaOwner(resource.data.mestreId) && isCampanhaOwner(request.resource.data.mestreId));
+      allow delete: if isAdmin() || isCampanhaOwner(resource.data.mestreId);
+    }
+
+    match /rmMapasPastas/{docId} {
+      allow read: if isAdmin() || isCampanhaOwner(resource.data.mestreId);
+      allow create: if isAuth() && isCampanhaOwner(request.resource.data.mestreId);
+      allow update: if isAdmin() ||
+        (isCampanhaOwner(resource.data.mestreId) && isCampanhaOwner(request.resource.data.mestreId));
+      allow delete: if isAdmin() || isCampanhaOwner(resource.data.mestreId);
     }
 
     match /rmMissoes/{docId} {
-      allow read: if isAdmin() ||
-        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
-      allow create: if canWriteUniverso(request.resource.data.universoId)
-                    && isCampanhaOwner(request.resource.data.mestreId);
+      allow read: if isAdmin() || isCampanhaOwner(resource.data.mestreId);
+      allow create: if isAuth() && isCampanhaOwner(request.resource.data.mestreId);
       allow update: if isAdmin() ||
-        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId)
-         && canWriteUniverso(request.resource.data.universoId)
-         && isCampanhaOwner(request.resource.data.mestreId));
-      allow delete: if isAdmin() ||
-        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
+        (isCampanhaOwner(resource.data.mestreId) && isCampanhaOwner(request.resource.data.mestreId));
+      allow delete: if isAdmin() || isCampanhaOwner(resource.data.mestreId);
     }
 
     match /rmCardfluxEstados/{docId} {
-      allow read: if isAdmin() ||
-        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
-      allow create: if canWriteUniverso(request.resource.data.universoId)
-                    && isCampanhaOwner(request.resource.data.mestreId);
+      allow read: if isAdmin() || isCampanhaOwner(resource.data.mestreId);
+      allow create: if isAuth() && isCampanhaOwner(request.resource.data.mestreId);
       allow update: if isAdmin() ||
-        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId)
-         && canWriteUniverso(request.resource.data.universoId)
-         && isCampanhaOwner(request.resource.data.mestreId));
-      allow delete: if isAdmin() ||
-        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
+        (isCampanhaOwner(resource.data.mestreId) && isCampanhaOwner(request.resource.data.mestreId));
+      allow delete: if isAdmin() || isCampanhaOwner(resource.data.mestreId);
+    }
+
+    match /rmCardfluxExploracoes/{docId} {
+      allow read: if isAdmin() || isCampanhaOwner(resource.data.mestreId);
+      allow create: if isAuth() && isCampanhaOwner(request.resource.data.mestreId);
+      allow update: if isAdmin() ||
+        (isCampanhaOwner(resource.data.mestreId) && isCampanhaOwner(request.resource.data.mestreId));
+      allow delete: if isAdmin() || isCampanhaOwner(resource.data.mestreId);
     }
 
     match /rmNotas/{docId} {
-      allow read: if isAdmin() ||
-        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
-      allow create: if canWriteUniverso(request.resource.data.universoId)
-                    && isCampanhaOwner(request.resource.data.mestreId);
+      allow read: if isAdmin() || isCampanhaOwner(resource.data.mestreId);
+      allow create: if isAuth() && isCampanhaOwner(request.resource.data.mestreId);
       allow update: if isAdmin() ||
-        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId)
-         && canWriteUniverso(request.resource.data.universoId)
-         && isCampanhaOwner(request.resource.data.mestreId));
-      allow delete: if isAdmin() ||
-        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
+        (isCampanhaOwner(resource.data.mestreId) && isCampanhaOwner(request.resource.data.mestreId));
+      allow delete: if isAdmin() || isCampanhaOwner(resource.data.mestreId);
     }
 
     // Registro cronológico automático de eventos da sessão (cena marcada
@@ -450,10 +421,8 @@ service cloud.firestore {
     // ou apaga uma entrada de log já gravada, então update/delete ficam sem
     // `allow` (negados por padrão pelas Firestore Rules).
     match /rmSessaoLogs/{docId} {
-      allow read: if isAdmin() ||
-        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
-      allow create: if canWriteUniverso(request.resource.data.universoId)
-                    && isCampanhaOwner(request.resource.data.mestreId);
+      allow read: if isAdmin() || isCampanhaOwner(resource.data.mestreId);
+      allow create: if isAuth() && isCampanhaOwner(request.resource.data.mestreId);
     }
   }
 }
