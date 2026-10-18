@@ -18,6 +18,7 @@ import { getRmCampanha } from 'service/storage';
 import { campanhaIdsDosPersonagens } from 'common/utils/chat';
 import useChatCampanha from 'hooks/useChatCampanha';
 import ChatSala from 'components/Chat/ChatSala';
+import PlayerAudioMesa from 'components/Chat/PlayerAudioMesa';
 import ErrorSnackbar from 'components/ErrorSnackbar/ErrorSnackbar';
 
 import { DialogFecharButton, DialogHeaderRow, DialogHeaderTitle } from '../styles';
@@ -29,7 +30,10 @@ const textoMutedSx = { color: 'var(--text-secondary)', textAlign: 'center', py: 
 const ChatModalConteudo = ({ personagem }) => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
-  const campanhaIds = useMemo(() => campanhaIdsDosPersonagens([personagem]), [personagem]);
+  const campanhaIds = useMemo(
+    () => campanhaIdsDosPersonagens([personagem]),
+    [personagem],
+  );
 
   const [campanhas, setCampanhas] = useState(null);
   const [campanhaId, setCampanhaId] = useState(campanhaIds[0] ?? '');
@@ -68,8 +72,8 @@ const ChatModalConteudo = ({ personagem }) => {
   if (campanhaIds.length === 0 && (personagem.campanhas ?? []).length > 0) {
     return (
       <Typography sx={textoMutedSx}>
-        Só personagens jogáveis participam do chat — NPCs, Criaturas e companheiros ficam com o
-        mestre.
+        Só personagens jogáveis participam do chat — NPCs, Criaturas e companheiros ficam
+        com o mestre.
       </Typography>
     );
   }
@@ -77,8 +81,8 @@ const ChatModalConteudo = ({ personagem }) => {
   if (campanhaIds.length === 0) {
     return (
       <Typography sx={textoMutedSx}>
-        Este personagem não está em nenhuma campanha. Vincule uma campanha em Info → Perfil para
-        conversar com a mesa.
+        Este personagem não está em nenhuma campanha. Vincule uma campanha em Info →
+        Perfil para conversar com a mesa.
       </Typography>
     );
   }
@@ -92,7 +96,11 @@ const ChatModalConteudo = ({ personagem }) => {
   }
 
   if (!campanha) {
-    return <Typography sx={textoMutedSx}>Não foi possível carregar a campanha deste personagem.</Typography>;
+    return (
+      <Typography sx={textoMutedSx}>
+        Não foi possível carregar a campanha deste personagem.
+      </Typography>
+    );
   }
 
   const cabecalho = (
@@ -113,7 +121,9 @@ const ChatModalConteudo = ({ personagem }) => {
           ))}
         </TextField>
       ) : (
-        <Typography sx={{ color: 'var(--text-primary)', fontWeight: 700 }}>{campanha.nome}</Typography>
+        <Typography sx={{ color: 'var(--text-primary)', fontWeight: 700 }}>
+          {campanha.nome}
+        </Typography>
       )}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
@@ -123,7 +133,9 @@ const ChatModalConteudo = ({ personagem }) => {
           size="small"
           startIcon={<GridOnIcon fontSize="small" />}
           onClick={() =>
-            navigate(`/campanhas/${campanha.id}/grid`, { state: { personagemId: personagem.id } })
+            navigate(`/campanhas/${campanha.id}/grid`, {
+              state: { personagemId: personagem.id },
+            })
           }
         >
           Abrir grid
@@ -132,7 +144,9 @@ const ChatModalConteudo = ({ personagem }) => {
           size="small"
           startIcon={<OpenInFullIcon fontSize="small" />}
           onClick={() =>
-            navigate(`/campanhas/${campanha.id}/chat`, { state: { personagemId: personagem.id } })
+            navigate(`/campanhas/${campanha.id}/chat`, {
+              state: { personagemId: personagem.id },
+            })
           }
         >
           Tela cheia
@@ -142,7 +156,9 @@ const ChatModalConteudo = ({ personagem }) => {
   );
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '70vh', minHeight: 360 }}>
+    <Box
+      sx={{ display: 'flex', flexDirection: 'column', height: '70vh', minHeight: 360 }}
+    >
       <ChatSala
         mensagens={chat.mensagens}
         carregando={chat.carregando}
@@ -152,9 +168,11 @@ const ChatModalConteudo = ({ personagem }) => {
         onEnviarImagem={chat.enviarImagem}
         onRolar={chat.rolar}
         macros={chat.macros}
+        audio={chat.audio}
         onApagar={chat.apagar}
         cabecalho={cabecalho}
       />
+      <PlayerAudioMesa {...chat.audio.player} />
       <ErrorSnackbar open={!!chat.erro} mensagem={chat.erro} onClose={chat.limparErro} />
     </Box>
   );

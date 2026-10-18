@@ -1,17 +1,22 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
+import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import CodeIcon from '@mui/icons-material/Code';
 import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined';
+import MusicNoteIcon from '@mui/icons-material/MusicNote';
+import VolumeOffIcon from '@mui/icons-material/VolumeOff';
 import SendIcon from '@mui/icons-material/Send';
 
 import { CHAT_TEXTO_MAX, isTextoMensagemValido } from 'common/utils/chat';
 import { interpretarComandoRolagem } from 'common/utils/dados';
 import { encontrarMacroPorNome, interpretarComandoMacro } from 'common/utils/macros';
 
+import AudioDialog from './AudioDialog';
+import { audioPropType } from './audioPropType';
 import ChatMensagem from './ChatMensagem';
 import DadoIcone from './DadoIcone';
 import ImagemUrlDialog from './ImagemUrlDialog';
@@ -45,6 +50,7 @@ const ChatSala = ({
   onRolar,
   onApagar,
   macros = null,
+  audio = null,
   cabecalho = null,
 }) => {
   const [texto, setTexto] = useState('');
@@ -52,6 +58,7 @@ const ChatSala = ({
   const [dialogImagemAberto, setDialogImagemAberto] = useState(false);
   const [dialogRolagemAberto, setDialogRolagemAberto] = useState(false);
   const [dialogMacrosAberto, setDialogMacrosAberto] = useState(false);
+  const [dialogAudioAberto, setDialogAudioAberto] = useState(false);
   const [erroComando, setErroComando] = useState(null);
   const listaRef = useRef(null);
   const acompanhandoRef = useRef(true);
@@ -141,7 +148,12 @@ const ChatSala = ({
     <ChatWrapper>
       {cabecalho && <ChatHeader>{cabecalho}</ChatHeader>}
 
-      <ListaMensagens ref={listaRef} onScroll={handleScroll} aria-label="Mensagens" role="log">
+      <ListaMensagens
+        ref={listaRef}
+        onScroll={handleScroll}
+        aria-label="Mensagens"
+        role="log"
+      >
         {carregando && (
           <ListaVazia>
             <CircularProgress size={24} sx={{ color: 'var(--color-primary)' }} />
@@ -166,6 +178,17 @@ const ChatSala = ({
       </ListaMensagens>
 
       <ComposerWrapper onSubmit={handleSubmit}>
+        {audio?.bloqueado && (
+          <Button
+            size="small"
+            variant="outlined"
+            startIcon={<VolumeOffIcon />}
+            onClick={audio.liberarSom}
+            sx={{ alignSelf: 'flex-start' }}
+          >
+            Clique para ouvir a música da mesa
+          </Button>
+        )}
         <ComposerAcoes>
           <Tooltip title="Enviar imagem ou GIF por link">
             <IconButton
@@ -188,14 +211,47 @@ const ChatSala = ({
             </IconButton>
           </Tooltip>
           {macros && (
-            <Tooltip title={macros.rodando ? `Rodando "${macros.rodando}"…` : 'Macros da campanha (ou /m nome)'}>
+            <Tooltip
+              title={
+                macros.rodando
+                  ? `Rodando "${macros.rodando}"…`
+                  : 'Macros da campanha (ou /m nome)'
+              }
+            >
               <IconButton
                 size="small"
                 aria-label="Macros"
                 onClick={() => setDialogMacrosAberto(true)}
-                sx={{ color: macros.rodando ? 'var(--color-primary)' : 'var(--text-secondary)' }}
+                sx={{
+                  color: macros.rodando
+                    ? 'var(--color-primary)'
+                    : 'var(--text-secondary)',
+                }}
               >
                 <CodeIcon />
+              </IconButton>
+            </Tooltip>
+          )}
+          {audio && (
+            <Tooltip
+              title={
+                audio.tocando
+                  ? `Tocando: ${audio.titulo ?? 'música da mesa'}`
+                  : 'Música da mesa'
+              }
+            >
+              <IconButton
+                size="small"
+                aria-label="Música da mesa"
+                onClick={() => setDialogAudioAberto(true)}
+                sx={{
+                  color:
+                    audio.tocando && !audio.pausado
+                      ? 'var(--color-primary)'
+                      : 'var(--text-secondary)',
+                }}
+              >
+                <MusicNoteIcon />
               </IconButton>
             </Tooltip>
           )}
@@ -215,7 +271,9 @@ const ChatSala = ({
             onKeyDown={handleKeyDown}
             error={Boolean(erroComando)}
             helperText={erroComando}
-            slotProps={{ htmlInput: { maxLength: CHAT_TEXTO_MAX, 'aria-label': 'Mensagem' } }}
+            slotProps={{
+              htmlInput: { maxLength: CHAT_TEXTO_MAX, 'aria-label': 'Mensagem' },
+            }}
           />
           <IconButton
             type="submit"
@@ -238,6 +296,13 @@ const ChatSala = ({
         onClose={() => setDialogRolagemAberto(false)}
         onRolar={handleRolarDialog}
       />
+      {audio && (
+        <AudioDialog
+          open={dialogAudioAberto}
+          onClose={() => setDialogAudioAberto(false)}
+          audio={audio}
+        />
+      )}
       {macros && (
         <>
           <MacrosDialog
@@ -283,6 +348,10 @@ ChatSala.propTypes = {
     apagar: PropTypes.func,
     mover: PropTypes.func,
   }),
+  // Música da mesa (null = sem música): `audio` de useChatCampanha
+  // (hooks/useAudioMesa.js). O player em si a página monta à parte
+  // (PlayerAudioMesa), para seguir tocando com o chat fechado.
+  audio: audioPropType,
   cabecalho: PropTypes.node,
 };
 

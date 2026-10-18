@@ -11,6 +11,8 @@ import {
   getChatMacros,
   getRmCampanha,
   moverGridToken,
+  setAudioMesa,
+  subscribeAudioMesa,
   setChatMembro,
   subscribeGridCena,
   subscribeGridCenaAtiva,
@@ -43,6 +45,8 @@ vi.mock('service/storage', () => ({
   addChatMacro: vi.fn(),
   updateChatMacro: vi.fn(),
   removeChatMacro: vi.fn(),
+  subscribeAudioMesa: vi.fn(),
+  setAudioMesa: vi.fn(),
   subscribeGridCenaAtiva: vi.fn(),
   subscribeGridCena: vi.fn(),
   subscribeGridTokens: vi.fn(),
@@ -116,6 +120,11 @@ describe('CampanhaChat', () => {
       { id: 'p-2', nome: 'Outro', campanhas: ['camp-9'] },
     ]);
     setChatMembro.mockResolvedValue();
+    subscribeAudioMesa.mockImplementation((_campanhaId, onChange) => {
+      onChange(null);
+      return vi.fn();
+    });
+    setAudioMesa.mockResolvedValue();
     addChatMensagem.mockResolvedValue();
     subscribeChatMensagens.mockImplementation((_campanhaId, onChange) => {
       onChange(MENSAGENS);
@@ -475,6 +484,111 @@ describe('CampanhaChat', () => {
         ),
       ).toBeInTheDocument();
       expect(addChatMensagem).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('música da mesa', () => {
+    const VIDEO = 'dQw4w9WgXcQ';
+
+    it('jogador vê o que toca e ajusta só o volume (sem controles do mestre)', async () => {
+      subscribeAudioMesa.mockImplementation((_campanhaId, onChange) => {
+        onChange({
+          videoId: VIDEO,
+          estado: 'tocando',
+          posicaoBase: 0,
+          repetir: true,
+          referenciaEm: Date.now(),
+        });
+        return vi.fn();
+      });
+      renderChat();
+      await screen.findByText('Bem-vindos à taverna.');
+      expect(subscribeAudioMesa).toHaveBeenCalledWith(
+        'camp-1',
+        expect.any(Function),
+        expect.any(Function),
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: 'Música da mesa' }));
+      const dialogo = await screen.findByRole('dialog');
+      expect(within(dialogo).getByRole('status')).toHaveTextContent(
+        'Carregando o título',
+      );
+      expect(
+        within(dialogo).getByRole('slider', { name: 'Volume da música' }),
+      ).toBeInTheDocument();
+      expect(within(dialogo).queryByLabelText('Link do YouTube')).not.toBeInTheDocument();
+
+      fireEvent.click(within(dialogo).getByRole('button', { name: 'Silenciar' }));
+      expect(
+        within(dialogo).getByRole('button', { name: 'Ativar som' }),
+      ).toBeInTheDocument();
+    });
+
+    it('mestre toca um link, recusa link inválido e para a música', async () => {
+      useAuth.mockReturnValue({ currentUser: { uid: 'uid-mestre' } });
+      getPersonagens.mockResolvedValue([]);
+      renderChat();
+      fireEvent.click(await screen.findByRole('button', { name: 'Música da mesa' }));
+      const dialogo = await screen.findByRole('dialog');
+      expect(within(dialogo).getByRole('status')).toHaveTextContent(
+        'Nenhuma música tocando.',
+      );
+
+      const campo = within(dialogo).getByLabelText('Link do YouTube');
+      fireEvent.change(campo, { target: { value: 'https://vimeo.com/123' } });
+      fireEvent.click(within(dialogo).getByRole('button', { name: 'Tocar' }));
+      expect(
+        await within(dialogo).findByText(/Cole um link de vídeo do YouTube/),
+      ).toBeInTheDocument();
+      expect(setAudioMesa).not.toHaveBeenCalled();
+
+      fireEvent.change(campo, { target: { value: `https://youtu.be/${VIDEO}?t=30` } });
+      fireEvent.click(within(dialogo).getByRole('switch'));
+      fireEvent.click(within(dialogo).getByRole('button', { name: 'Tocar' }));
+      await waitFor(() =>
+        expect(setAudioMesa).toHaveBeenCalledWith('camp-1', {
+          videoId: VIDEO,
+          estado: 'tocando',
+          posicaoBase: 30,
+          repetir: false,
+        }),
+      );
+    });
+
+    it('mestre pausa e para o que está tocando', async () => {
+      useAuth.mockReturnValue({ currentUser: { uid: 'uid-mestre' } });
+      getPersonagens.mockResolvedValue([]);
+      subscribeAudioMesa.mockImplementation((_campanhaId, onChange) => {
+        onChange({
+          videoId: VIDEO,
+          estado: 'tocando',
+          posicaoBase: 10,
+          repetir: true,
+          referenciaEm: Date.now(),
+        });
+        return vi.fn();
+      });
+      renderChat();
+      fireEvent.click(await screen.findByRole('button', { name: 'Música da mesa' }));
+      const dialogo = await screen.findByRole('dialog');
+
+      fireEvent.click(within(dialogo).getByRole('button', { name: 'Pausar' }));
+      await waitFor(() =>
+        expect(setAudioMesa).toHaveBeenCalledWith(
+          'camp-1',
+          expect.objectContaining({ videoId: VIDEO, estado: 'pausado', repetir: true }),
+        ),
+      );
+      fireEvent.click(within(dialogo).getByRole('button', { name: 'Parar' }));
+      await waitFor(() =>
+        expect(setAudioMesa).toHaveBeenLastCalledWith('camp-1', {
+          videoId: null,
+          estado: 'parado',
+          posicaoBase: 0,
+          repetir: true,
+        }),
+      );
     });
   });
 

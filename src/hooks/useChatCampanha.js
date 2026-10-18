@@ -17,6 +17,7 @@ import {
   montarMensagemTexto,
 } from 'common/utils/chat';
 import { rolarEspecificacao } from 'common/utils/dados';
+import useAudioMesa from 'hooks/useAudioMesa';
 import useMacrosCampanha from 'hooks/useMacrosCampanha';
 import useMembroDoChat from 'hooks/useMembroDoChat';
 
@@ -28,7 +29,9 @@ import useMembroDoChat from 'hooks/useMembroDoChat';
 // personagemId, autorNome, autorAvatar, isMestre); `null` deixa o hook inativo
 // (ex.: enquanto a campanha ainda carrega). `ehMestreDaCampanha`: quem está
 // usando é o mestre (mesmo falando como personagem) — vê/gerencia todas as
-// macros. Também executa macros Lua (common/lua/) e publica o que geraram.
+// macros. Também executa macros Lua (common/lua/) e publica o que geraram,
+// e liga a música da mesa (`audio`, hooks/useAudioMesa.js — quem usa monta
+// <PlayerAudioMesa {...audio.player} />).
 const SEM_MENSAGENS = [];
 
 // Id de cada pergunta de macro (key do diálogo — duas perguntas iguais
@@ -43,7 +46,10 @@ const useChatCampanha = (campanhaId, autor, { ehMestreDaCampanha = false } = {})
   // Mensagens guardadas junto da campanha a que pertencem: ao trocar de
   // campanha, `carregando` volta a true sem setState síncrono no efeito.
   const [recebido, setRecebido] = useState({ campanhaId: null, mensagens: [] });
-  const [secretasRecebidas, setSecretasRecebidas] = useState({ campanhaId: null, mensagens: [] });
+  const [secretasRecebidas, setSecretasRecebidas] = useState({
+    campanhaId: null,
+    mensagens: [],
+  });
   const [erro, setErro] = useState(null);
   // Pergunta pendente da macro em execução (inputQuery/choose):
   // { macroNome, pedido, responder(resposta), cancelar() }.
@@ -54,7 +60,12 @@ const useChatCampanha = (campanhaId, autor, { ehMestreDaCampanha = false } = {})
     setErro('Não foi possível entrar no chat desta campanha.');
     setRecebido({ campanhaId: campanhaQueFalhou, mensagens: [] });
   }, []);
-  const podeOuvir = useMembroDoChat(campanhaId, { uid, personagemId, isMestre, onFalha: aoFalharMembro });
+  const podeOuvir = useMembroDoChat(campanhaId, {
+    uid,
+    personagemId,
+    isMestre,
+    onFalha: aoFalharMembro,
+  });
 
   useEffect(() => {
     if (!podeOuvir) return undefined;
@@ -69,6 +80,11 @@ const useChatCampanha = (campanhaId, autor, { ehMestreDaCampanha = false } = {})
       },
     );
   }, [campanhaId, podeOuvir]);
+
+  const audio = useAudioMesa(campanhaId, {
+    ativo: podeOuvir,
+    podeControlar: ehMestreDaCampanha || isMestre,
+  });
 
   const macrosApi = useMacrosCampanha(campanhaId, {
     ativo: podeOuvir,
@@ -104,8 +120,14 @@ const useChatCampanha = (campanhaId, autor, { ehMestreDaCampanha = false } = {})
     [campanhaId],
   );
 
-  const enviarTexto = useCallback(texto => enviar(montarMensagemTexto(autor, texto)), [enviar, autor]);
-  const enviarImagem = useCallback(url => enviar(montarMensagemImagem(autor, url)), [enviar, autor]);
+  const enviarTexto = useCallback(
+    texto => enviar(montarMensagemTexto(autor, texto)),
+    [enviar, autor],
+  );
+  const enviarImagem = useCallback(
+    url => enviar(montarMensagemImagem(autor, url)),
+    [enviar, autor],
+  );
 
   // Rola no cliente (crypto) e grava: pública em chatMensagens, secreta na
   // pasta do próprio usuário.
@@ -149,7 +171,8 @@ const useChatCampanha = (campanhaId, autor, { ehMestreDaCampanha = false } = {})
   // saídas (e propaga o erro) para a prévia do editor.
   const executarMacro = useCallback(
     async (macro, { teste = false } = {}) => {
-      const { executarMacro: rodarNoWorker, MacroCancelada } = await import('common/lua/executarMacro');
+      const { executarMacro: rodarNoWorker, MacroCancelada } =
+        await import('common/lua/executarMacro');
       setMacroRodando(macro.nome);
       try {
         const saidas = await rodarNoWorker(macro.codigo, {
@@ -178,7 +201,8 @@ const useChatCampanha = (campanhaId, autor, { ehMestreDaCampanha = false } = {})
             : montarMensagemMacro(autor, macro.nome, saida.texto),
         );
         await mensagens.reduce(
-          (anterior, mensagem) => anterior.then(() => addChatMensagem(campanhaId, mensagem)),
+          (anterior, mensagem) =>
+            anterior.then(() => addChatMensagem(campanhaId, mensagem)),
           Promise.resolve(),
         );
         return saidas;
@@ -199,7 +223,13 @@ const useChatCampanha = (campanhaId, autor, { ehMestreDaCampanha = false } = {})
 
   // Formato da prop `macros` do ChatSala (pronto para as páginas repassarem).
   const podeGerenciarMacros = ehMestreDaCampanha || isMestre;
-  const { macros: listaMacros, carregando: carregandoMacros, salvarMacro, apagarMacro, moverMacro } = macrosApi;
+  const {
+    macros: listaMacros,
+    carregando: carregandoMacros,
+    salvarMacro,
+    apagarMacro,
+    moverMacro,
+  } = macrosApi;
   const macros = useMemo(
     () => ({
       lista: listaMacros,
@@ -227,13 +257,18 @@ const useChatCampanha = (campanhaId, autor, { ehMestreDaCampanha = false } = {})
   );
 
   const { erro: erroMacros, limparErro: limparErroMacros } = macrosApi;
+  const { erro: erroAudio, limparErro: limparErroAudio } = audio;
   const limparErro = useCallback(() => {
     setErro(null);
     limparErroMacros();
-  }, [limparErroMacros]);
+    limparErroAudio();
+  }, [limparErroMacros, limparErroAudio]);
 
   const carregando = recebido.campanhaId !== campanhaId;
-  const secretas = secretasRecebidas.campanhaId === campanhaId ? secretasRecebidas.mensagens : SEM_MENSAGENS;
+  const secretas =
+    secretasRecebidas.campanhaId === campanhaId
+      ? secretasRecebidas.mensagens
+      : SEM_MENSAGENS;
   const mensagens = useMemo(
     () => (carregando ? [] : mesclarMensagens(recebido.mensagens, secretas)),
     [carregando, recebido.mensagens, secretas],
@@ -242,9 +277,10 @@ const useChatCampanha = (campanhaId, autor, { ehMestreDaCampanha = false } = {})
   return {
     mensagens,
     carregando,
-    erro: erro ?? erroMacros,
+    erro: erro ?? erroMacros ?? erroAudio,
     limparErro,
     macros,
+    audio,
     enviarTexto,
     enviarImagem,
     rolar,
