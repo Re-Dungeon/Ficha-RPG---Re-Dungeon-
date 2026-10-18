@@ -57,6 +57,17 @@ const MENSAGENS = [
     url: 'https://media.giphy.com/media/abc/giphy.gif',
     createdAt: new Date(),
   },
+  {
+    id: 'm3',
+    uid: 'uid-mestre',
+    autorNome: 'Bartolomeu',
+    isMestre: true,
+    persona: 'npc',
+    tipo: 'texto',
+    texto: 'O que vai ser, forasteiro?',
+    url: null,
+    createdAt: new Date(),
+  },
 ];
 
 describe('CampanhaChat', () => {
@@ -88,6 +99,16 @@ describe('CampanhaChat', () => {
     expect(screen.queryByText('https://media.giphy.com/media/abc/giphy.gif')).not.toBeInTheDocument();
   });
 
+  it('mostra a etiqueta NPC quando o mestre fala como um NPC da mesa', async () => {
+    renderChat();
+
+    const mensagemNpc = (await screen.findByText('O que vai ser, forasteiro?')).closest(
+      '[data-testid="chat-mensagem"]',
+    );
+    expect(mensagemNpc).toHaveTextContent('Bartolomeu');
+    expect(mensagemNpc).toHaveTextContent('NPC');
+  });
+
   it('envia mensagem de texto assinada pelo personagem', async () => {
     renderChat();
     await screen.findByText('Bem-vindos à taverna.');
@@ -102,6 +123,7 @@ describe('CampanhaChat', () => {
         autorNome: 'Aldric',
         autorAvatar: 'https://ex.com/a.png',
         isMestre: false,
+        persona: 'jogador',
         tipo: 'texto',
         texto: 'Peço uma cerveja',
         url: null,
