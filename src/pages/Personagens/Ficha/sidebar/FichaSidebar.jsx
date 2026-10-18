@@ -16,6 +16,7 @@ import StorefrontIcon from '@mui/icons-material/Storefront';
 import HealthAndSafetyIcon from '@mui/icons-material/HealthAndSafety';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import StickyNote2Icon from '@mui/icons-material/StickyNote2';
+import ForumIcon from '@mui/icons-material/Forum';
 
 import {
   SidebarGrupo,
@@ -52,6 +53,10 @@ const construirGrupos = () => [
       { chave: 'loja', label: 'Loja', Icon: StorefrontIcon },
       { chave: 'condicoes', label: 'Condições', Icon: HealthAndSafetyIcon },
     ],
+  },
+  {
+    titulo: 'Social',
+    itens: [{ chave: 'chat', label: 'Chat', Icon: ForumIcon }],
   },
   {
     titulo: 'Referência',

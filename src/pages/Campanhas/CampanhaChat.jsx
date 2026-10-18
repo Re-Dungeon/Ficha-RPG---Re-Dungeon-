@@ -7,15 +7,9 @@ import Typography from '@mui/material/Typography';
 
 import { useAuth } from 'context/AuthContext';
 import { useSelecao } from 'context/selecaoContext';
-import {
-  addChatMensagem,
-  getPersonagens,
-  getRmCampanha,
-  removeChatMensagem,
-  setChatMembro,
-  subscribeChatMensagens,
-} from 'service/storage';
-import { montarMensagemImagem, montarMensagemTexto, personagensNaCampanha } from 'common/utils/chat';
+import { getPersonagens, getRmCampanha } from 'service/storage';
+import { personagensNaCampanha } from 'common/utils/chat';
+import useChatCampanha from 'hooks/useChatCampanha';
 import ChatSala from 'components/Chat/ChatSala';
 import ErrorSnackbar from 'components/ErrorSnackbar/ErrorSnackbar';
 import { EmptyState } from 'pages/Personagens/styles';
@@ -37,9 +31,6 @@ const CampanhaChat = () => {
   const [meusPersonagens, setMeusPersonagens] = useState([]);
   const [carregandoInicial, setCarregandoInicial] = useState(true);
   const [falandoComo, setFalandoComo] = useState('');
-  const [membroPronto, setMembroPronto] = useState(false);
-  const [mensagens, setMensagens] = useState([]);
-  const [carregandoMensagens, setCarregandoMensagens] = useState(true);
   const [erro, setErro] = useState(null);
 
   const isMestre = campanha?.mestreId === currentUser.uid;
@@ -88,48 +79,10 @@ const CampanhaChat = () => {
     return () => setHeaderExtra(null);
   }, [campanha, handleVoltar, setHeaderExtra]);
 
-  // O ponteiro chatMembros/{uid} é o que a regra de leitura usa para achar o
-  // personagem do jogador — (re)gravado ao abrir o chat e ao trocar o
-  // "Falando como". O mestre não precisa dele (acesso via `mestreId`).
-  useEffect(() => {
-    if (!falandoComo) return undefined;
-    if (falandoComo === FALAR_COMO_MESTRE) {
-      setMembroPronto(true);
-      return undefined;
-    }
-    let isMounted = true;
-    setChatMembro(campanhaId, currentUser.uid, falandoComo)
-      .then(() => {
-        if (isMounted) setMembroPronto(true);
-      })
-      .catch(error => {
-        // eslint-disable-next-line no-console
-        console.error('Falha ao registrar no chat:', error);
-        if (isMounted) setErro('Não foi possível entrar no chat desta campanha.');
-      });
-    return () => {
-      isMounted = false;
-    };
-  }, [campanhaId, currentUser.uid, falandoComo]);
-
-  useEffect(() => {
-    if (!membroPronto) return undefined;
-    return subscribeChatMensagens(
-      campanhaId,
-      novasMensagens => {
-        setMensagens(novasMensagens);
-        setCarregandoMensagens(false);
-      },
-      error => {
-        // eslint-disable-next-line no-console
-        console.error('Falha ao ouvir mensagens:', error);
-        setErro('Sem permissão para ver as mensagens desta campanha.');
-        setCarregandoMensagens(false);
-      },
-    );
-  }, [campanhaId, membroPronto]);
-
+  // null até a campanha carregar e o "Falando como" ser definido — mantém o
+  // hook do chat inativo (sem ponteiro de membro nem escuta) até lá.
   const autor = useMemo(() => {
+    if (!falandoComo) return null;
     if (falandoComo === FALAR_COMO_MESTRE) {
       return { uid: currentUser.uid, autorNome: 'Mestre', isMestre: true };
     }
@@ -143,36 +96,12 @@ const CampanhaChat = () => {
     };
   }, [falandoComo, meusPersonagens, currentUser.uid]);
 
-  const enviar = useCallback(
-    async mensagem => {
-      try {
-        await addChatMensagem(campanhaId, mensagem);
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error('Falha ao enviar mensagem:', error);
-        setErro('Não foi possível enviar a mensagem.');
-        throw error;
-      }
-    },
-    [campanhaId],
-  );
-
-  const handleEnviarTexto = useCallback(texto => enviar(montarMensagemTexto(autor, texto)), [enviar, autor]);
-  const handleEnviarImagem = useCallback(url => enviar(montarMensagemImagem(autor, url)), [enviar, autor]);
-
-  const handleApagar = useCallback(
-    async mensagem => {
-      if (!window.confirm('Apagar esta mensagem?')) return;
-      try {
-        await removeChatMensagem(campanhaId, mensagem.id);
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error('Falha ao apagar mensagem:', error);
-        setErro('Não foi possível apagar a mensagem.');
-      }
-    },
-    [campanhaId],
-  );
+  const chat = useChatCampanha(campanhaId, autor);
+  const erroExibido = erro ?? chat.erro;
+  const fecharErro = () => {
+    setErro(null);
+    chat.limparErro();
+  };
 
   if (carregandoInicial) {
     return (
@@ -186,7 +115,7 @@ const CampanhaChat = () => {
     return (
       <EmptyState>
         <p>Você não tem um personagem nesta campanha.</p>
-        <ErrorSnackbar open={!!erro} mensagem={erro} onClose={() => setErro(null)} />
+        <ErrorSnackbar open={!!erroExibido} mensagem={erroExibido} onClose={fecharErro} />
       </EmptyState>
     );
   }
@@ -225,16 +154,16 @@ const CampanhaChat = () => {
   return (
     <ChatPageWrapper>
       <ChatSala
-        mensagens={mensagens}
-        carregando={carregandoMensagens}
+        mensagens={chat.mensagens}
+        carregando={chat.carregando}
         currentUid={currentUser.uid}
         podeApagarTodas={isMestre}
-        onEnviarTexto={handleEnviarTexto}
-        onEnviarImagem={handleEnviarImagem}
-        onApagar={handleApagar}
+        onEnviarTexto={chat.enviarTexto}
+        onEnviarImagem={chat.enviarImagem}
+        onApagar={chat.apagar}
         cabecalho={cabecalho}
       />
-      <ErrorSnackbar open={!!erro} mensagem={erro} onClose={() => setErro(null)} />
+      <ErrorSnackbar open={!!erroExibido} mensagem={erroExibido} onClose={fecharErro} />
     </ChatPageWrapper>
   );
 };
