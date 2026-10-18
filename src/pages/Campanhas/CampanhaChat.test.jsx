@@ -8,14 +8,22 @@ import {
   addChatMensagem,
   addChatRolagemSecreta,
   getPersonagens,
+  getChatMacros,
   getRmCampanha,
   setChatMembro,
   subscribeChatMensagens,
   subscribeChatSecretasDoUsuario,
 } from 'service/storage';
+import { executarMacro as rodarMacroNoWorker } from 'common/lua/executarMacro';
 import CampanhaChat from './CampanhaChat';
 
 vi.mock('context/AuthContext', () => ({ useAuth: vi.fn() }));
+// Sem Web Worker no jsdom: a execução Lua é simulada (o runtime real tem
+// testes próprios em common/lua/luaRuntime.test.js).
+vi.mock('common/lua/executarMacro', () => {
+  class MacroCancelada extends Error {}
+  return { executarMacro: vi.fn(), MacroCancelada };
+});
 vi.mock('service/storage', () => ({
   addChatMensagem: vi.fn(),
   getPersonagens: vi.fn(),
@@ -27,6 +35,10 @@ vi.mock('service/storage', () => ({
   removeChatRolagemSecreta: vi.fn(),
   subscribeChatSecretasDoMestre: vi.fn(() => vi.fn()),
   subscribeChatSecretasDoUsuario: vi.fn(() => vi.fn()),
+  getChatMacros: vi.fn(() => Promise.resolve([])),
+  addChatMacro: vi.fn(),
+  updateChatMacro: vi.fn(),
+  removeChatMacro: vi.fn(),
 }));
 
 const LayoutFake = () => <Outlet context={{ setHeaderExtra: vi.fn() }} />;
@@ -308,6 +320,70 @@ describe('CampanhaChat', () => {
       const secreta = within(screen.getByRole('log')).getByText('secreta').closest('[data-testid="chat-mensagem"]');
       expect(secreta).toHaveTextContent('Aldric');
       expect(subscribeChatSecretasDoUsuario).toHaveBeenCalledWith('camp-1', 'uid-jogador', expect.any(Function), expect.any(Function));
+    });
+  });
+
+  describe('macros', () => {
+    const MACRO = { id: 'mc1', nome: 'dano_impacto', descricao: '', codigo: 'enviar(1)', somenteMestre: false, ordem: 1 };
+
+    beforeEach(() => {
+      getChatMacros.mockResolvedValue([MACRO]);
+    });
+
+    it('jogador busca só macros públicas, responde a pergunta e o resultado é publicado', async () => {
+      rodarMacroNoWorker.mockImplementation(async (_codigo, { perguntar }) => {
+        const nome = await perguntar({ tipo: 'input', pergunta: 'Nome do personagem:', padrao: '' });
+        return [
+          { tipo: 'texto', texto: `DANO DE IMPACTO - ${nome}` },
+          { tipo: 'rolagem', rolagem: { grupos: [{ quantidade: 1, faces: 6, resultados: [4] }], termos: [], modificador: 0, total: 4 } },
+        ];
+      });
+      renderChat();
+      await screen.findByText('Bem-vindos à taverna.');
+      await waitFor(() => expect(getChatMacros).toHaveBeenCalledWith('camp-1', { incluirSomenteMestre: false }));
+
+      fireEvent.click(screen.getByRole('button', { name: 'Macros' }));
+      fireEvent.click(await screen.findByRole('button', { name: 'Usar dano_impacto' }));
+      fireEvent.change(await screen.findByLabelText('Nome do personagem:'), { target: { value: 'Wesley' } });
+      fireEvent.click(screen.getByRole('button', { name: 'OK' }));
+
+      await waitFor(() => expect(addChatMensagem).toHaveBeenCalledTimes(2));
+      expect(addChatMensagem.mock.calls[0][1]).toMatchObject({
+        tipo: 'macro',
+        macroNome: 'dano_impacto',
+        texto: 'DANO DE IMPACTO - Wesley',
+        autorNome: 'Aldric',
+      });
+      expect(addChatMensagem.mock.calls[1][1]).toMatchObject({ tipo: 'rolagem', rolagem: { total: 4 } });
+    });
+
+    it('cancelar a macro não publica nada', async () => {
+      rodarMacroNoWorker.mockImplementation(async (_codigo, { perguntar }) => {
+        await perguntar({ tipo: 'input', pergunta: 'VIT:', padrao: '0' });
+        return [{ tipo: 'texto', texto: 'nunca' }];
+      });
+      renderChat();
+      await screen.findByText('Bem-vindos à taverna.');
+      fireEvent.change(screen.getByLabelText('Mensagem'), { target: { value: '/m dano_impacto' } });
+      await waitFor(() => expect(getChatMacros).toHaveBeenCalled());
+      fireEvent.click(screen.getByRole('button', { name: /enviar mensagem/i }));
+
+      fireEvent.click(await screen.findByRole('button', { name: /cancelar macro/i }));
+      await waitFor(() => expect(screen.queryByLabelText('VIT:')).not.toBeInTheDocument());
+      expect(addChatMensagem).not.toHaveBeenCalled();
+    });
+
+    it('erro na macro aparece para o jogador e nada é publicado', async () => {
+      rodarMacroNoWorker.mockRejectedValue(new Error('macro:12: attempt to index a nil value'));
+      renderChat();
+      await screen.findByText('Bem-vindos à taverna.');
+      fireEvent.click(screen.getByRole('button', { name: 'Macros' }));
+      fireEvent.click(await screen.findByRole('button', { name: 'Usar dano_impacto' }));
+
+      expect(
+        await screen.findByText('A macro "dano_impacto" falhou: macro:12: attempt to index a nil value'),
+      ).toBeInTheDocument();
+      expect(addChatMensagem).not.toHaveBeenCalled();
     });
   });
 });

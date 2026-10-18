@@ -60,7 +60,9 @@ const ChatModalConteudo = ({ personagem }) => {
     [campanha, currentUser.uid, personagem.id, personagem.nome, personagem.linkImagem],
   );
 
-  const chat = useChatCampanha(campanha?.id ?? null, autor);
+  const chat = useChatCampanha(campanha?.id ?? null, autor, {
+    ehMestreDaCampanha: campanha?.mestreId === currentUser.uid,
+  });
 
   if (campanhaIds.length === 0 && (personagem.campanhas ?? []).length > 0) {
     return (
@@ -139,6 +141,7 @@ const ChatModalConteudo = ({ personagem }) => {
         onEnviarTexto={chat.enviarTexto}
         onEnviarImagem={chat.enviarImagem}
         onRolar={chat.rolar}
+        macros={chat.macros}
         onApagar={chat.apagar}
         cabecalho={cabecalho}
       />

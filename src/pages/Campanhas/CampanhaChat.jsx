@@ -96,7 +96,7 @@ const CampanhaChat = () => {
     };
   }, [falandoComo, meusPersonagens, currentUser.uid]);
 
-  const chat = useChatCampanha(campanhaId, autor);
+  const chat = useChatCampanha(campanhaId, autor, { ehMestreDaCampanha: isMestre });
   const erroExibido = erro ?? chat.erro;
   const fecharErro = () => {
     setErro(null);
@@ -161,6 +161,7 @@ const CampanhaChat = () => {
         onEnviarTexto={chat.enviarTexto}
         onEnviarImagem={chat.enviarImagem}
         onRolar={chat.rolar}
+        macros={chat.macros}
         onApagar={chat.apagar}
         cabecalho={cabecalho}
       />

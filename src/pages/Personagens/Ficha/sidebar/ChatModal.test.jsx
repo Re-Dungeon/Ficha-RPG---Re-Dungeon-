@@ -23,6 +23,10 @@ vi.mock('service/storage', () => ({
   removeChatRolagemSecreta: vi.fn(),
   subscribeChatSecretasDoMestre: vi.fn(() => vi.fn()),
   subscribeChatSecretasDoUsuario: vi.fn(() => vi.fn()),
+  getChatMacros: vi.fn(() => Promise.resolve([])),
+  addChatMacro: vi.fn(),
+  updateChatMacro: vi.fn(),
+  removeChatMacro: vi.fn(),
 }));
 
 const CAMPANHAS = {

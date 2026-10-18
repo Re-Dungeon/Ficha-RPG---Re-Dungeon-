@@ -556,3 +556,35 @@ export const addChatRolagemSecreta = (campanhaId, donoUid, mensagem) =>
 
 export const removeChatRolagemSecreta = (campanhaId, donoUid, rolagemId) =>
   deleteDoc(doc(db, 'rmCampanhas', campanhaId, 'chatSecretas', donoUid, 'rolagens', rolagemId));
+
+// ── Macros Lua — rmCampanhas/{id}/macros ───────────────────────────────────
+// Só o mestre da campanha cria/edita/apaga (as regras garantem); membros leem
+// as que não são `somenteMestre`. O jogador PRECISA filtrar por
+// `somenteMestre == false` na consulta — sem o filtro a regra recusa a lista
+// inteira. Sem `orderBy` (evita índice composto): ordene com `ordenarMacros`
+// (common/utils/macros.js). Executar uma macro nunca grava aqui.
+const macrosRef = campanhaId => collection(db, 'rmCampanhas', campanhaId, 'macros');
+
+export const getChatMacros = async (campanhaId, { incluirSomenteMestre = false } = {}) => {
+  const filtros = incluirSomenteMestre ? [] : [where('somenteMestre', '==', false)];
+  const snapshot = await getDocs(query(macrosRef(campanhaId), ...filtros));
+  return snapshot.docs.map(docSnapshot => ({ id: docSnapshot.id, ...docSnapshot.data() }));
+};
+
+export const addChatMacro = async (campanhaId, macro) => {
+  const docRef = await addDoc(macrosRef(campanhaId), {
+    ...macro,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  return docRef.id;
+};
+
+export const updateChatMacro = (campanhaId, macroId, patch) =>
+  updateDoc(doc(db, 'rmCampanhas', campanhaId, 'macros', macroId), {
+    ...patch,
+    updatedAt: serverTimestamp(),
+  });
+
+export const removeChatMacro = (campanhaId, macroId) =>
+  deleteDoc(doc(db, 'rmCampanhas', campanhaId, 'macros', macroId));

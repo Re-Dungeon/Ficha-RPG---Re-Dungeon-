@@ -16,6 +16,8 @@ import {
   MensagemImagem,
   MensagemLink,
   MensagemLinha,
+  MensagemMacroTexto,
+  MensagemMacroTitulo,
   MensagemPersona,
   MensagemTexto,
 } from './styles';
@@ -69,7 +71,13 @@ const ChatMensagem = ({ mensagem, minha, podeApagar, onApagar }) => {
             {url}
           </MensagemLink>
         )}
-        {tipo !== TIPOS_MENSAGEM.IMAGEM && <MensagemTexto>{texto}</MensagemTexto>}
+        {tipo === TIPOS_MENSAGEM.MACRO && (
+          <>
+            <MensagemMacroTitulo>⚙ {mensagem.macroNome}</MensagemMacroTitulo>
+            <MensagemMacroTexto>{texto}</MensagemMacroTexto>
+          </>
+        )}
+        {tipo !== TIPOS_MENSAGEM.IMAGEM && tipo !== TIPOS_MENSAGEM.MACRO && <MensagemTexto>{texto}</MensagemTexto>}
 
         {podeApagar && (
           <MensagemAcoes className="chat-acoes">
@@ -97,6 +105,7 @@ ChatMensagem.propTypes = {
     persona: PropTypes.string,
     tipo: PropTypes.string,
     rolagem: PropTypes.object,
+    macroNome: PropTypes.string,
     texto: PropTypes.string,
     url: PropTypes.string,
     createdAt: PropTypes.oneOfType([PropTypes.object, PropTypes.instanceOf(Date)]),
