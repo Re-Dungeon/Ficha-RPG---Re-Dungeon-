@@ -22,6 +22,7 @@ import {
   criarDetalhesAcao,
   getTokensAcao,
   normalizarEstadoCombate,
+  normalizarTurnoTexto,
 } from './config';
 import { getItensInventario, removeItemInventario, updateItemInventario } from 'service/storage';
 import { QUALIDADE_META, obterEmojiTipo } from 'pages/Personagens/Ficha/inventario/constants';
@@ -408,7 +409,7 @@ const ProntidaoModal = ({ open, onClose, personagem, onSave, prontidaoValor, tip
       id: `${tipoHistorico}-${Date.now()}-${randomSufixo}`,
       nome,
       custo: valor,
-      turno: `Turno ${turno}`,
+      turno: normalizarTurnoTexto(turno),
       restante,
     };
   };

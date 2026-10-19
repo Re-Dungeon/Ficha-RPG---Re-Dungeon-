@@ -350,6 +350,16 @@ describe('AtributosTab — fluxo de edição', () => {
     expect(payload.estadoCombate.ppAtual).toBe(240);
     expect(payload.estadoCombate.historicoAcoes).toHaveLength(1);
     expect(payload.estadoCombate.historicoAcoes[0].custo).toBe('-75 PP');
+    expect(payload.estadoCombate.historicoAcoes[0].turno).toBe('Turno 1');
+  });
+
+  it('normaliza rótulos de turno para evitar duplicação do prefixo', () => {
+    const { normalizarTurnoTexto } = require('../prontidao/config');
+
+    expect(normalizarTurnoTexto('Turno 1')).toBe('Turno 1');
+    expect(normalizarTurnoTexto('Turno 2')).toBe('Turno 2');
+    expect(normalizarTurnoTexto(3)).toBe('Turno 3');
+    expect(normalizarTurnoTexto('turno 4')).toBe('Turno 4');
   });
 
   it('marca Ataque Duplo e Usar Habilidade / Arte como ações únicas e bloqueia uso duplicado no mesmo turno', async () => {

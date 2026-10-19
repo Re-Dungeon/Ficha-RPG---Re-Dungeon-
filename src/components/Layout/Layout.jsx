@@ -166,12 +166,14 @@ const Layout = () => {
                   scrollButtons="auto"
                   allowScrollButtonsMobile
                   textColor="inherit"
-                  TabIndicatorProps={{
-                    style: { height: 2, borderRadius: 999, background: 'linear-gradient(90deg, #e8cb85 0%, #b69a58 100%)' },
-                  }}
                   sx={{
                     minHeight: 0,
                     maxWidth: '100%',
+                    '& .MuiTabs-indicator': {
+                      height: 2,
+                      borderRadius: 999,
+                      background: 'linear-gradient(90deg, #e8cb85 0%, #b69a58 100%)',
+                    },
                     '& .MuiTabs-flexContainer': {
                       gap: { xs: 0.4, md: 0.8 },
                       minHeight: 0,
