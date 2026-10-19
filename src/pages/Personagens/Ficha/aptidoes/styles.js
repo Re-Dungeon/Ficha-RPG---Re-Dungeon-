@@ -1,5 +1,7 @@
 import styled from 'styled-components';
 
+import { MOBILE } from 'common/styles/breakpoints';
+
 // Cores semânticas das 3 ações principais — só dessa feature, por isso não
 // entram no tema global (dourado/azul é o tema do site inteiro, isso aqui não é).
 export const COR_GANHAR = '#4ade80';
@@ -50,6 +52,11 @@ export const ColunasRow = styled.div`
   grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
   gap: 24px;
   align-items: start;
+
+  ${MOBILE} {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
 `;
 
 export const ColunaCard = styled.div`
@@ -57,6 +64,10 @@ export const ColunaCard = styled.div`
   border: 1px solid var(--field-border);
   border-radius: 12px;
   padding: 20px;
+
+  ${MOBILE} {
+    padding: 14px 12px;
+  }
 `;
 
 export const ColunaTitulo = styled.h3`
@@ -80,6 +91,12 @@ export const TabelaHeaderRow = styled.div`
   letter-spacing: 1px;
   text-transform: uppercase;
   color: var(--text-secondary);
+
+  ${MOBILE} {
+    grid-template-columns: minmax(0, 1fr) auto auto auto;
+    gap: 8px;
+    padding: 0 8px 8px;
+  }
 `;
 
 export const TabelaBody = styled.div`
@@ -97,6 +114,12 @@ export const TabelaRow = styled.div`
   border-left: 2px solid var(--color-accent);
   border-radius: 8px;
   padding: 10px 12px;
+
+  ${MOBILE} {
+    grid-template-columns: minmax(0, 1fr) auto auto auto;
+    gap: 8px;
+    padding: 8px;
+  }
 `;
 
 export const TabelaAptidaoNome = styled.span`
@@ -227,6 +250,12 @@ export const CatalogoGrid = styled.div`
   max-height: 360px;
   overflow-y: auto;
   padding: 4px;
+
+  ${MOBILE} {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    max-height: none;
+  }
 `;
 
 export const CatalogoCard = styled.button`

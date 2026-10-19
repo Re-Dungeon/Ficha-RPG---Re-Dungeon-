@@ -135,6 +135,12 @@ export const StatusPainelWrapper = styled.div`
   box-shadow: var(--shadow-md);
   width: 75%;
   margin: 0 auto;
+
+  ${MOBILE} {
+    width: 100%;
+    padding: 20px 14px 18px;
+    box-sizing: border-box;
+  }
 `;
 
 export const StatusParRow = styled.div`
@@ -211,6 +217,12 @@ export const HeroRow = styled.div`
   justify-content: center;
   flex-wrap: wrap;
   gap: 24px;
+
+  /* Celular: herói no topo, as duas estrelas empilhadas em largura cheia. */
+  ${MOBILE} {
+    flex-direction: column;
+    gap: 16px;
+  }
 `;
 
 export const EstrelaWrapper = styled.div`
@@ -219,6 +231,10 @@ export const EstrelaWrapper = styled.div`
   width: clamp(240px, 30vw, 600px);
   aspect-ratio: 1 / 1;
   background: url(${estrelaAtributosImg}) center / contain no-repeat;
+
+  ${MOBILE} {
+    width: min(100%, 340px);
+  }
 `;
 
 export const EstrelaCentro = styled.div`
@@ -239,6 +255,10 @@ export const EstrelaCentroValor = styled.span`
   font-weight: 700;
   color: #fff;
   text-shadow: 0 0 12px rgba(239, 68, 68, 0.65);
+
+  ${MOBILE} {
+    font-size: 1.6rem;
+  }
 `;
 
 export const EstrelaCentroLabel = styled.span`
@@ -248,6 +268,10 @@ export const EstrelaCentroLabel = styled.span`
   text-transform: uppercase;
   color: #fff;
   font-weight: 700;
+
+  ${MOBILE} {
+    font-size: 0.68rem;
+  }
 `;
 
 export const EstrelaGemaSlot = styled.div`
@@ -286,6 +310,10 @@ export const AtributoGemaValor = styled.span`
   font-weight: 700;
   color: #fff;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+
+  ${MOBILE} {
+    font-size: 1rem;
+  }
 `;
 
 export const AtributoGemaLabel = styled.span`
@@ -298,6 +326,10 @@ export const AtributoGemaLabel = styled.span`
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
   overflow-wrap: break-word;
   font-weight: 700;
+
+  ${MOBILE} {
+    font-size: 0.62rem;
+  }
 `;
 
 export const HeroCardWrapper = styled.div`
@@ -307,6 +339,11 @@ export const HeroCardWrapper = styled.div`
   align-items: center;
   gap: 16px;
   width: clamp(200px, 20vw, 350px);
+
+  ${MOBILE} {
+    order: -1;
+    width: min(100%, 300px);
+  }
 `;
 
 export const HeroNomeBox = styled.div`
@@ -483,6 +520,29 @@ export const DialogHeaderRow = styled.div`
   gap: 16px;
   padding: 16px 16px 16px 24px;
   border-bottom: 1px solid var(--status-gold-border);
+
+  /* Celular: título + fechar na 1ª linha; busca/filtros embaixo, largura cheia. */
+  ${MOBILE} {
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px 12px 12px 16px;
+
+    & > h3 {
+      flex: 1;
+      min-width: 0;
+    }
+
+    & > .MuiFormControl-root {
+      order: 2;
+      flex: 1 1 100%;
+      max-width: none;
+      min-width: 0;
+    }
+
+    & > button:last-child {
+      order: 1;
+    }
+  }
 `;
 
 export const DialogHeaderTitle = styled.h3`

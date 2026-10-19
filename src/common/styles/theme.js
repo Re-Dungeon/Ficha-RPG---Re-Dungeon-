@@ -128,6 +128,13 @@ const theme = createTheme({
         },
       },
     },
+    MuiDialogContent: {
+      styleOverrides: {
+        root: {
+          [MOBILE]: { paddingLeft: 14, paddingRight: 14 },
+        },
+      },
+    },
     MuiDialogTitle: {
       styleOverrides: {
         root: {

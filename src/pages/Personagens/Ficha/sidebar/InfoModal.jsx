@@ -9,6 +9,7 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 
 import { useSaving } from 'context/SavingContext';
+import { MOBILE } from 'common/styles/breakpoints';
 
 import PerfilTab from '../tabs/PerfilTab';
 import CorpoEspecialGrid from '../corpoEspecial/CorpoEspecialGrid';
@@ -71,6 +72,7 @@ const InfoModal = ({ open, onClose, personagem, onSave }) => {
         onChange={(event, value) => setAba(value)}
         variant="scrollable"
         scrollButtons="auto"
+        allowScrollButtonsMobile
         sx={{
           px: 4,
           py: 1,
@@ -104,6 +106,12 @@ const InfoModal = ({ open, onClose, personagem, onSave }) => {
             '&:hover': {
               background: 'rgba(84, 125, 255, 0.08)',
             },
+          },
+          [MOBILE]: {
+            px: 0,
+            mx: 1.5,
+            '.MuiTabs-scrollButtons': { width: 28 },
+            '.MuiTab-root': { minWidth: 'auto', px: 1.5 },
           },
         }}
       >

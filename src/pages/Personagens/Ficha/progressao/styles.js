@@ -1,5 +1,7 @@
 import styled from 'styled-components';
 
+import { MOBILE } from 'common/styles/breakpoints';
+
 const RARIDADE_CORES = {
   comum: '#5b7cfa',
   rara: '#4ade80',
@@ -26,6 +28,14 @@ export const PickerLayout = styled.div`
   min-height: 55vh;
   max-height: 68vh;
   margin-top: 8px;
+
+  /* Celular: lista em cima (altura limitada, rola), detalhe embaixo. */
+  ${MOBILE} {
+    flex-direction: column;
+    gap: 12px;
+    min-height: 0;
+    max-height: none;
+  }
 `;
 
 export const PickerSidebar = styled.div`
@@ -33,6 +43,12 @@ export const PickerSidebar = styled.div`
   flex-shrink: 0;
   overflow-y: auto;
   padding-right: 4px;
+
+  ${MOBILE} {
+    width: 100%;
+    max-height: 32vh;
+    box-sizing: border-box;
+  }
 `;
 
 export const PickerGrupoHeader = styled.button`
@@ -135,6 +151,11 @@ export const PickerDetalhe = styled.div`
   min-width: 0;
   overflow-y: auto;
   padding-right: 4px;
+
+  ${MOBILE} {
+    overflow-y: visible;
+    padding-right: 0;
+  }
 `;
 
 export const DetalheTopo = styled.div`
@@ -299,6 +320,10 @@ export const HabilidadesGrid = styled.div`
   grid-template-columns: repeat(2, 1fr);
   gap: 14px;
   padding-bottom: 4px;
+
+  ${MOBILE} {
+    grid-template-columns: minmax(0, 1fr);
+  }
 `;
 
 export const HabilidadeCard = styled.div`
@@ -411,6 +436,10 @@ export const HabilidadeChipsGrid = styled.div`
   grid-template-columns: repeat(3, 1fr);
   gap: 6px;
   grid-auto-rows: minmax(32px, auto);
+
+  ${MOBILE} {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 `;
 
 export const HabilidadeChip = styled.span`

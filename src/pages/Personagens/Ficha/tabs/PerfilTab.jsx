@@ -16,6 +16,7 @@ import { useCampanhasPorUniverso } from 'hooks/useCampanhasPorUniverso';
 import { useDraftLocalStorage } from 'hooks/useDraftLocalStorage';
 import { useRacaClasseNomes } from 'hooks/useRacaClasseNomes';
 import DraftBanner from 'components/DraftBanner/DraftBanner';
+import { MOBILE } from 'common/styles/breakpoints';
 
 import { SectionTitle, StatusValueRow } from '../styles';
 import UniversoSelect from '../progressao/UniversoSelect';
@@ -36,6 +37,11 @@ const PerfilRow = styled.div`
   grid-template-columns: 320px 1fr;
   align-items: stretch;
   width: 100%;
+
+  ${MOBILE} {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
 `;
 
 const LeftColumn = styled.div`
@@ -58,6 +64,13 @@ const AvatarCard = styled.div`
   align-items: center;
   justify-content: center;
   align-self: center;
+
+  ${MOBILE} {
+    width: min(100%, 300px);
+    height: auto;
+    aspect-ratio: 300 / 370;
+    box-sizing: border-box;
+  }
 `;
 
 const StyledAvatar = styled.img`

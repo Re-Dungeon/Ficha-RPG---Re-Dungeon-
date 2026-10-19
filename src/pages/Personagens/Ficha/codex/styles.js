@@ -1,9 +1,16 @@
 import styled from 'styled-components';
 
+import { MOBILE } from 'common/styles/breakpoints';
+
 export const RegraTopo = styled.div`
   display: flex;
   gap: 16px;
   align-items: flex-start;
+
+  ${MOBILE} {
+    flex-direction: column;
+    align-items: center;
+  }
 `;
 
 export const RegraImagem = styled.img`

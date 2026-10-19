@@ -1,5 +1,7 @@
 import styled from 'styled-components';
 
+import { MOBILE } from 'common/styles/breakpoints';
+
 export const SaldoBadge = styled.div`
   flex-shrink: 0;
   display: flex;
@@ -57,6 +59,11 @@ export const ItensGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 16px;
+
+  ${MOBILE} {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
 `;
 
 export const ItemCard = styled.div`
