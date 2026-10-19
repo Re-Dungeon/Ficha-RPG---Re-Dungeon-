@@ -1,7 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import CircularProgress from '@mui/material/CircularProgress';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
@@ -44,7 +42,7 @@ import CondicoesModal from './sidebar/CondicoesModal';
 import CodexModal from './sidebar/CodexModal';
 import ChatModal from './sidebar/ChatModal';
 import NotesModal from './notes/NotesModal';
-import { FichaLayout, FichaMain, TabsBar } from './styles';
+import { FichaLayout, FichaMain } from './styles';
 
 const Ficha = () => {
   const { id } = useParams();
@@ -120,13 +118,34 @@ const Ficha = () => {
     setInventarioAtualizacoes(current => current + 1);
   }, []);
 
+  const tabsFicha = useMemo(
+    () => [
+      { value: 'atributos', label: 'Atributos', icon: <EqualizerIcon fontSize="small" /> },
+      { value: 'aptidoes', label: 'Aptidões', icon: <AutoAwesomeIcon fontSize="small" /> },
+      { value: 'arts', label: 'Artes', icon: <AutoFixHighIcon fontSize="small" /> },
+      { value: 'inventario', label: 'Inventário', icon: <Inventory2Icon fontSize="small" /> },
+      { value: 'treinamento', label: 'Treinamento', icon: <FitnessCenterIcon fontSize="small" /> },
+      { value: 'veiasAstrais', label: 'Veias Astrais', icon: <HubIcon fontSize="small" /> },
+      { value: 'companheiro', label: 'Companheiro', icon: <PetsIcon fontSize="small" /> },
+    ],
+    [],
+  );
+
   useEffect(() => {
     if (!personagem) {
       return undefined;
     }
-    setHeaderExtra({ nome: personagem.nome, onVoltar: handleVoltar });
+    setHeaderExtra({
+      nome: personagem.nome,
+      onVoltar: handleVoltar,
+      tabs: {
+        value: aba,
+        onChange: (_event, novaAba) => setAba(novaAba),
+        items: tabsFicha,
+      },
+    });
     return () => setHeaderExtra(null);
-  }, [personagem, handleVoltar, setHeaderExtra]);
+  }, [aba, handleVoltar, personagem, setHeaderExtra, tabsFicha]);
 
   // Lembra a ficha aberta para o link "Campanhas" do cabeçalho abrir o chat
   // da campanha deste personagem (e "Fichas" voltar para cá depois).
@@ -152,29 +171,6 @@ const Ficha = () => {
         />
 
         <FichaMain>
-          <TabsBar>
-            <Tabs
-              value={aba}
-              onChange={(_event, novaAba) => setAba(novaAba)}
-              variant="scrollable"
-              scrollButtons="auto"
-              textColor="inherit"
-            >
-              <Tab value="atributos" label="Atributos" icon={<EqualizerIcon fontSize="small" />} iconPosition="start" />
-              <Tab value="aptidoes" label="Aptidões" icon={<AutoAwesomeIcon fontSize="small" />} iconPosition="start" />
-              <Tab value="arts" label="Artes" icon={<AutoFixHighIcon fontSize="small" />} iconPosition="start" />
-              <Tab value="inventario" label="Inventário" icon={<Inventory2Icon fontSize="small" />} iconPosition="start" />
-              <Tab
-                value="treinamento"
-                label="Treinamento"
-                icon={<FitnessCenterIcon fontSize="small" />}
-                iconPosition="start"
-              />
-              <Tab value="veiasAstrais" label="Veias Astrais" icon={<HubIcon fontSize="small" />} iconPosition="start" />
-              <Tab value="companheiro" label="Companheiro" icon={<PetsIcon fontSize="small" />} iconPosition="start" />
-            </Tabs>
-          </TabsBar>
-
           <ErrorBoundary key={aba} mensagem="Não foi possível exibir esta aba. Troque de aba ou recarregue a página.">
             {aba === 'atributos' && (
               <AtributosTab

@@ -9,6 +9,7 @@ import {
   onSnapshot,
   orderBy,
   query,
+  runTransaction,
   serverTimestamp,
   setDoc,
   updateDoc,
@@ -55,6 +56,131 @@ export const addPersonagem = data => addFirestoreItem('personagens', data);
 export const updatePersonagem = (id, data) => updateFirestoreItem('personagens', id, data);
 
 export const removePersonagem = id => removeFirestoreItem('personagens', id);
+
+export const consumirRecursosPersonagem = async (personagemId, recursos = {}) => {
+  const gastoEnergia = Math.max(0, Number(recursos?.energia ?? 0) || 0);
+  const gastoFadiga = Math.max(0, Number(recursos?.fadiga ?? 0) || 0);
+  const gastoSaude = Math.max(0, Number(recursos?.saude ?? recursos?.hp ?? 0) || 0);
+
+  if (gastoEnergia <= 0 && gastoFadiga <= 0 && gastoSaude <= 0) {
+    return {
+      energia: { atual: 0, maximo: 0 },
+      fadiga: { atual: 0, maximo: 0 },
+      gastoEnergia: 0,
+      gastoFadiga: 0,
+      gastoSaude: 0,
+    };
+  }
+
+  return runTransaction(db, async transaction => {
+    const ref = doc(db, 'personagens', personagemId);
+    const snapshot = await transaction.get(ref);
+    if (!snapshot.exists()) {
+      throw new Error('Personagem não encontrado para atualizar os recursos.');
+    }
+
+    const personagemAtual = snapshot.data() ?? {};
+    const statusAtual = personagemAtual.status ?? {};
+    const statusMaximosAtual = personagemAtual.statusMaximos ?? {};
+    const saudeStatusAtual = statusAtual?.hp ?? statusAtual?.saude ?? {};
+    const saudeStatusMaximoAtual = statusMaximosAtual?.hp ?? statusMaximosAtual?.saude ?? {};
+    const energiaAtual = Number(statusAtual?.energia?.atual ?? 0);
+    const energiaMaxima = Number(
+      statusMaximosAtual?.energia ?? statusAtual?.energia?.maximo ?? 0,
+    );
+    const fadigaAtual = Number(statusAtual?.fadiga?.atual ?? 0);
+    const fadigaMaxima = Number(
+      statusMaximosAtual?.fadiga ?? statusAtual?.fadiga?.maximo ?? 0,
+    );
+    const saudeAtual = Number(saudeStatusAtual?.atual ?? 0);
+    const saudeMaxima = Number(
+      saudeStatusMaximoAtual?.maximo ?? saudeStatusMaximoAtual ?? saudeStatusAtual?.maximo ?? 0,
+    );
+
+    if (gastoEnergia > 0 && energiaAtual < gastoEnergia) {
+      throw new Error('Energia insuficiente para realizar a ação.');
+    }
+
+    if (gastoFadiga > 0 && fadigaAtual < gastoFadiga) {
+      throw new Error('Fadiga insuficiente para realizar a ação.');
+    }
+
+    if (gastoSaude > 0 && saudeAtual < gastoSaude) {
+      throw new Error('Saúde insuficiente para realizar a ação.');
+    }
+
+    const proximaEnergia = Math.max(0, energiaAtual - gastoEnergia);
+    const proximaFadiga = Math.max(0, fadigaAtual - gastoFadiga);
+    const proximaSaude = Math.max(0, saudeAtual - gastoSaude);
+    const proximoStatus = {
+      ...statusAtual,
+      hp: {
+        ...((statusAtual.hp ?? statusAtual.saude ?? {})),
+        atual: proximaSaude,
+        maximo: saudeMaxima || ((statusAtual.hp ?? statusAtual.saude ?? {}).maximo ?? proximaSaude),
+      },
+      ...(Object.prototype.hasOwnProperty.call(statusAtual, 'saude') || Object.prototype.hasOwnProperty.call(statusMaximosAtual, 'saude')
+        ? {
+            saude: {
+              ...((statusAtual.saude ?? statusAtual.hp ?? {})),
+              atual: proximaSaude,
+              maximo: saudeMaxima || ((statusAtual.saude ?? statusAtual.hp ?? {}).maximo ?? proximaSaude),
+            },
+          }
+        : {}),
+      energia: {
+        ...((statusAtual.energia ?? {})),
+        atual: proximaEnergia,
+        maximo: energiaMaxima || ((statusAtual.energia ?? {}).maximo ?? proximaEnergia),
+      },
+      fadiga: {
+        ...((statusAtual.fadiga ?? {})),
+        atual: proximaFadiga,
+        maximo: fadigaMaxima || ((statusAtual.fadiga ?? {}).maximo ?? proximaFadiga),
+      },
+    };
+
+    transaction.update(ref, {
+      status: proximoStatus,
+      statusMaximos: {
+        ...statusMaximosAtual,
+        hp: saudeMaxima || Number(statusMaximosAtual?.hp ?? statusMaximosAtual?.saude ?? (statusAtual.hp ?? statusAtual.saude ?? {}).maximo ?? proximaSaude),
+        ...(Object.prototype.hasOwnProperty.call(statusMaximosAtual, 'saude') || Object.prototype.hasOwnProperty.call(statusAtual, 'saude')
+          ? {
+              saude: saudeMaxima || Number(statusMaximosAtual?.saude ?? statusMaximosAtual?.hp ?? (statusAtual.saude ?? statusAtual.hp ?? {}).maximo ?? proximaSaude),
+            }
+          : {}),
+        energia: energiaMaxima || Number(statusMaximosAtual?.energia ?? (statusAtual.energia ?? {}).maximo ?? proximaEnergia),
+        fadiga: fadigaMaxima || Number(statusMaximosAtual?.fadiga ?? (statusAtual.fadiga ?? {}).maximo ?? proximaFadiga),
+      },
+      updatedAt: serverTimestamp(),
+    });
+
+    const resultado = {
+      energia: { atual: proximaEnergia, maximo: energiaMaxima || Number((statusAtual.energia ?? {}).maximo ?? proximaEnergia) },
+      fadiga: { atual: proximaFadiga, maximo: fadigaMaxima || Number((statusAtual.fadiga ?? {}).maximo ?? proximaFadiga) },
+      gastoEnergia,
+      gastoFadiga,
+      gastoSaude,
+    };
+
+    if (gastoSaude > 0 || Object.prototype.hasOwnProperty.call(statusAtual, 'hp') || Object.prototype.hasOwnProperty.call(statusAtual, 'saude')) {
+      resultado.saude = { atual: proximaSaude, maximo: saudeMaxima || Number((statusAtual.hp ?? statusAtual.saude ?? {}).maximo ?? proximaSaude) };
+    }
+
+    return resultado;
+  });
+};
+
+export const consumirEnergiaPersonagem = async (personagemId, custoEnergia) => {
+  const gasto = Math.max(0, Number(custoEnergia) || 0);
+  if (gasto <= 0) {
+    return { atual: 0, gasto: 0 };
+  }
+
+  const resultado = await consumirRecursosPersonagem(personagemId, { energia: gasto, fadiga: 0 });
+  return { atual: resultado.energia.atual, gasto, maximo: resultado.energia.maximo };
+};
 
 // Companheiros são outro doc top-level de `personagens` com `companheiroDe`
 // apontando pro id do personagem "base" — não uma subcoleção (ver
@@ -302,6 +428,90 @@ export const duplicateNota = async (personagemId, notaId) => {
   delete rest.updatedAt;
   const ref = await addDoc(collection(db, 'personagens', personagemId, 'notas'), {
     ...rest,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  return ref.id;
+};
+
+// ── combosAtaque — subcoleção personagens/{id}/combosAtaque ──
+export const getCombosAtaque = personagemId =>
+  getSubcolecaoItems('personagens', personagemId, 'combosAtaque');
+
+export const getComboAtaque = async (personagemId, comboId) => {
+  const snapshot = await getDoc(doc(db, 'personagens', personagemId, 'combosAtaque', comboId));
+  return snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null;
+};
+
+export const addComboAtaque = (personagemId, data) =>
+  addDoc(collection(db, 'personagens', personagemId, 'combosAtaque'), {
+    ...data,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+
+export const updateComboAtaque = (personagemId, comboId, data) =>
+  updateDoc(doc(db, 'personagens', personagemId, 'combosAtaque', comboId), {
+    ...data,
+    updatedAt: serverTimestamp(),
+  });
+
+export const removeComboAtaque = (personagemId, comboId) =>
+  deleteDoc(doc(db, 'personagens', personagemId, 'combosAtaque', comboId));
+
+export const duplicateComboAtaque = async (personagemId, comboId) => {
+  const combo = await getComboAtaque(personagemId, comboId);
+  if (!combo) return null;
+  const rest = { ...combo };
+  delete rest.id;
+  delete rest.createdAt;
+  delete rest.updatedAt;
+  const ref = await addDoc(collection(db, 'personagens', personagemId, 'combosAtaque'), {
+    ...rest,
+    nome: `${rest.nome ?? 'Combinação'} (cópia)`,
+    custoFadiga: Number(rest.custoFadiga ?? 0),
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  return ref.id;
+};
+
+// ── combosDefesa — subcoleção personagens/{id}/combosDefesa ──
+export const getCombosDefesa = personagemId =>
+  getSubcolecaoItems('personagens', personagemId, 'combosDefesa');
+
+export const getComboDefesa = async (personagemId, comboId) => {
+  const snapshot = await getDoc(doc(db, 'personagens', personagemId, 'combosDefesa', comboId));
+  return snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null;
+};
+
+export const addComboDefesa = (personagemId, data) =>
+  addDoc(collection(db, 'personagens', personagemId, 'combosDefesa'), {
+    ...data,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+
+export const updateComboDefesa = (personagemId, comboId, data) =>
+  updateDoc(doc(db, 'personagens', personagemId, 'combosDefesa', comboId), {
+    ...data,
+    updatedAt: serverTimestamp(),
+  });
+
+export const removeComboDefesa = (personagemId, comboId) =>
+  deleteDoc(doc(db, 'personagens', personagemId, 'combosDefesa', comboId));
+
+export const duplicateComboDefesa = async (personagemId, comboId) => {
+  const combo = await getComboDefesa(personagemId, comboId);
+  if (!combo) return null;
+  const rest = { ...combo };
+  delete rest.id;
+  delete rest.createdAt;
+  delete rest.updatedAt;
+  const ref = await addDoc(collection(db, 'personagens', personagemId, 'combosDefesa'), {
+    ...rest,
+    nome: `${rest.nome ?? 'Combinação'} (cópia)`,
+    custoFadiga: Number(rest.custoFadiga ?? 0),
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });

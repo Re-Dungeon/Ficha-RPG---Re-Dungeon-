@@ -14,24 +14,27 @@ export const CompanheiroCardButton = styled.button`
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: var(--bg-card);
-  border: 1px solid var(--border-primary);
+  background: linear-gradient(180deg, rgba(26, 22, 40, 0.96), rgba(18, 16, 29, 0.94));
+  border: 1px solid rgba(190, 158, 95, 0.2);
   border-radius: 12px;
   overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
   transition:
     border-color 0.15s ease,
-    transform 0.15s ease;
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 
   &:hover {
     border-color: var(--border-hover);
     transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.24);
   }
 `;
 
 export const CompanheiroImagem = styled.div`
   width: 100%;
   aspect-ratio: 1 / 1;
-  background: var(--bg-secondary);
+  background: linear-gradient(180deg, rgba(18, 16, 29, 0.9), rgba(9, 8, 16, 0.96));
   display: flex;
   align-items: center;
   justify-content: center;

@@ -42,6 +42,7 @@ const AtributosFormBody = ({
   racaNome,
   racaLinkImagem,
   classesNomes,
+  onSave,
 }) => {
   const { values, handleSubmit: submit, isSubmitting, dirty } = formik;
 
@@ -86,6 +87,8 @@ const AtributosFormBody = ({
           centroLabel="Pontos"
           centroValor={pontosPrimarios}
           bonusCultivo={bonusCultivoTotal.primarios}
+          personagem={personagem}
+          onSave={onSave}
         />
 
         <PersonagemHeroCard
@@ -106,6 +109,8 @@ const AtributosFormBody = ({
           centroLabel="Power Combat"
           centroValor={powerCombat}
           bonusCultivo={bonusCultivoTotal.secundarios}
+          personagem={personagem}
+          onSave={onSave}
         />
       </HeroRow>
 
@@ -152,6 +157,7 @@ AtributosFormBody.propTypes = {
   onRestaurar: PropTypes.func.isRequired,
   onDescartar: PropTypes.func.isRequired,
   onExcluir: PropTypes.func.isRequired,
+  onSave: PropTypes.func.isRequired,
   racaNome: PropTypes.string.isRequired,
   racaLinkImagem: PropTypes.string,
   classesNomes: PropTypes.array.isRequired,
@@ -225,6 +231,7 @@ const AtributosTab = ({ personagem, onSave, onExcluir }) => {
           salvarRascunho={salvarRascunho}
           rascunho={rascunhoDisponivel}
           onExcluir={onExcluir}
+          onSave={onSave}
           racaNome={racaNome}
           racaLinkImagem={racaLinkImagem}
           classesNomes={classesNomes}

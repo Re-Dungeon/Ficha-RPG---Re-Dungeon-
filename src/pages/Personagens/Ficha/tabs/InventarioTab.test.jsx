@@ -79,4 +79,20 @@ describe('InventarioTab — fluxo de adicionar item do catálogo', () => {
       ),
     );
   });
+
+  it('usa os primários efetivos, incluindo bônus de cultivo, para calcular o espaço total do inventário', async () => {
+    render(
+      <SavingProvider>
+        <InventarioTab
+          personagem={{
+            ...personagem,
+            cultivoBonus: { primarios: { forca: 10, vitalidade: 10 } },
+          }}
+        />
+      </SavingProvider>,
+    );
+
+    await waitFor(() => expect(getItensInventario).toHaveBeenCalledWith('p1'));
+    expect(screen.getByText('Espaço Total').nextElementSibling).toHaveTextContent('3.00');
+  });
 });

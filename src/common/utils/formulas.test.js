@@ -324,8 +324,8 @@ describe('calcularSecundarios', () => {
   it('calcula os 6 secundários a partir dos totais dos primários (FUNCIONALIDADES.md §2)', () => {
     expect(calcularSecundarios(primariosTotais)).toEqual({
       prontidao: 65,
-      ataque: 4,
-      defesa: 3,
+      ataque: 18,
+      defesa: 14,
       reacao: 8,
       precisao: 3,
       evasao: 3,
@@ -340,8 +340,8 @@ describe('calcularSecundarios', () => {
       { defesa: 1 },
     );
 
-    expect(resultado.ataque).toBe(6);
-    expect(resultado.defesa).toBe(4);
+    expect(resultado.ataque).toBe(20);
+    expect(resultado.defesa).toBe(15);
   });
 
   it('retorna tudo zero quando os primários totais são zero', () => {
@@ -371,8 +371,71 @@ describe('calcularSecundarios', () => {
       defesa: 2,
     });
 
-    expect(resultado.ataque).toBe(9);
-    expect(resultado.defesa).toBe(5);
+    expect(resultado.ataque).toBe(23);
+    expect(resultado.defesa).toBe(16);
+  });
+
+  it('aplica a nova escala de balanceamento para ATA e DEF em 250 e demais referências', () => {
+    expect(
+      calcularSecundarios({
+        forca: 250,
+        vitalidade: 250,
+        agilidade: 250,
+        inteligencia: 250,
+        percepcao: 0,
+        sorte: 250,
+      }).ataque,
+    ).toBe(100);
+
+    expect(
+      calcularSecundarios({
+        forca: 0,
+        vitalidade: 250,
+        agilidade: 250,
+        inteligencia: 0,
+        percepcao: 0,
+        sorte: 250,
+      }).defesa,
+    ).toBe(75);
+
+    expect(
+      calcularSecundarios({
+        forca: 200,
+        vitalidade: 0,
+        agilidade: 0,
+        inteligencia: 100,
+        percepcao: 0,
+        sorte: 0,
+      }).ataque,
+    ).toBe(68);
+
+    expect(
+      calcularSecundarios({
+        forca: 0,
+        vitalidade: 200,
+        agilidade: 100,
+        inteligencia: 0,
+        percepcao: 0,
+        sorte: 50,
+      }).defesa,
+    ).toBe(47);
+  });
+
+  it('mantém os resultados em zero, baixos e altos sem quebrar a escala de ATA/DEF', () => {
+    const cenarios = [
+      { primarios: { forca: 0, vitalidade: 0, agilidade: 0, inteligencia: 0, percepcao: 0, sorte: 0 }, ataque: 0, defesa: 0 },
+      { primarios: { forca: 10, vitalidade: 10, agilidade: 10, inteligencia: 10, percepcao: 0, sorte: 10 }, ataque: 4, defesa: 3 },
+      { primarios: { forca: 100, vitalidade: 100, agilidade: 100, inteligencia: 100, percepcao: 0, sorte: 100 }, ataque: 40, defesa: 30 },
+      { primarios: { forca: 250, vitalidade: 250, agilidade: 250, inteligencia: 250, percepcao: 0, sorte: 250 }, ataque: 100, defesa: 75 },
+      { primarios: { forca: 500, vitalidade: 500, agilidade: 500, inteligencia: 500, percepcao: 0, sorte: 500 }, ataque: 200, defesa: 150 },
+      { primarios: { forca: 1000, vitalidade: 1000, agilidade: 1000, inteligencia: 1000, percepcao: 0, sorte: 1000 }, ataque: 400, defesa: 300 },
+    ];
+
+    cenarios.forEach(({ primarios, ataque, defesa }) => {
+      const resultado = calcularSecundarios(primarios);
+      expect(resultado.ataque).toBe(ataque);
+      expect(resultado.defesa).toBe(defesa);
+    });
   });
 });
 
