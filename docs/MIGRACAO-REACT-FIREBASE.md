@@ -68,6 +68,25 @@ Outras simplificações deliberadas (escolhas de escopo, não bugs):
   - **Música da mesa (2026-10-18)**: ícone 🎵 na linha de ações do chat abre `components/Chat/AudioDialog.jsx` — todos veem o que toca e ajustam o próprio volume/mudo (localStorage, por aparelho); o mestre cola um link do YouTube (watch/youtu.be/shorts/embed/live/music, `t=` vira o início — `extrairVideoYoutube`), pausa/retoma, para e liga o "Repetir" (padrão ligado). Estado em `rmCampanhas/{id}/audio/atual` → `{videoId, estado ('tocando'|'pausado'|'parado'), posicaoBase, repetir, referenciaEm (horário do servidor)}`; cada cliente calcula a posição atual (`posicaoAtual` em `common/utils/audioMesa.js`), então todos ouvem no mesmo ponto (±1–2 s de relógio). Só o mestre grava (regra), inclusive daqui. O áudio vem da IFrame API do YouTube (`common/utils/youtubeApi.js`, carregada só quando há música) num player **escondido** (`components/Chat/PlayerAudioMesa.jsx`, decisão consciente — zona cinzenta dos termos do YouTube), montado pela página fora do `ChatSala` para seguir tocando com o painel de chat fechado; corrige a deriva a cada 4 s. Autoplay bloqueado pelo navegador → aviso "Clique para ouvir a música da mesa"; se o clique não bastar, o player aparece num canto para um toque direto no ▶. Sem mensagem no chat ao trocar de música.
   - Componentes apresentacionais em `components/Chat/` e `components/Grid/` e funções puras em `common/utils/chat.js`/`grid.js` são **cópias** dos do Re:Master — mantenha os dois em sincronia (e os limites alinhados com o bloco do chat no fim de `firestore.rules`).
 
+### Suporte a celular — ✅ implementado em 2026-10-18
+
+Abaixo de 600px o site tem um layout próprio para celular. Acima disso, o desktop ficou idêntico, conferido pixel a pixel com Playwright contra a versão anterior. Convenções em `CLAUDE.md` (Estilização → "Celular"). Resumo:
+- **Cabeçalho:** Fichas e Campanhas só com ícone. E-mail e Sair num menu da conta.
+- **Ficha:**
+  - A sidebar vira gaveta (Drawer, botão ☰ ao lado das abas). As abas ficam compactas, com ícone em cima e rótulo curto.
+  - Atributos empilhado, com o herói no topo.
+  - Aptidões, Perfil, Lojas, Treinamento e Códex em uma coluna.
+  - Seletor de Classe/Raça com a lista em cima.
+  - Diálogos grandes em tela cheia, via `theme.js`.
+- **Mesa (`/campanhas/:id/grid`):**
+  - Alternador Mapa | Chat em tela cheia, começando no mapa. Um badge conta as mensagens novas (`common/utils/mesa.js`).
+  - O mapa abre focado no primeiro token que o jogador pode mover, com célula de pelo menos 44px (`vistaFocadaNoToken` em `common/utils/grid.js`). "Centralizar" mostra o mapa inteiro.
+- **Chat:**
+  - O botão de apagar fica sempre visível, sem depender de hover.
+  - Placeholder curto no campo de mensagem.
+  - O "toque para ouvir" da música vira um botão ♪ de 44px no canto superior direito.
+  - Mudanças espelhadas no Re:Master.
+
 ### Testes
 
 `common/utils/formulas.js` e `hooks/useDraftLocalStorage.js` têm cobertura de teste completa (fórmulas puras + o hook de rascunho, com `vi.useFakeTimers()` para o debounce). Além disso, 3 testes de fluxo com Testing Library (mockando Firebase, sem tocar rede real): criar personagem (`NovoPersonagem.test.jsx`), editar atributos (`AtributosTab.test.jsx`), adicionar item ao inventário (`InventarioTab.test.jsx`).

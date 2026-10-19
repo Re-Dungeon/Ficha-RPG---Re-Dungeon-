@@ -1,5 +1,7 @@
 import styled from 'styled-components';
 
+import { MOBILE } from 'common/styles/breakpoints';
+
 export const CampanhaCard = styled.div`
   display: flex;
   flex-direction: column;
@@ -68,6 +70,11 @@ export const MesaBarra = styled.div`
   align-items: center;
   gap: 12px;
   margin-bottom: 12px;
+
+  ${MOBILE} {
+    gap: 8px;
+    margin-bottom: 8px;
+  }
 `;
 
 export const MesaCorpo = styled.div`
@@ -78,6 +85,14 @@ export const MesaCorpo = styled.div`
 
   @media (max-width: 900px) {
     flex-direction: column;
+  }
+
+  /* Celular: mapa OU chat (data-aba vem de CampanhaChat). */
+  ${MOBILE} {
+    &[data-aba='chat'] > :first-child,
+    &[data-aba='mapa'] > :last-child {
+      display: none;
+    }
   }
 `;
 
@@ -91,5 +106,10 @@ export const MesaChatPainel = styled.div`
   @media (max-width: 900px) {
     width: 100%;
     height: 45%;
+  }
+
+  ${MOBILE} {
+    flex: 1;
+    height: auto;
   }
 `;

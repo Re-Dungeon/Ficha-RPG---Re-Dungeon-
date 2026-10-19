@@ -163,6 +163,19 @@ export const MeuCard = styled.div`
 `;
 ```
 
+#### Celular (abaixo de 600px)
+
+Muitos jogadores só acessam pelo celular. Ajustes de celular ficam **sempre** atrás de um único breakpoint, `max-width: 599.95px` (o `down('sm')` do MUI). **Regra:** a partir de 600px (tablet, notebook, desktop, até com a janela estreita) nada muda — nem CSS, nem JSX.
+- **styled-components:** `${MOBILE} { ... }` no **fim** da regra (`import { MOBILE } from 'common/styles/breakpoints'`).
+- **`sx`:** use a chave `[MOBILE]: { ... }`. Não use `{ xs, sm }`, que emite CSS também para ≥600px.
+- **Troca estrutural** (renderizar outra coisa, como a gaveta da ficha ou o Mapa | Chat da mesa): `useIsMobile()` de `hooks/useIsMobile`. Em teste, mocke o hook (`vi.mock('hooks/useIsMobile', ...)`), porque o jsdom não aplica media query. Exemplos: `Ficha.test.jsx` e o teste "celular" de `CampanhaChat.test.jsx`.
+- **Diálogos:** o `theme.js` já põe em tela cheia, no celular, todo diálogo "grande" (`fullWidth` que não é `xs`, ou `maxWidth` md/lg/xl). Os pequenos ficam como cartão com margem menor.
+  - Se o diálogo fixar width/height/raio no `sx` do paper, espalhe `...PAPER_TELA_CHEIA` (de `common/styles/breakpoints`).
+  - Em tela cheia não há fundo para tocar e fechar, então todo diálogo grande precisa de um botão Fechar ou Cancelar visível.
+- **Componentes compartilhados com o Re:Master** (`components/Chat`, `components/Grid`, `common/utils/grid.js`): use a query **literal** (`'@media (max-width: 599.95px)'` e `useMediaQuery('(max-width: 599.95px)')`), sem importar de `common/styles`, para a cópia continuar autocontida.
+- **Validação:** compare screenshots de desktop antes e depois com Playwright, e confira o celular a 360px e a 390px procurando rolagem horizontal (`scrollWidth > innerWidth`).
+  - Use uma viewport alta (ex.: 1280×2400), porque o redimensionamento do screenshot `fullPage` muda o estado dos botões de rolagem das abas da ficha e gera falso positivo.
+
 ---
 
 ### Serviço de Armazenamento

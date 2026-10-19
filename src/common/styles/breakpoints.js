@@ -2,7 +2,10 @@
 // para celular fica atrás desta media query: a 600px ou mais (tablet,
 // notebook, desktop — mesmo com a janela estreita) nada muda.
 // Mesmo valor de `theme.breakpoints.down('sm')` (ver hooks/useIsMobile.js).
-export const MOBILE = '@media (max-width: 599.95px)';
+// Os componentes compartilhados com o Re:Master (components/Chat, Grid)
+// repetem a query literal para seguirem autocontidos.
+export const MOBILE_QUERY = '(max-width: 599.95px)';
+export const MOBILE = `@media ${MOBILE_QUERY}`;
 
 // Para espalhar no `sx` do paper de diálogos que fixam width/altura/raio
 // inline (o `sx` vence o override de tela cheia do theme.js).

@@ -21,9 +21,11 @@ import {
   subscribeChatSecretasDoUsuario,
 } from 'service/storage';
 import { executarMacro as rodarMacroNoWorker } from 'common/lua/executarMacro';
+import useIsMobile from 'hooks/useIsMobile';
 import CampanhaChat from './CampanhaChat';
 
 vi.mock('context/AuthContext', () => ({ useAuth: vi.fn() }));
+vi.mock('hooks/useIsMobile', () => ({ default: vi.fn(() => false) }));
 // Sem Web Worker no jsdom: a execução Lua é simulada (o runtime real tem
 // testes próprios em common/lua/luaRuntime.test.js).
 vi.mock('common/lua/executarMacro', () => {
@@ -104,6 +106,7 @@ const MENSAGENS = [
 describe('CampanhaChat', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    useIsMobile.mockReturnValue(false);
     useAuth.mockReturnValue({ currentUser: { uid: 'uid-jogador' } });
     getRmCampanha.mockResolvedValue({
       id: 'camp-1',
@@ -733,6 +736,40 @@ describe('CampanhaChat', () => {
 
       fireEvent.click(screen.getByRole('button', { name: 'Ocultar chat' }));
       expect(screen.queryByText('Bem-vindos à taverna.')).not.toBeInTheDocument();
+    });
+
+    it('celular: alterna Mapa | Chat (começa no mapa) e conta as mensagens novas', async () => {
+      useIsMobile.mockReturnValue(true);
+      let novasMensagens;
+      subscribeChatMensagens.mockImplementation((_campanhaId, onChange) => {
+        novasMensagens = onChange;
+        onChange(MENSAGENS);
+        return vi.fn();
+      });
+      renderChat(null, '/campanhas/camp-1/grid');
+
+      const mapa = await screen.findByRole('button', { name: /Aldric, coluna/ });
+      const corpo = mapa.closest('[data-aba]');
+      expect(corpo).toHaveAttribute('data-aba', 'mapa');
+      // Mapa | Chat substitui Chat|Grid e "Ocultar chat".
+      expect(screen.queryByRole('button', { name: 'Grid' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Ocultar chat' })).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Chat' })).toBeInTheDocument();
+
+      act(() =>
+        novasMensagens([
+          ...MENSAGENS,
+          { ...MENSAGENS[0], id: 'm4', texto: 'Rolem iniciativa.', createdAt: new Date(Date.now() + 60000) },
+        ]),
+      );
+      fireEvent.click(await screen.findByRole('button', { name: 'Chat, 1 novas' }));
+
+      expect(corpo).toHaveAttribute('data-aba', 'chat');
+      expect(screen.getByText('Rolem iniciativa.')).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Mapa' }));
+      expect(corpo).toHaveAttribute('data-aba', 'mapa');
+      expect(screen.getByRole('button', { name: 'Chat' })).toBeInTheDocument();
     });
   });
 });

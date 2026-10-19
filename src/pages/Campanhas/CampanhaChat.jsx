@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useLocation, useNavigate, useOutletContext, useParams } from 'react-router-dom';
+import Badge from '@mui/material/Badge';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import MenuItem from '@mui/material/MenuItem';
@@ -15,6 +16,9 @@ import { useAuth } from 'context/AuthContext';
 import { useSelecao } from 'context/selecaoContext';
 import { getPersonagens, getRmCampanha } from 'service/storage';
 import { personagensNaCampanha } from 'common/utils/chat';
+import { contarNaoLidas, idDaUltimaMensagem } from 'common/utils/mesa';
+import { MOBILE } from 'common/styles/breakpoints';
+import useIsMobile from 'hooks/useIsMobile';
 import useChatCampanha from 'hooks/useChatCampanha';
 import useGridCampanha from 'hooks/useGridCampanha';
 import ChatSala from 'components/Chat/ChatSala';
@@ -45,6 +49,11 @@ const CampanhaChat = ({ visao = 'chat' }) => {
   const [falandoComo, setFalandoComo] = useState('');
   const [erro, setErro] = useState(null);
   const [chatAberto, setChatAberto] = useState(true);
+  // Celular, visão grid: mapa OU chat em tela cheia (começa no mapa). O badge
+  // do "Chat" conta o que chegou desde a última vez que se saiu do chat.
+  const isMobile = useIsMobile();
+  const [abaMesa, setAbaMesa] = useState('mapa');
+  const [ultimaVistaId, setUltimaVistaId] = useState(undefined);
 
   const isMestre = campanha?.mestreId === currentUser.uid;
   const temAcesso = isMestre || meusPersonagens.length > 0;
@@ -121,6 +130,17 @@ const CampanhaChat = ({ visao = 'chat' }) => {
     isMestre: Boolean(autor?.isMestre),
     ehMestreDaCampanha: isMestre,
   });
+  if (ultimaVistaId === undefined && !chat.carregando) {
+    setUltimaVistaId(idDaUltimaMensagem(chat.mensagens));
+  }
+  const naoLidas =
+    isMobile && abaMesa === 'mapa' ? contarNaoLidas(chat.mensagens, ultimaVistaId) : 0;
+  const trocarAbaMesa = (_event, novaAba) => {
+    if (!novaAba || novaAba === abaMesa) return;
+    if (novaAba === 'mapa') setUltimaVistaId(idDaUltimaMensagem(chat.mensagens));
+    setAbaMesa(novaAba);
+  };
+
   const erroExibido = erro ?? chat.erro ?? grid.erro;
   const fecharErro = () => {
     setErro(null);
@@ -184,7 +204,7 @@ const CampanhaChat = ({ visao = 'chat' }) => {
         label="Falando como"
         value={falandoComo}
         onChange={event => setFalandoComo(event.target.value)}
-        sx={{ minWidth: 200 }}
+        sx={{ minWidth: 200, [MOBILE]: { minWidth: 0, flex: 1 } }}
       >
         {opcoesFalarComo.map(opcao => (
           <MenuItem key={opcao.value} value={opcao.value}>
@@ -218,30 +238,60 @@ const CampanhaChat = ({ visao = 'chat' }) => {
     let aviso = null;
     if (grid.carregando) aviso = 'Carregando o grid…';
     else if (grid.semCena) aviso = 'O mestre ainda não abriu uma cena.';
+    // No celular o alternador Mapa | Chat substitui Chat|Grid e "Ocultar chat".
+    const alternadorMesa = (
+      <ToggleButtonGroup
+        size="small"
+        exclusive
+        value={abaMesa}
+        onChange={trocarAbaMesa}
+        aria-label="Mostrar mapa ou chat"
+      >
+        <ToggleButton value="mapa" aria-label="Mapa">
+          <GridOnIcon fontSize="small" sx={{ mr: 0.5 }} /> Mapa
+        </ToggleButton>
+        <ToggleButton value="chat" aria-label={naoLidas ? `Chat, ${naoLidas} novas` : 'Chat'}>
+          <Badge badgeContent={naoLidas} color="secondary" max={99} sx={{ mr: 0.5 }}>
+            <ChatOutlinedIcon fontSize="small" />
+          </Badge>{' '}
+          Chat
+        </ToggleButton>
+      </ToggleButtonGroup>
+    );
     return (
       <ChatPageWrapper>
         {/* Primeiro filho nas duas visões: não remonta (nem corta a música) ao
             alternar Chat/Grid, e segue tocando com o painel de chat fechado. */}
         <PlayerAudioMesa {...chat.audio.player} />
         <MesaBarra>
-          {seletorVisao}
+          {isMobile ? alternadorMesa : seletorVisao}
           {falandoComoCampo}
           {grid.nomeCena && (
-            <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
+            <Typography
+              variant="body2"
+              sx={{
+                color: 'var(--text-secondary)',
+                [MOBILE]: { width: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+              }}
+            >
               Cena: <strong>{grid.nomeCena}</strong>
             </Typography>
           )}
-          <Button
-            size="small"
-            startIcon={<ChatOutlinedIcon fontSize="small" />}
-            onClick={() => setChatAberto(aberto => !aberto)}
-            aria-pressed={chatAberto}
-            sx={{ ml: 'auto' }}
-          >
-            {chatAberto ? 'Ocultar chat' : 'Mostrar chat'}
-          </Button>
+          {!isMobile && (
+            <Button
+              size="small"
+              startIcon={<ChatOutlinedIcon fontSize="small" />}
+              onClick={() => setChatAberto(aberto => !aberto)}
+              aria-pressed={chatAberto}
+              sx={{ ml: 'auto' }}
+            >
+              {chatAberto ? 'Ocultar chat' : 'Mostrar chat'}
+            </Button>
+          )}
         </MesaBarra>
-        <MesaCorpo>
+        {/* data-aba: no celular, o CSS mostra só o mapa ou só o chat — os dois
+            seguem montados (zoom do mapa e rolagem do chat não se perdem). */}
+        <MesaCorpo data-aba={isMobile ? abaMesa : undefined}>
           {/* key: trocar de cena recomeça zoom/pan (mapa encaixado). */}
           <GridMapa
             key={grid.cenaId ?? 'sem-cena'}
@@ -251,7 +301,7 @@ const CampanhaChat = ({ visao = 'chat' }) => {
             onMover={grid.mover}
             aviso={aviso}
           />
-          {chatAberto && (
+          {(chatAberto || isMobile) && (
             <MesaChatPainel>
               {chatSala(
                 <Typography sx={{ color: 'var(--text-primary)', fontWeight: 700 }}>
