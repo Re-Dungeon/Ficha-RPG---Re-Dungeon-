@@ -3,12 +3,12 @@ export const QUALIDADE_OPTIONS = ['Comum', 'Raro', 'Épico', 'Lendário', 'Míti
 // Cor por qualidade do item — portada de InventarioItemModal.css (--color-quality-*)
 // do site vanilla original, pra manter a mesma paleta visual dos badges/bordas.
 export const QUALIDADE_META = {
-  Comum: { cor: '#9a9a9a' },
-  Raro: { cor: '#2ecc71' },
-  Épico: { cor: '#9b59b6' },
-  Lendário: { cor: '#f39c12' },
-  Mítico: { cor: '#e74c3c' },
-  Celestial: { cor: '#3498db' },
+  Comum: { cor: '#f5f5f5' },
+  Raro: { cor: '#34d399' },
+  Épico: { cor: '#b07ae6' },
+  Lendário: { cor: '#f59e0b' },
+  Mítico: { cor: '#ef4444' },
+  Celestial: { cor: '#2dd4bf' },
 };
 
 // Emoji por tipo de item — mesma ideia de InventarioUI.obterEmojiTipo() do site

@@ -31,7 +31,12 @@ import {
   removeNucleo,
   removeVariante,
 } from 'service/storage';
-import { calcularPowerCombat, calcularPrimariosTotais, calcularSecundarios } from 'common/utils/formulas';
+import {
+  calcularBonusCultivoTotal,
+  calcularPowerCombat,
+  calcularPrimariosTotais,
+  calcularSecundarios,
+} from 'common/utils/formulas';
 import { getNome } from 'common/utils/resolveNome';
 import { useSaving } from 'context/SavingContext';
 
@@ -264,10 +269,12 @@ const ClasseModal = ({ open, onClose, personagem, onSave }) => {
     : 'Limite atingido';
   const bloqueada = !jaEscolhida && isMaxReached;
 
+  const bonusCultivoTotal = calcularBonusCultivoTotal(personagem.cultivoBonus ?? {});
   const primariosTotais = calcularPrimariosTotais(
     personagem.atributosBase,
     personagem.atributosExtra,
     personagem.atributosBonus,
+    bonusCultivoTotal.primarios,
   );
   const secundariosTotais = calcularSecundarios(
     primariosTotais,

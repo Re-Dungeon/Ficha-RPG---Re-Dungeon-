@@ -24,8 +24,15 @@ export const FichaMain = styled.div`
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  padding: 32px;
+  gap: 20px;
+  padding: 20px 24px 32px;
+  background-color: #090b14;
+  background-image:
+    linear-gradient(rgba(7, 5, 14, 0.78), rgba(7, 5, 14, 0.86)),
+    url('https://i.imgur.com/EkhmWLL.jpeg');
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
 `;
 
 export const SectionTitle = styled.h2`
@@ -54,18 +61,19 @@ export const AttributesGrid = styled.div`
 `;
 
 export const AtributoCardWrapper = styled.div`
-  background: var(--bg-card);
-  border: 1px solid var(--border-primary);
+  background: linear-gradient(180deg, rgba(18, 16, 29, 0.98), rgba(12, 10, 20, 0.96));
+  border: 1px solid rgba(190, 158, 95, 0.22);
   border-radius: 12px;
   padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
 `;
 
 export const AtributoCardButton = styled.button`
-  background: var(--bg-card);
-  border: 1px solid var(--border-primary);
+  background: linear-gradient(180deg, rgba(18, 16, 29, 0.98), rgba(12, 10, 20, 0.96));
+  border: 1px solid rgba(190, 158, 95, 0.22);
   border-radius: 12px;
   padding: 16px;
   display: flex;
@@ -75,6 +83,7 @@ export const AtributoCardButton = styled.button`
   text-align: left;
   font-family: inherit;
   cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
 
   &:hover {
     border-color: var(--border-hover);

@@ -16,7 +16,12 @@ import {
   updateNucleo,
   updateVariante,
 } from 'service/storage';
-import { calcularLimiteArts, calcularPrimariosTotais, reorganizarArts } from 'common/utils/formulas';
+import {
+  calcularBonusCultivoTotal,
+  calcularLimiteArts,
+  calcularPrimariosTotais,
+  reorganizarArts,
+} from 'common/utils/formulas';
 import { useSaving } from 'context/SavingContext';
 
 import ArtsSection from '../arts/ArtsSection';
@@ -96,10 +101,19 @@ const ArtsTab = ({ personagem }) => {
     };
   }, [personagem.universo]);
 
-  const primariosTotais = calcularPrimariosTotais(
-    personagem.atributosBase,
-    personagem.atributosExtra,
-    personagem.atributosBonus,
+  const bonusCultivoTotal = useMemo(
+    () => calcularBonusCultivoTotal(personagem.cultivoBonus ?? {}),
+    [personagem.cultivoBonus],
+  );
+  const primariosTotais = useMemo(
+    () =>
+      calcularPrimariosTotais(
+        personagem.atributosBase,
+        personagem.atributosExtra,
+        personagem.atributosBonus,
+        bonusCultivoTotal.primarios,
+      ),
+    [bonusCultivoTotal.primarios, personagem.atributosBase, personagem.atributosBonus, personagem.atributosExtra],
   );
   const limite = calcularLimiteArts(primariosTotais);
   const ativas = arts.filter(art => art.ativa).length;

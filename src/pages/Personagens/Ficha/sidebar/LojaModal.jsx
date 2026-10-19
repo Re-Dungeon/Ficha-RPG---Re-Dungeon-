@@ -18,7 +18,11 @@ import {
   updateItemInventario,
   updateReceitaInventario,
 } from 'service/storage';
-import { calcularEspacoInventario, calcularPrimariosTotais } from 'common/utils/formulas';
+import {
+  calcularBonusCultivoTotal,
+  calcularEspacoInventario,
+  calcularPrimariosTotais,
+} from 'common/utils/formulas';
 import { getNome } from 'common/utils/resolveNome';
 import { useSaving } from 'context/SavingContext';
 
@@ -109,10 +113,12 @@ const LojaModal = ({ open, onClose, personagem, onSave, onInventarioAtualizado =
     };
   }, [open, personagem.universo]);
 
+  const bonusCultivoTotal = calcularBonusCultivoTotal(personagem.cultivoBonus ?? {});
   const primariosTotais = calcularPrimariosTotais(
     personagem.atributosBase,
     personagem.atributosExtra,
     personagem.atributosBonus,
+    bonusCultivoTotal.primarios,
   );
   const itensParaEspaco = itensInventario.map(item => ({
     espaco: item.pesoUnitario ?? 0,

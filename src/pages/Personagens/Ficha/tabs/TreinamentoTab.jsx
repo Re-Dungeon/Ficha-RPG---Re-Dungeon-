@@ -1,15 +1,17 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { calcularPrimariosTotais } from 'common/utils/formulas';
+import { calcularBonusCultivoTotal, calcularPrimariosTotais } from 'common/utils/formulas';
 
 import TreinamentoSection from '../progressao/TreinamentoSection';
 
 const TreinamentoTab = ({ personagem, onSave }) => {
+  const bonusCultivoTotal = calcularBonusCultivoTotal(personagem.cultivoBonus ?? {});
   const primariosTotais = calcularPrimariosTotais(
     personagem.atributosBase,
     personagem.atributosExtra,
     personagem.atributosBonus,
+    bonusCultivoTotal.primarios,
   );
 
   return (

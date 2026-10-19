@@ -16,27 +16,42 @@ export const EspacoGrid = styled.div`
 `;
 
 export const EspacoCard = styled.div`
-  background: rgba(0, 0, 0, 0.25);
-  border-left: 3px solid var(--status-gold);
-  border-radius: 8px;
-  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 132px;
+  background: rgba(17, 14, 28, 0.97);
+  border: 1px solid rgba(207, 169, 100, 0.25);
+  border-radius: 12px;
+  padding: 16px 18px;
   text-align: center;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.35);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    border-color: rgba(207, 169, 100, 0.38);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.42);
+  }
 `;
 
 export const EspacoLabel = styled.div`
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 1px;
-  font-weight: 600;
-  margin-bottom: 6px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  text-align: center;
 `;
 
 export const EspacoValor = styled.div`
   font-size: 1.5rem;
   font-weight: 700;
+  line-height: 1.2;
   color: var(--status-gold-strong);
-  text-shadow: 0 0 12px rgba(232, 203, 133, 0.3);
+  text-shadow: 0 0 12px rgba(232, 203, 133, 0.2);
+  text-align: center;
 
   &[data-status='ok'] {
     color: #7eff7e;
