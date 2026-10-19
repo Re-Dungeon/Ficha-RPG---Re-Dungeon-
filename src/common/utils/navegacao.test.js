@@ -36,6 +36,16 @@ describe('destinoCampanhas', () => {
     expect(destinoCampanhas({ personagem: wesley, campanhaId: 'c9' }).to).toBe('/campanhas/c1/chat');
   });
 
+  it('reabre a última visão usada (grid)', () => {
+    expect(
+      destinoCampanhas({ personagem: wesley, campanhaId: 'c2', visaoCampanha: 'grid' }).to,
+    ).toBe('/campanhas/c2/grid');
+    expect(destinoCampanhas({ personagem: null, campanhaId: 'c3', visaoCampanha: 'grid' })).toEqual({
+      to: '/campanhas/c3/grid',
+      state: null,
+    });
+  });
+
   it('personagem sem campanha (ou NPC) cai no último chat aberto ou na lista', () => {
     const npc = { id: 'npc', tipo: 'NPC', campanhas: ['c1'] };
     expect(destinoCampanhas({ personagem: npc, campanhaId: 'c3' })).toEqual({

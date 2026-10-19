@@ -3,28 +3,31 @@ import { campanhaIdsDosPersonagens } from 'common/utils/chat';
 // Destino dos links "Fichas"/"Campanhas" do cabeçalho: alternar entre as duas
 // seções reabre o que estava selecionado em vez de voltar para a lista.
 // `selecao` = { personagem: {id, tipo, companheiroDe, campanhas} | null,
-//               campanhaId: string | null } — mantida pelo Layout
+//               campanhaId: string | null,
+//               visaoCampanha: 'chat' | 'grid' } — mantida pelo Layout
 // (context/selecaoContext.js), preenchida pela Ficha e pelo chat e limpa
 // pelas páginas de lista.
 
-export const SELECAO_VAZIA = { personagem: null, campanhaId: null };
+export const SELECAO_VAZIA = { personagem: null, campanhaId: null, visaoCampanha: 'chat' };
 
 export const destinoFichas = selecao =>
   selecao.personagem ? `/personagens/${selecao.personagem.id}` : '/personagens';
 
-// Com um personagem selecionado, abre o chat de uma campanha dele — a última
+// Com um personagem selecionado, abre a mesa de uma campanha dele — a última
 // aberta, se ele estiver nela, senão a primeira da ficha — já "falando como"
-// ele. NPC/Criatura/companheiro não entram no chat (mesmo critério de
-// common/utils/chat.js), então caem no último chat aberto ou na lista.
+// ele, na última visão usada (chat ou grid). NPC/Criatura/companheiro não
+// entram na mesa (mesmo critério de common/utils/chat.js), então caem na
+// última campanha aberta ou na lista.
 export const destinoCampanhas = selecao => {
   const { personagem, campanhaId } = selecao;
+  const visao = selecao.visaoCampanha === 'grid' ? 'grid' : 'chat';
   const campanhasDoPersonagem = personagem ? campanhaIdsDosPersonagens([personagem]) : [];
 
   if (campanhasDoPersonagem.length > 0) {
     const alvo = campanhasDoPersonagem.includes(campanhaId) ? campanhaId : campanhasDoPersonagem[0];
-    return { to: `/campanhas/${alvo}/chat`, state: { personagemId: personagem.id } };
+    return { to: `/campanhas/${alvo}/${visao}`, state: { personagemId: personagem.id } };
   }
-  if (campanhaId) return { to: `/campanhas/${campanhaId}/chat`, state: null };
+  if (campanhaId) return { to: `/campanhas/${campanhaId}/${visao}`, state: null };
   return { to: '/campanhas', state: null };
 };
 

@@ -35,8 +35,11 @@ import {
   calcularStatusMaximos,
   ordenarReinosCultivo,
   podeAdicionarPontoCultivo,
+  removerBonusCultivoDosReinos,
   resolverLimiteCultivoPorAtributo,
+  resolverMapaCultivoPorTrilhas,
   resolverPermissaoCultivoPorAtributo,
+  separarTrilhasCultivo,
 } from 'common/utils/formulas';
 import { getNome } from 'common/utils/resolveNome';
 import { useSaving } from 'context/SavingContext';
@@ -365,7 +368,7 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
   const { executar } = useSaving();
   const [subUniversos, setSubUniversos] = useState([]);
   const [carregandoSistemas, setCarregandoSistemas] = useState(false);
-  const [reinos, setReinos] = useState([]);
+  const [reinosCatalogo, setReinosCatalogo] = useState([]);
   const [carregandoReinos, setCarregandoReinos] = useState(false);
   const [xpGanhoInput, setXpGanhoInput] = useState('');
   const [subUniversoSelecionado, setSubUniversoSelecionado] = useState('');
@@ -393,22 +396,48 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
   // `cultivo` é um mapa keyed por subUniverso; em universos sem múltiplos
   // sistemas usamos uma chave interna estável em vez de `''`, porque Firestore
   // rejeita chaves vazias em objetos aninhados.
-  const cultivoMap = useMemo(() => normalizarMapaCultivo(personagem.cultivo), [personagem.cultivo]);
-  // Universos com múltiplos sistemas paralelos (ex.: Cultivo → "Doupo
-  // Cangqiong", "Martial Peak") têm o campo `SubUniversos` no doc `Universo` e
-  // exigem escolher um antes de ver os Reinos. Universos sem esse campo vão
-  // direto pra trilha (Reinos com `subUniverso: ''`).
-  const temSistemas = subUniversos.length > 0;
+  const cultivoMapSalvo = useMemo(() => normalizarMapaCultivo(personagem.cultivo), [personagem.cultivo]);
+  // Há duas formas de um universo ter múltiplos sistemas paralelos:
+  // 1. Declarados: campo `SubUniversos` no doc `Universo` (ex.: Cultivo →
+  //    "Doupo Cangqiong", "Martial Peak"); os Reinos de cada um têm
+  //    `subUniverso: <nome>` e são buscados por aba. Chave no mapa = nome.
+  // 2. Detectados: sem `SubUniversos`, mas os Reinos (`subUniverso: ''`)
+  //    formam mais de uma trilha — cada Reino com `reinoAnterior` vazio inicia
+  //    uma (ex.: "Crônica da Luz e Sombras": Aspirante, Besta, Dormant). Chave
+  //    no mapa = id do Reino raiz; a aba mostra o nome dele.
+  // Com uma trilha só não há abas e a chave é `CHAVE_CULTIVO_PADRAO`.
+  const modoSubUniversos = subUniversos.length > 0;
+  const trilhas = useMemo(
+    () => (modoSubUniversos ? [] : separarTrilhasCultivo(reinosCatalogo.filter(reino => !reino.subUniverso))),
+    [modoSubUniversos, reinosCatalogo],
+  );
+  const modoTrilhas = trilhas.length > 1;
+  const sistemas = useMemo(() => {
+    if (modoSubUniversos) {
+      return subUniversos.map(nome => ({ chave: nome, label: nome }));
+    }
+    if (modoTrilhas) {
+      return trilhas.map(({ raiz }) => ({ chave: raiz.id, label: getNome(raiz) }));
+    }
+    return [];
+  }, [modoSubUniversos, modoTrilhas, subUniversos, trilhas]);
+  const temSistemas = sistemas.length > 0;
+  // Progresso salvo antes das trilhas serem detectadas está em `principal` —
+  // aqui ele já aparece na trilha certa, e a próxima escrita persiste a troca.
+  const cultivoMap = useMemo(
+    () => (modoTrilhas ? resolverMapaCultivoPorTrilhas(cultivoMapSalvo, trilhas).mapa : cultivoMapSalvo),
+    [modoTrilhas, cultivoMapSalvo, trilhas],
+  );
   // Aba mostra só os sistemas que o personagem já possui (uma entrada no mapa
   // `cultivo`) — trocar entre eles é só clicar na aba, sem reabrir seletor.
   // "+" abre o menu com os sistemas restantes pra começar um novo em paralelo.
   const iniciados = useMemo(
-    () => subUniversos.filter(nome => cultivoMap[nome]),
-    [subUniversos, cultivoMap],
+    () => sistemas.filter(sistema => cultivoMap[sistema.chave]),
+    [sistemas, cultivoMap],
   );
   const naoIniciados = useMemo(
-    () => subUniversos.filter(nome => !cultivoMap[nome]),
-    [subUniversos, cultivoMap],
+    () => sistemas.filter(sistema => !cultivoMap[sistema.chave]),
+    [sistemas, cultivoMap],
   );
   const chaveAtual = temSistemas ? subUniversoSelecionado : CHAVE_CULTIVO_PADRAO;
   const cultivoReinoId = cultivoMap[chaveAtual]?.reinoId ?? '';
@@ -443,21 +472,25 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
 
   // Um sistema "pronto" pra mostrar Reinos é: o universo não ter múltiplos
   // sistemas, ou a aba selecionada ser um dos sistemas já iniciados.
-  const sistemaSelecionadoValido = !temSistemas || iniciados.includes(subUniversoSelecionado);
+  const sistemaSelecionadoValido =
+    !temSistemas || iniciados.some(sistema => sistema.chave === subUniversoSelecionado);
+  // Com `SubUniversos`, os Reinos vêm por sistema e só depois de escolher uma
+  // aba; sem, vêm todos de uma vez (as trilhas detectadas saem deles, então
+  // trocar de aba não refaz a busca).
+  const podeCarregarReinos = !modoSubUniversos || sistemaSelecionadoValido;
+  const filtroSubUniverso = modoSubUniversos ? subUniversoSelecionado : '';
 
-  // Reinos da trilha (do universo, e do sistema escolhido quando o universo
-  // tiver mais de um), já ordenados pela lista ligada `reinoAnterior`.
   useEffect(() => {
-    if (!open || carregandoSistemas || !sistemaSelecionadoValido) {
-      setReinos([]);
+    if (!open || carregandoSistemas || !podeCarregarReinos) {
+      setReinosCatalogo([]);
       return undefined;
     }
     let isMounted = true;
     setCarregandoReinos(true);
-    getReinosCultivo(universoId, temSistemas ? chaveAtual : '')
+    getReinosCultivo(universoId, filtroSubUniverso)
       .then(itens => {
         if (isMounted) {
-          setReinos(ordenarReinosCultivo(itens));
+          setReinosCatalogo(itens);
           setCarregandoReinos(false);
         }
       })
@@ -471,7 +504,18 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
     return () => {
       isMounted = false;
     };
-  }, [open, carregandoSistemas, sistemaSelecionadoValido, chaveAtual, temSistemas, universoId]);
+  }, [open, carregandoSistemas, podeCarregarReinos, filtroSubUniverso, universoId]);
+
+  // Trilha do sistema exibido, já ordenada pela lista ligada `reinoAnterior`.
+  const reinos = useMemo(() => {
+    if (modoSubUniversos) {
+      return ordenarReinosCultivo(reinosCatalogo);
+    }
+    if (modoTrilhas) {
+      return trilhas.find(trilha => trilha.raiz.id === subUniversoSelecionado)?.reinos ?? [];
+    }
+    return trilhas[0]?.reinos ?? [];
+  }, [modoSubUniversos, modoTrilhas, reinosCatalogo, trilhas, subUniversoSelecionado]);
 
   useEffect(() => {
     if (open) {
@@ -494,14 +538,11 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
   // visualização — nunca mexe na progressão de nenhum sistema. Se nenhum
   // sistema foi iniciado ainda, não seleciona nada (mostra o estado vazio).
   useEffect(() => {
-    if (!open || !temSistemas || iniciados.length === 0) {
+    if (!open || !temSistemas || iniciados.length === 0 || sistemaSelecionadoValido) {
       return;
     }
-    if (iniciados.includes(subUniversoSelecionado)) {
-      return;
-    }
-    setSubUniversoSelecionado(iniciados[0]);
-  }, [open, temSistemas, iniciados, subUniversoSelecionado]);
+    setSubUniversoSelecionado(iniciados[0].chave);
+  }, [open, temSistemas, iniciados, sistemaSelecionadoValido]);
 
   const reinoAtual = useMemo(
     () => reinos.find(reino => reino.id === cultivoReinoId) ?? reinos[0] ?? null,
@@ -609,11 +650,11 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
   // (é o que faz o sistema aparecer como uma aba própria a partir de agora) e
   // muda a visualização pra ele — os demais sistemas continuam intactos.
   const handleAdicionarSistema = useCallback(
-    nome => {
+    chave => {
       setAddMenuAnchor(null);
       return executar(() =>
-        onSave({ cultivo: { ...cultivoMap, [nome]: { reinoId: '', xpAtual: 0 } } }),
-      ).then(() => setSubUniversoSelecionado(nome));
+        onSave({ cultivo: criarPatchCultivo(cultivoMap, chave, { reinoId: '', xpAtual: 0 }) }),
+      ).then(() => setSubUniversoSelecionado(chave));
     },
     [cultivoMap, onSave, executar],
   );
@@ -781,30 +822,14 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
         xpAtual: 0,
       });
 
-      const categorias = ['primarios', 'secundarios', 'status'];
-      let bonusSemReset = JSON.parse(JSON.stringify(personagem.cultivoBonus ?? {}));
-
-      if (!resetCompleto) {
-        categorias.forEach(categoria => {
-          const grupo = bonusSemReset[categoria] ?? {};
-          Object.keys(grupo).forEach(atributo => {
-            const rankMap = grupo[atributo] ?? {};
-            if (rankMap && typeof rankMap === 'object' && destinoReino.id in rankMap) {
-              delete rankMap[destinoReino.id];
-            }
-            if (Object.keys(rankMap ?? {}).length === 0) {
-              delete grupo[atributo];
-            }
-          });
-          if (Object.keys(grupo).length === 0) {
-            delete bonusSemReset[categoria];
-          } else {
-            bonusSemReset[categoria] = grupo;
-          }
-        });
-      } else {
-        bonusSemReset = {};
-      }
+      // Remove os pontos do Reino de destino (volta com 0 estrelas) e dos
+      // posteriores, só desta trilha — os outros sistemas mantêm os seus. O
+      // reset completo é o mesmo caso com destino no 1º Reino.
+      const indiceDestino = Math.max(0, reinos.findIndex(reino => reino.id === destinoReino.id));
+      const bonusSemReset = removerBonusCultivoDosReinos(
+        personagem.cultivoBonus ?? {},
+        reinos.slice(indiceDestino).map(reino => reino.id),
+      );
 
       await onSave({ cultivo: patchCultivo, cultivoBonus: bonusSemReset });
       setResetConfirmAberto(false);
@@ -888,7 +913,7 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
         {!carregandoSistemas && temSistemas && iniciados.length > 0 && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 }}>
             <Tabs
-              value={iniciados.includes(subUniversoSelecionado) ? subUniversoSelecionado : false}
+              value={sistemaSelecionadoValido ? subUniversoSelecionado : false}
               onChange={handleSelecionarSubUniverso}
               variant="scrollable"
               scrollButtons="auto"
@@ -900,8 +925,8 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
                 '& .MuiTab-root': { minHeight: 40, textTransform: 'none', borderRadius: '12px 12px 0 0' },
               }}
             >
-              {iniciados.map(nome => (
-                <Tab key={nome} value={nome} label={nome} />
+              {iniciados.map(({ chave, label }) => (
+                <Tab key={chave} value={chave} label={label} />
               ))}
             </Tabs>
             {naoIniciados.length > 0 && (
@@ -920,9 +945,9 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
 
         {!carregandoSistemas && temSistemas && naoIniciados.length > 0 && (
           <Menu anchorEl={addMenuAnchor} open={Boolean(addMenuAnchor)} onClose={() => setAddMenuAnchor(null)}>
-            {naoIniciados.map(nome => (
-              <MenuItem key={nome} onClick={() => handleAdicionarSistema(nome)}>
-                {nome}
+            {naoIniciados.map(({ chave, label }) => (
+              <MenuItem key={chave} onClick={() => handleAdicionarSistema(chave)}>
+                {label}
               </MenuItem>
             ))}
           </Menu>
@@ -1807,7 +1832,7 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
         <DialogContent>
           <DialogContentText>
             {resetCompleto
-              ? 'Todo o progresso de cultivo será removido e o personagem retornará ao primeiro estágio.'
+              ? `Todo o progresso de cultivo ${temSistemas ? 'deste sistema ' : ''}será removido e o personagem retornará ao primeiro estágio.`
               : 'Todo o progresso dos reinos posteriores será removido.'}
           </DialogContentText>
         </DialogContent>

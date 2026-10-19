@@ -29,6 +29,9 @@ import {
   calcularXpNecessarioNivel,
   dominioVarianteValido,
   ordenarReinosCultivo,
+  removerBonusCultivoDosReinos,
+  resolverMapaCultivoPorTrilhas,
+  separarTrilhasCultivo,
   podeRolarFortunaHoje,
   reorganizarArts,
   removerBonusCultivoPorRank,
@@ -1094,5 +1097,105 @@ describe('ordenarReinosCultivo', () => {
 
   it('lista vazia devolve lista vazia', () => {
     expect(ordenarReinosCultivo([])).toEqual([]);
+  });
+});
+
+describe('separarTrilhasCultivo', () => {
+  // Três trilhas paralelas, embaralhadas (como em "Crônica da Luz e Sombras").
+  const reinos = [
+    { id: 'b2', reinoAnterior: 'b1', nome: 'Monstro' },
+    { id: 'a1', reinoAnterior: '', nome: 'Aspirante' },
+    { id: 'c1', reinoAnterior: '', nome: 'Dormant' },
+    { id: 'a2', reinoAnterior: 'a1', nome: 'Adormecido' },
+    { id: 'b1', reinoAnterior: '', nome: 'Besta' },
+    { id: 'c2', reinoAnterior: 'c1', nome: 'Awakened' },
+    { id: 'a3', reinoAnterior: 'a2', nome: 'Desperto' },
+  ];
+
+  it('separa cada raiz (reinoAnterior vazio) numa trilha própria, na ordem em que as raízes aparecem', () => {
+    const trilhas = separarTrilhasCultivo(reinos);
+    expect(trilhas.map(t => t.raiz.id)).toEqual(['a1', 'c1', 'b1']);
+    expect(trilhas.map(t => t.reinos.map(r => r.id))).toEqual([
+      ['a1', 'a2', 'a3'],
+      ['c1', 'c2'],
+      ['b1', 'b2'],
+    ]);
+  });
+
+  it('com uma raiz só devolve uma trilha começando por ela, com o órfão no fim', () => {
+    const comOrfao = [
+      { id: 'orfao', reinoAnterior: 'inexistente' },
+      { id: 'a', reinoAnterior: '' },
+      { id: 'b', reinoAnterior: 'a' },
+    ];
+    const trilhas = separarTrilhasCultivo(comOrfao);
+    expect(trilhas).toHaveLength(1);
+    expect(trilhas[0].raiz.id).toBe('a');
+    expect(trilhas[0].reinos.map(r => r.id)).toEqual(['a', 'b', 'orfao']);
+  });
+
+  it('reinoAnterior quebrado não vira trilha nova — o órfão vai pro fim da 1ª trilha', () => {
+    const trilhas = separarTrilhasCultivo([...reinos, { id: 'x', reinoAnterior: 'nao-existe' }]);
+    expect(trilhas).toHaveLength(3);
+    expect(trilhas[0].reinos.map(r => r.id)).toEqual(['a1', 'a2', 'a3', 'x']);
+  });
+
+  it('lista vazia devolve nenhuma trilha', () => {
+    expect(separarTrilhasCultivo([])).toEqual([]);
+  });
+});
+
+describe('resolverMapaCultivoPorTrilhas', () => {
+  const trilhas = [
+    { raiz: { id: 'a1' }, reinos: [{ id: 'a1' }, { id: 'a2' }] },
+    { raiz: { id: 'b1' }, reinos: [{ id: 'b1' }, { id: 'b2' }] },
+  ];
+
+  it('move o progresso legado de `principal` pra trilha que contém o Reino salvo', () => {
+    const { mapa, migrou } = resolverMapaCultivoPorTrilhas(
+      { principal: { reinoId: 'b2', xpAtual: 40 } },
+      trilhas,
+    );
+    expect(migrou).toBe(true);
+    expect(mapa).toEqual({ b1: { reinoId: 'b2', xpAtual: 40 } });
+  });
+
+  it('`principal` com reinoId vazio vai pra 1ª trilha', () => {
+    const { mapa } = resolverMapaCultivoPorTrilhas({ principal: { reinoId: '', xpAtual: 5 } }, trilhas);
+    expect(mapa).toEqual({ a1: { reinoId: '', xpAtual: 5 } });
+  });
+
+  it('não sobrescreve uma trilha que já tem progresso próprio', () => {
+    const cultivo = { principal: { reinoId: 'b2', xpAtual: 40 }, b1: { reinoId: 'b1', xpAtual: 1 } };
+    expect(resolverMapaCultivoPorTrilhas(cultivo, trilhas)).toEqual({ mapa: cultivo, migrou: false });
+  });
+
+  it('sem várias trilhas (ou sem `principal`) devolve o mapa intacto', () => {
+    const cultivo = { principal: { reinoId: 'a2', xpAtual: 3 } };
+    expect(resolverMapaCultivoPorTrilhas(cultivo, [trilhas[0]])).toEqual({ mapa: cultivo, migrou: false });
+    expect(resolverMapaCultivoPorTrilhas({ a1: { reinoId: 'a1', xpAtual: 0 } }, trilhas).migrou).toBe(false);
+  });
+});
+
+describe('removerBonusCultivoDosReinos', () => {
+  const bonus = {
+    primarios: { forca: { a1: 2, b1: 3 }, agilidade: { a2: 1 }, sorte: 4 },
+    status: { hp: { a1: 5 } },
+  };
+
+  it('remove só os Reinos pedidos e limpa atributos/categorias vazios', () => {
+    expect(removerBonusCultivoDosReinos(bonus, ['a1', 'a2'])).toEqual({
+      primarios: { forca: { b1: 3 }, sorte: 4 },
+    });
+  });
+
+  it('não muta o objeto original', () => {
+    const copia = JSON.parse(JSON.stringify(bonus));
+    removerBonusCultivoDosReinos(bonus, ['a1', 'b1', 'a2']);
+    expect(bonus).toEqual(copia);
+  });
+
+  it('bônus vazio/ausente devolve objeto vazio', () => {
+    expect(removerBonusCultivoDosReinos(undefined, ['a1'])).toEqual({});
   });
 });

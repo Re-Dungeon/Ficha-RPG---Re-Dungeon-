@@ -6,7 +6,12 @@
 export const CHAT_TEXTO_MAX = 2000;
 export const CHAT_URL_MAX = 2000;
 
-export const TIPOS_MENSAGEM = { TEXTO: 'texto', IMAGEM: 'imagem' };
+export const TIPOS_MENSAGEM = { TEXTO: 'texto', IMAGEM: 'imagem', ROLAGEM: 'rolagem', MACRO: 'macro' };
+
+// Mensagem gerada por `enviar(texto)` de uma macro Lua — limite maior que o
+// do texto digitado (relatórios como o "dano_impacto" passam de 2000).
+export const CHAT_MACRO_TEXTO_MAX = 4000;
+export const MACRO_NOME_MAX = 100;
 
 // Quem "fala" na mensagem. O mestre pode interpretar NPCs e Criaturas da
 // campanha (Re:Master) — a mensagem continua `isMestre: true` e a regra só
@@ -110,6 +115,43 @@ export const montarMensagemImagem = (autor, url) => ({
   texto: '',
   url: url.trim(),
 });
+
+// `rolagem` = resultado de rolarEspecificacao (common/utils/dados.js). Rolagens
+// secretas vão para chatSecretas/{uid}/rolagens (não para chatMensagens) e
+// levam `secreta: true` — a regra exige o campo só nesse caminho.
+export const montarMensagemRolagem = (autor, rolagem, secreta = false) => ({
+  ...camposAutor(autor),
+  tipo: TIPOS_MENSAGEM.ROLAGEM,
+  texto: '',
+  url: null,
+  rolagem,
+  ...(secreta ? { secreta: true } : {}),
+});
+
+export const montarMensagemMacro = (autor, macroNome, texto) => ({
+  ...camposAutor(autor),
+  tipo: TIPOS_MENSAGEM.MACRO,
+  texto: String(texto ?? '').slice(0, CHAT_MACRO_TEXTO_MAX),
+  url: null,
+  macroNome: String(macroNome ?? '').slice(0, MACRO_NOME_MAX) || 'macro',
+});
+
+const instanteDaMensagem = mensagem => {
+  const { createdAt } = mensagem;
+  if (!createdAt) return Number.MAX_SAFE_INTEGER; // ainda sem timestamp = acabou de ser enviada
+  if (createdAt instanceof Date) return createdAt.getTime();
+  if (typeof createdAt.toMillis === 'function') return createdAt.toMillis();
+  return Number.MAX_SAFE_INTEGER;
+};
+
+// Junta as mensagens públicas com as rolagens secretas visíveis ao usuário
+// numa só linha do tempo (mais antiga primeiro). Ordenação estável: empates
+// mantêm públicas antes das secretas.
+export const mesclarMensagens = (publicas, secretas) =>
+  [...publicas, ...secretas]
+    .map((mensagem, indice) => ({ mensagem, indice }))
+    .sort((a, b) => instanteDaMensagem(a.mensagem) - instanteDaMensagem(b.mensagem) || a.indice - b.indice)
+    .map(({ mensagem }) => mensagem);
 
 const paraDate = valor => {
   if (!valor) return null;

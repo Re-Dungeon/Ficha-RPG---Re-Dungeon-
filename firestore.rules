@@ -454,21 +454,44 @@ service cloud.firestore {
         personagemDoUsuarioNaCampanha(campanhaId, get(membroPath).data.personagemId);
     }
 
+    // Rolagem de dados (common/utils/dados.js): o dado é rolado no cliente e a
+    // regra só valida a ESTRUTURA — Firestore Rules não têm laços, então não
+    // dá para somar `resultados` nem conferir a faixa de cada dado.
+    function chatRolagemValida(rolagem) {
+      return rolagem is map &&
+        rolagem.keys().hasOnly(['grupos', 'termos', 'modificador', 'total']) &&
+        rolagem.keys().hasAll(['grupos', 'termos', 'modificador', 'total']) &&
+        rolagem.grupos is list && rolagem.grupos.size() >= 1 && rolagem.grupos.size() <= 10 &&
+        rolagem.termos is list && rolagem.termos.size() <= 20 &&
+        rolagem.modificador is int && rolagem.total is int;
+    }
+
     // Espelha os limites de common/utils/chat.js (CHAT_TEXTO_MAX/CHAT_URL_MAX,
     // PERSONAS). O mestre pode falar como 'mestre', ou interpretar um NPC/
     // Criatura da mesa ('npc'/'criatura', com o nome/avatar dele em
     // autorNome/autorAvatar); jogador é sempre 'jogador'.
-    function chatMensagemValida(campanhaId, data) {
-      return data.keys().hasOnly(['uid', 'personagemId', 'autorNome', 'autorAvatar',
-                                  'isMestre', 'persona', 'tipo', 'texto', 'url', 'createdAt']) &&
+    // `secreta`: true só no caminho chatSecretas/{uid}/rolagens (o campo
+    // `secreta` do doc tem que bater com o caminho).
+    function chatMensagemValida(campanhaId, data, secreta) {
+      return data.keys().hasOnly(['uid', 'personagemId', 'autorNome', 'autorAvatar', 'isMestre',
+                                  'persona', 'tipo', 'texto', 'url', 'rolagem', 'secreta',
+                                  'macroNome', 'createdAt']) &&
         data.uid == request.auth.uid &&
         data.createdAt == request.time &&
+        data.get('secreta', false) == secreta &&
         data.autorNome is string && data.autorNome.size() > 0 && data.autorNome.size() <= 200 &&
         (data.autorAvatar == null || (data.autorAvatar is string && data.autorAvatar.size() <= 2000)) &&
-        data.texto is string && data.texto.size() <= 2000 &&
-        ((data.tipo == 'texto' && data.texto.size() > 0 && data.url == null) ||
-         (data.tipo == 'imagem' && data.url is string && data.url.size() <= 2000 &&
-          data.url.matches('https://.+'))) &&
+        data.texto is string && data.texto.size() <= 4000 &&
+        ((data.tipo == 'texto' && data.texto.size() > 0 && data.texto.size() <= 2000 &&
+          data.url == null && !data.keys().hasAny(['rolagem', 'macroNome'])) ||
+         (data.tipo == 'imagem' && data.texto.size() <= 2000 && data.url is string &&
+          data.url.size() <= 2000 && data.url.matches('https://.+') &&
+          !data.keys().hasAny(['rolagem', 'macroNome'])) ||
+         (data.tipo == 'rolagem' && data.texto == '' && data.url == null &&
+          !data.keys().hasAny(['macroNome']) && chatRolagemValida(data.get('rolagem', null))) ||
+         (data.tipo == 'macro' && data.texto.size() > 0 && data.url == null &&
+          !data.keys().hasAny(['rolagem']) && data.macroNome is string &&
+          data.macroNome.size() > 0 && data.macroNome.size() <= 100)) &&
         ((data.isMestre == true && data.personagemId == null &&
           data.persona in ['mestre', 'npc', 'criatura'] && isMestreDaCampanha(campanhaId)) ||
          (data.isMestre == false && data.persona == 'jogador' &&
@@ -488,9 +511,160 @@ service cloud.firestore {
     // Sem update: mensagens não são editáveis (v1). Apagar: autor ou mestre.
     match /rmCampanhas/{campanhaId}/chatMensagens/{mensagemId} {
       allow read: if isMestreDaCampanha(campanhaId) || isMembroDoChat(campanhaId);
-      allow create: if isAuth() && chatMensagemValida(campanhaId, request.resource.data);
+      allow create: if isAuth() && chatMensagemValida(campanhaId, request.resource.data, false);
       allow delete: if isAuth() &&
         (resource.data.uid == request.auth.uid || isMestreDaCampanha(campanhaId));
+    }
+
+    // Rolagens secretas: uma pasta por usuário — só o dono e o mestre da
+    // campanha leem. Os outros jogadores não ficam sabendo que houve rolagem.
+    match /rmCampanhas/{campanhaId}/chatSecretas/{donoUid}/rolagens/{rolagemId} {
+      allow read: if isAuth() &&
+        (donoUid == request.auth.uid || isMestreDaCampanha(campanhaId));
+      allow create: if isAuth() && donoUid == request.auth.uid &&
+        request.resource.data.tipo == 'rolagem' &&
+        chatMensagemValida(campanhaId, request.resource.data, true);
+      allow delete: if isAuth() &&
+        (donoUid == request.auth.uid || isMestreDaCampanha(campanhaId));
+    }
+
+    // Macros Lua da campanha (common/lua/ + common/utils/macros.js). Só o
+    // mestre cria/edita/apaga; membros leem as que não são `somenteMestre`
+    // (a consulta do jogador filtra `somenteMestre == false`, senão a lista
+    // inteira é recusada). Executar uma macro nunca grava aqui — ela roda
+    // isolada num Web Worker e só gera mensagens em chatMensagens.
+    function chatMacroValida(data) {
+      return data.keys().hasOnly(['nome', 'descricao', 'codigo', 'somenteMestre', 'ordem',
+                                  'createdAt', 'updatedAt']) &&
+        data.nome is string && data.nome.size() > 0 && data.nome.size() <= 100 &&
+        data.get('descricao', '') is string && data.get('descricao', '').size() <= 300 &&
+        data.codigo is string && data.codigo.size() > 0 && data.codigo.size() <= 51200 &&
+        data.somenteMestre is bool &&
+        data.ordem is int;
+    }
+
+    match /rmCampanhas/{campanhaId}/macros/{macroId} {
+      allow read: if isMestreDaCampanha(campanhaId) ||
+        (isMembroDoChat(campanhaId) && resource.data.somenteMestre == false);
+      allow create, update: if isMestreDaCampanha(campanhaId) &&
+        chatMacroValida(request.resource.data);
+      allow delete: if isMestreDaCampanha(campanhaId);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Grid da campanha (common/utils/grid.js) — mesmo acesso do chat, em
+    // CENAS: `gridCenas/{cenaId}` (imagem + grade) com os próprios tokens em
+    // `gridCenas/{cenaId}/tokens`; `grid/atual` = {cenaAtivaId}. O mestre
+    // cria/edita/apaga tudo (Re:Master) e prepara cenas em segredo: o jogador
+    // só lê a cena ATIVA e os tokens dela, e só MOVE (col/lin) os tokens em
+    // que o uid dele está em `donos`. Tokens `oculto` só o mestre lê — a
+    // consulta do jogador filtra `oculto == false` (senão é recusada).
+    // ═══════════════════════════════════════════════════════════════════════
+
+    function gridImagemValida(url) {
+      return url == null || (url is string && url.size() <= 2000 && url.matches('https://.+'));
+    }
+
+    function gridCenaAtiva(campanhaId, cenaId) {
+      let ponteiro = /databases/$(database)/documents/rmCampanhas/$(campanhaId)/grid/atual;
+      return exists(ponteiro) && get(ponteiro).data.get('cenaAtivaId', null) == cenaId;
+    }
+
+    // Jogador da mesa olhando a cena ativa.
+    function veCenaDoGrid(campanhaId, cenaId) {
+      return isMembroDoChat(campanhaId) && gridCenaAtiva(campanhaId, cenaId);
+    }
+
+    function gridCenaValida(data) {
+      return data.keys().hasOnly(['nome', 'imagemUrl', 'celula', 'deslocamentoX', 'deslocamentoY',
+                                  'mostrarGrade', 'corGrade', 'opacidadeGrade',
+                                  'createdAt', 'updatedAt']) &&
+        data.nome is string && data.nome.size() > 0 && data.nome.size() <= 100 &&
+        gridImagemValida(data.get('imagemUrl', null)) &&
+        data.celula is int && data.celula >= 10 && data.celula <= 400 &&
+        data.deslocamentoX is int && data.deslocamentoX >= 0 && data.deslocamentoX <= 400 &&
+        data.deslocamentoY is int && data.deslocamentoY >= 0 && data.deslocamentoY <= 400 &&
+        data.mostrarGrade is bool &&
+        data.corGrade is string && data.corGrade.matches('#[0-9a-fA-F]{6}') &&
+        data.opacidadeGrade is number && data.opacidadeGrade >= 0 && data.opacidadeGrade <= 1;
+    }
+
+    function gridPosicaoValida(data) {
+      return data.col is int && data.col >= 0 && data.col <= 500 &&
+        data.lin is int && data.lin >= 0 && data.lin <= 500;
+    }
+
+    function gridTokenValido(data) {
+      return data.keys().hasOnly(['nome', 'imagemUrl', 'tipo', 'refId', 'col', 'lin', 'tamanho',
+                                  'donos', 'oculto', 'createdAt', 'updatedAt']) &&
+        data.keys().hasAll(['nome', 'tipo', 'col', 'lin', 'tamanho', 'donos', 'oculto']) &&
+        data.nome is string && data.nome.size() > 0 && data.nome.size() <= 100 &&
+        gridImagemValida(data.get('imagemUrl', null)) &&
+        data.tipo in ['jogador', 'npc', 'criatura', 'avulso'] &&
+        (data.get('refId', null) == null ||
+         (data.refId is string && data.refId.size() <= 200)) &&
+        gridPosicaoValida(data) &&
+        data.tamanho is int && data.tamanho >= 1 && data.tamanho <= 10 &&
+        data.donos is list && data.donos.size() <= 20 &&
+        data.oculto is bool;
+    }
+
+    // Ponteiro da cena ativa (null = nenhuma cena visível aos jogadores).
+    match /rmCampanhas/{campanhaId}/grid/{gridId} {
+      allow read: if isMestreDaCampanha(campanhaId) || isMembroDoChat(campanhaId);
+      allow create, update: if gridId == 'atual' && isMestreDaCampanha(campanhaId) &&
+        request.resource.data.keys().hasOnly(['cenaAtivaId', 'updatedAt']) &&
+        (request.resource.data.get('cenaAtivaId', null) == null ||
+         (request.resource.data.cenaAtivaId is string &&
+          request.resource.data.cenaAtivaId.size() <= 200));
+      allow delete: if isMestreDaCampanha(campanhaId);
+    }
+
+    match /rmCampanhas/{campanhaId}/gridCenas/{cenaId} {
+      allow read: if isMestreDaCampanha(campanhaId) || veCenaDoGrid(campanhaId, cenaId);
+      allow create, update: if isMestreDaCampanha(campanhaId) &&
+        gridCenaValida(request.resource.data);
+      allow delete: if isMestreDaCampanha(campanhaId);
+    }
+
+    match /rmCampanhas/{campanhaId}/gridCenas/{cenaId}/tokens/{tokenId} {
+      allow read: if isMestreDaCampanha(campanhaId) ||
+        (resource.data.oculto == false && veCenaDoGrid(campanhaId, cenaId));
+      allow create: if isMestreDaCampanha(campanhaId) && gridTokenValido(request.resource.data);
+      allow update: if (isMestreDaCampanha(campanhaId) && gridTokenValido(request.resource.data)) ||
+        (isAuth() && request.auth.uid in resource.data.donos &&
+         resource.data.oculto == false &&
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['col', 'lin', 'updatedAt']) &&
+         request.resource.data.updatedAt == request.time &&
+         gridPosicaoValida(request.resource.data) &&
+         veCenaDoGrid(campanhaId, cenaId));
+      allow delete: if isMestreDaCampanha(campanhaId);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Música da mesa (common/utils/audioMesa.js) — faixa do YouTube tocando
+    // para todos com o chat da campanha aberto. Mesmo acesso do chat para
+    // ler; só o mestre grava. `referenciaEm` = horário do servidor na gravação
+    // (cada cliente calcula a posição atual a partir dele).
+    // ═══════════════════════════════════════════════════════════════════════
+
+    function audioMesaValido(data) {
+      return data.keys().hasOnly(['videoId', 'estado', 'posicaoBase', 'repetir',
+                                  'referenciaEm', 'updatedAt']) &&
+        data.keys().hasAll(['videoId', 'estado', 'posicaoBase', 'repetir', 'referenciaEm']) &&
+        ((data.videoId == null && data.estado == 'parado') ||
+         (data.videoId is string && data.videoId.matches('[A-Za-z0-9_-]{11}') &&
+          data.estado in ['tocando', 'pausado'])) &&
+        data.posicaoBase is number && data.posicaoBase >= 0 && data.posicaoBase <= 86400 &&
+        data.repetir is bool &&
+        data.referenciaEm == request.time;
+    }
+
+    match /rmCampanhas/{campanhaId}/audio/{audioId} {
+      allow read: if isMestreDaCampanha(campanhaId) || isMembroDoChat(campanhaId);
+      allow create, update: if audioId == 'atual' && isMestreDaCampanha(campanhaId) &&
+        audioMesaValido(request.resource.data);
+      allow delete: if isMestreDaCampanha(campanhaId);
     }
   }
 }

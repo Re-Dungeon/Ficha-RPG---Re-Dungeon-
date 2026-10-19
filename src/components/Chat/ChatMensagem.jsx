@@ -6,6 +6,7 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 
 import { TIPOS_MENSAGEM, formatarHorarioMensagem, rotuloPersona } from 'common/utils/chat';
 
+import RolagemMensagem from './RolagemMensagem';
 import {
   MensagemAcoes,
   MensagemAutor,
@@ -15,12 +16,19 @@ import {
   MensagemImagem,
   MensagemLink,
   MensagemLinha,
+  MensagemMacroTexto,
+  MensagemMacroTitulo,
   MensagemPersona,
   MensagemTexto,
 } from './styles';
 
 const ChatMensagem = ({ mensagem, minha, podeApagar, onApagar }) => {
   const [imagemFalhou, setImagemFalhou] = useState(false);
+
+  if (mensagem.tipo === TIPOS_MENSAGEM.ROLAGEM && mensagem.rolagem) {
+    return <RolagemMensagem mensagem={mensagem} podeApagar={podeApagar} onApagar={onApagar} />;
+  }
+
   const { autorNome, autorAvatar, isMestre, tipo, texto, url, createdAt } = mensagem;
   const persona = rotuloPersona(mensagem);
 
@@ -63,7 +71,13 @@ const ChatMensagem = ({ mensagem, minha, podeApagar, onApagar }) => {
             {url}
           </MensagemLink>
         )}
-        {tipo !== TIPOS_MENSAGEM.IMAGEM && <MensagemTexto>{texto}</MensagemTexto>}
+        {tipo === TIPOS_MENSAGEM.MACRO && (
+          <>
+            <MensagemMacroTitulo>⚙ {mensagem.macroNome}</MensagemMacroTitulo>
+            <MensagemMacroTexto>{texto}</MensagemMacroTexto>
+          </>
+        )}
+        {tipo !== TIPOS_MENSAGEM.IMAGEM && tipo !== TIPOS_MENSAGEM.MACRO && <MensagemTexto>{texto}</MensagemTexto>}
 
         {podeApagar && (
           <MensagemAcoes className="chat-acoes">
@@ -90,6 +104,8 @@ ChatMensagem.propTypes = {
     isMestre: PropTypes.bool,
     persona: PropTypes.string,
     tipo: PropTypes.string,
+    rolagem: PropTypes.object,
+    macroNome: PropTypes.string,
     texto: PropTypes.string,
     url: PropTypes.string,
     createdAt: PropTypes.oneOfType([PropTypes.object, PropTypes.instanceOf(Date)]),

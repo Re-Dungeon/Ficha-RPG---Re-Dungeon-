@@ -6,7 +6,10 @@ import {
   formatarHorarioMensagem,
   isTextoMensagemValido,
   isUrlImagemValida,
+  mesclarMensagens,
   montarMensagemImagem,
+  montarMensagemMacro,
+  montarMensagemRolagem,
   montarMensagemTexto,
   normalizarAvatar,
   personagensNaCampanha,
@@ -118,6 +121,48 @@ describe('montarMensagem*', () => {
       texto: '',
       url: 'https://exemplo.com/mapa.gif',
     });
+  });
+});
+
+describe('montarMensagemRolagem', () => {
+  const rolagem = { grupos: [{ quantidade: 1, faces: 6, resultados: [6] }], termos: [8], modificador: 8, total: 14 };
+  const autor = { uid: 'u1', personagemId: 'p1', autorNome: 'Wesley Chase' };
+
+  it('rolagem pública não leva o campo secreta', () => {
+    const mensagem = montarMensagemRolagem(autor, rolagem);
+    expect(mensagem).toMatchObject({ tipo: 'rolagem', texto: '', url: null, rolagem, persona: 'jogador' });
+    expect(mensagem).not.toHaveProperty('secreta');
+  });
+
+  it('rolagem secreta leva secreta: true', () => {
+    expect(montarMensagemRolagem(autor, rolagem, true).secreta).toBe(true);
+  });
+});
+
+describe('montarMensagemMacro', () => {
+  it('leva o nome da macro e o texto gerado', () => {
+    const autor = { uid: 'u1', personagemId: 'p1', autorNome: 'Wesley Chase' };
+    expect(montarMensagemMacro(autor, 'dano_impacto', 'DANO FINAL: 32')).toMatchObject({
+      tipo: 'macro',
+      macroNome: 'dano_impacto',
+      texto: 'DANO FINAL: 32',
+      url: null,
+      persona: 'jogador',
+    });
+    expect(montarMensagemMacro(autor, '', 'x'.repeat(5000)).texto).toHaveLength(4000);
+  });
+});
+
+describe('mesclarMensagens', () => {
+  it('intercala públicas e secretas por horário; sem horário vai para o fim', () => {
+    const em = minuto => ({ toMillis: () => minuto * 60000 });
+    const publicas = [
+      { id: 'p1', createdAt: em(1) },
+      { id: 'p3', createdAt: em(3) },
+      { id: 'p-pendente', createdAt: null },
+    ];
+    const secretas = [{ id: 's2', createdAt: new Date(2 * 60000) }];
+    expect(mesclarMensagens(publicas, secretas).map(m => m.id)).toEqual(['p1', 's2', 'p3', 'p-pendente']);
   });
 });
 

@@ -903,3 +903,87 @@ export const ordenarReinosCultivo = (reinos = []) => {
   });
   return ordenados;
 };
+
+// Um universo sem `SubUniversos` pode ainda assim ter várias trilhas de Reinos
+// paralelas (ex.: "Crônica da Luz e Sombras": Aspirante…, Besta…, Dormant…),
+// todas com `subUniverso: ''` — cada Reino com `reinoAnterior` vazio inicia
+// uma trilha própria. Só raízes ESTRITAS (`reinoAnterior` vazio) contam: um
+// `reinoAnterior` apontando pra um id inexistente é dado quebrado, não um
+// sistema novo. Reinos não alcançados por nenhuma raiz vão pro fim da 1ª
+// trilha pra nunca sumirem; sem nenhuma raiz estrita, cai na trilha única de
+// `ordenarReinosCultivo`.
+export const separarTrilhasCultivo = (reinos = []) => {
+  const raizes = reinos.filter(reino => !reino.reinoAnterior);
+  if (raizes.length === 0) {
+    const ordenados = ordenarReinosCultivo(reinos);
+    return ordenados.length ? [{ raiz: ordenados[0], reinos: ordenados }] : [];
+  }
+
+  const proximoPorAnterior = new Map();
+  reinos.forEach(reino => {
+    if (reino.reinoAnterior) {
+      proximoPorAnterior.set(reino.reinoAnterior, reino);
+    }
+  });
+
+  const visitados = new Set();
+  const trilhas = raizes.map(raiz => {
+    const ordenados = [];
+    let atual = raiz;
+    while (atual && !visitados.has(atual.id)) {
+      visitados.add(atual.id);
+      ordenados.push(atual);
+      atual = proximoPorAnterior.get(atual.id);
+    }
+    return { raiz, reinos: ordenados };
+  });
+  trilhas[0].reinos.push(...reinos.filter(reino => !visitados.has(reino.id)));
+  return trilhas;
+};
+
+// Antes das trilhas paralelas serem detectadas, o progresso desses universos
+// ficava todo na chave `principal` do mapa `cultivo`. Move esse progresso pra
+// chave da trilha que contém o Reino salvo (id do Reino raiz; `reinoId: ''` =
+// 1º Reino da 1ª trilha) — só se essa trilha ainda não tiver progresso próprio.
+export const resolverMapaCultivoPorTrilhas = (cultivoMap = {}, trilhas = []) => {
+  const { principal, ...resto } = cultivoMap;
+  if (!principal || trilhas.length <= 1) {
+    return { mapa: cultivoMap, migrou: false };
+  }
+
+  const trilha = principal.reinoId
+    ? trilhas.find(t => t.reinos.some(reino => reino.id === principal.reinoId))
+    : trilhas[0];
+  if (!trilha || resto[trilha.raiz.id]) {
+    return { mapa: cultivoMap, migrou: false };
+  }
+
+  return { mapa: { ...resto, [trilha.raiz.id]: principal }, migrou: true };
+};
+
+// `cultivoBonus` é `{ [categoria]: { [atributo]: { [reinoId]: pontos } } }` e
+// é compartilhado por todos os sistemas (ids de Reino são únicos). Remove só as
+// entradas dos Reinos pedidos — usado pelo Reset pra não apagar os pontos dos
+// outros sistemas — limpando atributos/categorias que ficarem vazios.
+export const removerBonusCultivoDosReinos = (cultivoBonus = {}, reinoIds = []) => {
+  const remover = new Set(reinoIds);
+  return Object.entries(cultivoBonus ?? {}).reduce((acc, [categoria, grupo]) => {
+    const grupoFiltrado = Object.entries(grupo ?? {}).reduce((accGrupo, [atributo, porReino]) => {
+      if (!porReino || typeof porReino !== 'object') {
+        accGrupo[atributo] = porReino;
+        return accGrupo;
+      }
+      const restantes = Object.fromEntries(
+        Object.entries(porReino).filter(([reinoId]) => !remover.has(reinoId)),
+      );
+      if (Object.keys(restantes).length > 0) {
+        accGrupo[atributo] = restantes;
+      }
+      return accGrupo;
+    }, {});
+    if (Object.keys(grupoFiltrado).length > 0) {
+      acc[categoria] = grupoFiltrado;
+    }
+    return acc;
+  }, {});
+};

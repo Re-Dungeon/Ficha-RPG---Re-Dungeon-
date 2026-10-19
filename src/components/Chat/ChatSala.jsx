@@ -1,17 +1,37 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
+import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
+import CodeIcon from '@mui/icons-material/Code';
 import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined';
+import MusicNoteIcon from '@mui/icons-material/MusicNote';
+import VolumeOffIcon from '@mui/icons-material/VolumeOff';
 import SendIcon from '@mui/icons-material/Send';
 
 import { CHAT_TEXTO_MAX, isTextoMensagemValido } from 'common/utils/chat';
+import { interpretarComandoRolagem } from 'common/utils/dados';
+import { encontrarMacroPorNome, interpretarComandoMacro } from 'common/utils/macros';
 
+import AudioDialog from './AudioDialog';
+import { audioPropType } from './audioPropType';
 import ChatMensagem from './ChatMensagem';
+import DadoIcone from './DadoIcone';
 import ImagemUrlDialog from './ImagemUrlDialog';
-import { ChatHeader, ChatWrapper, ComposerWrapper, ListaMensagens, ListaVazia } from './styles';
+import MacroPerguntaDialog from './MacroPerguntaDialog';
+import MacrosDialog from './MacrosDialog';
+import RolagemDialog from './RolagemDialog';
+import {
+  ChatHeader,
+  ChatWrapper,
+  ComposerAcoes,
+  ComposerEntrada,
+  ComposerWrapper,
+  ListaMensagens,
+  ListaVazia,
+} from './styles';
 
 // Distância (px) do fim da lista dentro da qual consideramos que o usuário
 // "está acompanhando" a conversa — só nesse caso uma mensagem nova rola a
@@ -27,12 +47,19 @@ const ChatSala = ({
   podeApagarTodas = false,
   onEnviarTexto,
   onEnviarImagem,
+  onRolar,
   onApagar,
+  macros = null,
+  audio = null,
   cabecalho = null,
 }) => {
   const [texto, setTexto] = useState('');
   const [enviando, setEnviando] = useState(false);
   const [dialogImagemAberto, setDialogImagemAberto] = useState(false);
+  const [dialogRolagemAberto, setDialogRolagemAberto] = useState(false);
+  const [dialogMacrosAberto, setDialogMacrosAberto] = useState(false);
+  const [dialogAudioAberto, setDialogAudioAberto] = useState(false);
+  const [erroComando, setErroComando] = useState(null);
   const listaRef = useRef(null);
   const acompanhandoRef = useRef(true);
 
@@ -49,16 +76,53 @@ const ChatSala = ({
       lista.scrollHeight - lista.scrollTop - lista.clientHeight < MARGEM_AUTOSCROLL;
   };
 
+  // "/m nome" roda uma macro da campanha (sem bloquear o campo: as perguntas
+  // dela abrem em diálogo). Nome inexistente = erro sob o campo.
+  const executarComandoMacro = comandoMacro => {
+    if (comandoMacro.erro) {
+      setErroComando(comandoMacro.erro);
+      return;
+    }
+    const macro = macros && encontrarMacroPorNome(macros.lista, comandoMacro.nome);
+    if (!macro) {
+      setErroComando(`Macro "${comandoMacro.nome}" não encontrada.`);
+      return;
+    }
+    acompanhandoRef.current = true;
+    setTexto('');
+    macros.executar(macro);
+  };
+
+  // "/r 1d20+5" (e /roll, /rs, /gr) vira rolagem em vez de mensagem; comando
+  // inválido não é enviado — mostra o erro e mantém o texto para corrigir.
   const enviarTexto = async () => {
     if (!isTextoMensagemValido(texto) || enviando) return;
+    const comandoMacro = interpretarComandoMacro(texto);
+    if (comandoMacro) {
+      executarComandoMacro(comandoMacro);
+      return;
+    }
+    const comando = interpretarComandoRolagem(texto);
+    if (comando?.erro) {
+      setErroComando(comando.erro);
+      return;
+    }
     setEnviando(true);
     acompanhandoRef.current = true;
     try {
-      await onEnviarTexto(texto);
+      await (comando ? onRolar(comando) : onEnviarTexto(texto));
       setTexto('');
+    } catch {
+      // Quem envia já exibiu o erro; o texto fica no campo para tentar de novo.
     } finally {
       setEnviando(false);
     }
+  };
+
+  const handleRolarDialog = async especificacao => {
+    acompanhandoRef.current = true;
+    await onRolar(especificacao);
+    setDialogRolagemAberto(false);
   };
 
   const handleSubmit = event => {
@@ -84,7 +148,12 @@ const ChatSala = ({
     <ChatWrapper>
       {cabecalho && <ChatHeader>{cabecalho}</ChatHeader>}
 
-      <ListaMensagens ref={listaRef} onScroll={handleScroll} aria-label="Mensagens" role="log">
+      <ListaMensagens
+        ref={listaRef}
+        onScroll={handleScroll}
+        aria-label="Mensagens"
+        role="log"
+      >
         {carregando && (
           <ListaVazia>
             <CircularProgress size={24} sx={{ color: 'var(--color-primary)' }} />
@@ -109,34 +178,112 @@ const ChatSala = ({
       </ListaMensagens>
 
       <ComposerWrapper onSubmit={handleSubmit}>
-        <Tooltip title="Enviar imagem ou GIF por link">
-          <IconButton
-            aria-label="Enviar imagem"
-            onClick={() => setDialogImagemAberto(true)}
-            sx={{ color: 'var(--text-secondary)' }}
+        {audio?.bloqueado && (
+          <Button
+            size="small"
+            variant="outlined"
+            startIcon={<VolumeOffIcon />}
+            onClick={audio.liberarSom}
+            sx={{ alignSelf: 'flex-start' }}
           >
-            <ImageOutlinedIcon />
+            Clique para ouvir a música da mesa
+          </Button>
+        )}
+        <ComposerAcoes>
+          <Tooltip title="Enviar imagem ou GIF por link">
+            <IconButton
+              size="small"
+              aria-label="Enviar imagem"
+              onClick={() => setDialogImagemAberto(true)}
+              sx={{ color: 'var(--text-secondary)' }}
+            >
+              <ImageOutlinedIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Rolar dados (ou digite /r 1d20+5)">
+            <IconButton
+              size="small"
+              aria-label="Rolar dados"
+              onClick={() => setDialogRolagemAberto(true)}
+              sx={{ color: 'var(--text-secondary)' }}
+            >
+              <DadoIcone faces={20} />
+            </IconButton>
+          </Tooltip>
+          {macros && (
+            <Tooltip
+              title={
+                macros.rodando
+                  ? `Rodando "${macros.rodando}"…`
+                  : 'Macros da campanha (ou /m nome)'
+              }
+            >
+              <IconButton
+                size="small"
+                aria-label="Macros"
+                onClick={() => setDialogMacrosAberto(true)}
+                sx={{
+                  color: macros.rodando
+                    ? 'var(--color-primary)'
+                    : 'var(--text-secondary)',
+                }}
+              >
+                <CodeIcon />
+              </IconButton>
+            </Tooltip>
+          )}
+          {audio && (
+            <Tooltip
+              title={
+                audio.tocando
+                  ? `Tocando: ${audio.titulo ?? 'música da mesa'}`
+                  : 'Música da mesa'
+              }
+            >
+              <IconButton
+                size="small"
+                aria-label="Música da mesa"
+                onClick={() => setDialogAudioAberto(true)}
+                sx={{
+                  color:
+                    audio.tocando && !audio.pausado
+                      ? 'var(--color-primary)'
+                      : 'var(--text-secondary)',
+                }}
+              >
+                <MusicNoteIcon />
+              </IconButton>
+            </Tooltip>
+          )}
+        </ComposerAcoes>
+        <ComposerEntrada>
+          <TextField
+            fullWidth
+            multiline
+            maxRows={4}
+            size="small"
+            placeholder="Escreva uma mensagem, /r 1d20+5 ou /m macro…"
+            value={texto}
+            onChange={event => {
+              setTexto(event.target.value);
+              setErroComando(null);
+            }}
+            onKeyDown={handleKeyDown}
+            error={Boolean(erroComando)}
+            helperText={erroComando}
+            slotProps={{
+              htmlInput: { maxLength: CHAT_TEXTO_MAX, 'aria-label': 'Mensagem' },
+            }}
+          />
+          <IconButton
+            type="submit"
+            aria-label="Enviar mensagem"
+            disabled={!isTextoMensagemValido(texto) || enviando}
+            sx={{ color: 'var(--color-primary)' }}
+          >
+            <SendIcon />
           </IconButton>
-        </Tooltip>
-        <TextField
-          fullWidth
-          multiline
-          maxRows={4}
-          size="small"
-          placeholder="Escreva uma mensagem…"
-          value={texto}
-          onChange={event => setTexto(event.target.value)}
-          onKeyDown={handleKeyDown}
-          slotProps={{ htmlInput: { maxLength: CHAT_TEXTO_MAX, 'aria-label': 'Mensagem' } }}
-        />
-        <IconButton
-          type="submit"
-          aria-label="Enviar mensagem"
-          disabled={!isTextoMensagemValido(texto) || enviando}
-          sx={{ color: 'var(--color-primary)' }}
-        >
-          <SendIcon />
-        </IconButton>
+        </ComposerEntrada>
       </ComposerWrapper>
 
       <ImagemUrlDialog
@@ -144,6 +291,34 @@ const ChatSala = ({
         onClose={() => setDialogImagemAberto(false)}
         onConfirmar={handleEnviarImagem}
       />
+      <RolagemDialog
+        open={dialogRolagemAberto}
+        onClose={() => setDialogRolagemAberto(false)}
+        onRolar={handleRolarDialog}
+      />
+      {audio && (
+        <AudioDialog
+          open={dialogAudioAberto}
+          onClose={() => setDialogAudioAberto(false)}
+          audio={audio}
+        />
+      )}
+      {macros && (
+        <>
+          <MacrosDialog
+            open={dialogMacrosAberto}
+            onClose={() => setDialogMacrosAberto(false)}
+            macros={macros}
+            onUsar={macro => {
+              acompanhandoRef.current = true;
+              macros.executar(macro);
+            }}
+          />
+          {/* Depois dos outros diálogos: as perguntas da macro abrem por cima,
+              inclusive durante o "Testar" do editor. */}
+          <MacroPerguntaDialog pergunta={macros.pergunta} />
+        </>
+      )}
     </ChatWrapper>
   );
 };
@@ -155,7 +330,28 @@ ChatSala.propTypes = {
   podeApagarTodas: PropTypes.bool,
   onEnviarTexto: PropTypes.func.isRequired,
   onEnviarImagem: PropTypes.func.isRequired,
+  // Recebe { secreta, grupos, termos } (common/utils/dados.js) e rola/envia.
+  onRolar: PropTypes.func.isRequired,
   onApagar: PropTypes.func.isRequired,
+  // Macros Lua da campanha (null = sem macros). Montado pelas páginas a partir
+  // de useChatCampanha: { lista, carregando, podeGerenciar, rodando, pergunta,
+  // executar(macro), testar(macro), salvar(macro), apagar(macro), mover(i, dir) }.
+  macros: PropTypes.shape({
+    lista: PropTypes.arrayOf(PropTypes.object).isRequired,
+    carregando: PropTypes.bool,
+    podeGerenciar: PropTypes.bool,
+    rodando: PropTypes.string,
+    pergunta: PropTypes.object,
+    executar: PropTypes.func.isRequired,
+    testar: PropTypes.func,
+    salvar: PropTypes.func,
+    apagar: PropTypes.func,
+    mover: PropTypes.func,
+  }),
+  // Música da mesa (null = sem música): `audio` de useChatCampanha
+  // (hooks/useAudioMesa.js). O player em si a página monta à parte
+  // (PlayerAudioMesa), para seguir tocando com o chat fechado.
+  audio: audioPropType,
   cabecalho: PropTypes.node,
 };
 

@@ -31,8 +31,12 @@ const Layout = () => {
     );
   }, []);
 
-  const selecionarCampanha = useCallback(campanhaId => {
-    setSelecao(atual => (atual.campanhaId === campanhaId ? atual : { ...atual, campanhaId }));
+  const selecionarCampanha = useCallback((campanhaId, visaoCampanha = 'chat') => {
+    setSelecao(atual =>
+      atual.campanhaId === campanhaId && atual.visaoCampanha === visaoCampanha
+        ? atual
+        : { ...atual, campanhaId, visaoCampanha },
+    );
   }, []);
 
   const limparPersonagem = useCallback(() => {

@@ -40,16 +40,56 @@ export const CampanhaPersonagens = styled.span`
   font-size: 0.85rem;
 `;
 
+// Altura fixa = janela − cabeçalho, para só a lista de mensagens (e o mapa)
+// rolar. `flex: none` é obrigatório: o <main> do Layout é um flex em coluna
+// de altura indefinida, e com `flex: 1` (base 0%) o navegador ignora o
+// `height` e a página cresce junto com as mensagens. `dvh` acompanha a barra
+// de endereço dos celulares (o `vh` fica de fallback).
 export const ChatPageWrapper = styled.div`
-  flex: 1;
+  flex: none;
   display: flex;
   flex-direction: column;
   min-height: 0;
   height: calc(100vh - 64px);
+  height: calc(100dvh - 64px);
   padding: 16px 24px 24px;
   box-sizing: border-box;
 
   @media (max-width: 600px) {
     padding: 8px;
+  }
+`;
+
+// Visão "grid": barra (Chat|Grid, "Falando como", mostrar chat) + mapa com o
+// chat num painel lateral (abaixo do mapa em telas estreitas).
+export const MesaBarra = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+`;
+
+export const MesaCorpo = styled.div`
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  gap: 12px;
+
+  @media (max-width: 900px) {
+    flex-direction: column;
+  }
+`;
+
+export const MesaChatPainel = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 380px;
+  flex-shrink: 0;
+  min-height: 0;
+
+  @media (max-width: 900px) {
+    width: 100%;
+    height: 45%;
   }
 `;

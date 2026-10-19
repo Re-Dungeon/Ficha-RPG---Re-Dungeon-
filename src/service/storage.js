@@ -20,7 +20,10 @@ import { db } from 'service/firebase';
 export const getFirestoreItems = async (collectionName, ...queryConstraints) => {
   const itemsQuery = query(collection(db, collectionName), ...queryConstraints);
   const snapshot = await getDocs(itemsQuery);
-  return snapshot.docs.map(docSnapshot => ({ id: docSnapshot.id, ...docSnapshot.data() }));
+  return snapshot.docs.map(docSnapshot => ({
+    id: docSnapshot.id,
+    ...docSnapshot.data(),
+  }));
 };
 
 export const getFirestoreItem = async (collectionName, id) => {
@@ -53,7 +56,8 @@ export const getPersonagem = id => getFirestoreItem('personagens', id);
 
 export const addPersonagem = data => addFirestoreItem('personagens', data);
 
-export const updatePersonagem = (id, data) => updateFirestoreItem('personagens', id, data);
+export const updatePersonagem = (id, data) =>
+  updateFirestoreItem('personagens', id, data);
 
 export const removePersonagem = id => removeFirestoreItem('personagens', id);
 
@@ -187,7 +191,11 @@ export const consumirEnergiaPersonagem = async (personagemId, custoEnergia) => {
 // MIGRACAO-REACT-FIREBASE.md §5). Os dois filtros são necessários porque
 // `firestore.rules` restringe list queries a `uid == request.auth.uid`.
 export const getCompanheiros = (uid, personagemId) =>
-  getFirestoreItems('personagens', where('uid', '==', uid), where('companheiroDe', '==', personagemId));
+  getFirestoreItems(
+    'personagens',
+    where('uid', '==', uid),
+    where('companheiroDe', '==', personagemId),
+  );
 
 // ── historicoSorte — subcoleção personagens/{id}/historicoSorte (§6, §5.1) ──
 
@@ -198,7 +206,10 @@ export const getHistoricoSorte = async personagemId => {
     limit(10),
   );
   const snapshot = await getDocs(historicoQuery);
-  return snapshot.docs.map(docSnapshot => ({ id: docSnapshot.id, ...docSnapshot.data() }));
+  return snapshot.docs.map(docSnapshot => ({
+    id: docSnapshot.id,
+    ...docSnapshot.data(),
+  }));
 };
 
 export const addHistoricoSorte = (personagemId, evento) =>
@@ -233,8 +244,13 @@ export const removeEfeitoGuardado = (personagemId, beneficioId) =>
   deleteDoc(doc(db, 'personagens', personagemId, 'efeitosGuardados', beneficioId));
 
 const getSubcolecaoItems = async (parentCollection, parentId, subcollectionName) => {
-  const snapshot = await getDocs(collection(db, parentCollection, parentId, subcollectionName));
-  return snapshot.docs.map(docSnapshot => ({ id: docSnapshot.id, ...docSnapshot.data() }));
+  const snapshot = await getDocs(
+    collection(db, parentCollection, parentId, subcollectionName),
+  );
+  return snapshot.docs.map(docSnapshot => ({
+    id: docSnapshot.id,
+    ...docSnapshot.data(),
+  }));
 };
 
 // ── aptidoesAdquiridas — subcoleção personagens/{id}/aptidoesAdquiridas (§9) ─
@@ -279,7 +295,8 @@ export const removeNucleo = (personagemId, nucleoId) =>
 // correspondentes a essa origem, e sempre um `nucleoId` (obrigatório em
 // qualquer origem — ver MIGRACAO-REACT-FIREBASE.md §5.1).
 
-export const getArts = personagemId => getSubcolecaoItems('personagens', personagemId, 'arts');
+export const getArts = personagemId =>
+  getSubcolecaoItems('personagens', personagemId, 'arts');
 
 export const addArt = (personagemId, data) =>
   addDoc(collection(db, 'personagens', personagemId, 'arts'), {
@@ -363,13 +380,18 @@ export const addMaterialInventario = (personagemId, data) =>
   });
 
 export const updateMaterialInventario = (personagemId, materialInventarioId, data) =>
-  updateDoc(doc(db, 'personagens', personagemId, 'materiaisInventario', materialInventarioId), {
-    ...data,
-    updatedAt: serverTimestamp(),
-  });
+  updateDoc(
+    doc(db, 'personagens', personagemId, 'materiaisInventario', materialInventarioId),
+    {
+      ...data,
+      updatedAt: serverTimestamp(),
+    },
+  );
 
 export const removeMaterialInventario = (personagemId, materialInventarioId) =>
-  deleteDoc(doc(db, 'personagens', personagemId, 'materiaisInventario', materialInventarioId));
+  deleteDoc(
+    doc(db, 'personagens', personagemId, 'materiaisInventario', materialInventarioId),
+  );
 
 // ── receitasInventario — subcoleção personagens/{id}/receitasInventario ────
 // Mesmo padrão de itensInventario/materiaisInventario — `origem: 'autoral' |
@@ -386,17 +408,23 @@ export const addReceitaInventario = (personagemId, data) =>
   });
 
 export const updateReceitaInventario = (personagemId, receitaInventarioId, data) =>
-  updateDoc(doc(db, 'personagens', personagemId, 'receitasInventario', receitaInventarioId), {
-    ...data,
-    updatedAt: serverTimestamp(),
-  });
+  updateDoc(
+    doc(db, 'personagens', personagemId, 'receitasInventario', receitaInventarioId),
+    {
+      ...data,
+      updatedAt: serverTimestamp(),
+    },
+  );
 
 export const removeReceitaInventario = (personagemId, receitaInventarioId) =>
-  deleteDoc(doc(db, 'personagens', personagemId, 'receitasInventario', receitaInventarioId));
+  deleteDoc(
+    doc(db, 'personagens', personagemId, 'receitasInventario', receitaInventarioId),
+  );
 
 // ── notas — subcoleção personagens/{id}/notas (novas notas do personagem)
 // Estrutura: { title, content, plainText, coverImage, isFavorite, createdAt, updatedAt }
-export const getNotas = personagemId => getSubcolecaoItems('personagens', personagemId, 'notas');
+export const getNotas = personagemId =>
+  getSubcolecaoItems('personagens', personagemId, 'notas');
 
 export const getNota = async (personagemId, notaId) => {
   const snapshot = await getDoc(doc(db, 'personagens', personagemId, 'notas', notaId));
@@ -636,7 +664,8 @@ export const getBeneficiosPorUniverso = async universoId => {
 // múltiplos sistemas paralelos (ex.: Cultivo, que tem "Doupo Cangqiong",
 // "Martial Peak" etc. no campo `SubUniversos` do doc `Universo`) também
 // filtram por `subUniverso`; universos sem esse campo não têm o seletor de
-// sistema — os Reinos têm `subUniverso: ''` e o filtro é só por `universo`.
+// sistema — os Reinos têm `subUniverso: ''` e o filtro é só por `universo`
+// (ainda assim podem formar várias trilhas paralelas — ver `separarTrilhasCultivo`).
 // A ordem da trilha NÃO vem de um campo de índice: cada Reino aponta o
 // anterior por `reinoAnterior` (id; "" no primeiro) — use `ordenarReinosCultivo`
 // (common/utils/formulas.js) para montar a sequência. Somente leitura.
@@ -695,3 +724,211 @@ export const addChatMensagem = (campanhaId, mensagem) =>
 
 export const removeChatMensagem = (campanhaId, mensagemId) =>
   deleteDoc(doc(db, 'rmCampanhas', campanhaId, 'chatMensagens', mensagemId));
+
+// ── Rolagens secretas — rmCampanhas/{id}/chatSecretas/{uid}/rolagens ──────
+// Uma pasta por usuário (só ele e o mestre leem): consultas de lista numa
+// coleção única seriam recusadas inteiras pelas regras para quem não pode ver
+// todas as secretas, e uma coleção por usuário dispensa índice composto.
+export const CHAT_LIMITE_SECRETAS = 50;
+
+const rolagensSecretasRef = (campanhaId, donoUid) =>
+  collection(db, 'rmCampanhas', campanhaId, 'chatSecretas', donoUid, 'rolagens');
+
+// Mensagens chegam marcadas com `secreta: true` e `donoUid` (necessário para
+// apagar). Ordem: mais recente primeiro (quem consome mescla com
+// `mesclarMensagens` de common/utils/chat.js).
+export const subscribeChatSecretasDoUsuario = (campanhaId, donoUid, onChange, onError) =>
+  onSnapshot(
+    query(
+      rolagensSecretasRef(campanhaId, donoUid),
+      orderBy('createdAt', 'desc'),
+      limit(CHAT_LIMITE_SECRETAS),
+    ),
+    snapshot =>
+      onChange(
+        snapshot.docs.map(docSnapshot => ({
+          id: docSnapshot.id,
+          ...docSnapshot.data({ serverTimestamps: 'estimate' }),
+          secreta: true,
+          donoUid,
+        })),
+      ),
+    onError,
+  );
+
+// Mestre: ouve as próprias secretas e as de cada jogador em `chatMembros`
+// (acompanha membros novos em tempo real). Devolve um único `unsubscribe`.
+export const subscribeChatSecretasDoMestre = (
+  campanhaId,
+  mestreUid,
+  onChange,
+  onError,
+) => {
+  const porDono = new Map();
+  const emitir = () =>
+    onChange([...porDono.values()].flatMap(entrada => entrada.mensagens));
+  const ouvir = donoUid => {
+    if (porDono.has(donoUid)) return;
+    const entrada = { mensagens: [], unsubscribe: () => {} };
+    porDono.set(donoUid, entrada);
+    entrada.unsubscribe = subscribeChatSecretasDoUsuario(
+      campanhaId,
+      donoUid,
+      mensagens => {
+        entrada.mensagens = mensagens;
+        emitir();
+      },
+      onError,
+    );
+  };
+
+  ouvir(mestreUid);
+  const pararMembros = onSnapshot(
+    collection(db, 'rmCampanhas', campanhaId, 'chatMembros'),
+    snapshot => snapshot.docs.forEach(docSnapshot => ouvir(docSnapshot.id)),
+    onError,
+  );
+
+  return () => {
+    pararMembros();
+    porDono.forEach(entrada => entrada.unsubscribe());
+    porDono.clear();
+  };
+};
+
+export const addChatRolagemSecreta = (campanhaId, donoUid, mensagem) =>
+  addDoc(rolagensSecretasRef(campanhaId, donoUid), {
+    ...mensagem,
+    createdAt: serverTimestamp(),
+  });
+
+export const removeChatRolagemSecreta = (campanhaId, donoUid, rolagemId) =>
+  deleteDoc(
+    doc(db, 'rmCampanhas', campanhaId, 'chatSecretas', donoUid, 'rolagens', rolagemId),
+  );
+
+// ── Macros Lua — rmCampanhas/{id}/macros ───────────────────────────────────
+// Só o mestre da campanha cria/edita/apaga (as regras garantem); membros leem
+// as que não são `somenteMestre`. O jogador PRECISA filtrar por
+// `somenteMestre == false` na consulta — sem o filtro a regra recusa a lista
+// inteira. Sem `orderBy` (evita índice composto): ordene com `ordenarMacros`
+// (common/utils/macros.js). Executar uma macro nunca grava aqui.
+const macrosRef = campanhaId => collection(db, 'rmCampanhas', campanhaId, 'macros');
+
+export const getChatMacros = async (
+  campanhaId,
+  { incluirSomenteMestre = false } = {},
+) => {
+  const filtros = incluirSomenteMestre ? [] : [where('somenteMestre', '==', false)];
+  const snapshot = await getDocs(query(macrosRef(campanhaId), ...filtros));
+  return snapshot.docs.map(docSnapshot => ({
+    id: docSnapshot.id,
+    ...docSnapshot.data(),
+  }));
+};
+
+export const addChatMacro = async (campanhaId, macro) => {
+  const docRef = await addDoc(macrosRef(campanhaId), {
+    ...macro,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  return docRef.id;
+};
+
+export const updateChatMacro = (campanhaId, macroId, patch) =>
+  updateDoc(doc(db, 'rmCampanhas', campanhaId, 'macros', macroId), {
+    ...patch,
+    updatedAt: serverTimestamp(),
+  });
+
+export const removeChatMacro = (campanhaId, macroId) =>
+  deleteDoc(doc(db, 'rmCampanhas', campanhaId, 'macros', macroId));
+
+// ── Grid da campanha — rmCampanhas/{id}/grid/atual e gridCenas ────────────
+// Em CENAS: `gridCenas/{cenaId}` (nome, imagem, grade) com os próprios tokens
+// em `gridCenas/{cenaId}/tokens`; `grid/atual` = {cenaAtivaId}, a única cena
+// que os jogadores veem. Tudo é do mestre, que gerencia no Re:Master. Daqui
+// o jogador só LÊ a cena ativa (mesmo acesso do chat: ponteiro
+// chatMembros/{uid}) e MOVE os tokens atribuídos a ele (`donos`) — a regra só
+// deixa mudar `col`/`lin`. Tokens `oculto` não chegam ao jogador: a consulta
+// dele PRECISA filtrar `oculto == false` (senão a regra recusa a lista).
+const gridRef = campanhaId => doc(db, 'rmCampanhas', campanhaId, 'grid', 'atual');
+const gridCenaRef = (campanhaId, cenaId) =>
+  doc(db, 'rmCampanhas', campanhaId, 'gridCenas', cenaId);
+const gridTokensRef = (campanhaId, cenaId) =>
+  collection(db, 'rmCampanhas', campanhaId, 'gridCenas', cenaId, 'tokens');
+
+// Chama `onChange(cenaAtivaId | null)`.
+export const subscribeGridCenaAtiva = (campanhaId, onChange, onError) =>
+  onSnapshot(
+    gridRef(campanhaId),
+    snapshot =>
+      onChange(snapshot.exists() ? (snapshot.data().cenaAtivaId ?? null) : null),
+    onError,
+  );
+
+// Chama `onChange({ id, ...dados } | null)` — null se a cena não existe mais.
+export const subscribeGridCena = (campanhaId, cenaId, onChange, onError) =>
+  onSnapshot(
+    gridCenaRef(campanhaId, cenaId),
+    snapshot =>
+      onChange(snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null),
+    onError,
+  );
+
+export const subscribeGridTokens = (
+  campanhaId,
+  cenaId,
+  { incluirOcultos = false } = {},
+  onChange,
+  onError,
+) => {
+  const filtros = incluirOcultos ? [] : [where('oculto', '==', false)];
+  return onSnapshot(
+    query(gridTokensRef(campanhaId, cenaId), ...filtros),
+    snapshot =>
+      onChange(
+        snapshot.docs.map(docSnapshot => ({ id: docSnapshot.id, ...docSnapshot.data() })),
+      ),
+    onError,
+  );
+};
+
+export const moverGridToken = (campanhaId, cenaId, tokenId, col, lin) =>
+  updateDoc(doc(gridTokensRef(campanhaId, cenaId), tokenId), {
+    col,
+    lin,
+    updatedAt: serverTimestamp(),
+  });
+
+// ── Música da mesa — rmCampanhas/{id}/audio/atual ──────────────────────────
+// Estado da faixa do YouTube que toca para todos com a mesa aberta (modelo em
+// common/utils/audioMesa.js). Mesmo acesso do chat para ler; só o mestre da
+// campanha grava (as regras garantem) — inclusive daqui, quando o mestre
+// abre o chat pelo site dos jogadores. `referenciaEm` (horário do servidor na
+// gravação) chega como milissegundos para o cálculo da posição.
+const audioMesaRef = campanhaId => doc(db, 'rmCampanhas', campanhaId, 'audio', 'atual');
+
+// Chama `onChange(estado | null)` — null enquanto nunca tocou nada.
+export const subscribeAudioMesa = (campanhaId, onChange, onError) =>
+  onSnapshot(
+    audioMesaRef(campanhaId),
+    snapshot => {
+      if (!snapshot.exists()) {
+        onChange(null);
+        return;
+      }
+      const dados = snapshot.data({ serverTimestamps: 'estimate' });
+      onChange({ ...dados, referenciaEm: dados.referenciaEm?.toMillis?.() ?? null });
+    },
+    onError,
+  );
+
+// `estado` = um dos montarAudio* (ou AUDIO_PARADO) de common/utils/audioMesa.js.
+export const setAudioMesa = (campanhaId, estado) =>
+  setDoc(audioMesaRef(campanhaId), {
+    ...estado,
+    referenciaEm: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
