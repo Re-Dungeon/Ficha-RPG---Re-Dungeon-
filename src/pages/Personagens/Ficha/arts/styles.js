@@ -1,5 +1,7 @@
 import styled from 'styled-components';
 
+import { MOBILE } from 'common/styles/breakpoints';
+
 export const ArtsHeader = styled.h2`
   margin: 0;
   font-family: 'Cinzel', Georgia, 'Times New Roman', serif;
@@ -478,6 +480,14 @@ export const ArtCardWrapper = styled.div`
   &[data-bloqueada='true'] {
     opacity: 0.55;
   }
+
+  /* Celular: altura livre — com os stats em 3 linhas o card de 432px fixos
+     sobrepunha stats, abas (Descrição/Cântico) e botões. */
+  ${MOBILE} {
+    height: auto;
+    min-height: 0;
+    max-height: none;
+  }
 `;
 
 export const ArtCardHeader = styled.div`
@@ -490,6 +500,12 @@ export const ArtCardHeader = styled.div`
   min-height: 142px;
   box-sizing: border-box;
   z-index: 2;
+
+  ${MOBILE} {
+    gap: 12px;
+    padding: 14px 14px 12px;
+    min-height: 0;
+  }
 `;
 
 export const ArtCardHeaderInfo = styled.div`
@@ -501,6 +517,10 @@ export const ArtCardHeaderInfo = styled.div`
   gap: 8px;
   min-height: 120px;
   box-sizing: border-box;
+
+  ${MOBILE} {
+    min-height: 0;
+  }
 `;
 
 export const ArtCardBody = styled.div`
@@ -510,6 +530,11 @@ export const ArtCardBody = styled.div`
   min-height: 0;
   padding: 0 16px;
   margin-top: 8px;
+
+  ${MOBILE} {
+    padding: 0 12px;
+    margin-top: 12px;
+  }
 `;
 
 export const ArtTabs = styled.div`
@@ -552,6 +577,12 @@ export const ArtImageThumb = styled.div`
     display: block;
     position: relative;
     z-index: 3;
+  }
+
+  ${MOBILE} {
+    width: 84px;
+    height: 84px;
+    min-width: 84px;
   }
 `;
 
@@ -597,6 +628,14 @@ export const StatGrid = styled.div`
   @media (max-width: 640px) {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+
+  /* Celular: os 7 stats ocupam 3 linhas — a altura acompanha. */
+  ${MOBILE} {
+    height: auto;
+    min-height: 0;
+    gap: 6px;
+    padding: 8px 12px;
+  }
 `;
 
 export const StatGridCell = styled.div`
@@ -629,6 +668,11 @@ export const StatGridLabel = styled.div`
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+
+  ${MOBILE} {
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+  }
 `;
 
 export const StatGridValue = styled.div`
@@ -660,6 +704,10 @@ export const ArtDescricao = styled.p`
   white-space: pre-wrap;
   word-break: break-word;
   overflow-wrap: anywhere;
+
+  ${MOBILE} {
+    padding: 12px;
+  }
 `;
 
 export const ConditionList = styled.div`
@@ -749,6 +797,11 @@ export const ArtCardFooter = styled.div`
   align-items: center;
   margin-top: auto;
   flex-shrink: 0;
+
+  ${MOBILE} {
+    gap: 8px;
+    padding: 12px;
+  }
 `;
 
 // ── Diálogos ───────────────────────────────────────────────────────────
