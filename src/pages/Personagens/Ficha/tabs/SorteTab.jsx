@@ -48,19 +48,25 @@ const StatCard = styled(AtributoCardWrapper)`
   display: flex;
   flex-direction: column;
   gap: 8px;
-  align-items: flex-start;
+  align-items: center;
+  text-align: center;
   transition: transform 220ms ease, box-shadow 220ms ease;
   &:hover { transform: translateY(-6px); box-shadow: 0 10px 30px rgba(16,14,28,0.5); }
 `;
 
 const StatIcon = styled.div`
   font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 const StatValue = styled.div`
   font-size: 1.6rem;
   font-weight: 800;
   color: #fff;
+  text-align: center;
+  width: 100%;
 `;
 
 const CenterPanel = styled.div`
@@ -229,10 +235,10 @@ const SorteTab = ({ personagem, onSave }) => {
         </StatCard>
 
         <StatCard>
-          <StatIcon>⭐</StatIcon>
-          <CardTitle>Bônus Base</CardTitle>
+          <StatIcon>☘️</StatIcon>
+          <CardTitle>Pontos de Sorte</CardTitle>
           <StatValue style={{ color: 'var(--color-accent, #6C63FF)' }}>{bonusBase}</StatValue>
-          <StatusValueRow style={{ color: 'var(--text-secondary)' }}>Bônus permanente de sorte.</StatusValueRow>
+          <StatusValueRow style={{ color: 'var(--text-secondary)' }}>Pontos disponíveis para influenciar suas rolagens.</StatusValueRow>
         </StatCard>
 
         <StatCard>
