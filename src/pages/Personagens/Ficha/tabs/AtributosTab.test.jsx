@@ -21,6 +21,11 @@ import {
 import AtributosTab from './AtributosTab';
 import { calcularCustoPpAcao, getTokensAcao } from '../prontidao/config';
 
+// CalculadoraAtaqueModal usa useAuth — sem este mock o AuthContext importa
+// service/firebase de verdade, que quebra no CI (sem .env → auth/invalid-api-key).
+// currentUser null mantém a chave do aviso como `...aviso.anon` (ver beforeEach).
+vi.mock('context/AuthContext', () => ({ useAuth: () => ({ currentUser: null }) }));
+
 vi.mock('service/storage', () => ({
   getFirestoreItem: vi.fn().mockResolvedValue(null),
   getArts: vi.fn().mockResolvedValue([]),
