@@ -6,6 +6,7 @@ import CloseIcon from '@mui/icons-material/Close';
 
 import { calcularCadeiaBloqueio, calcularCustoDesbloqueio } from 'common/utils/formulas';
 import { getNome } from 'common/utils/resolveNome';
+import { PAPER_TELA_CHEIA } from 'common/styles/breakpoints';
 
 import DesbloquearNoDialog from './DesbloquearNoDialog';
 import NoNode from './NoNode';
@@ -77,6 +78,7 @@ const ConstelacaoArvoreModal = ({
               background: 'linear-gradient(180deg, rgba(33, 27, 52, 0.94), rgba(18, 14, 28, 0.94))',
               border: '1px solid rgba(255, 255, 255, 0.10)',
               boxShadow: '0 24px 60px rgba(8, 6, 17, 0.38)',
+              ...PAPER_TELA_CHEIA,
             },
           },
         }}

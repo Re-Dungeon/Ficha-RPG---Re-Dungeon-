@@ -92,6 +92,19 @@ describe('Layout — alternar entre Fichas e Campanhas', () => {
     expect(await screen.findByText('Ficha de Solitário')).toBeInTheDocument();
   });
 
+  it('celular: o menu da conta mostra o e-mail e sai (só visível abaixo de 600px)', async () => {
+    const logout = vi.fn();
+    useAuth.mockReturnValue({ currentUser: { uid: 'u1', email: 'a@b.c' }, logout });
+    renderApp('/personagens');
+    await screen.findByText('Lista de fichas');
+
+    // jsdom não aplica a media query: o botão existe, mas oculto no desktop.
+    fireEvent.click(screen.getByLabelText('Conta'));
+    expect(await screen.findByRole('menuitem', { name: 'a@b.c' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Sair' }));
+    expect(logout).toHaveBeenCalledTimes(1);
+  });
+
   it('a partir da lista, os links levam às listas', async () => {
     renderApp('/personagens');
     await screen.findByText('Lista de fichas');

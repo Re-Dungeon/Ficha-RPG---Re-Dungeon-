@@ -42,6 +42,7 @@ import {
   separarTrilhasCultivo,
 } from 'common/utils/formulas';
 import { getNome } from 'common/utils/resolveNome';
+import { PAPER_TELA_CHEIA } from 'common/styles/breakpoints';
 import { useSaving } from 'context/SavingContext';
 import { PRIMARIOS_LABELS, SECUNDARIOS_LABELS, STATUS_LABELS } from '../constants';
 
@@ -891,6 +892,7 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
           border: '1px solid rgba(255, 255, 255, 0.08)',
+          ...PAPER_TELA_CHEIA,
         } } }}
       scroll="paper"
     >

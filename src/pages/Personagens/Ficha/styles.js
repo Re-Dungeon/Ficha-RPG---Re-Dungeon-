@@ -1,5 +1,7 @@
 import styled from 'styled-components';
 
+import { MOBILE } from 'common/styles/breakpoints';
+
 import estrelaAtributosImg from './assets/estrela-atributos.png';
 import gemaAtributoImg from './assets/gema-atributo.png';
 import planetaRedungeonImg from './assets/planeta-redungeon.png';
@@ -26,6 +28,11 @@ export const FichaMain = styled.div`
   flex-direction: column;
   gap: 24px;
   padding: 32px;
+
+  ${MOBILE} {
+    gap: 16px;
+    padding: 12px;
+  }
 `;
 
 export const SectionTitle = styled.h2`
@@ -510,6 +517,14 @@ export const TabsBar = styled.div`
   border-bottom: 1px solid var(--status-gold-border);
   margin: -32px -32px 0;
   padding: 0 16px;
+
+  /* Acompanha o padding de FichaMain; ☰ da gaveta à esquerda das abas. */
+  ${MOBILE} {
+    display: flex;
+    align-items: center;
+    margin: -12px -12px 0;
+    padding: 0 4px;
+  }
 `;
 
 export const HeroAcoesRow = styled.div`

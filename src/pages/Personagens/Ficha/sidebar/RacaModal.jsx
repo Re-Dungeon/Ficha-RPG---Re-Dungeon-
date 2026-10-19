@@ -23,6 +23,7 @@ import TimerIcon from '@mui/icons-material/Timer';
 import { getFirestoreItem, getRacasPorUniverso } from 'service/storage';
 import { calcularLimiteHabilidadesBasicas } from 'common/utils/formulas';
 import { getNome } from 'common/utils/resolveNome';
+import { PAPER_TELA_CHEIA } from 'common/styles/breakpoints';
 import { useSaving } from 'context/SavingContext';
 
 import { PRIMARIOS_LABELS, TIPOS_PERSONAGEM, disponivelParaTipoPersonagem } from '../constants';
@@ -207,7 +208,11 @@ const RacaModal = ({ open, onClose, personagem, onSave }) => {
       onClose={onClose}
       fullWidth
       maxWidth="xl"
-      slotProps={{ paper: { sx: { width: 'min(100%, 1280px)', height: 'min(100vh, 92vh)', maxHeight: 'min(100vh, 92vh)' } } }}
+      slotProps={{
+        paper: {
+          sx: { width: 'min(100%, 1280px)', height: 'min(100vh, 92vh)', maxHeight: 'min(100vh, 92vh)', ...PAPER_TELA_CHEIA },
+        },
+      }}
       scroll="paper"
     >
       <DialogHeaderRow>

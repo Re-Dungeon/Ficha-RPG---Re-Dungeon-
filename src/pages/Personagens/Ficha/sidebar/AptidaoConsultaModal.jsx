@@ -9,6 +9,7 @@ import CloseIcon from '@mui/icons-material/Close';
 
 import { getAptidoesPorUniverso } from 'service/storage';
 import { getNome } from 'common/utils/resolveNome';
+import { PAPER_TELA_CHEIA } from 'common/styles/breakpoints';
 
 import { DialogFecharButton, DialogHeaderRow, DialogHeaderTitle, StatusValueRow } from '../styles';
 import {
@@ -88,7 +89,7 @@ const AptidaoConsultaModal = ({ open, onClose, personagem }) => {
       onClose={onClose}
       fullWidth
       maxWidth="md"
-      slotProps={{ paper: { sx: { width: 'min(100%, 840px)' } } }}
+      slotProps={{ paper: { sx: { width: 'min(100%, 840px)', ...PAPER_TELA_CHEIA } } }}
     >
       <DialogHeaderRow>
         <DialogHeaderTitle>{aptidaoSelecionada ? 'Detalhes da Aptidão' : 'Enciclopédia de Aptidões'}</DialogHeaderTitle>

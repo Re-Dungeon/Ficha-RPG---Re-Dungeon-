@@ -6,8 +6,14 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Box from '@mui/material/Box';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
+import AssignmentIndOutlinedIcon from '@mui/icons-material/AssignmentIndOutlined';
+import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
 import { useAuth } from 'context/AuthContext';
+import { MOBILE } from 'common/styles/breakpoints';
 import { SelecaoContext } from 'context/selecaoContext';
 import {
   SELECAO_VAZIA,
@@ -21,6 +27,8 @@ const Layout = () => {
   const { currentUser, logout } = useAuth();
   const [headerExtra, setHeaderExtra] = useState(null);
   const [selecao, setSelecao] = useState(SELECAO_VAZIA);
+  // Menu da conta (e-mail + Sair) — só aparece no celular.
+  const [menuContaAncora, setMenuContaAncora] = useState(null);
 
   const selecionarPersonagem = useCallback(personagem => {
     const resumo = resumoPersonagem(personagem);
@@ -52,9 +60,20 @@ const Layout = () => {
 
   const destinoCampanha = destinoCampanhas(selecao);
   const navLinks = [
-    { key: 'fichas', to: destinoFichas(selecao), state: null, label: 'Fichas' },
-    { key: 'campanhas', to: destinoCampanha.to, state: destinoCampanha.state, label: 'Campanhas' },
+    { key: 'fichas', to: destinoFichas(selecao), state: null, label: 'Fichas', Icon: AssignmentIndOutlinedIcon },
+    {
+      key: 'campanhas',
+      to: destinoCampanha.to,
+      state: destinoCampanha.state,
+      label: 'Campanhas',
+      Icon: GroupsOutlinedIcon,
+    },
   ];
+
+  const handleSairDoMenu = () => {
+    setMenuContaAncora(null);
+    logout();
+  };
 
   return (
     <SelecaoContext.Provider value={selecaoValue}>
@@ -80,9 +99,12 @@ const Layout = () => {
               py: 0,
               gap: 2,
               justifyContent: 'space-between',
+              [MOBILE]: { px: 1.5, gap: 1 },
             }}
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0, flex: 1 }}>
+            <Box
+              sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0, flex: 1, [MOBILE]: { gap: 1 } }}
+            >
               {headerExtra?.onVoltar && (
                 <IconButton
                   aria-label="Voltar"
@@ -127,6 +149,8 @@ const Layout = () => {
                     fontSize: { xs: '1.3rem', sm: '1.5rem' },
                     lineHeight: 1,
                     whiteSpace: 'nowrap',
+                    // Nome longo de personagem/campanha vira reticências.
+                    [MOBILE]: { overflow: 'hidden', textOverflow: 'ellipsis', py: 0.5 },
                   }}
                 >
                   {headerExtra?.nome ?? 'ReDungeon'}
@@ -135,8 +159,52 @@ const Layout = () => {
             </Box>
 
             {currentUser && (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, ml: 'auto' }}>
-                <Box component="nav" sx={{ display: 'flex', gap: 0.5 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1.5,
+                  ml: 'auto',
+                  [MOBILE]: { gap: 0.25, flexShrink: 0 },
+                }}
+              >
+                {/* Celular: navegação só com ícone + menu da conta (e-mail/Sair). */}
+                <Box component="nav" sx={{ display: 'none', [MOBILE]: { display: 'flex' } }}>
+                  {navLinks.map(({ key, to, state, label, Icon }) => (
+                    <IconButton
+                      key={key}
+                      component={NavLink}
+                      to={to}
+                      state={state}
+                      aria-label={label}
+                      sx={{ color: 'rgba(255,255,255,0.7)', '&.active': { color: 'var(--color-primary)' } }}
+                    >
+                      <Icon />
+                    </IconButton>
+                  ))}
+                </Box>
+                <IconButton
+                  aria-label="Conta"
+                  aria-haspopup="menu"
+                  onClick={event => setMenuContaAncora(event.currentTarget)}
+                  sx={{ display: 'none', color: '#d9d0ff', [MOBILE]: { display: 'inline-flex' } }}
+                >
+                  <AccountCircleOutlinedIcon />
+                </IconButton>
+                <Menu
+                  anchorEl={menuContaAncora}
+                  open={Boolean(menuContaAncora)}
+                  onClose={() => setMenuContaAncora(null)}
+                  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                  transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                >
+                  <MenuItem disabled sx={{ fontSize: '0.8rem', '&.Mui-disabled': { opacity: 1 } }}>
+                    {currentUser.email}
+                  </MenuItem>
+                  <MenuItem onClick={handleSairDoMenu}>Sair</MenuItem>
+                </Menu>
+
+                <Box component="nav" sx={{ display: 'flex', gap: 0.5, [MOBILE]: { display: 'none' } }}>
                   {navLinks.map(({ key, to, state, label }) => (
                     <Button
                       key={key}
@@ -168,6 +236,7 @@ const Layout = () => {
                     textOverflow: 'ellipsis',
                     overflow: 'hidden',
                     maxWidth: { xs: '110px', sm: '220px' },
+                    [MOBILE]: { display: 'none' },
                   }}
                 >
                   {currentUser.email || 'wdanyllo_comp@hotmail.com'}
@@ -195,6 +264,7 @@ const Layout = () => {
                       borderColor: 'rgba(179, 160, 255, 0.95)',
                       boxShadow: 'inset 0 0 0 1px rgba(179, 160, 255, 0.18)',
                     },
+                    [MOBILE]: { display: 'none' },
                   }}
                 >
                   SAIR

@@ -1,5 +1,7 @@
 import styled from 'styled-components';
 
+import { MOBILE } from 'common/styles/breakpoints';
+
 export const LoginWrapper = styled.div`
   position: relative;
   flex: 1;
@@ -41,6 +43,10 @@ export const LoginCard = styled.div`
   padding: 28px 28px 26px;
   backdrop-filter: blur(12px);
   animation: loginCardIn 0.5s ease;
+
+  ${MOBILE} {
+    padding: 22px 18px 20px;
+  }
 
   &::before {
     content: '';

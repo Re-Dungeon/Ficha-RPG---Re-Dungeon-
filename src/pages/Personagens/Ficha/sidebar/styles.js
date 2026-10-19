@@ -11,6 +11,15 @@ export const SidebarWrapper = styled.nav`
   border-right: 1px solid var(--border-primary);
   transition: width 0.2s ease;
   overflow: hidden;
+
+  /* Dentro da gaveta do celular: ocupa a altura toda e rola. */
+  ${props =>
+    props.$naGaveta &&
+    `
+    min-height: 100%;
+    overflow-y: auto;
+    border-right: none;
+  `}
 `;
 
 export const SidebarHeaderRow = styled.div`

@@ -14,6 +14,7 @@ import SentimentVeryDissatisfiedIcon from '@mui/icons-material/SentimentVeryDiss
 import { getOrigensPorUniverso } from 'service/storage';
 import { calcularEfeitosReputacao } from 'common/utils/formulas';
 import { getNome } from 'common/utils/resolveNome';
+import { PAPER_TELA_CHEIA } from 'common/styles/breakpoints';
 import { useSaving } from 'context/SavingContext';
 
 import { DialogFecharButton, DialogHeaderRow, StatusValueRow } from '../styles';
@@ -131,7 +132,9 @@ const ReputacaoModal = ({ open, onClose, personagem, onSave }) => {
       onClose={onClose}
       fullWidth
       maxWidth={view === 'grid' ? 'lg' : 'md'}
-      slotProps={{ paper: { sx: { width: 'min(100%, 840px)', maxHeight: 'min(100vh, 86vh)', borderRadius: '22px' } } }}
+      slotProps={{
+        paper: { sx: { width: 'min(100%, 840px)', maxHeight: 'min(100vh, 86vh)', borderRadius: '22px', ...PAPER_TELA_CHEIA } },
+      }}
       scroll="paper"
     >
       <DialogHeaderRow>

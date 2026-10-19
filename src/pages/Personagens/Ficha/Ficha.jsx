@@ -9,6 +9,9 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
+import Drawer from '@mui/material/Drawer';
+import IconButton from '@mui/material/IconButton';
+import MenuIcon from '@mui/icons-material/Menu';
 import EqualizerIcon from '@mui/icons-material/Equalizer';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
@@ -20,6 +23,8 @@ import PetsIcon from '@mui/icons-material/Pets';
 import { getPersonagem, removePersonagem, updatePersonagem } from 'service/storage';
 import { useSelecao } from 'context/selecaoContext';
 import { SavingProvider } from 'context/SavingContext';
+import { MOBILE } from 'common/styles/breakpoints';
+import useIsMobile from 'hooks/useIsMobile';
 import ErrorBoundary from 'components/ErrorBoundary/ErrorBoundary';
 import ErrorSnackbar from 'components/ErrorSnackbar/ErrorSnackbar';
 
@@ -46,17 +51,31 @@ import ChatModal from './sidebar/ChatModal';
 import NotesModal from './notes/NotesModal';
 import { FichaLayout, FichaMain, TabsBar } from './styles';
 
+// `labelCurto`: rótulo das abas no celular (ícone em cima, aba estreita).
+const ABAS = [
+  { value: 'atributos', label: 'Atributos', labelCurto: 'Atributos', Icon: EqualizerIcon },
+  { value: 'aptidoes', label: 'Aptidões', labelCurto: 'Aptidões', Icon: AutoAwesomeIcon },
+  { value: 'arts', label: 'Artes', labelCurto: 'Artes', Icon: AutoFixHighIcon },
+  { value: 'inventario', label: 'Inventário', labelCurto: 'Inventário', Icon: Inventory2Icon },
+  { value: 'treinamento', label: 'Treinamento', labelCurto: 'Treino', Icon: FitnessCenterIcon },
+  { value: 'veiasAstrais', label: 'Veias Astrais', labelCurto: 'Veias', Icon: HubIcon },
+  { value: 'companheiro', label: 'Companheiro', labelCurto: 'Comp.', Icon: PetsIcon },
+];
+
 const Ficha = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { setHeaderExtra } = useOutletContext();
   const { selecionarPersonagem } = useSelecao();
+  const isMobile = useIsMobile();
   const [personagem, setPersonagem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [aba, setAba] = useState('atributos');
   const [dialogExcluir, setDialogExcluir] = useState(false);
   const [excluindo, setExcluindo] = useState(false);
   const [sidebarExpandida, setSidebarExpandida] = useState(true);
+  // Celular: a sidebar vira uma gaveta (Drawer), fechada por padrão.
+  const [gavetaAberta, setGavetaAberta] = useState(false);
   const [modalAtivo, setModalAtivo] = useState(null);
   const [erroExclusao, setErroExclusao] = useState(null);
   const [inventarioAtualizacoes, setInventarioAtualizacoes] = useState(0);
@@ -116,6 +135,11 @@ const Ficha = () => {
 
   const fecharModal = useCallback(() => setModalAtivo(null), []);
 
+  const abrirModalDaGaveta = useCallback(chave => {
+    setGavetaAberta(false);
+    setModalAtivo(chave);
+  }, []);
+
   const handleInventarioAtualizado = useCallback(() => {
     setInventarioAtualizacoes(current => current + 1);
   }, []);
@@ -145,33 +169,62 @@ const Ficha = () => {
   return (
     <SavingProvider>
       <FichaLayout>
-        <FichaSidebar
-          expandida={sidebarExpandida}
-          onAlternar={() => setSidebarExpandida(current => !current)}
-          onAbrirModal={setModalAtivo}
-        />
+        {isMobile ? (
+          <Drawer
+            open={gavetaAberta}
+            onClose={() => setGavetaAberta(false)}
+            slotProps={{ paper: { sx: { background: 'var(--bg-secondary)' } } }}
+          >
+            <FichaSidebar
+              expandida
+              naGaveta
+              onAlternar={() => setGavetaAberta(false)}
+              onAbrirModal={abrirModalDaGaveta}
+            />
+          </Drawer>
+        ) : (
+          <FichaSidebar
+            expandida={sidebarExpandida}
+            onAlternar={() => setSidebarExpandida(current => !current)}
+            onAbrirModal={setModalAtivo}
+          />
+        )}
 
         <FichaMain>
           <TabsBar>
+            {isMobile && (
+              <IconButton
+                aria-label="Abrir menu da ficha"
+                onClick={() => setGavetaAberta(true)}
+                sx={{ color: 'var(--status-gold)', flexShrink: 0 }}
+              >
+                <MenuIcon />
+              </IconButton>
+            )}
             <Tabs
               value={aba}
               onChange={(_event, novaAba) => setAba(novaAba)}
               variant="scrollable"
               scrollButtons="auto"
+              allowScrollButtonsMobile={isMobile}
               textColor="inherit"
+              sx={{ [MOBILE]: { flex: 1, minWidth: 0, '& .MuiTabs-scrollButtons': { width: 24 } } }}
             >
-              <Tab value="atributos" label="Atributos" icon={<EqualizerIcon fontSize="small" />} iconPosition="start" />
-              <Tab value="aptidoes" label="Aptidões" icon={<AutoAwesomeIcon fontSize="small" />} iconPosition="start" />
-              <Tab value="arts" label="Artes" icon={<AutoFixHighIcon fontSize="small" />} iconPosition="start" />
-              <Tab value="inventario" label="Inventário" icon={<Inventory2Icon fontSize="small" />} iconPosition="start" />
-              <Tab
-                value="treinamento"
-                label="Treinamento"
-                icon={<FitnessCenterIcon fontSize="small" />}
-                iconPosition="start"
-              />
-              <Tab value="veiasAstrais" label="Veias Astrais" icon={<HubIcon fontSize="small" />} iconPosition="start" />
-              <Tab value="companheiro" label="Companheiro" icon={<PetsIcon fontSize="small" />} iconPosition="start" />
+              {ABAS.map(({ value, label, labelCurto, Icon }) =>
+                isMobile ? (
+                  <Tab
+                    key={value}
+                    value={value}
+                    label={labelCurto}
+                    aria-label={label}
+                    icon={<Icon fontSize="small" />}
+                    iconPosition="top"
+                    sx={{ minWidth: 64, minHeight: 56, px: 1, py: 0.75, fontSize: '0.68rem' }}
+                  />
+                ) : (
+                  <Tab key={value} value={value} label={label} icon={<Icon fontSize="small" />} iconPosition="start" />
+                ),
+              )}
             </Tabs>
           </TabsBar>
 

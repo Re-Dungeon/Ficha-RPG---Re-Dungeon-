@@ -64,8 +64,10 @@ const construirGrupos = () => [
   },
 ];
 
-const FichaSidebar = ({ expandida, onAlternar, onAbrirModal }) => (
-  <SidebarWrapper $expandida={expandida}>
+// `naGaveta`: renderizada dentro do Drawer do celular (Ficha.jsx) — o botão
+// do cabeçalho fecha a gaveta em vez de recolher.
+const FichaSidebar = ({ expandida, onAlternar, onAbrirModal, naGaveta = false }) => (
+  <SidebarWrapper $expandida={expandida} $naGaveta={naGaveta}>
     <SidebarHeaderRow $expandida={expandida}>
       {expandida ? (
         <>
@@ -74,7 +76,7 @@ const FichaSidebar = ({ expandida, onAlternar, onAbrirModal }) => (
           </SidebarHeaderIcone>
           <SidebarHeaderTitulo>Menu Principal</SidebarHeaderTitulo>
           <IconButton
-            aria-label="Recolher menu"
+            aria-label={naGaveta ? 'Fechar menu' : 'Recolher menu'}
             onClick={onAlternar}
             size="small"
             sx={{ color: 'var(--status-gold)' }}
@@ -125,6 +127,7 @@ FichaSidebar.propTypes = {
   expandida: PropTypes.bool.isRequired,
   onAlternar: PropTypes.func.isRequired,
   onAbrirModal: PropTypes.func.isRequired,
+  naGaveta: PropTypes.bool,
 };
 
 export default FichaSidebar;

@@ -22,6 +22,7 @@ import { useAuth } from 'context/AuthContext';
 import { addPersonagem, getUniverso } from 'service/storage';
 import { nomeSchema } from 'common/utils/yupSchemas';
 import { getNome } from 'common/utils/resolveNome';
+import { PAPER_TELA_CHEIA } from 'common/styles/breakpoints';
 import { useCampanhasPorUniverso } from 'hooks/useCampanhasPorUniverso';
 import ErrorSnackbar from 'components/ErrorSnackbar/ErrorSnackbar';
 import { TIPOS_PERSONAGEM } from './Ficha/constants';
@@ -113,6 +114,7 @@ const CriarPersonagemModal = ({ open, onClose, onCreated }) => {
             borderRadius: '22px',
             boxShadow: '0 30px 80px rgba(91, 124, 250, 0.16)',
             overflow: 'hidden',
+            ...PAPER_TELA_CHEIA,
           },
         },
         backdrop: {

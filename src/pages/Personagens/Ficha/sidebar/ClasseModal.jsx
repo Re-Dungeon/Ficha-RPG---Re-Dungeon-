@@ -33,6 +33,7 @@ import {
 } from 'service/storage';
 import { calcularPowerCombat, calcularPrimariosTotais, calcularSecundarios } from 'common/utils/formulas';
 import { getNome } from 'common/utils/resolveNome';
+import { PAPER_TELA_CHEIA } from 'common/styles/breakpoints';
 import { useSaving } from 'context/SavingContext';
 
 import { TIPO_ART_OPTIONS } from '../arts/constants';
@@ -388,7 +389,11 @@ const ClasseModal = ({ open, onClose, personagem, onSave }) => {
       onClose={onClose}
       fullWidth
       maxWidth="xl"
-      slotProps={{ paper: { sx: { width: 'min(100%, 1280px)', height: 'min(100vh, 92vh)', maxHeight: 'min(100vh, 92vh)' } } }}
+      slotProps={{
+        paper: {
+          sx: { width: 'min(100%, 1280px)', height: 'min(100vh, 92vh)', maxHeight: 'min(100vh, 92vh)', ...PAPER_TELA_CHEIA },
+        },
+      }}
     >
       <DialogHeaderRow>
         <DialogHeaderTitle>Escolher Classe</DialogHeaderTitle>

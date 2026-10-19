@@ -5,6 +5,8 @@ import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 
+import { MOBILE } from 'common/styles/breakpoints';
+
 import {
   DialogTwoColumns,
   EssenciaTexto,
@@ -31,7 +33,7 @@ const NucleoViewDialog = ({ open, onClose, nucleo, onEditar }) => {
   }
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg" sx={{ '& .MuiPaper-root': { borderRadius: '28px', overflow: 'hidden', background: 'rgba(10, 8, 20, 0.96)', border: '1px solid rgba(171, 140, 255, 0.18)', boxShadow: '0 40px 90px rgba(0,0,0,0.42)' } }}>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg" sx={{ '& .MuiPaper-root': { borderRadius: '28px', overflow: 'hidden', background: 'rgba(10, 8, 20, 0.96)', border: '1px solid rgba(171, 140, 255, 0.18)', boxShadow: '0 40px 90px rgba(0,0,0,0.42)' }, [MOBILE]: { '& .MuiPaper-root': { borderRadius: 0 } } }}>
       <ViewDialogHeader>
         <ViewHeaderLeft>
           <ViewHeaderIcon>🔮</ViewHeaderIcon>

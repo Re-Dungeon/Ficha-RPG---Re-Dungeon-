@@ -1,5 +1,7 @@
 import styled from 'styled-components';
 
+import { MOBILE } from 'common/styles/breakpoints';
+
 export const PageWrapper = styled.div`
   flex: 1;
   padding: 32px;
@@ -10,6 +12,11 @@ export const PageWrapper = styled.div`
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+
+  ${MOBILE} {
+    padding: 16px 12px;
+    gap: 16px;
+  }
   position: relative;
 `;
 

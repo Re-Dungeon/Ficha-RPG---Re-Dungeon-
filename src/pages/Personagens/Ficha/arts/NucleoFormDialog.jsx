@@ -9,6 +9,7 @@ import DialogActions from '@mui/material/DialogActions';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
 
+import { MOBILE } from 'common/styles/breakpoints';
 import {
   campoCurtoSchema,
   descricaoSchema,
@@ -202,7 +203,7 @@ const NucleoFormDialog = ({ open, onClose, nucleo, onSubmit }) => {
   }, [open, nucleo]);
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg" sx={{ '& .MuiPaper-root': { borderRadius: '28px', overflow: 'hidden', background: 'rgba(10, 8, 20, 0.96)', border: '1px solid rgba(171, 140, 255, 0.18)', boxShadow: '0 40px 90px rgba(0,0,0,0.42)' } }}>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg" sx={{ '& .MuiPaper-root': { borderRadius: '28px', overflow: 'hidden', background: 'rgba(10, 8, 20, 0.96)', border: '1px solid rgba(171, 140, 255, 0.18)', boxShadow: '0 40px 90px rgba(0,0,0,0.42)' }, [MOBILE]: { '& .MuiPaper-root': { borderRadius: 0 } } }}>
       <ViewDialogHeader>
         <ViewHeaderLeft>
           <ViewHeaderIcon>✏️</ViewHeaderIcon>

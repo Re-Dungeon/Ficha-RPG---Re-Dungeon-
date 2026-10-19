@@ -1,5 +1,7 @@
 import { createTheme } from '@mui/material/styles';
 
+import { MOBILE } from './breakpoints';
+
 const GOLD = '#e8cb85';
 const GOLD_STRONG = '#f4dda2';
 const GOLD_BORDER = 'rgba(232, 203, 133, 0.55)';
@@ -8,6 +10,12 @@ const FIELD_BG = '#161233';
 const FIELD_BORDER = 'rgba(91, 124, 250, 0.5)';
 const MODAL_BG = 'linear-gradient(165deg, #2b2447 0%, #1c1830 100%)';
 const DARK_TEXT = '#1c1830';
+const DIALOGO_GRANDE = [
+  '&.MuiDialog-paperFullWidth:not(.MuiDialog-paperWidthXs)',
+  '&.MuiDialog-paperWidthMd',
+  '&.MuiDialog-paperWidthLg',
+  '&.MuiDialog-paperWidthXl',
+].join(', ');
 
 const theme = createTheme({
   palette: {
@@ -99,6 +107,24 @@ const theme = createTheme({
           border: `1px solid ${GOLD_BORDER}`,
           borderRadius: 16,
           boxShadow: '0 8px 32px rgba(0, 0, 0, 0.6)',
+          // Celular: diálogo "grande" (fullWidth que não é xs, ou md/lg/xl)
+          // ocupa a tela toda; os pequenos (confirmações, xs) seguem cartão
+          // com margem menor. Acima de 600px nada muda.
+          [MOBILE]: {
+            margin: 16,
+            maxWidth: 'calc(100% - 32px)',
+            maxHeight: 'calc(100% - 32px)',
+            '&.MuiDialog-paperFullWidth': { width: 'calc(100% - 32px)' },
+            [DIALOGO_GRANDE]: {
+              margin: 0,
+              width: '100%',
+              maxWidth: '100%',
+              height: '100%',
+              maxHeight: '100%',
+              borderRadius: 0,
+              border: 'none',
+            },
+          },
         },
       },
     },
