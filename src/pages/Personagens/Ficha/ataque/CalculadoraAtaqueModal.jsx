@@ -30,6 +30,7 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 import { useAuth } from 'context/AuthContext';
+import { MOBILE } from 'common/styles/breakpoints';
 
 import {
   ATAQUE_PERFIS,
@@ -125,6 +126,11 @@ const HeaderBar = styled(Box)(() => ({
   borderBottom: '1px solid rgba(232, 203, 133, 0.6)',
   background: 'linear-gradient(180deg, rgba(30, 24, 43, 0.98), rgba(18, 16, 27, 0.9))',
   boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05), inset 0 -1px 0 rgba(232, 203, 133, 0.2)',
+  // Celular: título à esquerda numa linha só, espaço reservado para o ✕.
+  [MOBILE]: {
+    justifyContent: 'flex-start',
+    padding: '14px 60px 12px 14px',
+  },
 }));
 
 const HeaderOrnament = styled(Box)(() => ({
@@ -147,6 +153,14 @@ const HeaderTitle = styled(Typography)(() => ({
   color: '#f4dda2',
   textShadow: '0 0 12px rgba(232, 203, 133, 0.45)',
   fontWeight: 700,
+  [MOBILE]: {
+    fontSize: '0.92rem',
+    letterSpacing: '0.05em',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    minWidth: 0,
+  },
 }));
 
 const CloseButton = styled(IconButton)(() => ({
@@ -164,6 +178,11 @@ const CloseButton = styled(IconButton)(() => ({
     background: 'rgba(232, 203, 133, 0.08)',
     borderColor: 'rgba(232, 203, 133, 0.9)',
   },
+  [MOBILE]: {
+    top: '50%',
+    right: 12,
+    transform: 'translateY(-50%)',
+  },
 }));
 
 const HeaderInfoButton = styled(IconButton)(() => ({
@@ -180,6 +199,10 @@ const HeaderInfoButton = styled(IconButton)(() => ({
     background: 'rgba(232, 203, 133, 0.12)',
     borderColor: 'rgba(232, 203, 133, 0.8)',
   },
+  [MOBILE]: {
+    flexShrink: 0,
+    marginLeft: 8,
+  },
 }));
 
 const ModalBody = styled(Box)(() => ({
@@ -193,6 +216,10 @@ const ModalBody = styled(Box)(() => ({
   overflowX: 'hidden',
   overscrollBehaviorY: 'contain',
   background: 'linear-gradient(180deg, rgba(10, 9, 19, 0.16), rgba(11, 11, 22, 0.24))',
+  [MOBILE]: {
+    gap: 12,
+    padding: '10px 10px 14px',
+  },
 }));
 
 const BoardGrid = styled(Box)(() => ({
@@ -202,6 +229,13 @@ const BoardGrid = styled(Box)(() => ({
   alignItems: 'stretch',
   minHeight: 0,
   flex: '1 1 auto',
+  // Celular: uma coluna (configuração → resumo → prévia → combinações). Com
+  // 2 colunas a da esquerda ficava espremida em ~20px.
+  [MOBILE]: {
+    gridTemplateColumns: 'minmax(0, 1fr)',
+    gap: 12,
+    flex: '0 0 auto',
+  },
 }));
 
 const SectionCard = styled(Box)(() => ({
@@ -228,6 +262,9 @@ const SectionHeader = styled(Box)(() => ({
   fontWeight: 700,
   fontSize: '0.8rem',
   fontFamily: 'Georgia, "Times New Roman", serif',
+  [MOBILE]: {
+    padding: '10px 12px',
+  },
 }));
 
 const SectionBody = styled(Box)(() => ({
@@ -236,6 +273,10 @@ const SectionBody = styled(Box)(() => ({
   padding: 14,
   flex: '1 1 auto',
   minHeight: 0,
+  [MOBILE]: {
+    gap: 12,
+    padding: 12,
+  },
 }));
 
 const FieldGroup = styled(Box)(() => ({
@@ -247,6 +288,9 @@ const TwoColFields = styled(Box)(() => ({
   display: 'grid',
   gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
   gap: 12,
+  [MOBILE]: {
+    gridTemplateColumns: 'minmax(0, 1fr)',
+  },
 }));
 
 const StyledTextField = styled(TextField)(({ theme }) => ({
@@ -467,6 +511,12 @@ const ComboListScroller = styled(Box)(() => ({
     background: 'rgba(232, 203, 133, 0.6)',
     borderRadius: 999,
     border: '2px solid rgba(17, 20, 31, 0.85)',
+  },
+  // Celular: sem rolagem própria — o corpo do modal já rola (rolagem dentro
+  // de rolagem no toque prende o dedo).
+  [MOBILE]: {
+    overflowY: 'visible',
+    paddingRight: 0,
   },
 }));
 

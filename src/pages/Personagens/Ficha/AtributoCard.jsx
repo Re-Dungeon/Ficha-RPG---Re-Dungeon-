@@ -11,6 +11,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import LockIcon from '@mui/icons-material/Lock';
 
 import NumberField from 'components/NumberField/NumberField';
+import useIsMobile from 'hooks/useIsMobile';
 import {
   NumberFieldBox,
   NumberFieldLabel,
@@ -48,6 +49,9 @@ const AtributoCard = ({ label, total, baseName, extraName, bonusName, personagem
   const nomeCalculadora = isDefesa ? 'Calculadora de Defesa' : 'Calculadora de Ataque';
   const [prontidaoAberta, setProntidaoAberta] = useState(false);
   const [prontidaoInfoAberta, setProntidaoInfoAberta] = useState(false);
+  // Celular: sem botão direito (e o toque longo não dispara `contextmenu` no
+  // iPhone) — as opções do menu de contexto viram botões no diálogo da gema.
+  const isMobile = useIsMobile();
 
   const abrir = () => {
     snapshotRef.current = {
@@ -237,6 +241,23 @@ const AtributoCard = ({ label, total, baseName, extraName, bonusName, personagem
               </NumberFieldWrapper>
               <NumberField name={bonusName} label="Bônus" />
             </FieldsRow>
+            {isMobile && opcoesMenu.length > 0 && (
+              <div style={{ display: 'grid', gap: 8, marginTop: 20 }}>
+                {opcoesMenu.map(opcao => (
+                  <Button
+                    key={opcao.label}
+                    variant="outlined"
+                    fullWidth
+                    onClick={() => {
+                      setAberto(false);
+                      opcao.onClick();
+                    }}
+                  >
+                    {opcao.label}
+                  </Button>
+                ))}
+              </div>
+            )}
           </DialogContent>
           <DialogActions>
             <Button onClick={cancelar}>Cancelar</Button>
