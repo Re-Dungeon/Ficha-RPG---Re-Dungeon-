@@ -64,6 +64,16 @@ describe('ArtsTab', () => {
     await waitFor(() => expect(updateArt).toHaveBeenCalledWith('p1', 'a1', { ativa: false }));
   });
 
+  it('usa o total efetivo dos primários, incluindo bônus de cultivo, para calcular o limite de arts', async () => {
+    render(
+      <SavingProvider>
+        <ArtsTab personagem={{ ...personagem, cultivoBonus: { primarios: { forca: 20, vitalidade: 20 } } }} />
+      </SavingProvider>,
+    );
+
+    expect(await screen.findByText('3')).toBeInTheDocument();
+  });
+
   it('cria um núcleo novo pelo diálogo', async () => {
     render(
       <SavingProvider>

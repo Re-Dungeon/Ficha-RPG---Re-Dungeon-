@@ -6,6 +6,7 @@ import LockIcon from '@mui/icons-material/Lock';
 
 import { getDivindades, getVeiasAstraisPorUniverso } from 'service/storage';
 import {
+  calcularBonusCultivoTotal,
   calcularPcDisponivel,
   calcularPowerCombat,
   calcularPrimariosTotais,
@@ -59,10 +60,12 @@ const VeiasAstraisTab = ({ personagem, onSave }) => {
     };
   }, [personagem.universo]);
 
+  const bonusCultivoTotal = calcularBonusCultivoTotal(personagem.cultivoBonus ?? {});
   const primariosTotais = calcularPrimariosTotais(
     personagem.atributosBase,
     personagem.atributosExtra,
     personagem.atributosBonus,
+    bonusCultivoTotal.primarios,
   );
   const secundariosTotais = calcularSecundarios(
     primariosTotais,

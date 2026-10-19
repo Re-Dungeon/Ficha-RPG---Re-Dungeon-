@@ -1,7 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import CircularProgress from '@mui/material/CircularProgress';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
@@ -10,8 +8,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Drawer from '@mui/material/Drawer';
-import IconButton from '@mui/material/IconButton';
-import MenuIcon from '@mui/icons-material/Menu';
+
 import EqualizerIcon from '@mui/icons-material/Equalizer';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
@@ -23,7 +20,7 @@ import PetsIcon from '@mui/icons-material/Pets';
 import { getPersonagem, removePersonagem, updatePersonagem } from 'service/storage';
 import { useSelecao } from 'context/selecaoContext';
 import { SavingProvider } from 'context/SavingContext';
-import { MOBILE } from 'common/styles/breakpoints';
+
 import useIsMobile from 'hooks/useIsMobile';
 import ErrorBoundary from 'components/ErrorBoundary/ErrorBoundary';
 import ErrorSnackbar from 'components/ErrorSnackbar/ErrorSnackbar';
@@ -49,18 +46,8 @@ import CondicoesModal from './sidebar/CondicoesModal';
 import CodexModal from './sidebar/CodexModal';
 import ChatModal from './sidebar/ChatModal';
 import NotesModal from './notes/NotesModal';
-import { FichaLayout, FichaMain, TabsBar } from './styles';
+import { FichaLayout, FichaMain } from './styles';
 
-// `labelCurto`: rótulo das abas no celular (ícone em cima, aba estreita).
-const ABAS = [
-  { value: 'atributos', label: 'Atributos', labelCurto: 'Atributos', Icon: EqualizerIcon },
-  { value: 'aptidoes', label: 'Aptidões', labelCurto: 'Aptidões', Icon: AutoAwesomeIcon },
-  { value: 'arts', label: 'Artes', labelCurto: 'Artes', Icon: AutoFixHighIcon },
-  { value: 'inventario', label: 'Inventário', labelCurto: 'Inventário', Icon: Inventory2Icon },
-  { value: 'treinamento', label: 'Treinamento', labelCurto: 'Treino', Icon: FitnessCenterIcon },
-  { value: 'veiasAstrais', label: 'Veias Astrais', labelCurto: 'Veias', Icon: HubIcon },
-  { value: 'companheiro', label: 'Companheiro', labelCurto: 'Comp.', Icon: PetsIcon },
-];
 
 const Ficha = () => {
   const { id } = useParams();
@@ -144,13 +131,43 @@ const Ficha = () => {
     setInventarioAtualizacoes(current => current + 1);
   }, []);
 
+  // `labelCurto`: rótulo da aba no celular (Layout põe as abas numa 2ª linha,
+  // com o ícone em cima).
+  const tabsFicha = useMemo(
+    () => [
+      { value: 'atributos', label: 'Atributos', icon: <EqualizerIcon fontSize="small" /> },
+      { value: 'aptidoes', label: 'Aptidões', icon: <AutoAwesomeIcon fontSize="small" /> },
+      { value: 'arts', label: 'Artes', icon: <AutoFixHighIcon fontSize="small" /> },
+      { value: 'inventario', label: 'Inventário', icon: <Inventory2Icon fontSize="small" /> },
+      {
+        value: 'treinamento',
+        label: 'Treinamento',
+        labelCurto: 'Treino',
+        icon: <FitnessCenterIcon fontSize="small" />,
+      },
+      { value: 'veiasAstrais', label: 'Veias Astrais', labelCurto: 'Veias', icon: <HubIcon fontSize="small" /> },
+      { value: 'companheiro', label: 'Companheiro', labelCurto: 'Comp.', icon: <PetsIcon fontSize="small" /> },
+    ],
+    [],
+  );
+
   useEffect(() => {
     if (!personagem) {
       return undefined;
     }
-    setHeaderExtra({ nome: personagem.nome, onVoltar: handleVoltar });
+    setHeaderExtra({
+      nome: personagem.nome,
+      onVoltar: handleVoltar,
+      // Celular: o ☰ da gaveta fica ao lado das abas, no cabeçalho.
+      onAbrirMenu: isMobile ? () => setGavetaAberta(true) : undefined,
+      tabs: {
+        value: aba,
+        onChange: (_event, novaAba) => setAba(novaAba),
+        items: tabsFicha,
+      },
+    });
     return () => setHeaderExtra(null);
-  }, [personagem, handleVoltar, setHeaderExtra]);
+  }, [aba, handleVoltar, isMobile, personagem, setHeaderExtra, tabsFicha]);
 
   // Lembra a ficha aberta para o link "Campanhas" do cabeçalho abrir o chat
   // da campanha deste personagem (e "Fichas" voltar para cá depois).
@@ -191,43 +208,6 @@ const Ficha = () => {
         )}
 
         <FichaMain>
-          <TabsBar>
-            {isMobile && (
-              <IconButton
-                aria-label="Abrir menu da ficha"
-                onClick={() => setGavetaAberta(true)}
-                sx={{ color: 'var(--status-gold)', flexShrink: 0 }}
-              >
-                <MenuIcon />
-              </IconButton>
-            )}
-            <Tabs
-              value={aba}
-              onChange={(_event, novaAba) => setAba(novaAba)}
-              variant="scrollable"
-              scrollButtons="auto"
-              allowScrollButtonsMobile={isMobile}
-              textColor="inherit"
-              sx={{ [MOBILE]: { flex: 1, minWidth: 0, '& .MuiTabs-scrollButtons': { width: 24 } } }}
-            >
-              {ABAS.map(({ value, label, labelCurto, Icon }) =>
-                isMobile ? (
-                  <Tab
-                    key={value}
-                    value={value}
-                    label={labelCurto}
-                    aria-label={label}
-                    icon={<Icon fontSize="small" />}
-                    iconPosition="top"
-                    sx={{ minWidth: 64, minHeight: 56, px: 1, py: 0.75, fontSize: '0.68rem' }}
-                  />
-                ) : (
-                  <Tab key={value} value={value} label={label} icon={<Icon fontSize="small" />} iconPosition="start" />
-                ),
-              )}
-            </Tabs>
-          </TabsBar>
-
           <ErrorBoundary key={aba} mensagem="Não foi possível exibir esta aba. Troque de aba ou recarregue a página.">
             {aba === 'atributos' && (
               <AtributosTab

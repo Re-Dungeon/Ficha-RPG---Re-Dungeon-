@@ -467,9 +467,9 @@ export const calcularSecundarios = (
     prontidao:
       Math.ceil(((agilidade * 0.6 + percepcao * 0.3 + sorte * 0.1) / 250) * 315) +
       ajuste('prontidao'),
-    ataque: Math.ceil(((forca * 0.7 + inteligencia * 0.3) / 250) * 21) + ajuste('ataque'),
+    ataque: Math.ceil(((forca * 0.7 + inteligencia * 0.3) / 250) * 100) + ajuste('ataque'),
     defesa:
-      Math.ceil(((vitalidade * 0.6 + agilidade * 0.3 + sorte * 0.1) / 250) * 16) +
+      Math.ceil(((vitalidade * 0.6 + agilidade * 0.3 + sorte * 0.1) / 250) * 75) +
       ajuste('defesa'),
     reacao:
       Math.ceil(((agilidade * 0.5 + percepcao * 0.3 + sorte * 0.2) / 250) * 6) +

@@ -8,40 +8,43 @@ export const LoginWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  min-height: calc(100vh - 64px);
   padding: 56px 20px 64px;
-  background:
-    radial-gradient(circle at 50% 28%, rgba(124, 143, 255, 0.2), transparent 25%),
-    radial-gradient(circle at 15% 18%, rgba(111, 86, 255, 0.12), transparent 28%),
-    radial-gradient(circle at 85% 20%, rgba(98, 118, 255, 0.1), transparent 28%),
-    linear-gradient(180deg, #060b15 0%, #0b101d 38%, #090d17 100%);
+  background-color: #050d19;
+  background-image:
+    linear-gradient(180deg, rgba(5, 12, 26, 0.58) 0%, rgba(3, 8, 18, 0.7) 100%),
+    url('https://i.imgur.com/v1EdhCV.jpeg');
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: scroll;
   overflow: hidden;
 
   &::before {
     content: '';
     position: absolute;
     inset: 0;
-    background-image:
-      linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255, 255, 255, 0.012) 1px, transparent 1px);
-    background-size: 24px 24px;
-    mask-image: radial-gradient(circle at center, black 36%, transparent 90%);
-    opacity: 0.5;
+    background:
+      radial-gradient(circle at 50% 24%, rgba(105, 142, 255, 0.18), transparent 22%),
+      radial-gradient(circle at 20% 18%, rgba(84, 119, 203, 0.12), transparent 26%),
+      radial-gradient(circle at 80% 22%, rgba(67, 96, 205, 0.1), transparent 24%);
+    pointer-events: none;
   }
 `;
 
 export const LoginCard = styled.div`
   position: relative;
   width: min(100%, 440px);
-  background: linear-gradient(180deg, rgba(15, 19, 31, 0.94) 0%, rgba(12, 14, 24, 0.96) 100%);
-  border: 1px solid rgba(144, 164, 255, 0.28);
+  background: linear-gradient(180deg, rgba(12, 18, 29, 0.78) 0%, rgba(8, 13, 22, 0.92) 100%);
+  border: 1px solid rgba(150, 171, 255, 0.26);
   border-radius: 24px;
   box-shadow:
-    0 24px 60px rgba(1, 4, 12, 0.8),
-    0 0 0 1px rgba(139, 155, 255, 0.12),
-    inset 0 1px 0 rgba(201, 214, 255, 0.15),
-    inset 0 0 24px rgba(99, 121, 255, 0.08);
+    0 24px 60px rgba(1, 4, 12, 0.82),
+    0 0 0 1px rgba(148, 168, 255, 0.08),
+    inset 0 1px 0 rgba(214, 223, 255, 0.14),
+    inset 0 0 26px rgba(79, 104, 204, 0.08);
   padding: 28px 28px 26px;
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(10px);
   animation: loginCardIn 0.5s ease;
 
   ${MOBILE} {

@@ -6,8 +6,8 @@ const GOLD = '#e8cb85';
 const GOLD_STRONG = '#f4dda2';
 const GOLD_BORDER = 'rgba(232, 203, 133, 0.55)';
 const BLUE = '#5b7cfa';
-const FIELD_BG = '#161233';
-const FIELD_BORDER = 'rgba(91, 124, 250, 0.5)';
+const FIELD_BG = '#1a1628';
+const FIELD_BORDER = 'rgba(190, 158, 95, 0.28)';
 const MODAL_BG = 'linear-gradient(165deg, #2b2447 0%, #1c1830 100%)';
 const DARK_TEXT = '#1c1830';
 const DIALOGO_GRANDE = [
@@ -22,7 +22,7 @@ const theme = createTheme({
     mode: 'dark',
     primary: { main: GOLD, contrastText: DARK_TEXT },
     secondary: { main: BLUE },
-    background: { default: '#0a0913', paper: '#100e1c' },
+    background: { default: '#0a0913', paper: '#1a1628' },
     text: { primary: '#f1f1f4', secondary: '#b4b4c0' },
     divider: 'rgba(255, 255, 255, 0.08)',
   },

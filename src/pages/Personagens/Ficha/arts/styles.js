@@ -19,8 +19,9 @@ export const StatsGrid = styled.div`
 `;
 
 export const StatCard = styled.div`
-  background: rgba(0, 0, 0, 0.24);
-  border-left: 2px solid var(--status-gold);
+  background: linear-gradient(180deg, rgba(26, 22, 40, 0.96), rgba(18, 16, 29, 0.94));
+  border: 1px solid rgba(190, 158, 95, 0.2);
+  border-left: 3px solid var(--status-gold);
   border-radius: 14px;
   padding: 14px 16px;
   text-align: center;
@@ -29,11 +30,12 @@ export const StatCard = styled.div`
   flex-direction: column;
   justify-content: center;
   gap: 6px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
   transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 24px rgba(91, 124, 250, 0.12);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.26);
   }
 `;
 
@@ -151,22 +153,21 @@ export const EmptyState = styled.p`
 export const NucleoCardWrapper = styled.div`
   position: relative;
   width: 100%;
-  background: linear-gradient(180deg, rgba(12, 10, 24, 0.96), rgba(18, 12, 34, 0.94));
-  border: 1px solid rgba(171, 140, 255, 0.24);
+  background: linear-gradient(180deg, rgba(18, 16, 29, 0.96), rgba(12, 10, 20, 0.96));
+  border: 1px solid rgba(190, 158, 95, 0.2);
   border-radius: 18px;
   padding: 28px 20px 20px;
   display: flex;
   flex-direction: column;
   gap: 16px;
   overflow: hidden;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(14px);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.26), inset 0 1px 0 rgba(255, 255, 255, 0.04);
   transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease, background 200ms ease;
 
   &:hover {
     transform: translateY(-3px);
-    border-color: rgba(171, 140, 255, 0.38);
-    box-shadow: 0 26px 64px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    border-color: rgba(190, 158, 95, 0.38);
+    box-shadow: 0 26px 64px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.05);
   }
 `;
 

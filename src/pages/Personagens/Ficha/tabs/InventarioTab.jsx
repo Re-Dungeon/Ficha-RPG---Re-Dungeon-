@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
@@ -20,7 +20,11 @@ import {
   updateMaterialInventario,
   updateReceitaInventario,
 } from 'service/storage';
-import { calcularEspacoInventario, calcularPrimariosTotais } from 'common/utils/formulas';
+import {
+  calcularBonusCultivoTotal,
+  calcularEspacoInventario,
+  calcularPrimariosTotais,
+} from 'common/utils/formulas';
 import { getNome } from 'common/utils/resolveNome';
 import { useSaving } from 'context/SavingContext';
 
@@ -90,10 +94,19 @@ const InventarioTab = ({ personagem, inventarioAtualizacoes }) => {
     carregarReceitas();
   }, [carregarItens, carregarMateriais, carregarReceitas, inventarioAtualizacoes]);
 
-  const primariosTotais = calcularPrimariosTotais(
-    personagem.atributosBase,
-    personagem.atributosExtra,
-    personagem.atributosBonus,
+  const bonusCultivoTotal = useMemo(
+    () => calcularBonusCultivoTotal(personagem.cultivoBonus ?? {}),
+    [personagem.cultivoBonus],
+  );
+  const primariosTotais = useMemo(
+    () =>
+      calcularPrimariosTotais(
+        personagem.atributosBase,
+        personagem.atributosExtra,
+        personagem.atributosBonus,
+        bonusCultivoTotal.primarios,
+      ),
+    [bonusCultivoTotal.primarios, personagem.atributosBase, personagem.atributosBonus, personagem.atributosExtra],
   );
 
   const itensParaEspaco = itens.map(item => ({

@@ -8,7 +8,16 @@ const ErrorSnackbar = ({ open, mensagem, onClose }) => (
     open={open}
     autoHideDuration={6000}
     onClose={onClose}
-    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+    anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+    sx={{
+      top: 16,
+      right: 16,
+      left: 'auto',
+      bottom: 'auto',
+      '& .MuiSnackbarContent-root': {
+        minWidth: 'min(420px, calc(100vw - 32px))',
+      },
+    }}
   >
     <Alert onClose={onClose} severity="error" variant="filled" sx={{ width: '100%' }}>
       {mensagem}

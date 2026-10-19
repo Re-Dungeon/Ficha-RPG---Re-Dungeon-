@@ -1,12 +1,15 @@
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 
 import { getPersonagem } from 'service/storage';
+import { useAuth } from 'context/AuthContext';
 import useIsMobile from 'hooks/useIsMobile';
+import Layout from 'components/Layout/Layout';
 import Ficha from './Ficha';
 
+vi.mock('context/AuthContext', () => ({ useAuth: vi.fn() }));
 vi.mock('service/storage', () => ({
   getPersonagem: vi.fn(),
   removePersonagem: vi.fn(),
@@ -40,13 +43,13 @@ vi.mock('./sidebar/CodexModal', () => stubModal('codex'));
 vi.mock('./sidebar/ChatModal', () => stubModal('chat'));
 vi.mock('./notes/NotesModal', () => stubModal('notas'));
 
-const ComHeader = () => <Outlet context={{ setHeaderExtra: vi.fn() }} />;
-
+// Com o Layout de verdade: as abas da ficha (e o ☰ da gaveta, no celular)
+// ficam no cabeçalho, via headerExtra.
 const renderFicha = () =>
   render(
     <MemoryRouter initialEntries={['/personagens/p1']}>
       <Routes>
-        <Route element={<ComHeader />}>
+        <Route element={<Layout />}>
           <Route path="/personagens/:id" element={<Ficha />} />
         </Route>
       </Routes>
@@ -56,6 +59,7 @@ const renderFicha = () =>
 describe('Ficha — navegação no celular x desktop', () => {
   beforeEach(() => {
     getPersonagem.mockResolvedValue({ id: 'p1', uid: 'u1', nome: 'Aria' });
+    useAuth.mockReturnValue({ currentUser: { uid: 'u1', email: 'a@b.c' }, logout: vi.fn() });
   });
 
   it('desktop: sidebar fixa, sem botão de gaveta, abas com rótulo completo', async () => {
@@ -64,7 +68,7 @@ describe('Ficha — navegação no celular x desktop', () => {
     await screen.findByText('Aba atributos');
 
     expect(screen.queryByRole('button', { name: 'Abrir menu da ficha' })).not.toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: 'Veias Astrais' })).toHaveTextContent('Veias Astrais');
+    expect(await screen.findByRole('tab', { name: 'Veias Astrais' })).toHaveTextContent('Veias Astrais');
     fireEvent.click(screen.getByRole('button', { name: 'Classe' }));
     expect(screen.getByText('Modal classe')).toBeInTheDocument();
   });
@@ -75,9 +79,9 @@ describe('Ficha — navegação no celular x desktop', () => {
     await screen.findByText('Aba atributos');
 
     expect(screen.queryByRole('button', { name: 'Classe' })).not.toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: 'Veias Astrais' })).toHaveTextContent('Veias');
+    expect(await screen.findByRole('tab', { name: 'Veias Astrais' })).toHaveTextContent(/^Veias$/);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Abrir menu da ficha' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Abrir menu da ficha' }));
     fireEvent.click(await screen.findByRole('button', { name: 'Classe' }));
 
     expect(screen.getByText('Modal classe')).toBeInTheDocument();

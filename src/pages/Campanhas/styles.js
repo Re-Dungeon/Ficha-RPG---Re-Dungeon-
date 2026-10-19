@@ -60,6 +60,12 @@ export const ChatPageWrapper = styled.div`
   @media (max-width: 600px) {
     padding: 8px;
   }
+
+  /* Celular: o cabeçalho do Layout tem 56px. */
+  ${MOBILE} {
+    height: calc(100vh - 56px);
+    height: calc(100dvh - 56px);
+  }
 `;
 
 // Visão "grid": barra (Chat|Grid, "Falando como", mostrar chat) + mapa com o

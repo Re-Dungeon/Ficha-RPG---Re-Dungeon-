@@ -17,8 +17,8 @@ export const DivindadeCardButton = styled.button`
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));
-  border: 1px solid rgba(255,255,255,0.06);
+  background: linear-gradient(180deg, rgba(26, 22, 40, 0.96), rgba(18, 16, 29, 0.96));
+  border: 1px solid rgba(190, 158, 95, 0.2);
   border-radius: 14px;
   overflow: hidden;
   position: relative;
@@ -26,7 +26,7 @@ export const DivindadeCardButton = styled.button`
     border-color 0.18s ease,
     transform 0.18s ease,
     box-shadow 0.18s ease;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.02);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.03);
 
   &:hover {
     border-color: var(--border-hover);
@@ -89,7 +89,7 @@ export const DivindadeCardButton = styled.button`
 export const DivindadeImagem = styled.div`
   width: 100%;
   aspect-ratio: 16 / 9;
-  background: rgba(0, 0, 0, 0.35);
+  background: linear-gradient(180deg, rgba(18, 16, 29, 0.92), rgba(8, 7, 13, 0.96));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -240,12 +240,11 @@ export const ArvoreScrollArea = styled.div`
   min-height: min(72vh, 860px);
   padding: 28px 18px 20px;
   background:
-    linear-gradient(180deg, rgba(25, 20, 36, 0.36) 0%, rgba(17, 13, 25, 0.46) 100%),
-    radial-gradient(circle at 50% 0%, rgba(139, 92, 246, 0.14), transparent 60%);
+    linear-gradient(180deg, rgba(18, 16, 29, 0.72) 0%, rgba(12, 10, 18, 0.8) 100%),
+    radial-gradient(circle at 50% 0%, rgba(139, 92, 246, 0.12), transparent 60%);
   border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(190, 158, 95, 0.18);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02), 0 12px 26px rgba(0, 0, 0, 0.18);
-  backdrop-filter: blur(1px);
   scrollbar-width: thin;
   scrollbar-color: rgba(120, 157, 255, 0.9) rgba(18, 14, 28, 0.45);
 
@@ -453,8 +452,8 @@ export const VeiaStatsRow = styled.div`
   display: grid;
   grid-template-columns: 1fr 1px 1fr;
   align-items: stretch;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid var(--border-primary);
+  background: linear-gradient(180deg, rgba(18, 16, 29, 0.96), rgba(12, 10, 20, 0.96));
+  border: 1px solid rgba(190, 158, 95, 0.22);
   border-radius: 10px;
   overflow: hidden;
 `;

@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import Button from '@mui/material/Button';
 
-import { auth } from 'service/firebase';
 import { addHistoricoSorte, getHistoricoSorte } from 'service/storage';
 import {
   calcularBonusCultivoTotal,
@@ -49,19 +48,25 @@ const StatCard = styled(AtributoCardWrapper)`
   display: flex;
   flex-direction: column;
   gap: 8px;
-  align-items: flex-start;
+  align-items: center;
+  text-align: center;
   transition: transform 220ms ease, box-shadow 220ms ease;
   &:hover { transform: translateY(-6px); box-shadow: 0 10px 30px rgba(16,14,28,0.5); }
 `;
 
 const StatIcon = styled.div`
   font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 const StatValue = styled.div`
   font-size: 1.6rem;
   font-weight: 800;
   color: #fff;
+  text-align: center;
+  width: 100%;
 `;
 
 const CenterPanel = styled.div`
@@ -169,32 +174,15 @@ const SorteTab = ({ personagem, onSave }) => {
 
   useEffect(() => {
     let isMounted = true;
-    // eslint-disable-next-line no-console
-    console.log('[SORT_HISTORY][LOAD START]', {
-      uid: auth.currentUser?.uid,
-      email: auth.currentUser?.email,
-      personagemId: personagem.id,
-    });
+
     getHistoricoSorte(personagem.id)
       .then(itens => {
-        // eslint-disable-next-line no-console
-        console.log('[SORT_HISTORY][FIRESTORE SUCCESS]', {
-          quantidade: Array.isArray(itens) ? itens.length : 0,
-          uid: auth.currentUser?.uid,
-          email: auth.currentUser?.email,
-        });
         if (isMounted) {
           setHistorico(itens);
         }
       })
-      .catch(erro => {
-        // eslint-disable-next-line no-console
-        console.error('[SORT_HISTORY][FIRESTORE ERROR]', {
-          code: erro?.code,
-          message: erro?.message,
-          uid: auth.currentUser?.uid,
-          email: auth.currentUser?.email,
-        });
+      .catch(() => {
+        // ignore loading errors for history fetches and keep the empty state
       });
     return () => {
       isMounted = false;
@@ -247,10 +235,10 @@ const SorteTab = ({ personagem, onSave }) => {
         </StatCard>
 
         <StatCard>
-          <StatIcon>⭐</StatIcon>
-          <CardTitle>Bônus Base</CardTitle>
+          <StatIcon>☘️</StatIcon>
+          <CardTitle>Pontos de Sorte</CardTitle>
           <StatValue style={{ color: 'var(--color-accent, #6C63FF)' }}>{bonusBase}</StatValue>
-          <StatusValueRow style={{ color: 'var(--text-secondary)' }}>Bônus permanente de sorte.</StatusValueRow>
+          <StatusValueRow style={{ color: 'var(--text-secondary)' }}>Pontos disponíveis para influenciar suas rolagens.</StatusValueRow>
         </StatCard>
 
         <StatCard>
