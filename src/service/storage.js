@@ -49,15 +49,140 @@ export const updateFirestoreItem = (collectionName, id, data) =>
 export const removeFirestoreItem = (collectionName, id) =>
   deleteDoc(doc(db, collectionName, id));
 
-export const getPersonagens = uid =>
-  getFirestoreItems('personagens', where('uid', '==', uid));
+const getProntidaoMaximaEfetiva = (personagem = {}, estadoCombate = {}) => {
+  const valorExplicito = Number(
+    personagem?.prontidaoMaximaEfetiva ??
+      estadoCombate?.prontidaoMaximaEfetiva ??
+      personagem?.secundariostotais?.prontidao ??
+      personagem?.secundariosTotais?.prontidao ??
+      personagem?.prontidao ??
+      0,
+  ) || 0;
 
-export const getPersonagem = id => getFirestoreItem('personagens', id);
+  return Math.max(0, valorExplicito);
+};
 
-export const addPersonagem = data => addFirestoreItem('personagens', data);
+export const normalizarPersonagemCarregado = (personagem = {}) => {
+  if (!personagem || typeof personagem !== 'object') {
+    return personagem;
+  }
 
-export const updatePersonagem = (id, data) =>
-  updateFirestoreItem('personagens', id, data);
+  const estadoCombate = personagem.estadoCombate && typeof personagem.estadoCombate === 'object'
+    ? { ...personagem.estadoCombate }
+    : {};
+  const prontidaoMaximaEfetiva = getProntidaoMaximaEfetiva(personagem, estadoCombate);
+  const prontidaoAtual = Number(
+    personagem?.prontidaoAtual ??
+      estadoCombate?.ppAtual ??
+      personagem?.estadoCombate?.ppAtual ??
+      0,
+  ) || 0;
+  const turnoNumero = Number(
+    personagem?.turnoNumero ??
+      estadoCombate?.turno ??
+      1,
+  ) || 1;
+  const historicoAcoes = Array.isArray(personagem?.historicoAcoes)
+    ? personagem.historicoAcoes
+    : Array.isArray(estadoCombate?.historicoAcoes)
+      ? estadoCombate.historicoAcoes
+      : [];
+
+  return {
+    ...personagem,
+    prontidaoMaximaEfetiva,
+    prontidaoAtual: Math.min(Math.max(0, prontidaoAtual), prontidaoMaximaEfetiva || Math.max(0, prontidaoAtual)),
+    ppGastosTurno: prontidaoMaximaEfetiva > 0 ? Math.max(0, prontidaoMaximaEfetiva - Math.min(Math.max(0, prontidaoAtual), prontidaoMaximaEfetiva)) : 0,
+    turnoNumero,
+    historicoAcoes,
+    estadoCombate: {
+      ...estadoCombate,
+      ppAtual: Math.min(Math.max(0, prontidaoAtual), prontidaoMaximaEfetiva || Math.max(0, prontidaoAtual)),
+      turno: turnoNumero,
+      historicoAcoes,
+    },
+  };
+};
+
+const normalizarPersistenciaCombate = (personagemAtual = {}, dados = {}) => {
+  const estadoCombate = dados?.estadoCombate && typeof dados.estadoCombate === 'object'
+    ? { ...dados.estadoCombate }
+    : { ...(personagemAtual?.estadoCombate ?? {}) };
+  const prontidaoMaximaEfetiva = Math.max(
+    0,
+    Number(
+      dados?.prontidaoMaximaEfetiva ??
+        personagemAtual?.prontidaoMaximaEfetiva ??
+        personagemAtual?.secundariostotais?.prontidao ??
+        personagemAtual?.secundariosTotais?.prontidao ??
+        estadoCombate?.prontidaoMaximaEfetiva ??
+        0,
+    ) || 0,
+  );
+  const prontidaoAtual = Math.min(
+    Math.max(0, Number(estadoCombate?.ppAtual ?? dados?.prontidaoAtual ?? personagemAtual?.prontidaoAtual ?? 0) || 0),
+    prontidaoMaximaEfetiva || Math.max(0, Number(estadoCombate?.ppAtual ?? dados?.prontidaoAtual ?? personagemAtual?.prontidaoAtual ?? 0) || 0),
+  );
+  const turnoNumero = Number(estadoCombate?.turno ?? dados?.turnoNumero ?? personagemAtual?.turnoNumero ?? 1) || 1;
+  const historicoAcoes = Array.isArray(estadoCombate?.historicoAcoes)
+    ? estadoCombate.historicoAcoes
+    : Array.isArray(dados?.historicoAcoes)
+      ? dados.historicoAcoes
+      : Array.isArray(personagemAtual?.historicoAcoes)
+        ? personagemAtual.historicoAcoes
+        : [];
+
+  return {
+    ...dados,
+    estadoCombate: {
+      ...estadoCombate,
+      ppAtual: prontidaoAtual,
+      turno: turnoNumero,
+      historicoAcoes: historicoAcoes.slice(0, 12),
+    },
+    prontidaoMaximaEfetiva,
+    prontidaoAtual,
+    ppGastosTurno: prontidaoMaximaEfetiva > 0 ? Math.max(0, prontidaoMaximaEfetiva - prontidaoAtual) : 0,
+    turnoNumero,
+    historicoAcoes: historicoAcoes.slice(0, 12),
+  };
+};
+
+export const getPersonagens = async uid => {
+  const personagens = await getFirestoreItems('personagens', where('uid', '==', uid));
+  return personagens.map(normalizarPersonagemCarregado);
+};
+
+export const getPersonagem = async id => {
+  const personagem = await getFirestoreItem('personagens', id);
+  return normalizarPersonagemCarregado(personagem);
+};
+
+export const addPersonagem = data => {
+  const payload = normalizarPersistenciaCombate({}, data ?? {});
+  return addFirestoreItem('personagens', payload);
+};
+
+export const updatePersonagem = async (id, data) => {
+  if (!id || !data || typeof data !== 'object') {
+    return null;
+  }
+
+  return runTransaction(db, async transaction => {
+    const ref = doc(db, 'personagens', id);
+    const snapshot = await transaction.get(ref);
+    const atual = snapshot.exists() ? snapshot.data() : {};
+    const merged = { ...atual, ...data };
+    const payload = normalizarPersistenciaCombate(atual, merged);
+
+    transaction.update(ref, {
+      ...payload,
+      updatedAt: serverTimestamp(),
+    });
+
+    return payload;
+  });
+};
 
 export const removePersonagem = id => removeFirestoreItem('personagens', id);
 

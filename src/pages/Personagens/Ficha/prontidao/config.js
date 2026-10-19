@@ -711,6 +711,21 @@ export const calcularRecuperacaoPp = (ppMaximo, percentual = 0.2) => {
   return Math.ceil(maximo * percentualNormalizado);
 };
 
+export const normalizarTurnoTexto = turno => {
+  const valor = typeof turno === 'number' ? String(turno) : String(turno ?? '1');
+  if (!valor.trim()) {
+    return 'Turno 1';
+  }
+
+  const textoNormalizado = valor.trim();
+  if (/^turno\s+\d+/i.test(textoNormalizado)) {
+    const numero = textoNormalizado.replace(/^turno\s+/i, '').trim();
+    return `Turno ${numero}`;
+  }
+
+  return `Turno ${textoNormalizado}`;
+};
+
 export const normalizarEstadoCombate = (personagem = {}, ppMaximo) => {
   const estado = personagem?.estadoCombate ?? {};
   const historico = Array.isArray(estado.historicoAcoes) ? estado.historicoAcoes : [];
@@ -729,12 +744,17 @@ export const normalizarEstadoCombate = (personagem = {}, ppMaximo) => {
       }
     : null;
 
+  const historicoNormalizado = historico.map(item => ({
+    ...item,
+    turno: normalizarTurnoTexto(item?.turno ?? turnoAtual),
+  }));
+
   return {
     turno: turnoAtual,
     ppAtual,
     recuperacaoUtilizada: Boolean(estado.recuperacaoUtilizada),
     descansando: Boolean(estado.descansando),
-    historicoAcoes: historico.slice(0, 12),
+    historicoAcoes: historicoNormalizado.slice(0, 12),
     acaoExtra,
   };
 };
