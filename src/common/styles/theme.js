@@ -115,6 +115,15 @@ const theme = createTheme({
             maxWidth: 'calc(100% - 32px)',
             maxHeight: 'calc(100% - 32px)',
             '&.MuiDialog-paperFullWidth': { width: 'calc(100% - 32px)' },
+            // <form> envolvendo DialogContent + DialogActions: vira flex em
+            // coluna para o conteúdo rolar e os botões ficarem no rodapé —
+            // senão, num paper com overflow hidden, os botões saem da tela.
+            '& > form': {
+              display: 'flex',
+              flexDirection: 'column',
+              flex: '1 1 auto',
+              minHeight: 0,
+            },
             [DIALOGO_GRANDE]: {
               margin: 0,
               width: '100%',

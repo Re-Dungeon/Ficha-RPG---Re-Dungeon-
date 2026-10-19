@@ -24,6 +24,7 @@ import styled, { keyframes } from 'styled-components';
 import { campoCurtoSchema, descricaoSchema, nomeSchema, urlImagemSchema } from 'common/utils/yupSchemas';
 import { dominioVarianteValido } from 'common/utils/formulas';
 import { getNome } from 'common/utils/resolveNome';
+import { MOBILE } from 'common/styles/breakpoints';
 import { getArtesPorUniverso, getFirestoreItem } from 'service/storage';
 
 import {
@@ -74,6 +75,23 @@ const DialogHeader = styled.div`
   background: linear-gradient(180deg, rgba(29,27,47,0.7), rgba(20,16,33,0.6));
   border-bottom: 1px solid rgba(255,255,255,0.04);
   animation: ${fadeIn} 220ms ease;
+
+  /* Celular: o seletor de Art base desce para uma linha própria. */
+  ${MOBILE} {
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 14px 14px 10px;
+  }
+`;
+
+// Seletor do cabeçalho (Art base): 260px ao lado do título; no celular, largura cheia.
+const HeaderSelect = styled.div`
+  min-width: 260px;
+
+  ${MOBILE} {
+    min-width: 0;
+    flex: 1 1 100%;
+  }
 `;
 
 const HeaderLeft = styled.div`
@@ -494,7 +512,7 @@ const VarianteFormDialog = ({ open, onClose, variante, arts, condicoes, onSubmit
             <TitleSub>Escolha a origem da variação e personalize a técnica.</TitleSub>
           </HeaderTitle>
         </HeaderLeft>
-        <div style={{ minWidth: 260 }}>
+        <HeaderSelect>
           <TextField
             label="Art base *"
             select
@@ -509,7 +527,7 @@ const VarianteFormDialog = ({ open, onClose, variante, arts, condicoes, onSubmit
               </MenuItem>
             ))}
           </TextField>
-        </div>
+        </HeaderSelect>
       </DialogHeader>
 
       <Tabs

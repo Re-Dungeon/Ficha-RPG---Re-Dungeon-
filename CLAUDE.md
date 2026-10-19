@@ -172,6 +172,8 @@ Muitos jogadores só acessam pelo celular. Ajustes de celular ficam **sempre** a
 - **Diálogos:** o `theme.js` já põe em tela cheia, no celular, todo diálogo "grande" (`fullWidth` que não é `xs`, ou `maxWidth` md/lg/xl). Os pequenos ficam como cartão com margem menor.
   - Se o diálogo fixar width/height/raio no `sx` do paper, espalhe `...PAPER_TELA_CHEIA` (de `common/styles/breakpoints`).
   - Em tela cheia não há fundo para tocar e fechar, então todo diálogo grande precisa de um botão Fechar ou Cancelar visível.
+  - Um `<form>` filho direto do paper (envolvendo `DialogContent` + `DialogActions`) vira flex em coluna no celular, pelo `theme.js`, para o conteúdo rolar e os botões ficarem no rodapé. Não ponha nada entre o paper e esse `<form>`.
+  - Evite `height: 100%`/`min-height` grandes e `minWidth` fixo inline dentro de diálogos. No celular, em uma coluna, eles estouram o card ou a largura. Prefira um styled component com bloco `${MOBILE}`.
 - **Componentes compartilhados com o Re:Master** (`components/Chat`, `components/Grid`, `common/utils/grid.js`): use a query **literal** (`'@media (max-width: 599.95px)'` e `useMediaQuery('(max-width: 599.95px)')`), sem importar de `common/styles`, para a cópia continuar autocontida.
 - **Validação:** compare screenshots de desktop antes e depois com Playwright, e confira o celular a 360px e a 390px procurando rolagem horizontal (`scrollWidth > innerWidth`).
   - Use uma viewport alta (ex.: 1280×2400), porque o redimensionamento do screenshot `fullPage` muda o estado dos botões de rolagem das abas da ficha e gera falso positivo.

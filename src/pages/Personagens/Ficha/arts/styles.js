@@ -330,6 +330,13 @@ export const NucleoImageWrapper = styled.div`
     transform: scale(1.02);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 26px 60px rgba(0, 0, 0, 0.32);
   }
+
+  ${MOBILE} {
+    height: auto;
+    min-height: 0;
+    padding: 8px;
+    border-radius: 16px;
+  }
 `;
 
 export const FormSectionCard = styled.div`
@@ -338,6 +345,11 @@ export const FormSectionCard = styled.div`
   border-radius: 22px;
   padding: 20px;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03), 0 12px 30px rgba(0, 0, 0, 0.18);
+
+  ${MOBILE} {
+    padding: 14px;
+    border-radius: 16px;
+  }
 `;
 
 export const NucleoInfoGrid = styled.div`
@@ -848,6 +860,13 @@ export const ImagePreviewBox = styled.div`
     height: 100%;
     object-fit: cover;
     display: block;
+  }
+
+  /* Celular: altura fixa — com height 100% a caixa estourava o card e
+     ficava por baixo do campo de URL e do card seguinte. */
+  ${MOBILE} {
+    height: 200px;
+    min-height: 0;
   }
 `;
 
