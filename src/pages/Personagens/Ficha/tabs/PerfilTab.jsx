@@ -9,16 +9,18 @@ import Checkbox from '@mui/material/Checkbox';
 import ListItemText from '@mui/material/ListItemText';
 // Avatar img will be a plain img inside the card to allow full-height portrait layout
 
-import { getOrigens } from 'service/storage';
+import { getOrigensPorUniverso } from 'service/storage';
 import { campoCurtoSchema, descricaoSchema, nomeSchema, urlImagemSchema } from 'common/utils/yupSchemas';
 import { getNome } from 'common/utils/resolveNome';
+import { normalizeBackgroundDoc, backgroundDocToPlainText } from 'common/utils/backgroundRich';
 import { useCampanhasPorUniverso } from 'hooks/useCampanhasPorUniverso';
 import { useDraftLocalStorage } from 'hooks/useDraftLocalStorage';
 import { useRacaClasseNomes } from 'hooks/useRacaClasseNomes';
 import DraftBanner from 'components/DraftBanner/DraftBanner';
 import { MOBILE } from 'common/styles/breakpoints';
 
-import { SectionTitle, StatusValueRow } from '../styles';
+import BackgroundEditor from './BackgroundEditor';
+import { SectionTitle } from '../styles';
 import UniversoSelect from '../progressao/UniversoSelect';
 import { TIPOS_PERSONAGEM } from '../constants';
 
@@ -237,20 +239,6 @@ const BackgroundEditorCard = styled.div`
   box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.18), 0 2px 12px rgba(0, 0, 0, 0.2);
 `;
 
-const BackgroundEditor = styled.div`
-  position: relative;
-`;
-
-const BackgroundCounter = styled(StatusValueRow)`
-  position: absolute;
-  bottom: 24px;
-  right: 24px;
-  color: rgba(255, 255, 255, 0.72);
-  font-size: 0.88rem;
-  text-align: right;
-  white-space: nowrap;
-`;
-
 const GuideSection = styled.div`
   display: grid;
   gap: 20px;
@@ -336,7 +324,7 @@ const perfilSchema = yup.object({
   afiliacao: campoCurtoSchema,
   statusNarrativo: campoCurtoSchema,
   notasAdicionais: descricaoSchema,
-  background: descricaoSchema,
+  background: yup.mixed(),
   linkImagem: urlImagemSchema,
   descricao: descricaoSchema,
 });
@@ -359,22 +347,14 @@ const PerfilFormBody = ({
   onDescartar,
   onSave,
 }) => {
-  const { values, errors, touched, handleChange, handleBlur, handleSubmit: submit, dirty } = formik;
-
-  const [typing, setTyping] = useState(false);
-  const typingTimerRef = useRef(null);
+  const { values, errors, touched, handleChange, handleBlur, handleSubmit: submit, dirty, setFieldValue } = formik;
+  const origemAtualIncompativel = Boolean(values.origem) && Boolean(personagem.universo) && !origens.some(item => item.id === values.origem);
 
   useEffect(() => {
     if (dirty) {
       salvarRascunho(values);
     }
   }, [values, dirty, salvarRascunho]);
-
-  useEffect(() => {
-    return () => {
-      if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
-    };
-  }, []);
 
   return (
     <form id="perfil-form" onSubmit={submit} noValidate>
@@ -515,10 +495,21 @@ const PerfilFormBody = ({
                 size="small"
                 fullWidth
                 sx={fieldSx}
+                helperText={
+                  origemAtualIncompativel
+                    ? 'Origem atual não está disponível para este universo. Escolha outra origem para salvar.'
+                    : undefined
+                }
+                error={origemAtualIncompativel}
               >
                 <MenuItem value="">
                   <em>Nenhuma</em>
                 </MenuItem>
+                {origemAtualIncompativel && values.origem && (
+                  <MenuItem value={values.origem} disabled>
+                    <em>Origem atual não disponível para este universo</em>
+                  </MenuItem>
+                )}
                 {origens.map(item => (
                   <MenuItem key={item.id} value={item.id}>
                     {getNome(item)}
@@ -691,70 +682,10 @@ const PerfilFormBody = ({
           </BackgroundHeader>
 
           <BackgroundEditorCard>
-            <BackgroundEditor>
-              {!typing && (
-                <BackgroundCounter>
-                  {((values.background ?? '').length || 0).toLocaleString('pt-BR')} / 5.000 caracteres
-                </BackgroundCounter>
-              )}
-              <TextField
-                name="background"
-                value={values.background}
-                onChange={e => {
-                  handleChange(e);
-                  setTyping(true);
-                  if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
-                  typingTimerRef.current = setTimeout(() => setTyping(false), 800);
-                }}
-                onBlur={e => {
-                  handleBlur(e);
-                  setTyping(false);
-                  if (typingTimerRef.current) {
-                    clearTimeout(typingTimerRef.current);
-                    typingTimerRef.current = null;
-                  }
-                }}
-                error={touched.background && Boolean(errors.background)}
-                helperText={touched.background && errors.background}
-                fullWidth
-                multiline
-                minRows={4}
-                size="small"
-                placeholder={`Escreva aqui toda a história do personagem...
-
-• Origem
-• Família
-• Eventos importantes
-• Personalidade
-• Objetivos
-• Traumas
-• Relações`}
-                sx={{
-                  ...fieldSx,
-                  minHeight: 200,
-                  '& .MuiOutlinedInput-root': {
-                    backgroundColor: 'rgba(255,255,255,0.04)',
-                    borderRadius: '18px',
-                    minHeight: 200,
-                    alignItems: 'flex-start',
-                  },
-                  '& .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'rgba(84, 125, 255, 0.22)',
-                  },
-                  '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                    boxShadow: '0 0 0 10px rgba(84, 125, 255, 0.14)',
-                  },
-                  '& .MuiOutlinedInput-inputMultiline': {
-                    padding: '12px 14px',
-                    paddingBottom: '44px',
-                    paddingRight: '14px',
-                    minHeight: 140,
-                    lineHeight: '1.4',
-                    boxSizing: 'border-box',
-                  },
-                }}
-              />
-            </BackgroundEditor>
+            <BackgroundEditor
+              value={values.background}
+              onChange={nextBackground => setFieldValue('background', nextBackground)}
+            />
           </BackgroundEditorCard>
         </PerfilSection>
       )}
@@ -802,23 +733,55 @@ const PerfilTab = ({ personagem, onSave, aba }) => {
   }, [lerRascunho]);
 
   useEffect(() => {
-    getOrigens()
-      .then(setOrigens)
+    if (!personagem.universo) {
+      setOrigens([]);
+      return undefined;
+    }
+
+    let isMounted = true;
+    getOrigensPorUniverso(personagem.universo)
+      .then(itens => {
+        if (isMounted) {
+          setOrigens(itens);
+        }
+      })
       .catch(erro => {
         // eslint-disable-next-line no-console
         console.error('Falha ao carregar origens:', erro);
       });
-  }, []);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [personagem.universo]);
 
   const handleSubmit = useCallback(
-    async (values, { setSubmitting }) => {
+    async (values, { setSubmitting, setFieldError }) => {
       const { nome, titulo, origem, afiliacao, statusNarrativo, notasAdicionais, background, ...resto } = values;
+      const origemInvalida = Boolean(personagem.universo) && Boolean(origem) && !origens.some(item => item.id === origem);
+
+      if (origemInvalida) {
+        setFieldError('origem', 'Origem atual não está disponível para este universo.');
+        setSubmitting(false);
+        return;
+      }
+
+      const backgroundDoc = normalizeBackgroundDoc(background);
+      const backgroundText = backgroundDocToPlainText(backgroundDoc);
+
       try {
         await onSave({
           ...resto,
           nome,
           origem,
-          jogadorInfo: { titulo, afiliacao, statusNarrativo, notasAdicionais, background },
+          jogadorInfo: {
+            titulo,
+            afiliacao,
+            statusNarrativo,
+            notasAdicionais,
+            background: backgroundText,
+            backgroundRich: JSON.stringify(backgroundDoc),
+          },
         });
         limparRascunho();
         setRascunhoDisponivel(null);
@@ -829,7 +792,7 @@ const PerfilTab = ({ personagem, onSave, aba }) => {
         setSubmitting(false);
       }
     },
-    [onSave, limparRascunho],
+    [onSave, limparRascunho, origens, personagem.universo],
   );
 
   return (
@@ -843,7 +806,17 @@ const PerfilTab = ({ personagem, onSave, aba }) => {
         afiliacao: personagem.jogadorInfo?.afiliacao ?? '',
         statusNarrativo: personagem.jogadorInfo?.statusNarrativo ?? '',
         notasAdicionais: personagem.jogadorInfo?.notasAdicionais ?? '',
-        background: personagem.jogadorInfo?.background ?? '',
+        background: (() => {
+          const rawBackgroundRich = personagem.jogadorInfo?.backgroundRich;
+          if (rawBackgroundRich) {
+            try {
+              return normalizeBackgroundDoc(JSON.parse(rawBackgroundRich));
+            } catch {
+              return normalizeBackgroundDoc(personagem.jogadorInfo?.background ?? '');
+            }
+          }
+          return normalizeBackgroundDoc(personagem.jogadorInfo?.background ?? '');
+        })(),
         linkImagem: personagem.linkImagem ?? '',
         descricao: personagem.descricao ?? '',
       }}

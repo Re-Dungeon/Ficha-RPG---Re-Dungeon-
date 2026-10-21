@@ -7,6 +7,7 @@ import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
+import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -82,6 +83,11 @@ const Layout = () => {
     logout();
   };
 
+  const usuarioDisplayName = currentUser?.displayName?.trim() || '';
+  const usuarioEmail = currentUser?.email || 'Jogador';
+  const usuarioPrimaryText = usuarioDisplayName || usuarioEmail;
+  const usuarioSecondaryText = usuarioDisplayName ? usuarioEmail : null;
+
   return (
     <SelecaoContext.Provider value={selecaoValue}>
       <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
@@ -92,70 +98,113 @@ const Layout = () => {
             left: 0,
             right: 0,
             zIndex: 1200,
-            background: 'linear-gradient(90deg, rgba(8, 7, 15, 0.98) 0%, rgba(16, 12, 28, 0.98) 32%, rgba(21, 16, 25, 0.98) 100%)',
-            borderBottom: '1px solid rgba(232, 203, 133, 0.2)',
-            boxShadow: '0 10px 30px rgba(6, 4, 11, 0.45)',
+            background: 'linear-gradient(90deg, rgba(8, 7, 15, 0.98) 0%, rgba(18, 13, 30, 0.96) 40%, rgba(17, 14, 24, 0.98) 100%)',
+            borderBottom: '1px solid rgba(232, 203, 133, 0.24)',
+            boxShadow: '0 14px 28px rgba(6, 4, 11, 0.42)',
             backdropFilter: 'blur(12px)',
             WebkitBackdropFilter: 'blur(12px)',
           }}
         >
           <Toolbar
             sx={{
-              minHeight: '72px',
+              minHeight: tabs ? '74px' : '76px',
               px: { xs: 2, sm: 2.5, md: 3 },
               py: 0,
               gap: { xs: 1, sm: 1.5, md: 2 },
               display: 'grid',
-              gridTemplateColumns: tabs ? 'minmax(0, auto) minmax(0, 1fr) minmax(0, auto)' : 'minmax(0, 1fr) auto',
+              gridTemplateColumns: tabs ? 'minmax(0, auto) minmax(0, 1fr) minmax(0, auto)' : 'minmax(0, auto) minmax(0, 1fr) minmax(0, auto)',
               alignItems: 'center',
               overflow: 'hidden',
-              [MOBILE]: { minHeight: '56px', px: 1.5, gap: 1, gridTemplateColumns: 'minmax(0, 1fr) auto' },
+              [MOBILE]: { minHeight: tabs ? '56px' : '62px', px: 1.5, gap: 1, gridTemplateColumns: tabs ? 'minmax(0, 1fr) auto' : 'minmax(0, auto) minmax(0, 1fr) auto' },
             }}
           >
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1.25,
-                minWidth: 0,
-                maxWidth: '100%',
-              }}
-            >
-              {headerExtra?.onVoltar && (
-                <IconButton
-                  aria-label="Voltar"
-                  onClick={headerExtra.onVoltar}
-                  sx={{
-                    color: '#f6e8c1',
-                    border: '1px solid rgba(232, 203, 133, 0.22)',
-                    background: 'rgba(232, 203, 133, 0.05)',
-                    width: 36,
-                    height: 36,
-                    borderRadius: '10px',
-                    '&:hover': { background: 'rgba(232, 203, 133, 0.12)', borderColor: 'rgba(232, 203, 133, 0.45)' },
-                  }}
-                >
-                  <ArrowBackIcon fontSize="small" />
-                </IconButton>
-              )}
-
-              <Typography
-                variant="h6"
+            {headerExtra?.onVoltar || tabs ? (
+              <Box
                 sx={{
-                  color: '#f3f1ee',
-                  fontWeight: 700,
-                  letterSpacing: '0.04em',
-                  fontFamily: 'Georgia, "Palatino Linotype", serif',
-                  fontSize: { xs: '1.05rem', sm: '1.2rem', md: '1.4rem' },
-                  lineHeight: 1.1,
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1.25,
+                  minWidth: 0,
+                  maxWidth: '100%',
                 }}
               >
-                {headerExtra?.nome ?? 'ReDungeon'}
-              </Typography>
-            </Box>
+                {headerExtra?.onVoltar && (
+                  <IconButton
+                    aria-label="Voltar"
+                    onClick={headerExtra.onVoltar}
+                    sx={{
+                      color: '#f6e8c1',
+                      border: '1px solid rgba(232, 203, 133, 0.22)',
+                      background: 'rgba(232, 203, 133, 0.05)',
+                      width: 36,
+                      height: 36,
+                      borderRadius: '10px',
+                      '&:hover': { background: 'rgba(232, 203, 133, 0.12)', borderColor: 'rgba(232, 203, 133, 0.45)' },
+                    }}
+                  >
+                    <ArrowBackIcon fontSize="small" />
+                  </IconButton>
+                )}
+
+                <Typography
+                  variant="h6"
+                  sx={{
+                    color: '#f3f1ee',
+                    fontWeight: 700,
+                    letterSpacing: '0.04em',
+                    fontFamily: 'Georgia, "Palatino Linotype", serif',
+                    fontSize: { xs: '1.05rem', sm: '1.2rem', md: '1.4rem' },
+                    lineHeight: 1.1,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  {headerExtra?.nome ?? 'Re'}
+                </Typography>
+              </Box>
+            ) : (
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  minWidth: 0,
+                  maxWidth: '100%',
+                  [MOBILE]: { gap: 0 },
+                }}
+              >
+                <Box sx={{ minWidth: 0 }}>
+                  <Typography
+                    component="div"
+                    sx={{
+                      color: '#f4dca2',
+                      fontFamily: 'Georgia, "Times New Roman", serif',
+                      fontSize: { xs: '1.15rem', sm: '1.45rem' },
+                      fontWeight: 700,
+                      letterSpacing: '0.04em',
+                      lineHeight: 1.1,
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    Re
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: 'rgba(255,255,255,0.52)',
+                      fontSize: '0.55rem',
+                      letterSpacing: '0.22em',
+                      textTransform: 'uppercase',
+                      display: 'block',
+                      lineHeight: 1.2,
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    GERENCIADOR DE PERSONAGENS
+                  </Typography>
+                </Box>
+              </Box>
+            )}
 
             {tabs && !isMobile && (
               <Box sx={{ flex: '1 1 auto', minWidth: 0, display: 'flex', justifyContent: 'center', overflow: 'hidden' }}>
@@ -220,6 +269,65 @@ const Layout = () => {
               </Box>
             )}
 
+            {!tabs && !headerExtra?.onVoltar && (
+              <Box component="nav" sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 0.75,
+                    padding: '6px 8px',
+                    background: 'rgba(22, 18, 34, 0.8)',
+                    border: '1px solid rgba(152, 130, 247, 0.32)',
+                    borderRadius: '999px',
+                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
+                    maxWidth: '100%',
+                    [MOBILE]: { display: 'none' },
+                  }}
+                >
+                  {navLinks.map(({ key, to, state, label }) => (
+                    <Button
+                      key={key}
+                      component={NavLink}
+                      to={to}
+                      state={state}
+                      size="small"
+                      sx={{
+                        color: 'rgba(240, 236, 255, 0.74)',
+                        background: 'transparent',
+                        border: '1px solid transparent',
+                        borderRadius: '999px',
+                        minWidth: 116,
+                        px: 2,
+                        py: 0.9,
+                        fontSize: '0.7rem',
+                        letterSpacing: '0.14em',
+                        textTransform: 'uppercase',
+                        fontWeight: 700,
+                        transition: 'all 0.2s ease',
+                        '&:hover': {
+                          background: 'rgba(255,255,255,0.04)',
+                          color: '#f2ebff',
+                        },
+                        '&:focus-visible': {
+                          outline: '2px solid rgba(232, 203, 133, 0.9)',
+                          outlineOffset: '2px',
+                        },
+                        '&.active': {
+                          color: '#f4dca2',
+                          background: 'linear-gradient(180deg, rgba(71, 58, 109, 0.86), rgba(32, 24, 50, 0.96))',
+                          borderColor: 'rgba(232, 203, 133, 0.5)',
+                          boxShadow: 'inset 0 -2px 0 rgba(232, 203, 133, 0.9)',
+                        },
+                      }}
+                    >
+                      {label}
+                    </Button>
+                  ))}
+                </Box>
+              </Box>
+            )}
+
             {currentUser && (
               <Box
                 sx={{
@@ -232,7 +340,6 @@ const Layout = () => {
                   [MOBILE]: { gap: 0.25 },
                 }}
               >
-                {/* Celular: navegação só com ícone + menu da conta (e-mail/Sair). */}
                 <Box component="nav" sx={{ display: 'none', [MOBILE]: { display: 'flex' } }}>
                   {navLinks.map(({ key, to, state, label, Icon }) => (
                     <IconButton
@@ -247,6 +354,117 @@ const Layout = () => {
                     </IconButton>
                   ))}
                 </Box>
+
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                    minWidth: 0,
+                    maxWidth: { xs: 'none', sm: '260px', md: '290px' },
+                  }}
+                >
+                  <Avatar
+                    src={currentUser.photoURL || undefined}
+                    alt={usuarioPrimaryText}
+                    sx={{
+                      width: 36,
+                      height: 36,
+                      background: 'linear-gradient(135deg, rgba(232, 203, 133, 0.24), rgba(91, 124, 250, 0.18))',
+                      border: '1px solid rgba(232, 203, 133, 0.28)',
+                      color: '#f3d997',
+                      fontWeight: 700,
+                      fontSize: '0.9rem',
+                    }}
+                  >
+                    {!currentUser.photoURL ? (
+                      <AccountCircleOutlinedIcon fontSize="small" />
+                    ) : null}
+                  </Avatar>
+
+                  {!tabs && (
+                    <Box sx={{ minWidth: 0, display: { xs: 'none', sm: 'block' } }}>
+                      {usuarioSecondaryText ? (
+                        <>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: '#f3f1ee',
+                              fontSize: '0.76rem',
+                              fontWeight: 700,
+                              lineHeight: 1.2,
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              maxWidth: '180px',
+                            }}
+                          >
+                            {usuarioPrimaryText}
+                          </Typography>
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: 'rgba(255,255,255,0.68)',
+                              display: 'block',
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              maxWidth: '180px',
+                              lineHeight: 1.2,
+                            }}
+                          >
+                            {usuarioSecondaryText}
+                          </Typography>
+                        </>
+                      ) : (
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            color: '#f3f1ee',
+                            fontSize: '0.76rem',
+                            fontWeight: 700,
+                            lineHeight: 1.2,
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            maxWidth: '200px',
+                          }}
+                        >
+                          {usuarioPrimaryText}
+                        </Typography>
+                      )}
+                    </Box>
+                  )}
+                </Box>
+
+                <Button
+                  size="small"
+                  onClick={logout}
+                  sx={{
+                    color: '#f0ddae',
+                    border: '1px solid rgba(232, 203, 133, 0.38)',
+                    borderRadius: '10px',
+                    px: 1.5,
+                    py: 0.7,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.12em',
+                    fontWeight: 700,
+                    fontSize: '0.62rem',
+                    background: 'rgba(232, 203, 133, 0.04)',
+                    minWidth: 'auto',
+                    lineHeight: 1.2,
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      background: 'rgba(232, 203, 133, 0.09)',
+                      borderColor: 'rgba(232, 203, 133, 0.65)',
+                      boxShadow: 'inset 0 0 0 1px rgba(232, 203, 133, 0.1)',
+                    },
+                    [MOBILE]: { display: 'none' },
+                  }}
+                >
+                  Sair
+                </Button>
+
                 <IconButton
                   aria-label="Conta"
                   aria-haspopup="menu"
@@ -263,83 +481,14 @@ const Layout = () => {
                   transformOrigin={{ vertical: 'top', horizontal: 'right' }}
                 >
                   <MenuItem disabled sx={{ fontSize: '0.8rem', '&.Mui-disabled': { opacity: 1 } }}>
-                    {currentUser.email}
+                    {usuarioSecondaryText ? `${usuarioPrimaryText} — ${usuarioSecondaryText}` : usuarioPrimaryText}
                   </MenuItem>
                   <MenuItem onClick={handleSairDoMenu}>Sair</MenuItem>
                 </Menu>
-
-                {!tabs && (
-                  <Box component="nav" sx={{ display: 'flex', gap: 0.5, flexShrink: 0, [MOBILE]: { display: 'none' } }}>
-                    {navLinks.map(({ key, to, state, label }) => (
-                      <Button
-                        key={key}
-                        component={NavLink}
-                        to={to}
-                        state={state}
-                        size="small"
-                        sx={{
-                          color: 'rgba(255,255,255,0.7)',
-                          fontSize: '0.72rem',
-                          letterSpacing: '0.08em',
-                          fontWeight: 700,
-                          minWidth: 'auto',
-                          '&.active': { color: 'var(--color-primary)' },
-                        }}
-                      >
-                        {label}
-                      </Button>
-                    ))}
-                  </Box>
-                )}
-
-                <Typography
-                  variant="body2"
-                  sx={{
-                    color: 'rgba(255,255,255,0.72)',
-                    fontSize: '0.72rem',
-                    letterSpacing: '0.02em',
-                    whiteSpace: 'nowrap',
-                    textOverflow: 'ellipsis',
-                    overflow: 'hidden',
-                    maxWidth: { xs: '110px', sm: tabs ? '180px' : '220px', md: tabs ? '220px' : '260px' },
-                    [MOBILE]: { display: 'none' },
-                  }}
-                >
-                  {currentUser.email || 'wdanyllo_comp@hotmail.com'}
-                </Typography>
-
-                <Button
-                  size="small"
-                  onClick={logout}
-                  sx={{
-                    color: tabs ? '#f0ddae' : '#d9d0ff',
-                    border: tabs ? '1px solid rgba(232, 203, 133, 0.34)' : '1px solid rgba(151, 124, 255, 0.8)',
-                    borderRadius: '10px',
-                    px: tabs ? 1.25 : 1.5,
-                    py: 0.6,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.12em',
-                    fontWeight: 700,
-                    fontSize: '0.62rem',
-                    background: tabs ? 'rgba(232, 203, 133, 0.03)' : 'transparent',
-                    minWidth: 'auto',
-                    lineHeight: 1.2,
-                    transition: 'all 0.2s ease',
-                    '&:hover': {
-                      background: tabs ? 'rgba(232, 203, 133, 0.08)' : 'rgba(90, 79, 144, 0.28)',
-                      borderColor: tabs ? 'rgba(232, 203, 133, 0.65)' : 'rgba(179, 160, 255, 0.95)',
-                      boxShadow: tabs ? 'inset 0 0 0 1px rgba(232, 203, 133, 0.1)' : 'inset 0 0 0 1px rgba(179, 160, 255, 0.18)',
-                    },
-                    [MOBILE]: { display: 'none' },
-                  }}
-                >
-                  SAIR
-                </Button>
               </Box>
             )}
           </Toolbar>
 
-          {/* Celular: abas da ficha numa 2ª linha (ícone em cima, rótulo curto). */}
           {tabs && isMobile && (
             <Box
               sx={{
@@ -403,7 +552,7 @@ const Layout = () => {
             display: 'flex',
             flexDirection: 'column',
             pt: '72px',
-            [MOBILE]: { pt: tabs ? '109px' : '56px' },
+            [MOBILE]: { pt: tabs ? '109px' : '62px' },
           }}
         >
           <Outlet context={{ setHeaderExtra }} />

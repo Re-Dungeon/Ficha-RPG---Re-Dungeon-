@@ -5,6 +5,7 @@ import { MemoryRouter, Route, Routes, useLocation, useParams } from 'react-route
 
 import { useAuth } from 'context/AuthContext';
 import { useSelecao } from 'context/selecaoContext';
+import Login from 'pages/Login/Login';
 import Layout from './Layout';
 
 vi.mock('context/AuthContext', () => ({ useAuth: vi.fn() }));
@@ -103,6 +104,38 @@ describe('Layout — alternar entre Fichas e Campanhas', () => {
     expect(await screen.findByRole('menuitem', { name: 'a@b.c' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('menuitem', { name: 'Sair' }));
     expect(logout).toHaveBeenCalledTimes(1);
+  });
+
+  it('exibe a identidade Re e os dados da conta autenticada no topo', async () => {
+    useAuth.mockReturnValue({
+      currentUser: { uid: 'u1', email: 'aline.borges@re.com', displayName: 'Aline Borges', photoURL: 'https://re.test/avatar.png' },
+      logout: vi.fn(),
+    });
+
+    renderApp('/personagens');
+    await screen.findByText('Lista de fichas');
+
+    expect(screen.getByText('Re')).toBeInTheDocument();
+    expect(screen.getByText('GERENCIADOR DE PERSONAGENS')).toBeInTheDocument();
+    expect(screen.getByText('Aline Borges')).toBeInTheDocument();
+    expect(screen.getByText('aline.borges@re.com')).toBeInTheDocument();
+  });
+
+  it('não renderiza o header na rota pública de login', () => {
+    useAuth.mockReturnValue({ currentUser: null, logout: vi.fn() });
+
+    render(
+      <MemoryRouter initialEntries={['/login']}>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    expect(screen.queryByText('GERENCIADOR DE PERSONAGENS')).not.toBeInTheDocument();
+    expect(screen.queryByText('Fichas')).not.toBeInTheDocument();
+    expect(screen.queryByText('Campanhas')).not.toBeInTheDocument();
+    expect(screen.getByText('Entrar no Reino')).toBeInTheDocument();
   });
 
   it('a partir da lista, os links levam às listas', async () => {

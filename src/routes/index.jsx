@@ -15,12 +15,12 @@ const CampanhaChat = lazy(() => import('pages/Campanhas/CampanhaChat'));
 
 const router = createBrowserRouter(
   [
+    { path: '/login', element: <Login /> },
     {
-      element: <Layout />,
+      element: <ProtectedRoute />,
       children: [
-        { path: '/login', element: <Login /> },
         {
-          element: <ProtectedRoute />,
+          element: <Layout />,
           children: [
             { path: '/personagens', element: <Personagens /> },
             { path: '/personagens/novo', element: <NovoPersonagem /> },
@@ -28,10 +28,10 @@ const router = createBrowserRouter(
             { path: '/campanhas', element: <Campanhas /> },
             { path: '/campanhas/:id/chat', element: <CampanhaChat /> },
             { path: '/campanhas/:id/grid', element: <CampanhaChat visao="grid" /> },
+            { path: '/', element: <Navigate to="/personagens" replace /> },
+            { path: '*', element: <Navigate to="/personagens" replace /> },
           ],
         },
-        { path: '/', element: <Navigate to="/personagens" replace /> },
-        { path: '*', element: <Navigate to="/personagens" replace /> },
       ],
     },
   ],
