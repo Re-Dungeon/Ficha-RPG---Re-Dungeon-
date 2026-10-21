@@ -27,7 +27,13 @@ vi.mock('firebase/firestore', async () => {
   };
 });
 
-import { getBeneficiosPorUniverso, normalizarPersonagemCarregado, updatePersonagem } from './storage';
+import {
+  consumirRecursosPersonagem,
+  getBeneficiosPorUniverso,
+  getOrigensPorUniverso,
+  normalizarPersonagemCarregado,
+  updatePersonagem,
+} from './storage';
 
 describe('storage benefit catalog', () => {
   beforeEach(() => {
@@ -46,6 +52,102 @@ describe('storage benefit catalog', () => {
     expect(collection).toHaveBeenNthCalledWith(2, expect.any(Object), 'tricksterCoin');
     expect(where).toHaveBeenCalledTimes(2);
     expect(getDocs).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('origin catalog compatibility', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('filtra origens por universo legado e por arrays multiuniverso sem duplicar registros', async () => {
+    const origemGlobal = { id: 'o-global', nome: 'Origem Global', universo: 're', universos: ['re'] };
+    const origemMulti = { id: 'o-multi', nome: 'Origem Multi', universos: ['u1', 'u2'] };
+    const origemLegada = { id: 'o-legacy', nome: 'Origem Legada', universo: 'u1' };
+
+    getDocs.mockImplementation(async query => {
+      const filtro = query?.[1]?.value ?? query?.[0]?.value ?? null;
+      const docs = [
+        { id: origemGlobal.id, data: () => origemGlobal },
+        { id: origemMulti.id, data: () => origemMulti },
+        { id: origemLegada.id, data: () => origemLegada },
+      ];
+
+      return {
+        docs: docs.filter(doc => {
+          const item = doc.data();
+          const universos = Array.isArray(item.universos) ? item.universos : [];
+          const universoLegado = item.universo ?? item.universoId ?? item.universo_id;
+          if (filtro === 'u1') {
+            return universos.includes('u1') || universoLegado === 'u1';
+          }
+          return true;
+        }),
+      };
+    });
+
+    const itens = await getOrigensPorUniverso('u1');
+
+    expect(itens.map(item => item.id)).toEqual(expect.arrayContaining(['o-multi', 'o-legacy']));
+    expect(itens.map(item => item.id)).not.toContain('o-global');
+    expect(itens).toHaveLength(2);
+  });
+});
+
+describe('resource consumption invariants', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('mantém o status atual quando todos os custos são zero ou inválidos', async () => {
+    vi.mocked(runTransaction).mockImplementation(async (_db, callback) => {
+      const transaction = {
+        get: vi.fn().mockResolvedValue({
+          exists: () => true,
+          data: () => ({
+            status: {
+              energia: { atual: 42, maximo: 60 },
+              fadiga: { atual: 7, maximo: 10 },
+              hp: { atual: 80, maximo: 100 },
+            },
+            statusMaximos: {
+              energia: 60,
+              fadiga: 10,
+              hp: 100,
+            },
+          }),
+        }),
+        update: vi.fn(),
+      };
+
+      return callback(transaction);
+    });
+
+    const resultado = await consumirRecursosPersonagem('p1', { energia: 0, fadiga: 0, saude: 0 });
+
+    expect(resultado).toMatchObject({
+      energia: { atual: 42, maximo: 60 },
+      fadiga: { atual: 7, maximo: 10 },
+      gastoEnergia: 0,
+      gastoFadiga: 0,
+      gastoSaude: 0,
+      saude: { atual: 80, maximo: 100 },
+    });
+
+    const transactionArg = vi.mocked(runTransaction).mock.calls[0][1];
+    const updateSpy = vi.fn();
+    const getSpy = vi.fn().mockResolvedValue({
+      exists: () => true,
+      data: () => ({
+        status: { energia: { atual: 42, maximo: 60 }, fadiga: { atual: 7, maximo: 10 }, hp: { atual: 80, maximo: 100 } },
+        statusMaximos: { energia: 60, fadiga: 10, hp: 100 },
+      }),
+    });
+
+    await transactionArg({ get: getSpy, update: updateSpy });
+
+    expect(updateSpy).not.toHaveBeenCalled();
+    expect(runTransaction).toHaveBeenCalledTimes(1);
   });
 });
 

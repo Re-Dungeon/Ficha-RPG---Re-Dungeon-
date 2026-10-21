@@ -1,0 +1,8 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^cd d:/Bagre\\.exe/01_PROJETOS/Ficha-RPG---Re-Dungeon- ; node - <<'NODE'\nconst mods=\\['@tiptap/starter-kit','@tiptap/extension-text-align','@tiptap/extension-text-style','@tiptap/extension-color','@tiptap/extension-highlight','@tiptap/extension-image','@tiptap/extension-subscript','@tiptap/extension-superscript','@tiptap/extension-table','@tiptap/extension-placeholder'\\];\nfor \\(const m of mods\\)\\{\n  try \\{\n    const o=require\\(m\\);\n    console\\.log\\(m, Object\\.keys\\(o\\)\\.slice\\(0,20\\)\\);\n  \\} catch \\(e\\) \\{\n    console\\.log\\(m, 'ERROR', e\\.message\\);\n  \\}\n\\}\nNODE$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}

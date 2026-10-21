@@ -5,7 +5,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import {
   getCorposEspeciaisPorUniverso,
   getFirestoreItem,
-  getOrigens,
+  getOrigensPorUniverso,
   getRmCampanhasPorUniverso,
   getUniverso,
 } from 'service/storage';
@@ -16,6 +16,7 @@ import InfoModal from './InfoModal';
 vi.mock('service/storage', () => ({
   getFirestoreItem: vi.fn(),
   getOrigens: vi.fn(),
+  getOrigensPorUniverso: vi.fn(),
   getRmCampanhasPorUniverso: vi.fn(),
   getUniverso: vi.fn(),
   getCorposEspeciaisPorUniverso: vi.fn(),
@@ -33,7 +34,7 @@ const personagem = {
 describe('InfoModal / PerfilTab', () => {
   beforeEach(() => {
     getFirestoreItem.mockResolvedValue(null);
-    getOrigens.mockResolvedValue([]);
+    getOrigensPorUniverso.mockResolvedValue([]);
     getRmCampanhasPorUniverso.mockResolvedValue([]);
     getUniverso.mockResolvedValue([{ id: 'universo-1', Nome: 'Re-Dungeon' }]);
     getCorposEspeciaisPorUniverso.mockResolvedValue([]);
@@ -76,6 +77,38 @@ describe('InfoModal / PerfilTab', () => {
 
     expect(await screen.findByRole('option', { name: /the chaotic gate/i })).toBeInTheDocument();
     expect(screen.queryByRole('option', { name: /re:connect/i })).not.toBeInTheDocument();
+  });
+
+  it('filtra origens pelo universo atual e preserva a origem salva incompatível com aviso', async () => {
+    const onSave = vi.fn().mockResolvedValue();
+    const origemValida = { id: 'origem-shadow', nome: 'Origem Shadow', universos: ['universo-1'] };
+
+    getOrigensPorUniverso.mockResolvedValue([origemValida]);
+
+    render(
+      <SavingProvider>
+        <InfoModal
+          open
+          onClose={vi.fn()}
+          personagem={{ ...personagem, universo: 'universo-1', origem: 'origem-antiga' }}
+          onSave={onSave}
+        />
+      </SavingProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('tab', { name: /informações gerais/i }));
+
+    expect(getOrigensPorUniverso).toHaveBeenCalledWith('universo-1');
+    expect(await screen.findByText(/origem atual não está disponível para este universo/i)).toBeInTheDocument();
+
+    fireEvent.mouseDown(screen.getByRole('combobox', { name: /origem/i }));
+    expect(await screen.findByRole('option', { name: /origem shadow/i })).toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: /origem antiga/i })).not.toBeInTheDocument();
+
+    fireEvent.keyDown(document.activeElement, { key: 'Escape' });
+    fireEvent.click(screen.getByRole('button', { name: /^salvar$/i }));
+
+    await waitFor(() => expect(onSave).not.toHaveBeenCalled());
   });
 
   it('escolhe um corpo especial do catálogo do universo', async () => {

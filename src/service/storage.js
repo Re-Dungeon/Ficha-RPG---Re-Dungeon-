@@ -191,16 +191,6 @@ export const consumirRecursosPersonagem = async (personagemId, recursos = {}) =>
   const gastoFadiga = Math.max(0, Number(recursos?.fadiga ?? 0) || 0);
   const gastoSaude = Math.max(0, Number(recursos?.saude ?? recursos?.hp ?? 0) || 0);
 
-  if (gastoEnergia <= 0 && gastoFadiga <= 0 && gastoSaude <= 0) {
-    return {
-      energia: { atual: 0, maximo: 0 },
-      fadiga: { atual: 0, maximo: 0 },
-      gastoEnergia: 0,
-      gastoFadiga: 0,
-      gastoSaude: 0,
-    };
-  }
-
   return runTransaction(db, async transaction => {
     const ref = doc(db, 'personagens', personagemId);
     const snapshot = await transaction.get(ref);
@@ -225,6 +215,21 @@ export const consumirRecursosPersonagem = async (personagemId, recursos = {}) =>
     const saudeMaxima = Number(
       saudeStatusMaximoAtual?.maximo ?? saudeStatusMaximoAtual ?? saudeStatusAtual?.maximo ?? 0,
     );
+
+    const temGastoPositivo = gastoEnergia > 0 || gastoFadiga > 0 || gastoSaude > 0;
+    if (!temGastoPositivo) {
+      const resultado = {
+        energia: { atual: energiaAtual, maximo: energiaMaxima || Number((statusAtual.energia ?? {}).maximo ?? energiaAtual) },
+        fadiga: { atual: fadigaAtual, maximo: fadigaMaxima || Number((statusAtual.fadiga ?? {}).maximo ?? fadigaAtual) },
+        gastoEnergia: 0,
+        gastoFadiga: 0,
+        gastoSaude: 0,
+      };
+      if (Object.prototype.hasOwnProperty.call(statusAtual, 'hp') || Object.prototype.hasOwnProperty.call(statusAtual, 'saude')) {
+        resultado.saude = { atual: saudeAtual, maximo: saudeMaxima || Number((statusAtual.hp ?? statusAtual.saude ?? {}).maximo ?? saudeAtual) };
+      }
+      return resultado;
+    }
 
     if (gastoEnergia > 0 && energiaAtual < gastoEnergia) {
       throw new Error('Energia insuficiente para realizar a ação.');
@@ -691,7 +696,7 @@ export const getRmCampanhasPorUniverso = universoId =>
   getFirestoreItems('rmCampanhas', where('universoId', '==', universoId));
 
 export const getOrigensPorUniverso = universoId =>
-  getColecaoPorUniverso('origens', universoId);
+  getColecaoMultiUniversoPorUniverso('origens', universoId);
 
 export const getClassesPorUniverso = universoId =>
   getColecaoPorUniverso('classes', universoId);
@@ -711,8 +716,18 @@ const getColecaoMultiUniversoPorUniverso = async (collectionName, universoId) =>
     getFirestoreItems(collectionName, where('universos', 'array-contains', universoId)),
     getFirestoreItems(collectionName, where('universo', '==', universoId)),
   ]);
+
+  const matchesUniverso = item => {
+    const universos = Array.isArray(item.universos) ? item.universos : [];
+    const universoLegado = item.universo ?? item.universoId ?? item.universo_id;
+    return universos.includes(universoId) || universoLegado === universoId;
+  };
+
   const vistos = new Set();
   return [...porUniversos, ...porUniversoLegado].filter(item => {
+    if (!matchesUniverso(item)) {
+      return false;
+    }
     if (vistos.has(item.id)) {
       return false;
     }

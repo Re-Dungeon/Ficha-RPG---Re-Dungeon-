@@ -1307,6 +1307,47 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
     return `Editando: ${comboSelecionada?.nome || 'combinação'}`;
   }, [comboSelecionada?.nome, selectedComboId]);
 
+  const parseArtCostForResource = (art, recurso) => {
+    const raw = String(art?.custo ?? '').trim();
+    if (!raw) {
+      return 0;
+    }
+
+    const numeroMatch = raw.match(/-?\d+(?:[.,]\d+)?/);
+    if (!numeroMatch) {
+      return 0;
+    }
+
+    const numero = Number(numeroMatch[0].replace(',', '.'));
+    if (!Number.isFinite(numero) || numero <= 0) {
+      return 0;
+    }
+
+    const texto = raw
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+
+    const temIndicacaoDeRecurso = /(pe|pf|ps|pontos? de energia|pontos? de fadiga|pontos? de saude|energia|fadiga|saude|hp)/.test(texto);
+    if (!temIndicacaoDeRecurso) {
+      return numero;
+    }
+
+    if (recurso === 'energia' && /(?:^|[^a-z])(pe|pontos? de energia|energia)(?:$|[^a-z])/.test(texto)) {
+      return numero;
+    }
+
+    if (recurso === 'fadiga' && /(?:^|[^a-z])(pf|pontos? de fadiga|fadiga)(?:$|[^a-z])/.test(texto)) {
+      return numero;
+    }
+
+    if (recurso === 'saude' && /(?:^|[^a-z])(ps|pontos? de saude|saude|hp)(?:$|[^a-z])/.test(texto)) {
+      return numero;
+    }
+
+    return 0;
+  };
+
   const energiaAtual = Number(personagem?.status?.energia?.atual ?? 0);
   const energiaMaxima = Number(personagem?.statusMaximos?.energia ?? personagem?.status?.energia?.maximo ?? 0);
   const fadigaAtual = Number(personagem?.status?.fadiga?.atual ?? 0);
@@ -1316,17 +1357,33 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
   const energiaDadosDisponiveis = Number.isFinite(energiaAtual) && Number.isFinite(energiaMaxima) && (energiaMaxima > 0 || energiaAtual >= 0);
   const fadigaDadosDisponiveis = Number.isFinite(fadigaAtual) && Number.isFinite(fadigaMaxima) && (fadigaMaxima > 0 || fadigaAtual >= 0);
   const saudeDadosDisponiveis = Number.isFinite(saudeAtual) && Number.isFinite(saudeMaxima) && (saudeMaxima > 0 || saudeAtual >= 0);
+  const custoArteBase = useMemo(
+    () => parseArtCostForResource(artSelecionada, resourceSelecionada),
+    [artSelecionada, resourceSelecionada],
+  );
+  const custoArteEnergia = useMemo(
+    () => (resourceSelecionada === 'energia' ? custoArteBase : 0),
+    [custoArteBase, resourceSelecionada],
+  );
+  const custoArteFadiga = useMemo(
+    () => (resourceSelecionada === 'fadiga' ? custoArteBase : 0),
+    [custoArteBase, resourceSelecionada],
+  );
+  const custoArteSaude = useMemo(
+    () => (resourceSelecionada === 'saude' ? custoArteBase : 0),
+    [custoArteBase, resourceSelecionada],
+  );
   const custoEnergia = useMemo(
-    () => (resourceSelecionada === 'energia' ? calcularCustoEnergia(energiaMaxima, form.potencializacao) : 0),
-    [energiaMaxima, form.potencializacao, resourceSelecionada],
+    () => (resourceSelecionada === 'energia' ? calcularCustoEnergia(energiaMaxima, form.potencializacao) + custoArteEnergia : 0),
+    [custoArteEnergia, energiaMaxima, form.potencializacao, resourceSelecionada],
   );
   const custoFadiga = useMemo(
-    () => (resourceSelecionada === 'fadiga' ? calcularCustoPercentualRecurso(fadigaMaxima, form.potencializacao) : 0),
-    [fadigaMaxima, form.potencializacao, resourceSelecionada],
+    () => (resourceSelecionada === 'fadiga' ? calcularCustoPercentualRecurso(fadigaMaxima, form.potencializacao) + custoArteFadiga : 0),
+    [custoArteFadiga, fadigaMaxima, form.potencializacao, resourceSelecionada],
   );
   const custoSaude = useMemo(
-    () => (resourceSelecionada === 'saude' ? calcularCustoPercentualRecurso(saudeMaxima, form.potencializacao) : 0),
-    [saudeMaxima, form.potencializacao, resourceSelecionada],
+    () => (resourceSelecionada === 'saude' ? calcularCustoPercentualRecurso(saudeMaxima, form.potencializacao) + custoArteSaude : 0),
+    [custoArteSaude, form.potencializacao, resourceSelecionada, saudeMaxima],
   );
   const energiaAposUso = Math.max(0, energiaAtual - custoEnergia);
   const fadigaAposUso = Math.max(0, fadigaAtual - custoFadiga);
@@ -1357,6 +1414,11 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
     : saudeSuficiente
       ? 'Saúde suficiente'
       : `Saúde insuficiente — faltam ${Math.max(0, custoSaude - saudeAtual)} pontos.`;
+  const nomeRecursoPotencializacao = resourceSelecionada === 'saude'
+    ? 'Saúde'
+    : resourceSelecionada === 'fadiga'
+      ? 'Fadiga'
+      : 'Energia';
 
   const hasUnsavedChanges = useMemo(() => {
     if (!selectedComboId && !comboSelecionada) {
@@ -1442,25 +1504,30 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
     return bonusExtra !== 0 ? `${perfil}${sinal}${Math.abs(bonusExtra)}` : perfil;
   };
 
+  const obterCustoArtCombo = (combo, recurso) => {
+    const artDoCombo = combo?.artId ? arts.find(art => art.id === combo.artId) ?? null : null;
+    return parseArtCostForResource(artDoCombo, recurso);
+  };
+
   const obterCustoCombo = combo => {
     if (!energiaDadosDisponiveis) return 0;
     const tipo = getResourceTypeForCombo(combo);
     if (tipo === 'fadiga') return 0;
-    return Math.max(0, calcularCustoEnergia(energiaMaxima, Number(combo?.potencializacao ?? 0)));
+    return Math.max(0, calcularCustoEnergia(energiaMaxima, Number(combo?.potencializacao ?? 0)) + obterCustoArtCombo(combo, 'energia'));
   };
 
   const obterCustoFadigaCombo = combo => {
     if (!fadigaDadosDisponiveis) return 0;
     const tipo = getResourceTypeForCombo(combo);
     if (tipo === 'energia' || tipo === 'saude') return 0;
-    return Math.max(0, calcularCustoPercentualRecurso(fadigaMaxima, Number(combo?.potencializacao ?? 0)));
+    return Math.max(0, calcularCustoPercentualRecurso(fadigaMaxima, Number(combo?.potencializacao ?? 0)) + obterCustoArtCombo(combo, 'fadiga'));
   };
 
   const obterCustoSaudeCombo = combo => {
     if (!saudeDadosDisponiveis) return 0;
     const tipo = getResourceTypeForCombo(combo);
     if (tipo === 'energia' || tipo === 'fadiga') return 0;
-    return Math.max(0, calcularCustoPercentualRecurso(saudeMaxima, Number(combo?.potencializacao ?? 0)));
+    return Math.max(0, calcularCustoPercentualRecurso(saudeMaxima, Number(combo?.potencializacao ?? 0)) + obterCustoArtCombo(combo, 'saude'));
   };
 
   const obterCustoSelecionado = combo => {
@@ -1492,13 +1559,13 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
 
     const comboIdParaSalvar = selectedComboId || '';
     const custoEnergiaPersistido = resourceSelecionada === 'energia'
-      ? calcularCustoEnergia(energiaMaxima, Number(form.potencializacao || 0))
+      ? calcularCustoEnergia(energiaMaxima, Number(form.potencializacao || 0)) + custoArteEnergia
       : 0;
     const custoFadigaPersistido = resourceSelecionada === 'fadiga'
-      ? calcularCustoPercentualRecurso(fadigaMaxima, Number(form.potencializacao || 0))
+      ? calcularCustoPercentualRecurso(fadigaMaxima, Number(form.potencializacao || 0)) + custoArteFadiga
       : 0;
     const custoSaudePersistido = resourceSelecionada === 'saude'
-      ? calcularCustoPercentualRecurso(saudeMaxima, Number(form.potencializacao || 0))
+      ? calcularCustoPercentualRecurso(saudeMaxima, Number(form.potencializacao || 0)) + custoArteSaude
       : 0;
 
     const payload = {
@@ -1511,6 +1578,7 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
       custoEnergia: custoEnergiaPersistido,
       custoFadiga: custoFadigaPersistido,
       custoSaude: custoSaudePersistido,
+      custoArte: resourceSelecionada === 'saude' ? custoArteSaude : resourceSelecionada === 'fadiga' ? custoArteFadiga : custoArteEnergia,
       costResourceType: resourceSelecionada,
       valorBaseFicha: valorBaseAtual,
       ...(isDefesaContexto ? { defesaDaFicha: valorBaseAtual } : { ataqueDaFicha: valorBaseAtual }),
@@ -2003,7 +2071,7 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
                       </Box>
                     </Box>
                     <PotencializacaoSlider
-                      aria-label="Potencialização de Energia"
+                      aria-label={`Potencialização de ${nomeRecursoPotencializacao}`}
                       value={form.potencializacao}
                       min={0}
                       max={30}
@@ -2064,6 +2132,19 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
                               <ResourceInfoLabel>Custo</ResourceInfoLabel>
                               <ResourceInfoValue>{custoSaude} pts</ResourceInfoValue>
                             </ResourceInfoRow>
+                            <ResourceInfoRow sx={{ gap: 6 }}>
+                              <ResourceInfoValue sx={{
+                                width: '100%',
+                                maxWidth: '100%',
+                                textAlign: 'left',
+                                fontSize: '0.69rem',
+                                lineHeight: 1.2,
+                                letterSpacing: '0.01em',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'clip',
+                              }}>{`POT. ${calcularCustoPercentualRecurso(saudeMaxima, form.potencializacao)} + ARTE ${custoArteSaude} = ${custoSaude}`}</ResourceInfoValue>
+                            </ResourceInfoRow>
                             <ResourceInfoRow>
                               <ResourceInfoLabel>Após uso</ResourceInfoLabel>
                               <ResourceInfoValue>{saudeAposUso} / {saudeMaxima}</ResourceInfoValue>
@@ -2121,6 +2202,19 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
                               <ResourceInfoLabel>Custo</ResourceInfoLabel>
                               <ResourceInfoValue>{custoEnergia} pts</ResourceInfoValue>
                             </ResourceInfoRow>
+                            <ResourceInfoRow sx={{ gap: 6 }}>
+                              <ResourceInfoValue sx={{
+                                width: '100%',
+                                maxWidth: '100%',
+                                textAlign: 'left',
+                                fontSize: '0.69rem',
+                                lineHeight: 1.2,
+                                letterSpacing: '0.01em',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'clip',
+                              }}>{`POT. ${calcularCustoEnergia(energiaMaxima, form.potencializacao)} + ARTE ${custoArteEnergia} = ${custoEnergia}`}</ResourceInfoValue>
+                            </ResourceInfoRow>
                             <ResourceInfoRow>
                               <ResourceInfoLabel>Após uso</ResourceInfoLabel>
                               <ResourceInfoValue>{energiaAposUso} / {energiaMaxima}</ResourceInfoValue>
@@ -2177,6 +2271,19 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
                             <ResourceInfoRow>
                               <ResourceInfoLabel>Custo</ResourceInfoLabel>
                               <ResourceInfoValue>{custoFadiga} pts</ResourceInfoValue>
+                            </ResourceInfoRow>
+                            <ResourceInfoRow sx={{ gap: 6 }}>
+                              <ResourceInfoValue sx={{
+                                width: '100%',
+                                maxWidth: '100%',
+                                textAlign: 'left',
+                                fontSize: '0.69rem',
+                                lineHeight: 1.2,
+                                letterSpacing: '0.01em',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'clip',
+                              }}>{`POT. ${calcularCustoPercentualRecurso(fadigaMaxima, form.potencializacao)} + ARTE ${custoArteFadiga} = ${custoFadiga}`}</ResourceInfoValue>
                             </ResourceInfoRow>
                             <ResourceInfoRow>
                               <ResourceInfoLabel>Após uso</ResourceInfoLabel>
