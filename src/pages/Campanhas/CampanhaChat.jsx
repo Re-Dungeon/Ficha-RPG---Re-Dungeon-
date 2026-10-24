@@ -22,7 +22,6 @@ import useIsMobile from 'hooks/useIsMobile';
 import useChatCampanha from 'hooks/useChatCampanha';
 import useGridCampanha from 'hooks/useGridCampanha';
 import ChatSala from 'components/Chat/ChatSala';
-import PlayerAudioMesa from 'components/Chat/PlayerAudioMesa';
 import GridMapa from 'components/Grid/GridMapa';
 import ErrorSnackbar from 'components/ErrorSnackbar/ErrorSnackbar';
 import { EmptyState } from 'pages/Personagens/styles';
@@ -260,9 +259,6 @@ const CampanhaChat = ({ visao = 'chat' }) => {
     );
     return (
       <ChatPageWrapper>
-        {/* Primeiro filho nas duas visões: não remonta (nem corta a música) ao
-            alternar Chat/Grid, e segue tocando com o painel de chat fechado. */}
-        <PlayerAudioMesa {...chat.audio.player} />
         <MesaBarra>
           {isMobile ? alternadorMesa : seletorVisao}
           {falandoComoCampo}
@@ -318,9 +314,6 @@ const CampanhaChat = ({ visao = 'chat' }) => {
 
   return (
     <ChatPageWrapper>
-      {/* Primeiro filho nas duas visões: não remonta (nem corta a música) ao
-          alternar Chat/Grid, e segue tocando com o painel de chat fechado. */}
-      <PlayerAudioMesa {...chat.audio.player} />
       {chatSala(
         <>
           {seletorVisao}

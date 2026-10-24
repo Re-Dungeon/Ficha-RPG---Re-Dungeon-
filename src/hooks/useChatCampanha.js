@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { useAudioMesaGlobal } from 'context/AudioMesaContext';
 import {
   addChatMensagem,
   addChatRolagemSecreta,
@@ -85,6 +86,14 @@ const useChatCampanha = (campanhaId, autor, { ehMestreDaCampanha = false } = {})
     ativo: podeOuvir,
     podeControlar: ehMestreDaCampanha || isMestre,
   });
+  const { registrarAudio } = useAudioMesaGlobal();
+
+  useEffect(() => {
+    if (!campanhaId || !podeOuvir || !audio) return;
+    const atual = audio?.atual ?? audio?.player?.atual ?? null;
+    if (!atual && !audio.tocando && !audio.pausado) return;
+    registrarAudio(audio);
+  }, [audio, campanhaId, podeOuvir, registrarAudio]);
 
   const macrosApi = useMacrosCampanha(campanhaId, {
     ativo: podeOuvir,

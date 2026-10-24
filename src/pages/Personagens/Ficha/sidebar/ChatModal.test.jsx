@@ -8,9 +8,19 @@ import {
   addChatMensagem,
   getRmCampanha,
   setChatMembro,
+  subscribeAudioMesa,
   subscribeChatMensagens,
 } from 'service/storage';
 import ChatModal from './ChatModal';
+import { AudioMesaProvider, useAudioMesaGlobal } from 'context/AudioMesaContext';
+
+vi.mock('components/Chat/PlayerAudioMesa', () => ({
+  default: ({ atual, volume, mudo }) => (
+    <div data-testid="audio-player" data-volume={volume} data-mudo={String(mudo)}>
+      {atual?.videoId ?? 'player'}
+    </div>
+  ),
+}));
 
 vi.mock('context/AuthContext', () => ({ useAuth: vi.fn() }));
 vi.mock('service/storage', () => ({
@@ -94,6 +104,151 @@ describe('ChatModal (menu Social da ficha)', () => {
 
     expect(await screen.findByText('No abismo.')).toBeInTheDocument();
     expect(setChatMembro).toHaveBeenCalledWith('abismo', 'uid-jogador', 'wesley');
+  });
+
+  it('mantém o player global montado quando o modal fecha', async () => {
+    const personagem = { id: 'wesley', nome: 'Wesley Chase', campanhas: ['torre'] };
+    const onClose = vi.fn();
+    const ativarAudio = () =>
+      subscribeAudioMesa.mockImplementation((campanhaId, onChange) => {
+        onChange({
+          videoId: 'abc123',
+          estado: 'tocando',
+          posicaoBase: 30,
+          referenciaEm: Date.now(),
+          repetir: true,
+        });
+        return vi.fn();
+      });
+
+    ativarAudio();
+
+    const renderWithProvider = open =>
+      render(
+        <MemoryRouter>
+          <AudioMesaProvider>
+            <ChatModal open={open} onClose={onClose} personagem={personagem} />
+          </AudioMesaProvider>
+        </MemoryRouter>,
+      );
+
+    const { rerender } = renderWithProvider(true);
+
+    expect(await screen.findByText('Na torre.')).toBeInTheDocument();
+    expect(screen.getByTestId('audio-player')).toBeInTheDocument();
+
+    rerender(
+      <MemoryRouter>
+        <AudioMesaProvider>
+          <ChatModal open={false} onClose={onClose} personagem={personagem} />
+        </AudioMesaProvider>
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByTestId('audio-player')).toBeInTheDocument();
+  });
+
+  it('ignora placeholder de áudio ao reabrir o chat sem nova música', () => {
+    const Probe = () => {
+      const { audio, registrarAudio } = useAudioMesaGlobal();
+
+      React.useEffect(() => {
+        registrarAudio({
+          atual: { videoId: 'abc123', estado: 'tocando' },
+          player: { atual: { videoId: 'abc123', estado: 'tocando' }, volume: 50, mudo: false },
+        });
+        registrarAudio({
+          atual: null,
+          player: { atual: null, volume: 50, mudo: false },
+        });
+      }, [registrarAudio]);
+
+      return <div data-testid="audio-video">{audio?.atual?.videoId ?? 'none'}</div>;
+    };
+
+    render(
+      <AudioMesaProvider>
+        <Probe />
+      </AudioMesaProvider>,
+    );
+
+    expect(screen.getByTestId('audio-video')).toHaveTextContent('abc123');
+  });
+
+  it('mantém a faixa ativa ao reabrir o chat sem reinicializar a reprodução', () => {
+    const Probe = () => {
+      const { audio, registrarAudio } = useAudioMesaGlobal();
+      const jaRegistrouSegunda = React.useRef(false);
+
+      React.useEffect(() => {
+        if (!audio) {
+          registrarAudio({
+            atual: { videoId: 'abc123', estado: 'tocando', posicaoBase: 30, referenciaEm: 1000, repetir: true },
+            player: { atual: { videoId: 'abc123', estado: 'tocando', posicaoBase: 30, referenciaEm: 1000, repetir: true }, volume: 50, mudo: false },
+          });
+          return;
+        }
+
+        if (!jaRegistrouSegunda.current) {
+          jaRegistrouSegunda.current = true;
+          registrarAudio({
+            atual: { videoId: 'abc123', estado: 'tocando', posicaoBase: 30, referenciaEm: 1000, repetir: true },
+            player: { atual: { videoId: 'abc123', estado: 'tocando', posicaoBase: 30, referenciaEm: 1000, repetir: true }, volume: 50, mudo: false },
+          });
+        }
+      }, [audio, registrarAudio]);
+
+      return <div data-testid="audio-volume">{audio?.player?.volume ?? 'none'}</div>;
+    };
+
+    render(
+      <AudioMesaProvider>
+        <Probe />
+      </AudioMesaProvider>,
+    );
+
+    expect(screen.getByTestId('audio-volume')).toHaveTextContent('50');
+  });
+
+  it('atualiza o player global quando o volume ou mute mudam sem trocar a faixa', () => {
+    const Probe = () => {
+      const { audio, registrarAudio } = useAudioMesaGlobal();
+      const jaRegistrouVolume = React.useRef(false);
+
+      React.useEffect(() => {
+        if (!audio) {
+          registrarAudio({
+            atual: { videoId: 'abc123', estado: 'tocando', posicaoBase: 30, referenciaEm: 1000, repetir: true },
+            player: { atual: { videoId: 'abc123', estado: 'tocando', posicaoBase: 30, referenciaEm: 1000, repetir: true }, volume: 50, mudo: false },
+          });
+          return;
+        }
+
+        if (!jaRegistrouVolume.current) {
+          jaRegistrouVolume.current = true;
+          registrarAudio({
+            atual: { videoId: 'abc123', estado: 'tocando', posicaoBase: 30, referenciaEm: 1000, repetir: true },
+            player: { atual: { videoId: 'abc123', estado: 'tocando', posicaoBase: 30, referenciaEm: 1000, repetir: true }, volume: 80, mudo: true },
+          });
+        }
+      }, [audio, registrarAudio]);
+
+      return (
+        <div>
+          <span data-testid="audio-volume">{audio?.player?.volume ?? 'none'}</span>
+          <span data-testid="audio-mudo">{audio?.player?.mudo ? 'muted' : 'not-muted'}</span>
+        </div>
+      );
+    };
+
+    render(
+      <AudioMesaProvider>
+        <Probe />
+      </AudioMesaProvider>,
+    );
+
+    expect(screen.getByTestId('audio-volume')).toHaveTextContent('80');
+    expect(screen.getByTestId('audio-mudo')).toHaveTextContent('muted');
   });
 
   it('personagem sem campanha mostra como vincular', async () => {
