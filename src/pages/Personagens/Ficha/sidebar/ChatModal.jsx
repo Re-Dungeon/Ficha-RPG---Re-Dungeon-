@@ -18,7 +18,6 @@ import { getRmCampanha } from 'service/storage';
 import { campanhaIdsDosPersonagens } from 'common/utils/chat';
 import useChatCampanha from 'hooks/useChatCampanha';
 import ChatSala from 'components/Chat/ChatSala';
-import PlayerAudioMesa from 'components/Chat/PlayerAudioMesa';
 import ErrorSnackbar from 'components/ErrorSnackbar/ErrorSnackbar';
 
 import { DialogFecharButton, DialogHeaderRow, DialogHeaderTitle } from '../styles';
@@ -172,7 +171,6 @@ const ChatModalConteudo = ({ personagem }) => {
         onApagar={chat.apagar}
         cabecalho={cabecalho}
       />
-      <PlayerAudioMesa {...chat.audio.player} />
       <ErrorSnackbar open={!!chat.erro} mensagem={chat.erro} onClose={chat.limparErro} />
     </Box>
   );
@@ -183,7 +181,7 @@ ChatModalConteudo.propTypes = {
 };
 
 const ChatModal = ({ open, onClose, personagem }) => (
-  <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
+  <Dialog open={open} onClose={onClose} fullWidth maxWidth="md" keepMounted>
     <DialogHeaderRow>
       <DialogHeaderTitle>💬 Chat da Campanha</DialogHeaderTitle>
       <DialogFecharButton type="button" aria-label="Fechar" onClick={onClose}>
