@@ -77,8 +77,6 @@ import {
   Undo,
   Redo,
   Remove,
-  Title,
-  FormatSize,
   FormatColorText,
   Highlight as HighlightIcon,
   Subscript as SubscriptIcon,
@@ -172,36 +170,12 @@ const EditorArea = styled.div`
   }
 
   .ProseMirror p,
-  .ProseMirror h1,
-  .ProseMirror h2,
-  .ProseMirror h3,
   .ProseMirror ul,
   .ProseMirror ol,
   .ProseMirror blockquote,
   .ProseMirror pre,
   .ProseMirror table {
     margin: 0 0 1rem;
-  }
-
-  .ProseMirror h1,
-  .ProseMirror h2,
-  .ProseMirror h3 {
-    font-weight: 800;
-    line-height: 1.2;
-    color: #f0dc9b;
-    letter-spacing: 0.02em;
-  }
-
-  .ProseMirror h1 {
-    font-size: 2rem;
-  }
-
-  .ProseMirror h2 {
-    font-size: 1.55rem;
-  }
-
-  .ProseMirror h3 {
-    font-size: 1.2rem;
   }
 
   .ProseMirror a {
@@ -414,26 +388,6 @@ const panelSx = {
   '& .MuiSvgIcon-root': { color: '#cbd5ff' },
 };
 
-const FONT_OPTIONS = [
-  { label: 'Padrão', value: '' },
-  { label: 'Arial', value: 'Arial, sans-serif' },
-  { label: 'Calibri', value: 'Calibri, sans-serif' },
-  { label: 'Times New Roman', value: '"Times New Roman", serif' },
-  { label: 'Georgia', value: 'Georgia, serif' },
-  { label: 'Verdana', value: 'Verdana, sans-serif' },
-  { label: 'Tahoma', value: 'Tahoma, sans-serif' },
-  { label: 'Trebuchet MS', value: '"Trebuchet MS", sans-serif' },
-  { label: 'Garamond', value: 'Garamond, serif' },
-  { label: 'Cambria', value: 'Cambria, serif' },
-  { label: 'Segoe UI', value: '"Segoe UI", sans-serif' },
-  { label: 'Courier New', value: '"Courier New", monospace' },
-  { label: 'Comic Sans MS', value: '"Comic Sans MS", cursive' },
-  { label: 'Impact', value: 'Impact, sans-serif' },
-  { label: 'Palatino Linotype', value: '"Palatino Linotype", serif' },
-  { label: 'Book Antiqua', value: '"Book Antiqua", serif' },
-];
-
-const SIZE_OPTIONS = ['8px', '9px', '10px', '11px', '12px', '14px', '16px', '18px', '20px', '22px', '24px', '26px', '28px', '32px', '36px', '48px', '72px'];
 const TEXT_COLORS = ['#FFFFFF', '#000000', '#808080', '#D9D9D9', '#F44336', '#FF9800', '#FFC107', '#4CAF50', '#2196F3', '#9C27B0', '#E91E63', '#D4AF37', '#7C4DFF', '#00BCD4', '#FF5722', '#795548'];
 const HIGHLIGHT_COLORS = ['#F0F0F0', '#E9E9E9', '#D9D9D9', '#E3E7EE', '#EAE5D8', '#EAE7F3', '#F0E7F2', '#E4F0F2', '#F3E9D7', '#D9D9D9'];
 
@@ -449,16 +403,6 @@ const safeUrl = rawUrl => {
     return url;
   }
   return `https://${url}`;
-};
-
-const normalizeSizeValue = value => {
-  if (!value) return '16px';
-  const normalized = `${value}`.trim();
-  if (!normalized) return '16px';
-  if (!/\d/.test(normalized)) return '16px';
-  if (/^\d+(?:\.\d+)?px$/i.test(normalized)) return normalized;
-  if (/^\d+(?:\.\d+)?$/i.test(normalized)) return `${normalized}px`;
-  return '16px';
 };
 
 const insertTable = (editor, rows, cols, withHeaderRow) => {
@@ -482,7 +426,6 @@ const BackgroundEditor = ({ value, onChange }) => {
   const [imageUrl, setImageUrl] = useState('');
   const [imageAlt, setImageAlt] = useState('');
   const [imageAlign, setImageAlign] = useState('center');
-  const [customSize, setCustomSize] = useState('16');
   const [recentColors, setRecentColors] = useState(['#FFFFFF', '#D4AF37', '#2196F3', '#F44336', '#4CAF50']);
   const lastEditorJsonRef = useRef('');
   const lastExternalValueRef = useRef('');
@@ -593,18 +536,6 @@ const BackgroundEditor = ({ value, onChange }) => {
     editor.commands.setContent(nextValue, { emitUpdate: false });
   }, [editor, value]);
 
-  const setTextSize = size => {
-    if (!editor) return;
-    const nextSize = normalizeSizeValue(size);
-    editor.chain().focus().setMark('textStyle', { fontSize: nextSize }).run();
-    setCustomSize(nextSize.replace('px', ''));
-  };
-
-  const setFontFamily = family => {
-    if (!editor) return;
-    editor.chain().focus().setMark('textStyle', { fontFamily: family || undefined }).run();
-  };
-
   const addRecentColor = color => {
     if (!color) return;
     setRecentColors(prev => [color, ...prev.filter(item => item !== color)].slice(0, 8));
@@ -714,9 +645,6 @@ const BackgroundEditor = ({ value, onChange }) => {
     setImageAlign('center');
   };
 
-  const currentFontFamily = editor?.getAttributes('textStyle').fontFamily || '';
-  const currentFontSize = editor?.getAttributes('textStyle').fontSize || '16px';
-  const selectedTextSize = SIZE_OPTIONS.includes(currentFontSize) ? currentFontSize : customSize ? `${customSize}px` : '16px';
   const currentTextColor = editor?.getAttributes('textStyle').color || '#FFFFFF';
   const currentHighlightColor = editor?.getAttributes('highlight').color || '#F0F0F0';
 
@@ -735,35 +663,6 @@ const BackgroundEditor = ({ value, onChange }) => {
         <ToolbarGroup>
           <Tooltip title="Desfazer"><span><IconButton size="small" sx={toolbarButtonSx} onClick={() => editor?.chain().focus().undo().run()} disabled={!editor?.can().undo()}><Undo fontSize="small" /></IconButton></span></Tooltip>
           <Tooltip title="Refazer"><span><IconButton size="small" sx={toolbarButtonSx} onClick={() => editor?.chain().focus().redo().run()} disabled={!editor?.can().redo()}><Redo fontSize="small" /></IconButton></span></Tooltip>
-        </ToolbarGroup>
-
-        <ToolbarGroup>
-          <FormControl size="small" sx={{ minWidth: mode === 'compact' ? 120 : 130 }}>
-            <InputLabel id="font-family-label" sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.68rem' }}>Fonte</InputLabel>
-            <Select labelId="font-family-label" value={FONT_OPTIONS.some(item => item.value === currentFontFamily) ? currentFontFamily : ''} label="Fonte" onChange={event => setFontFamily(event.target.value)} sx={panelSx}>
-              {FONT_OPTIONS.map(option => (
-                <MenuItem key={option.value || 'padrao'} value={option.value}>{option.label}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </ToolbarGroup>
-
-        <ToolbarGroup>
-          <FormControl size="small" sx={{ minWidth: mode === 'compact' ? 80 : 82 }}>
-            <InputLabel id="font-size-label" sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.68rem' }}>Tamanho</InputLabel>
-            <Select labelId="font-size-label" value={selectedTextSize} label="Tamanho" onChange={event => setTextSize(event.target.value)} sx={panelSx}>
-              {SIZE_OPTIONS.map(size => (
-                <MenuItem key={size} value={size}>{size}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </ToolbarGroup>
-
-        <ToolbarGroup>
-          <Tooltip title="Título H1"><span><IconButton size="small" sx={toolbarButtonSx} onClick={() => editor?.chain().focus().toggleHeading({ level: 1 }).run()} color={editor?.isActive('heading', { level: 1 }) ? 'primary' : 'default'}><Title fontSize="small" /></IconButton></span></Tooltip>
-          <Tooltip title="Título H2"><span><IconButton size="small" sx={toolbarButtonSx} onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()} color={editor?.isActive('heading', { level: 2 }) ? 'primary' : 'default'}><Title fontSize="small" /></IconButton></span></Tooltip>
-          <Tooltip title="Título H3"><span><IconButton size="small" sx={toolbarButtonSx} onClick={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()} color={editor?.isActive('heading', { level: 3 }) ? 'primary' : 'default'}><Title fontSize="small" /></IconButton></span></Tooltip>
-          <Tooltip title="Texto normal"><span><IconButton size="small" sx={toolbarButtonSx} onClick={() => editor?.chain().focus().setParagraph().run()}><FormatSize fontSize="small" /></IconButton></span></Tooltip>
         </ToolbarGroup>
 
         <ToolbarGroup>
