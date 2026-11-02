@@ -758,3 +758,47 @@ export const normalizarEstadoCombate = (personagem = {}, ppMaximo) => {
     acaoExtra,
   };
 };
+
+// Linha do histórico de ações do turno (estadoCombate.historicoAcoes).
+export const criarRegistroHistorico = (nome, valor, turno, restante, tipo = 'acao') => {
+  const randomSufixo = typeof Math.random === 'function'
+    ? (Math.random?.() ?? 0).toString(16).slice(2, 7)
+    : String(Date.now()).slice(-6);
+
+  return {
+    id: `${tipo}-${Date.now()}-${randomSufixo}`,
+    nome,
+    custo: valor,
+    turno: normalizarTurnoTexto(turno),
+    restante,
+  };
+};
+
+// "Iniciar novo turno" (ProntidaoModal) e "Seu turno! Restaurar PP" (grid):
+// turno +1, PP cheio, recuperação/descanso liberados, Ação Extra pendente
+// expira e o histórico ganha "Prontidão restaurada" (máx. 12 linhas).
+// `estadoCombate` = normalizarEstadoCombate(...).
+export const estadoDoNovoTurno = (estadoCombate, ppMaximo) => {
+  const proximoTurno = Number(estadoCombate.turno ?? 1) + 1;
+  const acaoExtraExpirada = estadoCombate.acaoExtra?.status === 'pendente'
+    ? { ...estadoCombate.acaoExtra, status: 'expirado', usosRestantes: 0 }
+    : (estadoCombate.acaoExtra ?? null);
+
+  return {
+    ...estadoCombate,
+    turno: proximoTurno,
+    ppAtual: ppMaximo,
+    recuperacaoUtilizada: false,
+    descansando: false,
+    acaoExtra: acaoExtraExpirada,
+    historicoAcoes: [
+      criarRegistroHistorico('Prontidão restaurada', '0 PP', proximoTurno, ppMaximo, 'turno'),
+      ...(estadoCombate.historicoAcoes ?? []),
+    ].slice(0, 12),
+  };
+};
+
+// Prontidão máxima de uma ficha carregada (normalizarPersonagemCarregado),
+// fora da aba Atributos (que calcula o total ao vivo).
+export const prontidaoMaximaDaFicha = ficha =>
+  Number(ficha?.secundariosTotais?.prontidao ?? ficha?.prontidaoMaximaEfetiva ?? 0) || 0;

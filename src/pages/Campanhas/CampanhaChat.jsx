@@ -14,21 +14,40 @@ import GridOnIcon from '@mui/icons-material/GridOn';
 
 import { useAuth } from 'context/AuthContext';
 import { useSelecao } from 'context/selecaoContext';
-import { getPersonagens, getRmCampanha } from 'service/storage';
+import {
+  getCondicoesPorUniverso,
+  getPersonagens,
+  getRmCampanha,
+  normalizarPersonagemCarregado,
+  updatePersonagem,
+} from 'service/storage';
 import { personagensNaCampanha } from 'common/utils/chat';
+import { corDoPing } from 'common/utils/grid';
+import { podeEditarArea } from 'common/utils/gridAreas';
+import { autorDoToken } from 'common/utils/gridRolagem';
 import { contarNaoLidas, idDaUltimaMensagem } from 'common/utils/mesa';
 import { MOBILE } from 'common/styles/breakpoints';
 import useIsMobile from 'hooks/useIsMobile';
 import useChatCampanha from 'hooks/useChatCampanha';
 import useGridCampanha from 'hooks/useGridCampanha';
+import useOpcoesDeRolagem from 'hooks/useOpcoesDeRolagem';
+import useRolarDoToken from 'hooks/useRolarDoToken';
 import ChatSala from 'components/Chat/ChatSala';
 import GridMapa from 'components/Grid/GridMapa';
+import RolarDoTokenDialog from 'components/Grid/RolarDoTokenDialog';
 import ErrorSnackbar from 'components/ErrorSnackbar/ErrorSnackbar';
 import { EmptyState } from 'pages/Personagens/styles';
+import {
+  calcularPpMaximo,
+  estadoDoNovoTurno,
+  normalizarEstadoCombate,
+  prontidaoMaximaDaFicha,
+} from 'pages/Personagens/Ficha/prontidao/config';
 
 import { ChatPageWrapper, MesaBarra, MesaChatPainel, MesaCorpo } from './styles';
 
 const FALAR_COMO_MESTRE = '__mestre__';
+const SEM_CONDICOES = [];
 
 // Mesa da campanha: `visao` "chat" (/campanhas/:id/chat) ou "grid"
 // (/campanhas/:id/grid — mapa tático com o chat num painel lateral). As duas
@@ -53,8 +72,21 @@ const CampanhaChat = ({ visao = 'chat' }) => {
   const isMobile = useIsMobile();
   const [abaMesa, setAbaMesa] = useState('mapa');
   const [ultimaVistaId, setUltimaVistaId] = useState(undefined);
+  // Catálogo de condições do universo (ícones/nomes das condições nos tokens
+  // do grid), guardado com o universo a que pertence.
+  const [catalogoCondicoes, setCatalogoCondicoes] = useState({
+    universoId: null,
+    lista: SEM_CONDICOES,
+  });
+  // Turno (combate.chaveTurno) em que o "Seu turno! Restaurar PP" já foi
+  // usado — o botão some até o próximo turno. Recarregar a página durante o
+  // próprio turno mostra o botão de novo (limitação aceita).
+  const [ppRestauradoEm, setPpRestauradoEm] = useState(null);
+  // Token em nome de quem se está rolando (diálogo "Rolar…" do grid).
+  const [tokenRolando, setTokenRolando] = useState(null);
 
   const isMestre = campanha?.mestreId === currentUser.uid;
+  const universoId = campanha?.universoId ?? null;
   const temAcesso = isMestre || meusPersonagens.length > 0;
 
   useEffect(() => {
@@ -94,6 +126,25 @@ const CampanhaChat = ({ visao = 'chat' }) => {
     if (personagem) selecionarPersonagem(personagem);
   }, [falandoComo, meusPersonagens, selecionarPersonagem]);
 
+  // Só a visão grid usa o catálogo. Falha não é erro para o usuário: os
+  // tokens só ficam sem os ícones de condição.
+  useEffect(() => {
+    if (visao !== 'grid' || !universoId) return undefined;
+    let isMounted = true;
+    getCondicoesPorUniverso(universoId)
+      .then(lista => {
+        if (isMounted)
+          setCatalogoCondicoes({ universoId, lista: lista ?? SEM_CONDICOES });
+      })
+      .catch(error => {
+        // eslint-disable-next-line no-console
+        console.error('Falha ao carregar o catálogo de condições:', error);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, [universoId, visao]);
+
   const handleVoltar = useCallback(() => navigate('/campanhas'), [navigate]);
 
   useEffect(() => {
@@ -128,7 +179,76 @@ const CampanhaChat = ({ visao = 'chat' }) => {
     personagemId: autor?.personagemId ?? null,
     isMestre: Boolean(autor?.isMestre),
     ehMestreDaCampanha: isMestre,
+    // Nome no meu sinal do mapa (quem estou sendo no "Falando como").
+    nome: autor?.autorNome ?? null,
+    mestreId: campanha?.mestreId ?? null,
+    catalogoCondicoes:
+      catalogoCondicoes.universoId === universoId
+        ? catalogoCondicoes.lista
+        : SEM_CONDICOES,
+    // Mensagens de combate ("Encerrar meu turno") assinadas como no chat.
+    autorCombate: autor,
   });
+
+  // "Rolar…" no token: o autor é o do TOKEN (não o "Falando como"). Jogador:
+  // a ficha do token (ou a do "Falando como" se o token não tem ficha); mestre:
+  // a persona do token de NPC/criatura.
+  const autorDoTokenRolado = useCallback(
+    token =>
+      autorDoToken(token, {
+        uid: currentUser.uid,
+        personagensDoUsuario: meusPersonagens,
+        personagemPadraoId: autor?.personagemId ?? null,
+        mestre: Boolean(isMestre && autor?.isMestre),
+      }),
+    [currentUser.uid, meusPersonagens, autor, isMestre],
+  );
+  const podeRolarToken = useCallback(
+    token => grid.ehMeu(token) && Boolean(autorDoTokenRolado(token)),
+    [grid, autorDoTokenRolado],
+  );
+  const fichaDoTokenRolando = tokenRolando?.refId
+    ? (meusPersonagens.find(p => p.id === tokenRolando.refId) ?? null)
+    : null;
+  const opcoesRolagem = useOpcoesDeRolagem(fichaDoTokenRolando?.id ?? null, {
+    ativo: Boolean(fichaDoTokenRolando),
+  });
+  const rolarDoToken = useRolarDoToken(campanhaId, { onErro: setErro });
+  const handleRolarDoToken = useCallback(
+    (expressao, rotulo) =>
+      rolarDoToken({ autor: autorDoTokenRolado(tokenRolando), expressao, rotulo }),
+    [rolarDoToken, autorDoTokenRolado, tokenRolando],
+  );
+  const fecharRolarDoToken = useCallback(() => setTokenRolando(null), []);
+
+  // Combate: na vez de um token de jogador meu, "Seu turno! Restaurar PP"
+  // faz o mesmo que "Iniciar novo turno" da ficha (não é automático).
+  const { combate: combateGrid, tokenDaVez, meuTurno, fichas: fichasGrid } = grid;
+  const chaveTurno = combateGrid?.chaveTurno ?? null;
+  const fichaDaVez =
+    meuTurno && tokenDaVez?.tipo === 'jogador' && tokenDaVez.refId
+      ? (fichasGrid?.[tokenDaVez.refId] ?? null)
+      : null;
+  const podeRestaurarPp =
+    Boolean(fichaDaVez) &&
+    fichaDaVez.uid === currentUser.uid &&
+    Boolean(chaveTurno) &&
+    ppRestauradoEm !== chaveTurno;
+  const handleRestaurarPp = useCallback(async () => {
+    if (!fichaDaVez || !chaveTurno) return;
+    try {
+      const ficha = normalizarPersonagemCarregado(fichaDaVez);
+      const ppMaximo = calcularPpMaximo(prontidaoMaximaDaFicha(ficha));
+      await updatePersonagem(ficha.id, {
+        estadoCombate: estadoDoNovoTurno(normalizarEstadoCombate(ficha, ppMaximo), ppMaximo),
+      });
+      setPpRestauradoEm(chaveTurno);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Falha ao restaurar a Prontidão:', error);
+      setErro('Não foi possível restaurar a Prontidão.');
+    }
+  }, [chaveTurno, fichaDaVez]);
   if (ultimaVistaId === undefined && !chat.carregando) {
     setUltimaVistaId(idDaUltimaMensagem(chat.mensagens));
   }
@@ -294,8 +414,37 @@ const CampanhaChat = ({ visao = 'chat' }) => {
             config={grid.config}
             tokens={grid.tokens}
             podeMover={grid.podeMover}
+            ehMeu={grid.ehMeu}
             onMover={grid.mover}
+            rastros={grid.rastrosAtivos}
             aviso={aviso}
+            mestre={grid.veTudo}
+            onPing={grid.pingar}
+            pings={grid.pings}
+            detalhes={grid.detalhes}
+            combate={grid.combate}
+            travamento={grid.travamento}
+            camadas={grid.camadas}
+            marcadores={grid.marcadores}
+            desenhos={grid.desenhos}
+            onDesenhar={grid.desenhar}
+            acoesDesenho={{
+              apagarMeus: grid.apagarMeusDesenhos,
+              apagarTodos: grid.veTudo ? grid.apagarTodosDesenhos : undefined,
+            }}
+            areas={grid.areas}
+            acoesAreas={grid.acoesAreas}
+            podeEditarArea={area => podeEditarArea(area, currentUser.uid, grid.veTudo)}
+            corAreaPadrao={corDoPing(currentUser.uid, campanha?.mestreId ?? null)}
+            podeRolarToken={podeRolarToken}
+            onRolarToken={setTokenRolando}
+            acoesCombate={{
+              encerrarTurno: grid.meuTurno ? grid.encerrarTurno : undefined,
+              restaurarPp: podeRestaurarPp ? handleRestaurarPp : undefined,
+              ...(grid.veTudo
+                ? { anterior: () => grid.mudarTurno(-1), proximo: () => grid.mudarTurno(1) }
+                : {}),
+            }}
           />
           {(chatAberto || isMobile) && (
             <MesaChatPainel>
@@ -307,6 +456,14 @@ const CampanhaChat = ({ visao = 'chat' }) => {
             </MesaChatPainel>
           )}
         </MesaCorpo>
+        <RolarDoTokenDialog
+          open={Boolean(tokenRolando)}
+          token={tokenRolando}
+          grupos={opcoesRolagem.grupos}
+          carregando={opcoesRolagem.carregando}
+          onRolar={handleRolarDoToken}
+          onClose={fecharRolarDoToken}
+        />
         <ErrorSnackbar open={!!erroExibido} mensagem={erroExibido} onClose={fecharErro} />
       </ChatPageWrapper>
     );

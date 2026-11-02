@@ -7,18 +7,28 @@ import { useAuth } from 'context/AuthContext';
 import {
   addChatMensagem,
   addChatRolagemSecreta,
+  addGridArea,
+  alterarGridCombate,
+  getCondicoesPorUniverso,
   getPersonagens,
+  getArts,
   getChatMacros,
+  getCombosAtaque,
   getRmCampanha,
   moverGridToken,
+  setGridPing,
   setAudioMesa,
   subscribeAudioMesa,
   setChatMembro,
   subscribeGridCena,
   subscribeGridCenaAtiva,
+  subscribeGridCombate,
+  subscribeGridPings,
   subscribeGridTokens,
   subscribeChatMensagens,
   subscribeChatSecretasDoUsuario,
+  subscribePersonagem,
+  updatePersonagem,
 } from 'service/storage';
 import { executarMacro as rodarMacroNoWorker } from 'common/lua/executarMacro';
 import useIsMobile from 'hooks/useIsMobile';
@@ -53,7 +63,44 @@ vi.mock('service/storage', () => ({
   subscribeGridCena: vi.fn(),
   subscribeGridTokens: vi.fn(),
   moverGridToken: vi.fn(),
+  getCondicoesPorUniverso: vi.fn(() => Promise.resolve([])),
+  subscribeGridPings: vi.fn(() => vi.fn()),
+  setGridPing: vi.fn(() => Promise.resolve()),
+  subscribePersonagem: vi.fn(() => vi.fn()),
+  subscribeGridCombate: vi.fn(() => vi.fn()),
+  alterarGridCombate: vi.fn(),
+  subscribeGridCamadas: vi.fn(() => () => {}),
+  subscribeGridMarcadores: vi.fn(() => () => {}),
+  subscribeGridDesenhos: vi.fn(() => () => {}),
+  setGridCamada: vi.fn(() => Promise.resolve()),
+  addGridMarcador: vi.fn(() => Promise.resolve()),
+  updateGridMarcador: vi.fn(() => Promise.resolve()),
+  removeGridMarcador: vi.fn(() => Promise.resolve()),
+  addGridDesenho: vi.fn(() => Promise.resolve()),
+  removeGridDesenhos: vi.fn(() => Promise.resolve()),
+  getArts: vi.fn(() => Promise.resolve([])),
+  getCombosAtaque: vi.fn(() => Promise.resolve([])),
+  getCombosDefesa: vi.fn(() => Promise.resolve([])),
+  subscribeGridAreas: vi.fn(() => () => {}),
+  addGridArea: vi.fn(() => Promise.resolve()),
+  updateGridArea: vi.fn(() => Promise.resolve()),
+  removeGridArea: vi.fn(() => Promise.resolve()),
+  removeGridAreas: vi.fn(() => Promise.resolve()),
+  updatePersonagem: vi.fn(),
+  normalizarPersonagemCarregado: vi.fn(personagem => personagem),
 }));
+
+// O jsdom não tem PointerEvent (o grid lê pointerType/altKey dos eventos).
+if (typeof window.PointerEvent === 'undefined') {
+  class PointerEventDeTeste extends MouseEvent {
+    constructor(tipo, init = {}) {
+      super(tipo, init);
+      this.pointerId = init.pointerId ?? 1;
+      this.pointerType = init.pointerType ?? 'mouse';
+    }
+  }
+  window.PointerEvent = PointerEventDeTeste;
+}
 
 const LayoutFake = () => <Outlet context={{ setHeaderExtra: vi.fn() }} />;
 
@@ -646,6 +693,7 @@ describe('CampanhaChat', () => {
       ],
     };
     let mudarCenaAtiva;
+    let emitirTokens;
 
     beforeEach(() => {
       subscribeGridCenaAtiva.mockImplementation((_campanhaId, onChange) => {
@@ -658,10 +706,114 @@ describe('CampanhaChat', () => {
         return vi.fn();
       });
       subscribeGridTokens.mockImplementation((_campanhaId, cenaId, _opcoes, onChange) => {
+        emitirTokens = onChange;
         onChange(TOKENS_POR_CENA[cenaId] ?? []);
         return vi.fn();
       });
       moverGridToken.mockResolvedValue();
+    });
+
+    const [ALDRIC, OGRO] = TOKENS_POR_CENA['cena-1'];
+    const horario = segundos => ({ seconds: segundos, nanoseconds: 0 });
+
+    it('mostra o botão Desenhar no mapa e liga a paleta (jogador sem Apagar todos)', async () => {
+      renderChat(null, '/campanhas/camp-1/grid');
+      await screen.findByRole('button', { name: /Aldric, coluna/ });
+
+      const botao = screen.getByRole('button', { name: 'Desenhar' });
+      expect(botao).toHaveAttribute('aria-pressed', 'false');
+      fireEvent.click(botao);
+      expect(botao).toHaveAttribute('aria-pressed', 'true');
+      expect(
+        screen.getByRole('button', { name: 'Apagar meus desenhos' }),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: 'Apagar todos' }),
+      ).not.toBeInTheDocument();
+    });
+
+    it('rastro de um movimento ao vivo aparece com a distância e some em 10 s', async () => {
+      renderChat(null, '/campanhas/camp-1/grid');
+      await screen.findByRole('button', { name: /Aldric, coluna/ });
+
+      // Timers falsos só depois da carga (findBy usa timers de verdade).
+      vi.useFakeTimers();
+      try {
+        act(() =>
+          emitirTokens([
+            ALDRIC,
+            {
+              ...OGRO,
+              col: 7,
+              movidoEm: horario(5),
+              rastro: [
+                { col: 4, lin: 1 },
+                { col: 7, lin: 1 },
+              ],
+            },
+          ]),
+        );
+        expect(screen.getByText('3 q · 4,5 m')).toBeInTheDocument();
+
+        act(() => vi.advanceTimersByTime(10000));
+        expect(screen.queryByText('3 q · 4,5 m')).not.toBeInTheDocument();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('movimento antigo (já na carga inicial) não mostra rastro', async () => {
+      subscribeGridTokens.mockImplementation((_campanhaId, _cena, _opcoes, onChange) => {
+        onChange([
+          {
+            ...ALDRIC,
+            movidoEm: horario(1),
+            rastro: [
+              { col: 1, lin: 4 },
+              { col: 1, lin: 1 },
+            ],
+          },
+          OGRO,
+        ]);
+        return vi.fn();
+      });
+      renderChat(null, '/campanhas/camp-1/grid');
+      await screen.findByRole('button', { name: /Aldric, coluna/ });
+      expect(screen.queryByText(/ q · /)).not.toBeInTheDocument();
+    });
+
+    it('meu movimento mostra o rastro na hora e a confirmação não duplica', async () => {
+      renderChat(null, '/campanhas/camp-1/grid');
+      fireEvent.keyDown(await screen.findByRole('button', { name: /Aldric, coluna/ }), {
+        key: 'ArrowDown',
+      });
+      expect(await screen.findByText('1 q · 1,5 m')).toBeInTheDocument();
+
+      const rastro = [
+        { col: 1, lin: 1 },
+        { col: 1, lin: 2 },
+      ];
+      // Snapshot local (escrita pendente) e depois o confirmado pelo servidor.
+      act(() => emitirTokens([{ ...ALDRIC, lin: 2, rastro, movidoEm: null }, OGRO]));
+      act(() =>
+        emitirTokens([{ ...ALDRIC, lin: 2, rastro, movidoEm: horario(9) }, OGRO]),
+      );
+      expect(screen.getAllByText('1 q · 1,5 m')).toHaveLength(1);
+    });
+
+    it('regra ainda sem rastro: move só col/lin, sem erro', async () => {
+      moverGridToken.mockRejectedValueOnce(
+        Object.assign(new Error('negado'), { code: 'permission-denied' }),
+      );
+      renderChat(null, '/campanhas/camp-1/grid');
+      fireEvent.keyDown(await screen.findByRole('button', { name: /Aldric, coluna/ }), {
+        key: 'ArrowDown',
+      });
+
+      await waitFor(() => expect(moverGridToken).toHaveBeenCalledTimes(2));
+      expect(moverGridToken).toHaveBeenLastCalledWith('camp-1', 'cena-1', 't1', 1, 2);
+      expect(screen.queryByText(/Não foi possível mover/)).not.toBeInTheDocument();
+      expect(screen.getByText('1 q · 1,5 m')).toBeInTheDocument();
     });
 
     it('jogador entra como membro, vê a cena ativa (tokens visíveis) e o chat ao lado', async () => {
@@ -690,7 +842,10 @@ describe('CampanhaChat', () => {
         key: 'ArrowDown',
       });
       await waitFor(() =>
-        expect(moverGridToken).toHaveBeenCalledWith('camp-1', 'cena-1', 't1', 1, 2),
+        expect(moverGridToken).toHaveBeenCalledWith('camp-1', 'cena-1', 't1', 1, 2, [
+          { col: 1, lin: 1 },
+          { col: 1, lin: 2 },
+        ]),
       );
 
       fireEvent.keyDown(screen.getByRole('button', { name: /Ogro/ }), {
@@ -738,6 +893,345 @@ describe('CampanhaChat', () => {
       expect(screen.queryByText('Bem-vindos à taverna.')).not.toBeInTheDocument();
     });
 
+    describe('Fase 3C: ações', () => {
+      const tocarToken = nome => {
+        const token = screen.getByRole('button', { name: nome });
+        const clique = { clientX: 60, clientY: 60, pointerId: 1, pointerType: 'mouse', button: 0 };
+        fireEvent.pointerDown(token, clique);
+        fireEvent.pointerUp(screen.getByRole('application', { name: 'Grid da campanha' }), clique);
+      };
+
+      it('"Rolar…" só aparece no meu token; a rolagem sai com o rótulo, assinada pelo token', async () => {
+        renderChat(null, '/campanhas/camp-1/grid');
+        await screen.findByRole('button', { name: /Aldric, coluna/ });
+
+        tocarToken(/Ogro/);
+        expect(screen.queryByRole('button', { name: 'Rolar…' })).not.toBeInTheDocument();
+
+        tocarToken(/Aldric, coluna/);
+        fireEvent.click(screen.getByRole('button', { name: 'Rolar…' }));
+        const dialogo = await screen.findByRole('dialog');
+        fireEvent.change(within(dialogo).getByLabelText('Expressão'), {
+          target: { value: '1d6+2' },
+        });
+        fireEvent.change(within(dialogo).getByLabelText('Rótulo (opcional)'), {
+          target: { value: 'Teste de força' },
+        });
+        await act(async () => fireEvent.click(within(dialogo).getByRole('button', { name: 'Rolar' })));
+
+        await waitFor(() =>
+          expect(addChatMensagem).toHaveBeenCalledWith(
+            'camp-1',
+            expect.objectContaining({
+              tipo: 'rolagem',
+              personagemId: 'p-1',
+              autorNome: 'Aldric',
+              rotulo: 'Teste de força',
+            }),
+          ),
+        );
+        await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+      });
+
+      it('token que é ficha minha oferece os combos salvos e rola com o rótulo do combo', async () => {
+        TOKENS_POR_CENA['cena-1'][0].refId = 'p-1';
+        getCombosAtaque.mockResolvedValue([{ id: 'c1', nome: 'Golpe Duplo', perfilDano: '2d8+5' }]);
+        getArts.mockResolvedValue([{ id: 'a1', nome: 'Chama', dados: '3d6 de fogo' }]);
+        try {
+          renderChat(null, '/campanhas/camp-1/grid');
+          await screen.findByRole('button', { name: /Aldric, coluna/ });
+          tocarToken(/Aldric, coluna/);
+          fireEvent.click(screen.getByRole('button', { name: 'Rolar…' }));
+          const dialogo = await screen.findByRole('dialog');
+          expect(await within(dialogo).findByText('Chama')).toBeInTheDocument();
+          await act(async () =>
+            fireEvent.click(within(dialogo).getByRole('button', { name: /Golpe Duplo/ })),
+          );
+          await waitFor(() =>
+            expect(addChatMensagem).toHaveBeenCalledWith(
+              'camp-1',
+              expect.objectContaining({ personagemId: 'p-1', rotulo: 'Ataque: Golpe Duplo' }),
+            ),
+          );
+        } finally {
+          delete TOKENS_POR_CENA['cena-1'][0].refId;
+        }
+      });
+
+      it('mostra o botão Área e posiciona um raio na cena (grava com meu uid)', async () => {
+        renderChat(null, '/campanhas/camp-1/grid');
+        await screen.findByRole('button', { name: /Aldric, coluna/ });
+        fireEvent.click(screen.getByRole('button', { name: 'Área' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Raio' }));
+        fireEvent.change(screen.getByLabelText('Tamanho (m)'), { target: { value: '3' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Posicionar no mapa' }));
+        const clique = { clientX: 200, clientY: 200, pointerId: 1, pointerType: 'mouse', button: 0 };
+        const viewport = screen.getByRole('application', { name: 'Grid da campanha' });
+        fireEvent.pointerDown(viewport, clique);
+        await act(async () => fireEvent.pointerUp(viewport, clique));
+        await waitFor(() =>
+          expect(addGridArea).toHaveBeenCalledWith(
+            'camp-1',
+            'cena-1',
+            expect.objectContaining({ uid: 'uid-jogador', forma: 'raio', metros: 3 }),
+          ),
+        );
+      });
+    });
+
+    describe('Fase 2: condições, recursos e sinais', () => {
+      const FICHA_ALDRIC = {
+        id: 'p-1',
+        status: { hp: { atual: 5 } },
+        statusMaximos: { hp: 10 },
+        condicoesAtivas: [{ condicaoId: 'c1', stack: 1 }],
+      };
+      let emitirPings;
+
+      beforeEach(() => {
+        getRmCampanha.mockResolvedValue({
+          id: 'camp-1',
+          nome: 'A Torre',
+          mestreId: 'uid-mestre',
+          universoId: 'univ-1',
+        });
+        getCondicoesPorUniverso.mockResolvedValue([
+          { id: 'c1', nome: 'Envenenado', linkImagem: 'https://ex.com/veneno.png' },
+        ]);
+        subscribeGridTokens.mockImplementation(
+          (_campanhaId, _cenaId, _opcoes, onChange) => {
+            onChange([{ ...ALDRIC, refId: 'p-1' }, OGRO]);
+            return vi.fn();
+          },
+        );
+        subscribePersonagem.mockImplementation((_id, onChange) => {
+          onChange(FICHA_ALDRIC);
+          return vi.fn();
+        });
+        subscribeGridPings.mockImplementation((_campanhaId, _cenaId, onChange) => {
+          emitirPings = onChange;
+          onChange([]);
+          return vi.fn();
+        });
+        setGridPing.mockResolvedValue();
+      });
+
+      it('catálogo de condições só é carregado na visão grid', async () => {
+        renderChat();
+        await screen.findByText('Bem-vindos à taverna.');
+        expect(getCondicoesPorUniverso).not.toHaveBeenCalled();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Grid' }));
+        await screen.findByRole('button', { name: /Aldric, coluna/ });
+        expect(getCondicoesPorUniverso).toHaveBeenCalledWith('univ-1');
+      });
+
+      it('token do jogador mostra a barra de PV e a condição da ficha ao vivo', async () => {
+        const { container } = renderChat(null, '/campanhas/camp-1/grid');
+        await screen.findByRole('button', { name: /Aldric, coluna/ });
+        expect(subscribePersonagem).toHaveBeenCalledWith(
+          'p-1',
+          expect.any(Function),
+          expect.any(Function),
+        );
+        const aldric = container.querySelector('[data-token-id="t1"]');
+        expect(aldric.querySelector('[data-barra="pv"] > span')).toHaveStyle({
+          width: '50%',
+        });
+        await waitFor(() =>
+          expect(aldric.querySelector('[data-condicao="c1"] img')).toHaveAttribute(
+            'src',
+            'https://ex.com/veneno.png',
+          ),
+        );
+      });
+
+      it('sinal ao vivo do mestre aparece com o nome; jogador não tem "Puxar vista"', async () => {
+        const { container } = renderChat(null, '/campanhas/camp-1/grid');
+        await screen.findByRole('button', { name: /Aldric, coluna/ });
+        expect(
+          screen.queryByRole('button', { name: 'Puxar vista' }),
+        ).not.toBeInTheDocument();
+
+        act(() =>
+          emitirPings([
+            {
+              uid: 'uid-mestre',
+              x: 40,
+              y: 40,
+              puxar: true,
+              nome: 'Mestre',
+              criadoEm: { seconds: 3, nanoseconds: 0 },
+            },
+          ]),
+        );
+        expect(container.querySelector('[data-ping="uid-mestre"]')).toHaveTextContent(
+          'Mestre',
+        );
+      });
+
+      it('Alt+clique no mapa grava o sinal com o nome de quem fala', async () => {
+        renderChat(null, '/campanhas/camp-1/grid');
+        await screen.findByRole('button', { name: /Aldric, coluna/ });
+        fireEvent.pointerDown(
+          screen.getByRole('application', { name: 'Grid da campanha' }),
+          {
+            clientX: 50,
+            clientY: 60,
+            pointerId: 1,
+            pointerType: 'mouse',
+            button: 0,
+            altKey: true,
+          },
+        );
+        expect(setGridPing).toHaveBeenCalledWith(
+          'camp-1',
+          'cena-1',
+          'uid-jogador',
+          expect.objectContaining({ puxar: false, nome: 'Aldric' }),
+        );
+      });
+    });
+
+    describe('Fase 3A: combate', () => {
+      const FICHA_ALDRIC = {
+        id: 'p-1',
+        uid: 'uid-jogador',
+        prontidaoAtual: 4,
+        prontidaoMaximaEfetiva: 30,
+        secundariosTotais: { prontidao: 30 },
+        estadoCombate: { ppAtual: 4, turno: 2, historicoAcoes: [] },
+      };
+      const COMBATE = {
+        ordem: [
+          { tokenId: 't1', iniciativa: 18, d20: 13, reacao: 5 },
+          { tokenId: 't2', iniciativa: 9, d20: 7, reacao: 2 },
+        ],
+        indice: 0,
+        rodada: 1,
+        inicioTurno: { col: 1, lin: 1 },
+        turnoEm: { seconds: 3, nanoseconds: 0 },
+      };
+      let emitirCombate;
+
+      beforeEach(() => {
+        subscribeGridTokens.mockImplementation(
+          (_campanhaId, _cenaId, _opcoes, onChange) => {
+            onChange([{ ...ALDRIC, refId: 'p-1' }, OGRO]);
+            return vi.fn();
+          },
+        );
+        subscribePersonagem.mockImplementation((_id, onChange) => {
+          onChange(FICHA_ALDRIC);
+          return vi.fn();
+        });
+        subscribeGridCombate.mockImplementation((_campanhaId, _cenaId, onChange) => {
+          emitirCombate = onChange;
+          onChange(COMBATE);
+          return vi.fn();
+        });
+        alterarGridCombate.mockResolvedValue(true);
+        updatePersonagem.mockResolvedValue({});
+      });
+
+      it('na minha vez: faixa, "Encerrar meu turno" passa a vez com a mensagem', async () => {
+        renderChat(null, '/campanhas/camp-1/grid');
+        const encerrar = await screen.findByRole('button', {
+          name: 'Encerrar meu turno',
+        });
+        expect(screen.getByText('Rodada 1')).toBeInTheDocument();
+        expect(subscribeGridCombate).toHaveBeenCalledWith(
+          'camp-1',
+          'cena-1',
+          expect.any(Function),
+          expect.any(Function),
+        );
+
+        fireEvent.click(encerrar);
+        await waitFor(() => expect(alterarGridCombate).toHaveBeenCalledTimes(1));
+        const [campanhaId, cenaId, calcular] = alterarGridCombate.mock.calls[0];
+        expect([campanhaId, cenaId]).toEqual(['camp-1', 'cena-1']);
+        expect(calcular(COMBATE)).toEqual({
+          patch: { indice: 1, rodada: 1, inicioTurno: { col: 4, lin: 1 } },
+          mudouTurno: true,
+          mensagem: expect.objectContaining({
+            tipo: 'combate',
+            autorNome: 'Aldric',
+            personagemId: 'p-1',
+            combate: {
+              evento: 'turno',
+              cenaId: 'cena-1',
+              rodada: 1,
+              nome: 'Ogro',
+              oculto: false,
+            },
+          }),
+        });
+      });
+
+      it('"Seu turno! Restaurar PP" restaura a ficha da vez e some', async () => {
+        renderChat(null, '/campanhas/camp-1/grid');
+        fireEvent.click(
+          await screen.findByRole('button', { name: 'Seu turno! Restaurar PP' }),
+        );
+        await waitFor(() =>
+          expect(updatePersonagem).toHaveBeenCalledWith('p-1', {
+            estadoCombate: expect.objectContaining({ ppAtual: 30, turno: 3 }),
+          }),
+        );
+        await waitFor(() =>
+          expect(
+            screen.queryByRole('button', { name: 'Seu turno! Restaurar PP' }),
+          ).not.toBeInTheDocument(),
+        );
+        // Turno novo (outra chave): o botão volta.
+        act(() => emitirCombate({ ...COMBATE, turnoEm: { seconds: 9, nanoseconds: 0 } }));
+        expect(
+          screen.getByRole('button', { name: 'Seu turno! Restaurar PP' }),
+        ).toBeInTheDocument();
+      });
+
+      it('na vez de um token alheio, nada de botões de turno', async () => {
+        subscribeGridCombate.mockImplementation((_campanhaId, _cenaId, onChange) => {
+          onChange({ ...COMBATE, indice: 1 });
+          return vi.fn();
+        });
+        renderChat(null, '/campanhas/camp-1/grid');
+        expect(await screen.findByText('Rodada 1')).toBeInTheDocument();
+        expect(
+          screen.queryByRole('button', { name: 'Encerrar meu turno' }),
+        ).not.toBeInTheDocument();
+        expect(
+          screen.queryByRole('button', { name: 'Seu turno! Restaurar PP' }),
+        ).not.toBeInTheDocument();
+        expect(
+          screen.queryByRole('button', { name: 'Próximo turno' }),
+        ).not.toBeInTheDocument();
+      });
+
+      it('"só na sua vez": fora da vez o jogador não move e vê o aviso', async () => {
+        subscribeGridCena.mockImplementation((_campanhaId, cenaId, onChange) => {
+          onChange({ id: cenaId, ...CENAS[cenaId], travamento: 'turno' });
+          return vi.fn();
+        });
+        subscribeGridCombate.mockImplementation((_campanhaId, _cenaId, onChange) => {
+          onChange({ ...COMBATE, indice: 1 });
+          return vi.fn();
+        });
+        const { container } = renderChat(null, '/campanhas/camp-1/grid');
+        fireEvent.keyDown(
+          await screen.findByRole('button', { name: /^Aldric, coluna/ }),
+          {
+            key: 'ArrowDown',
+          },
+        );
+        expect(moverGridToken).not.toHaveBeenCalled();
+        expect(container.querySelector('[data-travamento]')).toHaveTextContent(
+          'Movimento só na sua vez',
+        );
+      });
+    });
+
     it('celular: alterna Mapa | Chat (começa no mapa) e conta as mensagens novas', async () => {
       useIsMobile.mockReturnValue(true);
       let novasMensagens;
@@ -753,13 +1247,20 @@ describe('CampanhaChat', () => {
       expect(corpo).toHaveAttribute('data-aba', 'mapa');
       // Mapa | Chat substitui Chat|Grid e "Ocultar chat".
       expect(screen.queryByRole('button', { name: 'Grid' })).not.toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: 'Ocultar chat' })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: 'Ocultar chat' }),
+      ).not.toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Chat' })).toBeInTheDocument();
 
       act(() =>
         novasMensagens([
           ...MENSAGENS,
-          { ...MENSAGENS[0], id: 'm4', texto: 'Rolem iniciativa.', createdAt: new Date(Date.now() + 60000) },
+          {
+            ...MENSAGENS[0],
+            id: 'm4',
+            texto: 'Rolem iniciativa.',
+            createdAt: new Date(Date.now() + 60000),
+          },
         ]),
       );
       fireEvent.click(await screen.findByRole('button', { name: 'Chat, 1 novas' }));

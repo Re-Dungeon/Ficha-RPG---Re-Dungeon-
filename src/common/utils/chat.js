@@ -6,7 +6,13 @@
 export const CHAT_TEXTO_MAX = 2000;
 export const CHAT_URL_MAX = 2000;
 
-export const TIPOS_MENSAGEM = { TEXTO: 'texto', IMAGEM: 'imagem', ROLAGEM: 'rolagem', MACRO: 'macro' };
+export const TIPOS_MENSAGEM = {
+  TEXTO: 'texto',
+  IMAGEM: 'imagem',
+  ROLAGEM: 'rolagem',
+  MACRO: 'macro',
+  COMBATE: 'combate',
+};
 
 // Mensagem gerada por `enviar(texto)` de uma macro Lua — limite maior que o
 // do texto digitado (relatórios como o "dano_impacto" passam de 2000).
@@ -41,7 +47,12 @@ const EXTENSOES_IMAGEM = /\.(gif|png|jpe?g|webp)$/i;
 // Hosts que servem o arquivo de mídia direto mesmo sem extensão no caminho
 // (ex.: https://media.giphy.com/media/<id>/giphy.gif costuma ter, mas variantes
 // como `.../giphy.webp?cid=...` ou `i.giphy.com/<id>` às vezes não).
-const HOSTS_MIDIA_DIRETA = ['media.giphy.com', 'i.giphy.com', 'media.tenor.com', 'c.tenor.com'];
+const HOSTS_MIDIA_DIRETA = [
+  'media.giphy.com',
+  'i.giphy.com',
+  'media.tenor.com',
+  'c.tenor.com',
+];
 
 const ehHostMidiaDireta = hostname =>
   HOSTS_MIDIA_DIRETA.includes(hostname) || /^media\d+\.giphy\.com$/.test(hostname);
@@ -61,10 +72,14 @@ export const isUrlImagemValida = url => {
   }
   if (parsed.protocol !== 'https:') return false;
 
-  return EXTENSOES_IMAGEM.test(parsed.pathname) || ehHostMidiaDireta(parsed.hostname.toLowerCase());
+  return (
+    EXTENSOES_IMAGEM.test(parsed.pathname) ||
+    ehHostMidiaDireta(parsed.hostname.toLowerCase())
+  );
 };
 
-export const normalizarTextoMensagem = texto => (typeof texto === 'string' ? texto.trim() : '');
+export const normalizarTextoMensagem = texto =>
+  typeof texto === 'string' ? texto.trim() : '';
 
 export const isTextoMensagemValido = texto => {
   const normalizado = normalizarTextoMensagem(texto);
@@ -75,7 +90,9 @@ export const isTextoMensagemValido = texto => {
 // uma data: URL enorme) — a regra só aceita até CHAT_URL_MAX, então descarta
 // em vez de deixar a mensagem inteira ser recusada.
 export const normalizarAvatar = avatar =>
-  typeof avatar === 'string' && /^https?:\/\//i.test(avatar) && avatar.length <= CHAT_URL_MAX
+  typeof avatar === 'string' &&
+  /^https?:\/\//i.test(avatar) &&
+  avatar.length <= CHAT_URL_MAX
     ? avatar
     : null;
 
@@ -119,14 +136,29 @@ export const montarMensagemImagem = (autor, url) => ({
 // `rolagem` = resultado de rolarEspecificacao (common/utils/dados.js). Rolagens
 // secretas vão para chatSecretas/{uid}/rolagens (não para chatMensagens) e
 // levam `secreta: true` — a regra exige o campo só nesse caminho.
-export const montarMensagemRolagem = (autor, rolagem, secreta = false) => ({
-  ...camposAutor(autor),
-  tipo: TIPOS_MENSAGEM.ROLAGEM,
-  texto: '',
-  url: null,
-  rolagem,
-  ...(secreta ? { secreta: true } : {}),
-});
+//
+// `rotulo` (opcional, ex.: "Ataque: Golpe Duplo") diz de onde veio a rolagem —
+// vem do "Rolar…" de um token do grid; vazio é omitido.
+export const ROTULO_ROLAGEM_MAX = 100;
+
+export const normalizarRotulo = rotulo =>
+  String(rotulo ?? '')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .slice(0, ROTULO_ROLAGEM_MAX) || null;
+
+export const montarMensagemRolagem = (autor, rolagem, secreta = false, rotulo = null) => {
+  const rotuloNormalizado = normalizarRotulo(rotulo);
+  return {
+    ...camposAutor(autor),
+    tipo: TIPOS_MENSAGEM.ROLAGEM,
+    texto: '',
+    url: null,
+    rolagem,
+    ...(rotuloNormalizado ? { rotulo: rotuloNormalizado } : {}),
+    ...(secreta ? { secreta: true } : {}),
+  };
+};
 
 export const montarMensagemMacro = (autor, macroNome, texto) => ({
   ...camposAutor(autor),
@@ -135,6 +167,91 @@ export const montarMensagemMacro = (autor, macroNome, texto) => ({
   url: null,
   macroNome: String(macroNome ?? '').slice(0, MACRO_NOME_MAX) || 'macro',
 });
+
+// ── Mensagens de combate do grid (common/utils/gridCombate.js) ───────────
+// Cartão estreito no centro do chat: início (com a iniciativa), "Rodada N",
+// "Turno de X" e "Combate encerrado". `combate.cenaId` deixa a regra conferir
+// que o jogador só anuncia a troca de turno que ele mesmo gravou na mesma
+// escrita. Oculto: sem nome ("Turno de um oponente oculto").
+export const EVENTOS_COMBATE = {
+  INICIO: 'inicio',
+  RODADA: 'rodada',
+  TURNO: 'turno',
+  FIM: 'fim',
+};
+export const COMBATE_NOME_MAX = 100;
+export const COMBATE_INICIATIVA_MAX = 200;
+
+const EVENTOS_COM_TURNO = [
+  EVENTOS_COMBATE.INICIO,
+  EVENTOS_COMBATE.RODADA,
+  EVENTOS_COMBATE.TURNO,
+];
+
+// "Wesley 17 (d20 12 + Reação 5)"
+export const formatarIniciativa = ({ nome, total, d20, reacao }) =>
+  `${nome} ${total} (d20 ${d20} ${reacao < 0 ? '−' : '+'} Reação ${Math.abs(reacao)})`;
+
+export const montarMensagemCombate = (
+  autor,
+  { evento, cenaId, rodada = null, nome = null, oculto = false, iniciativa = null },
+) => ({
+  ...camposAutor(autor),
+  tipo: TIPOS_MENSAGEM.COMBATE,
+  texto: '',
+  url: null,
+  combate: {
+    evento,
+    cenaId,
+    ...(rodada ? { rodada } : {}),
+    ...(EVENTOS_COM_TURNO.includes(evento)
+      ? {
+          nome: nome ? String(nome).slice(0, COMBATE_NOME_MAX) : null,
+          oculto: Boolean(oculto || !nome),
+        }
+      : {}),
+    ...(iniciativa
+      ? {
+          iniciativa: iniciativa.slice(0, COMBATE_INICIATIVA_MAX).map(item => ({
+            nome: String(item.nome ?? '').slice(0, COMBATE_NOME_MAX),
+            total: item.total,
+            d20: item.d20,
+            reacao: item.reacao,
+          })),
+        }
+      : {}),
+  },
+});
+
+const turnoDe = combate =>
+  combate.nome ? `Turno de ${combate.nome}` : 'Turno de um oponente oculto';
+
+// `mensagem.combate` → { titulo, iniciativa: string[] | null, linhas: string[] }.
+export const descreverMensagemCombate = combate => {
+  const dados = combate ?? {};
+  switch (dados.evento) {
+    case EVENTOS_COMBATE.INICIO:
+      return {
+        titulo: 'Combate iniciado',
+        iniciativa: Array.isArray(dados.iniciativa)
+          ? dados.iniciativa.map(formatarIniciativa)
+          : null,
+        linhas: [`Rodada ${dados.rodada ?? 1} · ${turnoDe(dados)}`],
+      };
+    case EVENTOS_COMBATE.RODADA:
+      return {
+        titulo: `Rodada ${dados.rodada ?? ''}`.trim(),
+        iniciativa: null,
+        linhas: [turnoDe(dados)],
+      };
+    case EVENTOS_COMBATE.TURNO:
+      return { titulo: turnoDe(dados), iniciativa: null, linhas: [] };
+    case EVENTOS_COMBATE.FIM:
+      return { titulo: 'Combate encerrado', iniciativa: null, linhas: [] };
+    default:
+      return { titulo: 'Combate', iniciativa: null, linhas: [] };
+  }
+};
 
 const instanteDaMensagem = mensagem => {
   const { createdAt } = mensagem;
@@ -150,7 +267,11 @@ const instanteDaMensagem = mensagem => {
 export const mesclarMensagens = (publicas, secretas) =>
   [...publicas, ...secretas]
     .map((mensagem, indice) => ({ mensagem, indice }))
-    .sort((a, b) => instanteDaMensagem(a.mensagem) - instanteDaMensagem(b.mensagem) || a.indice - b.indice)
+    .sort(
+      (a, b) =>
+        instanteDaMensagem(a.mensagem) - instanteDaMensagem(b.mensagem) ||
+        a.indice - b.indice,
+    )
     .map(({ mensagem }) => mensagem);
 
 const paraDate = valor => {
@@ -172,7 +293,9 @@ export const formatarHorarioMensagem = (createdAt, agora = new Date()) => {
     data.getFullYear() === agora.getFullYear() &&
     data.getMonth() === agora.getMonth() &&
     data.getDate() === agora.getDate();
-  return mesmoDia ? hora : `${doisDigitos(data.getDate())}/${doisDigitos(data.getMonth() + 1)} ${hora}`;
+  return mesmoDia
+    ? hora
+    : `${doisDigitos(data.getDate())}/${doisDigitos(data.getMonth() + 1)} ${hora}`;
 };
 
 // Mesmo critério do Re:Master (pages/Jogadores/jogadoresUtils.js) para "jogador
@@ -185,10 +308,13 @@ const ehJogavel = personagem =>
 
 export const personagensNaCampanha = (personagens, campanhaId) =>
   personagens.filter(
-    personagem => ehJogavel(personagem) && (personagem.campanhas ?? []).includes(campanhaId),
+    personagem =>
+      ehJogavel(personagem) && (personagem.campanhas ?? []).includes(campanhaId),
   );
 
 export const campanhaIdsDosPersonagens = personagens =>
   Array.from(
-    new Set(personagens.filter(ehJogavel).flatMap(personagem => personagem.campanhas ?? [])),
+    new Set(
+      personagens.filter(ehJogavel).flatMap(personagem => personagem.campanhas ?? []),
+    ),
   );
