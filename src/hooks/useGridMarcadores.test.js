@@ -78,6 +78,7 @@ describe('useGridMarcadores', () => {
       id = await result.current.criarMarcador({
         col: 3,
         lin: 4,
+        tamanho: 3,
         icone: 'tesouro',
         cor: '#4caf50',
         titulo: ' Baú ',
@@ -88,6 +89,7 @@ describe('useGridMarcadores', () => {
     expect(addGridMarcador).toHaveBeenCalledWith('c1', 'cena-1', {
       col: 3,
       lin: 4,
+      tamanho: 3,
       icone: 'tesouro',
       cor: '#4caf50',
       titulo: 'Baú',
@@ -135,6 +137,7 @@ describe('useGridMarcadores', () => {
     expect(updateGridMarcador).toHaveBeenCalledWith('c1', 'cena-1', 'a', {
       col: 1,
       lin: 1,
+      tamanho: 1,
       icone: 'porta',
       cor: '#ffffff',
       titulo: 'Novo',
