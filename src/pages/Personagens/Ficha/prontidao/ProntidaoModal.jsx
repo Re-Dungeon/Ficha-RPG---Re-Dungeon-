@@ -20,9 +20,10 @@ import {
   calcularPpMaximo,
   calcularRecuperacaoPp,
   criarDetalhesAcao,
+  criarRegistroHistorico,
+  estadoDoNovoTurno,
   getTokensAcao,
   normalizarEstadoCombate,
-  normalizarTurnoTexto,
 } from './config';
 import { getItensInventario, removeItemInventario, updateItemInventario } from 'service/storage';
 import { QUALIDADE_META, obterEmojiTipo } from 'pages/Personagens/Ficha/inventario/constants';
@@ -400,19 +401,7 @@ const ProntidaoModal = ({ open, onClose, personagem, onSave, prontidaoValor, tip
     return modo ? calcularRecuperacaoStatus(personagem, modo.percentual) : null;
   }, [modoDescansoSelecionado, personagem]);
 
-  const registrarHistorico = (nome, valor, turno, restante, tipoHistorico = 'acao') => {
-    const randomSufixo = typeof Math.random === 'function'
-      ? (Math.random?.() ?? 0).toString(16).slice(2, 7)
-      : String(Date.now()).slice(-6);
-
-    return {
-      id: `${tipoHistorico}-${Date.now()}-${randomSufixo}`,
-      nome,
-      custo: valor,
-      turno: normalizarTurnoTexto(turno),
-      restante,
-    };
-  };
+  const registrarHistorico = criarRegistroHistorico;
 
   const acaoJaExecutadaNoTurno = acaoId => {
     if (!acaoId) {
@@ -954,23 +943,7 @@ const ProntidaoModal = ({ open, onClose, personagem, onSave, prontidaoValor, tip
   };
 
   const iniciarNovoTurno = async () => {
-    const proximoTurno = Number(estadoCombate.turno ?? 1) + 1;
-    const acaoExtraExpirada = estadoCombate.acaoExtra?.status === 'pendente'
-      ? { ...estadoCombate.acaoExtra, status: 'expirado', usosRestantes: 0 }
-      : estadoCombate.acaoExtra;
-
-    const proximoEstado = {
-      ...estadoCombate,
-      turno: proximoTurno,
-      ppAtual: ppMaximo,
-      recuperacaoUtilizada: false,
-      descansando: false,
-      acaoExtra: acaoExtraExpirada,
-      historicoAcoes: [
-        registrarHistorico('Prontidão restaurada', '0 PP', proximoTurno, ppMaximo, 'turno'),
-        ...estadoCombate.historicoAcoes,
-      ].slice(0, 12),
-    };
+    const proximoEstado = estadoDoNovoTurno(estadoCombate, ppMaximo);
 
     setConfirmarNovoTurno(false);
     setEstadoCombate(proximoEstado);

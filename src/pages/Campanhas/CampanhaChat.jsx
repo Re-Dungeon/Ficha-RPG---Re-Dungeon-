@@ -14,7 +14,13 @@ import GridOnIcon from '@mui/icons-material/GridOn';
 
 import { useAuth } from 'context/AuthContext';
 import { useSelecao } from 'context/selecaoContext';
-import { getCondicoesPorUniverso, getPersonagens, getRmCampanha } from 'service/storage';
+import {
+  getCondicoesPorUniverso,
+  getPersonagens,
+  getRmCampanha,
+  normalizarPersonagemCarregado,
+  updatePersonagem,
+} from 'service/storage';
 import { personagensNaCampanha } from 'common/utils/chat';
 import { contarNaoLidas, idDaUltimaMensagem } from 'common/utils/mesa';
 import { MOBILE } from 'common/styles/breakpoints';
@@ -25,6 +31,12 @@ import ChatSala from 'components/Chat/ChatSala';
 import GridMapa from 'components/Grid/GridMapa';
 import ErrorSnackbar from 'components/ErrorSnackbar/ErrorSnackbar';
 import { EmptyState } from 'pages/Personagens/styles';
+import {
+  calcularPpMaximo,
+  estadoDoNovoTurno,
+  normalizarEstadoCombate,
+  prontidaoMaximaDaFicha,
+} from 'pages/Personagens/Ficha/prontidao/config';
 
 import { ChatPageWrapper, MesaBarra, MesaChatPainel, MesaCorpo } from './styles';
 
@@ -60,6 +72,10 @@ const CampanhaChat = ({ visao = 'chat' }) => {
     universoId: null,
     lista: SEM_CONDICOES,
   });
+  // Turno (combate.chaveTurno) em que o "Seu turno! Restaurar PP" já foi
+  // usado — o botão some até o próximo turno. Recarregar a página durante o
+  // próprio turno mostra o botão de novo (limitação aceita).
+  const [ppRestauradoEm, setPpRestauradoEm] = useState(null);
 
   const isMestre = campanha?.mestreId === currentUser.uid;
   const universoId = campanha?.universoId ?? null;
@@ -162,7 +178,38 @@ const CampanhaChat = ({ visao = 'chat' }) => {
       catalogoCondicoes.universoId === universoId
         ? catalogoCondicoes.lista
         : SEM_CONDICOES,
+    // Mensagens de combate ("Encerrar meu turno") assinadas como no chat.
+    autorCombate: autor,
   });
+
+  // Combate: na vez de um token de jogador meu, "Seu turno! Restaurar PP"
+  // faz o mesmo que "Iniciar novo turno" da ficha (não é automático).
+  const { combate: combateGrid, tokenDaVez, meuTurno, fichas: fichasGrid } = grid;
+  const chaveTurno = combateGrid?.chaveTurno ?? null;
+  const fichaDaVez =
+    meuTurno && tokenDaVez?.tipo === 'jogador' && tokenDaVez.refId
+      ? (fichasGrid?.[tokenDaVez.refId] ?? null)
+      : null;
+  const podeRestaurarPp =
+    Boolean(fichaDaVez) &&
+    fichaDaVez.uid === currentUser.uid &&
+    Boolean(chaveTurno) &&
+    ppRestauradoEm !== chaveTurno;
+  const handleRestaurarPp = useCallback(async () => {
+    if (!fichaDaVez || !chaveTurno) return;
+    try {
+      const ficha = normalizarPersonagemCarregado(fichaDaVez);
+      const ppMaximo = calcularPpMaximo(prontidaoMaximaDaFicha(ficha));
+      await updatePersonagem(ficha.id, {
+        estadoCombate: estadoDoNovoTurno(normalizarEstadoCombate(ficha, ppMaximo), ppMaximo),
+      });
+      setPpRestauradoEm(chaveTurno);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Falha ao restaurar a Prontidão:', error);
+      setErro('Não foi possível restaurar a Prontidão.');
+    }
+  }, [chaveTurno, fichaDaVez]);
   if (ultimaVistaId === undefined && !chat.carregando) {
     setUltimaVistaId(idDaUltimaMensagem(chat.mensagens));
   }
@@ -328,6 +375,7 @@ const CampanhaChat = ({ visao = 'chat' }) => {
             config={grid.config}
             tokens={grid.tokens}
             podeMover={grid.podeMover}
+            ehMeu={grid.ehMeu}
             onMover={grid.mover}
             rastros={grid.rastrosAtivos}
             aviso={aviso}
@@ -335,6 +383,15 @@ const CampanhaChat = ({ visao = 'chat' }) => {
             onPing={grid.pingar}
             pings={grid.pings}
             detalhes={grid.detalhes}
+            combate={grid.combate}
+            travamento={grid.travamento}
+            acoesCombate={{
+              encerrarTurno: grid.meuTurno ? grid.encerrarTurno : undefined,
+              restaurarPp: podeRestaurarPp ? handleRestaurarPp : undefined,
+              ...(grid.veTudo
+                ? { anterior: () => grid.mudarTurno(-1), proximo: () => grid.mudarTurno(1) }
+                : {}),
+            }}
           />
           {(chatAberto || isMobile) && (
             <MesaChatPainel>

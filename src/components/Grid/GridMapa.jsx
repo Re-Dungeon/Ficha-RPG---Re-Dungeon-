@@ -1,4 +1,11 @@
-import React, { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import React, {
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import PropTypes from 'prop-types';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
@@ -7,6 +14,7 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import MyLocationIcon from '@mui/icons-material/MyLocation';
 import StraightenIcon from '@mui/icons-material/Straighten';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
@@ -15,12 +23,14 @@ import {
   PING_PRESSAO_MS,
   RASTRO_FADE_MS,
   TOQUE_DETALHE_MS,
+  TRAVAMENTOS,
   areaDaAura,
   avancarCaminho,
   celulaMaisProxima,
   celulaNoPonto,
   centralizarVista,
   centroDaCelula,
+  deslocamentoDoToken,
   dimensoesDoMundo,
   distanciaChebyshev,
   distanciaDoRastro,
@@ -35,13 +45,25 @@ import {
   posicaoEmPx,
   vistaFocadaNoToken,
 } from 'common/utils/grid';
+import {
+  CORES_ALCANCE,
+  distanciasDeMovimento,
+  faixaDaDistancia,
+  faixaDoCombate,
+  faixasDoAlcance,
+  origemDoAlcance,
+  quadradosDeMovimento,
+} from 'common/utils/gridCombate';
 
+import AlcanceMovimento from './AlcanceMovimento';
+import FaixaIniciativa from './FaixaIniciativa';
 import SinaisPing from './SinaisPing';
 import TokenDetalhe from './TokenDetalhe';
 import TokenEstado from './TokenEstado';
 import {
   AuraArea,
   COR_TIPO_TOKEN,
+  ChipTravamento,
   GridAviso,
   GridControles,
   GridGrade,
@@ -80,6 +102,15 @@ import {
 // (escolherReferencia), que o botão "Seguir token" acompanha. `token.aura`
 // pinta a área em volta do token. Tokens NÃO usam MUI Tooltip (o atraso de
 // toque dele brigaria com a pressão longa).
+// Fase 3A (combate): com `combate` (normalizarCombate), a faixa de iniciativa
+// no topo (FaixaIniciativa — tocar num retrato centraliza nele; botões de
+// `acoesCombate`, cada um só com a função), o anel pulsante no token da vez e,
+// ao arrastar/tocar o próprio token (mestre: o selecionado), o alcance de
+// movimento desde o início do turno (AlcanceMovimento) com o rótulo do
+// arraste em verde/amarelo/vermelho. `travamento` ≠ 'livre' mostra um aviso ao
+// jogador (quem decide se move é `podeMover`). `ehMeu` (padrão: podeMover)
+// diz quais tokens são da pessoa (referência da distância, "Seguir token",
+// foco do celular) mesmo com o movimento travado.
 
 const ZOOM_MIN = 0.1;
 const ZOOM_MAX = 4;
@@ -126,6 +157,11 @@ const distancia = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 const SEM_RASTROS = [];
 const SEM_PINGS = [];
 const SEM_DETALHES = {};
+const SEM_ACOES = {};
+const TEXTO_TRAVAMENTO = {
+  [TRAVAMENTOS.CONGELADO]: 'Movimento congelado pelo mestre',
+  [TRAVAMENTOS.TURNO]: 'Movimento só na sua vez',
+};
 // Folga (px de tela) entre o token e o cartão de detalhes.
 const FOLGA_DETALHE = 6;
 // Metade da largura máxima do cartão (centralizado no token): mantém ele
@@ -157,7 +193,12 @@ const GridMapa = ({
   onPing,
   pings = SEM_PINGS,
   detalhes = SEM_DETALHES,
+  combate = null,
+  acoesCombate = SEM_ACOES,
+  travamento = TRAVAMENTOS.LIVRE,
+  ehMeu: ehMeuToken,
 }) => {
+  const ehMeu = ehMeuToken ?? podeMover;
   const viewportRef = useRef(null);
   const idPadrao = `grade-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
   const [viewport, setViewport] = useState({ largura: 0, altura: 0 });
@@ -193,6 +234,9 @@ const GridMapa = ({
   // Cartão do token: sob o mouse (desktop) ou tocado (celular, por um tempo).
   const [hoverId, setHoverId] = useState(null);
   const [toqueId, setToqueId] = useState(null);
+  // Em combate, o jogador tocou o próprio token: mostra o alcance dele (até
+  // tocar no mapa vazio ou Esc). O mestre usa o selecionado.
+  const [alcanceId, setAlcanceId] = useState(null);
   // Timers da pressão longa e do cartão por toque.
   const temporizadores = useRef({ pressao: null, toque: null });
   // Celular (abaixo do `sm`): o mapa abre focado no primeiro token que a
@@ -201,7 +245,7 @@ const GridMapa = ({
   const celular = useMediaQuery('(max-width: 599.95px)');
   const [foco, setFoco] = useState(null);
   if (celular && !foco) {
-    const meuToken = tokens.find(token => podeMover(token));
+    const meuToken = tokens.find(token => ehMeu(token));
     if (meuToken) {
       setFoco({ col: meuToken.col, lin: meuToken.lin, tamanho: meuToken.tamanho ?? 1 });
     }
@@ -232,7 +276,7 @@ const GridMapa = ({
     selecionadoId: onSelecionar ? selecionadoId : null,
     ultimoId: referenciaId,
     mestre,
-    podeMover,
+    podeMover: ehMeu,
   });
   // Puxar vista e seguir token mexem na vista durante o render, com guarda
   // (como o foco do celular): cada sinal é aplicado uma vez, e o seguir só
@@ -331,6 +375,16 @@ const GridMapa = ({
     window.addEventListener('keydown', aoTeclar);
     return () => window.removeEventListener('keydown', aoTeclar);
   }, [reguaAtiva]);
+
+  // Esc esconde o alcance mostrado pelo toque.
+  useEffect(() => {
+    if (!alcanceId) return undefined;
+    const aoTeclar = event => {
+      if (event.key === 'Escape') setAlcanceId(null);
+    };
+    window.addEventListener('keydown', aoTeclar);
+    return () => window.removeEventListener('keydown', aoTeclar);
+  }, [alcanceId]);
 
   useEffect(() => {
     const timers = temporizadores.current;
@@ -550,7 +604,11 @@ const GridMapa = ({
     // Medição feita fica na tela (até o próximo toque ou Esc).
     if (atual.moveu || cancelado) return;
     setMedicao(null);
-    if (atual.token && podeMover(atual.token)) setReferenciaId(atual.token.id);
+    if (atual.token && ehMeu(atual.token)) setReferenciaId(atual.token.id);
+    // Em combate: tocar o próprio token mostra o alcance; o mapa vazio esconde.
+    if (combate && !onSelecionar) {
+      setAlcanceId(atual.token && podeMover(atual.token) ? atual.token.id : null);
+    }
     // Celular: tocar mostra o cartão do token (tocar fora fecha).
     if (event.pointerType !== 'mouse') mostrarToque(atual.token?.id ?? null);
     onSelecionar?.(atual.token);
@@ -602,6 +660,90 @@ const GridMapa = ({
         ),
       )
     : 0;
+
+  // ── Combate: faixa, alcance de movimento e rótulo do arraste ──
+  const faixa = combate ? faixaDoCombate(combate, tokens, { veTudo: mestre }) : null;
+  const idDoAlcance = onSelecionar ? selecionadoId : alcanceId;
+  const tokenDoAlcance =
+    tokenArrastado ?? (idDoAlcance ? (tokensPorId.get(idDoAlcance) ?? null) : null);
+  const alvoAlcance =
+    combate && tokenDoAlcance && podeMover(tokenDoAlcance) ? tokenDoAlcance : null;
+  const origemAlcance = alvoAlcance ? origemDoAlcance(alvoAlcance, combate) : null;
+  const quadradosAlcance = alvoAlcance
+    ? quadradosDeMovimento(
+        deslocamentoDoToken(alvoAlcance),
+        metrosPorQuadrado,
+        config.multiplicadorCorrida,
+      )
+    : null;
+  // Chave primitiva: o BFS só roda de novo quando origem/tamanho/alcance/mundo
+  // mudam (não a cada pointermove).
+  const chaveAlcance = alvoAlcance
+    ? [
+        origemAlcance.col,
+        origemAlcance.lin,
+        alvoAlcance.tamanho ?? 1,
+        quadradosAlcance.mover,
+        quadradosAlcance.correr,
+        mundo.colunas,
+        mundo.linhas,
+      ].join(',')
+    : null;
+  const alcance = useMemo(() => {
+    if (!chaveAlcance) return null;
+    const [col, lin, tamanho, mover, correr, colunas, linhas] = chaveAlcance
+      .split(',')
+      .map(Number);
+    const distancias = distanciasDeMovimento({
+      origem: { col, lin },
+      tamanho,
+      alcance: correr,
+      limites: { colunas, linhas },
+    });
+    return {
+      distancias,
+      faixas: faixasDoAlcance(distancias, { mover, correr, tamanho }),
+    };
+  }, [chaveAlcance]);
+  // Rótulo do arraste: em combate, a distância desde o início do turno na cor
+  // do alcance; fora, o total encadeado ao rastro (como todos verão).
+  let rotuloArraste = null;
+  if (caminhoArraste && alcance && alvoAlcance?.id === tokenArrastado.id) {
+    const destino = caminhoArraste[caminhoArraste.length - 1];
+    const passos =
+      alcance.distancias.get(`${destino.col},${destino.lin}`) ??
+      distanciaChebyshev(origemAlcance, destino);
+    if (caminhoArraste.length >= 2 || passos > 0) {
+      const faixaArraste = faixaDaDistancia(passos, quadradosAlcance);
+      rotuloArraste = {
+        texto: formatarDistancia(passos, metrosPorQuadrado),
+        cor: CORES_ALCANCE[faixaArraste],
+        faixa: faixaArraste,
+      };
+    }
+  } else if (quadradosArraste > 0) {
+    rotuloArraste = {
+      texto: formatarDistancia(quadradosArraste, metrosPorQuadrado),
+      cor: corDoToken(tokenArrastado),
+      faixa: null,
+    };
+  }
+
+  // Retrato da faixa: centraliza a vista no token (zoom mantido).
+  const centralizarNoToken = tokenId => {
+    const token = tokensPorId.get(tokenId);
+    if (!token || !viewport.largura) return;
+    setSeguindo(false);
+    setVistaManual({
+      ...centralizarVista(
+        vista,
+        centroDaCelula(config, token.col, token.lin, token.tamanho ?? 1),
+        viewport,
+      ),
+      chave: config.imagemUrl,
+      suave: true,
+    });
+  };
   // Traço e tracejado com espessura constante na tela (o mundo é escalado
   // por CSS; não dá para confiar em vector-effect no tracejado).
   const traco = 3 / vista.zoom;
@@ -783,6 +925,15 @@ const GridMapa = ({
           );
         })}
 
+        {alcance && (
+          <AlcanceMovimento
+            faixas={alcance.faixas}
+            config={config}
+            largura={mundo.largura}
+            altura={mundo.altura}
+          />
+        )}
+
         {(rastrosVisiveis.length > 0 || caminhoArraste || medicao) && (
           <GridRastros width={mundo.largura} height={mundo.altura} aria-hidden="true">
             {rastrosVisiveis.map(({ rastro, token }) => (
@@ -872,14 +1023,16 @@ const GridMapa = ({
             !(arraste.soltando && token.col === arraste.col && token.lin === arraste.lin);
           const posicao = emArraste ? arraste : posicaoEmPx(config, token.col, token.lin);
           const selecionado = token.id === selecionadoId;
+          const daVez = Boolean(combate) && combate.tokenDaVezId === token.id;
           const lado = tamanho * celula;
           return (
             <TokenWrapper
               key={token.id}
               data-token-id={token.id}
+              data-da-vez={daVez ? '' : undefined}
               role="button"
               tabIndex={0}
-              aria-label={`${token.nome}, coluna ${token.col + 1}, linha ${token.lin + 1}${token.oculto ? ', oculto' : ''}`}
+              aria-label={`${token.nome}, coluna ${token.col + 1}, linha ${token.lin + 1}${token.oculto ? ', oculto' : ''}${daVez ? ', turno atual' : ''}`}
               aria-pressed={onSelecionar ? selecionado : undefined}
               onKeyDown={event => handleTokenKeyDown(event, token)}
               onPointerEnter={event => {
@@ -893,6 +1046,7 @@ const GridMapa = ({
               $arrastando={emArraste && !arraste.soltando}
               $selecionado={selecionado}
               $oculto={Boolean(token.oculto)}
+              $daVez={daVez}
               // Folga em px (padding em % seria relativo à largura do mapa).
               style={{
                 left: posicao.x,
@@ -946,12 +1100,13 @@ const GridMapa = ({
           </RotuloDistancia>
         );
       })}
-      {quadradosArraste > 0 && (
+      {rotuloArraste && (
         <RotuloDistancia
-          $cor={corDoToken(tokenArrastado)}
+          $cor={rotuloArraste.cor}
+          data-faixa={rotuloArraste.faixa ?? undefined}
           style={posicaoDoRotulo(arraste.x, arraste.y, tokenArrastado.tamanho ?? 1)}
         >
-          {formatarDistancia(quadradosArraste, metrosPorQuadrado)}
+          {rotuloArraste.texto}
         </RotuloDistancia>
       )}
       {medicao && (
@@ -973,12 +1128,30 @@ const GridMapa = ({
           recursos={detalhes[cartao.token.id]?.recursos ?? null}
           condicoes={detalhes[cartao.token.id]?.condicoes ?? null}
           distancia={cartao.distancia}
+          pp={detalhes[cartao.token.id]?.pp ?? null}
           style={cartao.style}
         />
       )}
 
+      {faixa && (
+        <FaixaIniciativa
+          faixa={faixa}
+          acoes={acoesCombate}
+          onCentralizar={centralizarNoToken}
+        />
+      )}
+
       {(aviso || avisoImagem) && (
-        <GridAviso role="status">{aviso || avisoImagem}</GridAviso>
+        <GridAviso role="status" $abaixoDaFaixa={Boolean(faixa)}>
+          {aviso || avisoImagem}
+        </GridAviso>
+      )}
+
+      {!mestre && TEXTO_TRAVAMENTO[travamento] && (
+        <ChipTravamento data-travamento={travamento}>
+          <LockOutlinedIcon sx={{ fontSize: 14 }} />
+          {TEXTO_TRAVAMENTO[travamento]}
+        </ChipTravamento>
       )}
 
       <GridControles onPointerDown={event => event.stopPropagation()}>
@@ -1080,6 +1253,7 @@ GridMapa.propTypes = {
     corGrade: PropTypes.string.isRequired,
     opacidadeGrade: PropTypes.number.isRequired,
     metrosPorQuadrado: PropTypes.number,
+    multiplicadorCorrida: PropTypes.number,
   }).isRequired,
   tokens: PropTypes.arrayOf(
     PropTypes.shape({
@@ -1099,6 +1273,7 @@ GridMapa.propTypes = {
       mostrarRecursos: PropTypes.string,
       condicoes: PropTypes.arrayOf(PropTypes.string),
       aura: PropTypes.shape({ raio: PropTypes.number, cor: PropTypes.string }),
+      deslocamento: PropTypes.number,
     }),
   ).isRequired,
   podeMover: PropTypes.func.isRequired,
@@ -1137,13 +1312,41 @@ GridMapa.propTypes = {
       proprio: PropTypes.bool,
     }),
   ),
-  // { [tokenId]: { recursos, condicoes } } (useGridCampanha → detalhes).
+  // { [tokenId]: { recursos, condicoes, pp? } } (useGridCampanha → detalhes).
   detalhes: PropTypes.objectOf(
     PropTypes.shape({
       recursos: PropTypes.object,
       condicoes: PropTypes.arrayOf(PropTypes.object),
+      pp: recursoShape,
     }),
   ),
+  // Combate da cena (useGridCampanha → combate; normalizarCombate) ou null.
+  combate: PropTypes.shape({
+    ordem: PropTypes.arrayOf(
+      PropTypes.shape({
+        tokenId: PropTypes.string.isRequired,
+        iniciativa: PropTypes.number,
+        d20: PropTypes.number,
+        reacao: PropTypes.number,
+      }),
+    ).isRequired,
+    indice: PropTypes.number.isRequired,
+    rodada: PropTypes.number.isRequired,
+    inicioTurno: PropTypes.shape({ col: PropTypes.number, lin: PropTypes.number }),
+    chaveTurno: PropTypes.string,
+    tokenDaVezId: PropTypes.string,
+  }),
+  // Botões da faixa (cada um só aparece com a função; podem devolver Promise).
+  acoesCombate: PropTypes.shape({
+    anterior: PropTypes.func,
+    proximo: PropTypes.func,
+    encerrarTurno: PropTypes.func,
+    restaurarPp: PropTypes.func,
+  }),
+  // Travar movimento da cena (useGridCampanha → travamento).
+  travamento: PropTypes.oneOf(Object.values(TRAVAMENTOS)),
+  // Tokens da pessoa (padrão: podeMover) — referência e foco do celular.
+  ehMeu: PropTypes.func,
 };
 
 export default GridMapa;

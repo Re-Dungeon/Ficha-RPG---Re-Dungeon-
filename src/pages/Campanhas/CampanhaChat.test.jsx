@@ -7,6 +7,7 @@ import { useAuth } from 'context/AuthContext';
 import {
   addChatMensagem,
   addChatRolagemSecreta,
+  alterarGridCombate,
   getCondicoesPorUniverso,
   getPersonagens,
   getChatMacros,
@@ -18,11 +19,13 @@ import {
   setChatMembro,
   subscribeGridCena,
   subscribeGridCenaAtiva,
+  subscribeGridCombate,
   subscribeGridPings,
   subscribeGridTokens,
   subscribeChatMensagens,
   subscribeChatSecretasDoUsuario,
   subscribePersonagem,
+  updatePersonagem,
 } from 'service/storage';
 import { executarMacro as rodarMacroNoWorker } from 'common/lua/executarMacro';
 import useIsMobile from 'hooks/useIsMobile';
@@ -61,6 +64,10 @@ vi.mock('service/storage', () => ({
   subscribeGridPings: vi.fn(() => vi.fn()),
   setGridPing: vi.fn(() => Promise.resolve()),
   subscribePersonagem: vi.fn(() => vi.fn()),
+  subscribeGridCombate: vi.fn(() => vi.fn()),
+  alterarGridCombate: vi.fn(),
+  updatePersonagem: vi.fn(),
+  normalizarPersonagemCarregado: vi.fn(personagem => personagem),
 }));
 
 // O jsdom não tem PointerEvent (o grid lê pointerType/altKey dos eventos).
@@ -960,6 +967,136 @@ describe('CampanhaChat', () => {
           'cena-1',
           'uid-jogador',
           expect.objectContaining({ puxar: false, nome: 'Aldric' }),
+        );
+      });
+    });
+
+    describe('Fase 3A: combate', () => {
+      const FICHA_ALDRIC = {
+        id: 'p-1',
+        uid: 'uid-jogador',
+        prontidaoAtual: 4,
+        prontidaoMaximaEfetiva: 30,
+        secundariosTotais: { prontidao: 30 },
+        estadoCombate: { ppAtual: 4, turno: 2, historicoAcoes: [] },
+      };
+      const COMBATE = {
+        ordem: [
+          { tokenId: 't1', iniciativa: 18, d20: 13, reacao: 5 },
+          { tokenId: 't2', iniciativa: 9, d20: 7, reacao: 2 },
+        ],
+        indice: 0,
+        rodada: 1,
+        inicioTurno: { col: 1, lin: 1 },
+        turnoEm: { seconds: 3, nanoseconds: 0 },
+      };
+      let emitirCombate;
+
+      beforeEach(() => {
+        subscribeGridTokens.mockImplementation((_campanhaId, _cenaId, _opcoes, onChange) => {
+          onChange([{ ...ALDRIC, refId: 'p-1' }, OGRO]);
+          return vi.fn();
+        });
+        subscribePersonagem.mockImplementation((_id, onChange) => {
+          onChange(FICHA_ALDRIC);
+          return vi.fn();
+        });
+        subscribeGridCombate.mockImplementation((_campanhaId, _cenaId, onChange) => {
+          emitirCombate = onChange;
+          onChange(COMBATE);
+          return vi.fn();
+        });
+        alterarGridCombate.mockResolvedValue(true);
+        updatePersonagem.mockResolvedValue({});
+      });
+
+      it('na minha vez: faixa, "Encerrar meu turno" passa a vez com a mensagem', async () => {
+        renderChat(null, '/campanhas/camp-1/grid');
+        const encerrar = await screen.findByRole('button', { name: 'Encerrar meu turno' });
+        expect(screen.getByText('Rodada 1')).toBeInTheDocument();
+        expect(subscribeGridCombate).toHaveBeenCalledWith(
+          'camp-1',
+          'cena-1',
+          expect.any(Function),
+          expect.any(Function),
+        );
+
+        fireEvent.click(encerrar);
+        await waitFor(() => expect(alterarGridCombate).toHaveBeenCalledTimes(1));
+        const [campanhaId, cenaId, calcular] = alterarGridCombate.mock.calls[0];
+        expect([campanhaId, cenaId]).toEqual(['camp-1', 'cena-1']);
+        expect(calcular(COMBATE)).toEqual({
+          patch: { indice: 1, rodada: 1, inicioTurno: { col: 4, lin: 1 } },
+          mudouTurno: true,
+          mensagem: expect.objectContaining({
+            tipo: 'combate',
+            autorNome: 'Aldric',
+            personagemId: 'p-1',
+            combate: {
+              evento: 'turno',
+              cenaId: 'cena-1',
+              rodada: 1,
+              nome: 'Ogro',
+              oculto: false,
+            },
+          }),
+        });
+      });
+
+      it('"Seu turno! Restaurar PP" restaura a ficha da vez e some', async () => {
+        renderChat(null, '/campanhas/camp-1/grid');
+        fireEvent.click(
+          await screen.findByRole('button', { name: 'Seu turno! Restaurar PP' }),
+        );
+        await waitFor(() =>
+          expect(updatePersonagem).toHaveBeenCalledWith('p-1', {
+            estadoCombate: expect.objectContaining({ ppAtual: 30, turno: 3 }),
+          }),
+        );
+        await waitFor(() =>
+          expect(
+            screen.queryByRole('button', { name: 'Seu turno! Restaurar PP' }),
+          ).not.toBeInTheDocument(),
+        );
+        // Turno novo (outra chave): o botão volta.
+        act(() => emitirCombate({ ...COMBATE, turnoEm: { seconds: 9, nanoseconds: 0 } }));
+        expect(
+          screen.getByRole('button', { name: 'Seu turno! Restaurar PP' }),
+        ).toBeInTheDocument();
+      });
+
+      it('na vez de um token alheio, nada de botões de turno', async () => {
+        subscribeGridCombate.mockImplementation((_campanhaId, _cenaId, onChange) => {
+          onChange({ ...COMBATE, indice: 1 });
+          return vi.fn();
+        });
+        renderChat(null, '/campanhas/camp-1/grid');
+        expect(await screen.findByText('Rodada 1')).toBeInTheDocument();
+        expect(
+          screen.queryByRole('button', { name: 'Encerrar meu turno' }),
+        ).not.toBeInTheDocument();
+        expect(
+          screen.queryByRole('button', { name: 'Seu turno! Restaurar PP' }),
+        ).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Próximo turno' })).not.toBeInTheDocument();
+      });
+
+      it('"só na sua vez": fora da vez o jogador não move e vê o aviso', async () => {
+        subscribeGridCena.mockImplementation((_campanhaId, cenaId, onChange) => {
+          onChange({ id: cenaId, ...CENAS[cenaId], travamento: 'turno' });
+          return vi.fn();
+        });
+        subscribeGridCombate.mockImplementation((_campanhaId, _cenaId, onChange) => {
+          onChange({ ...COMBATE, indice: 1 });
+          return vi.fn();
+        });
+        const { container } = renderChat(null, '/campanhas/camp-1/grid');
+        fireEvent.keyDown(await screen.findByRole('button', { name: /^Aldric, coluna/ }), {
+          key: 'ArrowDown',
+        });
+        expect(moverGridToken).not.toHaveBeenCalled();
+        expect(container.querySelector('[data-travamento]')).toHaveTextContent(
+          'Movimento só na sua vez',
         );
       });
     });

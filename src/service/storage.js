@@ -996,6 +996,9 @@ export const removeChatMacro = (campanhaId, macroId) =>
 // O jogador também grava o próprio sinal no mapa (`gridCenas/{cenaId}/pings/
 // {uid}`, setGridPing) e lê ao vivo as fichas dos tokens de jogador
 // (subscribePersonagem, somente leitura) para as barras de PV/Energia/Fadiga.
+// Combate (Fase 3A): lê `gridCenas/{cenaId}/combate/atual` e só passa o
+// PRÓPRIO turno (alterarGridCombate — índice +1 e a mensagem de combate na
+// mesma transação); o `travamento` da cena limita quando ele move.
 const gridRef = campanhaId => doc(db, 'rmCampanhas', campanhaId, 'grid', 'atual');
 const gridCenaRef = (campanhaId, cenaId) =>
   doc(db, 'rmCampanhas', campanhaId, 'gridCenas', cenaId);
@@ -1097,6 +1100,44 @@ export const subscribePersonagem = (personagemId, onChange, onError) =>
       onChange(snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null),
     onError,
   );
+
+// Combate da cena (common/utils/gridCombate.js): existe enquanto há combate.
+const gridCombateRef = (campanhaId, cenaId) =>
+  doc(gridCenaRef(campanhaId, cenaId), 'combate', 'atual');
+
+// Chama `onChange(dados | null)`. serverTimestamps 'none' (padrão): a minha
+// troca de turno pendente chega com `turnoEm` null.
+export const subscribeGridCombate = (campanhaId, cenaId, onChange, onError) =>
+  onSnapshot(
+    gridCombateRef(campanhaId, cenaId),
+    snapshot => onChange(snapshot.exists() ? snapshot.data() : null),
+    onError,
+  );
+
+// Transação sobre o combate: `calcular(docAtual)` → null (nada a fazer) |
+// { patch, mensagem = null, mudouTurno = false }. `mudouTurno` grava
+// `turnoEm` (horário do servidor); `mensagem` (montarMensagemCombate) entra
+// no chat na mesma escrita — a regra confere isso para o jogador. Resolve
+// true se gravou.
+export const alterarGridCombate = (campanhaId, cenaId, calcular) =>
+  runTransaction(db, async transacao => {
+    const ref = gridCombateRef(campanhaId, cenaId);
+    const snapshot = await transacao.get(ref);
+    const resultado = snapshot.exists() ? calcular(snapshot.data()) : null;
+    if (!resultado) return false;
+    transacao.update(ref, {
+      ...resultado.patch,
+      ...(resultado.mudouTurno ? { turnoEm: serverTimestamp() } : {}),
+      updatedAt: serverTimestamp(),
+    });
+    if (resultado.mensagem) {
+      transacao.set(doc(collection(db, 'rmCampanhas', campanhaId, 'chatMensagens')), {
+        ...resultado.mensagem,
+        createdAt: serverTimestamp(),
+      });
+    }
+    return true;
+  });
 
 // ── Música da mesa — rmCampanhas/{id}/audio/atual ──────────────────────────
 // Estado da faixa do YouTube que toca para todos com a mesa aberta (modelo em
