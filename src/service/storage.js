@@ -991,7 +991,7 @@ export const removeChatMacro = (campanhaId, macroId) =>
 // que os jogadores veem. Tudo é do mestre, que gerencia no Re:Master. Daqui
 // o jogador só LÊ a cena ativa (mesmo acesso do chat: ponteiro
 // chatMembros/{uid}) e MOVE os tokens atribuídos a ele (`donos`) — a regra só
-// deixa mudar `col`/`lin`. Tokens `oculto` não chegam ao jogador: a consulta
+// deixa mudar `col`/`lin` e o rastro do movimento (`rastro`/`movidoEm`). Tokens `oculto` não chegam ao jogador: a consulta
 // dele PRECISA filtrar `oculto == false` (senão a regra recusa a lista).
 const gridRef = campanhaId => doc(db, 'rmCampanhas', campanhaId, 'grid', 'atual');
 const gridCenaRef = (campanhaId, cenaId) =>
@@ -1017,6 +1017,10 @@ export const subscribeGridCena = (campanhaId, cenaId, onChange, onError) =>
     onError,
   );
 
+// `docSnapshot.data()` com o padrão serverTimestamps 'none': numa escrita
+// local ainda pendente, `movidoEm` (serverTimestamp) chega null — é assim que
+// useGridCampanha distingue o próprio movimento pendente da confirmação. Não
+// troque por 'estimate': o valor muda na confirmação e o rastro piscaria 2x.
 export const subscribeGridTokens = (
   campanhaId,
   cenaId,
@@ -1035,10 +1039,14 @@ export const subscribeGridTokens = (
   );
 };
 
-export const moverGridToken = (campanhaId, cenaId, tokenId, col, lin) =>
+// Com `rastro` ([{col, lin}], common/utils/grid.js — montarRastro), grava
+// também o rastro do movimento e `movidoEm` (horário do servidor), que todos
+// os clientes usam para mostrar o caminho por alguns segundos.
+export const moverGridToken = (campanhaId, cenaId, tokenId, col, lin, rastro = null) =>
   updateDoc(doc(gridTokensRef(campanhaId, cenaId), tokenId), {
     col,
     lin,
+    ...(rastro ? { rastro, movidoEm: serverTimestamp() } : {}),
     updatedAt: serverTimestamp(),
   });
 

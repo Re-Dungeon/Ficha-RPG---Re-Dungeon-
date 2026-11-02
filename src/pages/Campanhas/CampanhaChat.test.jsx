@@ -646,6 +646,7 @@ describe('CampanhaChat', () => {
       ],
     };
     let mudarCenaAtiva;
+    let emitirTokens;
 
     beforeEach(() => {
       subscribeGridCenaAtiva.mockImplementation((_campanhaId, onChange) => {
@@ -658,10 +659,98 @@ describe('CampanhaChat', () => {
         return vi.fn();
       });
       subscribeGridTokens.mockImplementation((_campanhaId, cenaId, _opcoes, onChange) => {
+        emitirTokens = onChange;
         onChange(TOKENS_POR_CENA[cenaId] ?? []);
         return vi.fn();
       });
       moverGridToken.mockResolvedValue();
+    });
+
+    const [ALDRIC, OGRO] = TOKENS_POR_CENA['cena-1'];
+    const horario = segundos => ({ seconds: segundos, nanoseconds: 0 });
+
+    it('rastro de um movimento ao vivo aparece com a distância e some em 10 s', async () => {
+      renderChat(null, '/campanhas/camp-1/grid');
+      await screen.findByRole('button', { name: /Aldric, coluna/ });
+
+      // Timers falsos só depois da carga (findBy usa timers de verdade).
+      vi.useFakeTimers();
+      try {
+        act(() =>
+          emitirTokens([
+            ALDRIC,
+            {
+              ...OGRO,
+              col: 7,
+              movidoEm: horario(5),
+              rastro: [
+                { col: 4, lin: 1 },
+                { col: 7, lin: 1 },
+              ],
+            },
+          ]),
+        );
+        expect(screen.getByText('3 q · 4,5 m')).toBeInTheDocument();
+
+        act(() => vi.advanceTimersByTime(10000));
+        expect(screen.queryByText('3 q · 4,5 m')).not.toBeInTheDocument();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('movimento antigo (já na carga inicial) não mostra rastro', async () => {
+      subscribeGridTokens.mockImplementation((_campanhaId, _cena, _opcoes, onChange) => {
+        onChange([
+          {
+            ...ALDRIC,
+            movidoEm: horario(1),
+            rastro: [
+              { col: 1, lin: 4 },
+              { col: 1, lin: 1 },
+            ],
+          },
+          OGRO,
+        ]);
+        return vi.fn();
+      });
+      renderChat(null, '/campanhas/camp-1/grid');
+      await screen.findByRole('button', { name: /Aldric, coluna/ });
+      expect(screen.queryByText(/ q · /)).not.toBeInTheDocument();
+    });
+
+    it('meu movimento mostra o rastro na hora e a confirmação não duplica', async () => {
+      renderChat(null, '/campanhas/camp-1/grid');
+      fireEvent.keyDown(await screen.findByRole('button', { name: /Aldric, coluna/ }), {
+        key: 'ArrowDown',
+      });
+      expect(await screen.findByText('1 q · 1,5 m')).toBeInTheDocument();
+
+      const rastro = [
+        { col: 1, lin: 1 },
+        { col: 1, lin: 2 },
+      ];
+      // Snapshot local (escrita pendente) e depois o confirmado pelo servidor.
+      act(() => emitirTokens([{ ...ALDRIC, lin: 2, rastro, movidoEm: null }, OGRO]));
+      act(() =>
+        emitirTokens([{ ...ALDRIC, lin: 2, rastro, movidoEm: horario(9) }, OGRO]),
+      );
+      expect(screen.getAllByText('1 q · 1,5 m')).toHaveLength(1);
+    });
+
+    it('regra ainda sem rastro: move só col/lin, sem erro', async () => {
+      moverGridToken.mockRejectedValueOnce(
+        Object.assign(new Error('negado'), { code: 'permission-denied' }),
+      );
+      renderChat(null, '/campanhas/camp-1/grid');
+      fireEvent.keyDown(await screen.findByRole('button', { name: /Aldric, coluna/ }), {
+        key: 'ArrowDown',
+      });
+
+      await waitFor(() => expect(moverGridToken).toHaveBeenCalledTimes(2));
+      expect(moverGridToken).toHaveBeenLastCalledWith('camp-1', 'cena-1', 't1', 1, 2);
+      expect(screen.queryByText(/Não foi possível mover/)).not.toBeInTheDocument();
+      expect(screen.getByText('1 q · 1,5 m')).toBeInTheDocument();
     });
 
     it('jogador entra como membro, vê a cena ativa (tokens visíveis) e o chat ao lado', async () => {
@@ -690,7 +779,10 @@ describe('CampanhaChat', () => {
         key: 'ArrowDown',
       });
       await waitFor(() =>
-        expect(moverGridToken).toHaveBeenCalledWith('camp-1', 'cena-1', 't1', 1, 2),
+        expect(moverGridToken).toHaveBeenCalledWith('camp-1', 'cena-1', 't1', 1, 2, [
+          { col: 1, lin: 1 },
+          { col: 1, lin: 2 },
+        ]),
       );
 
       fireEvent.keyDown(screen.getByRole('button', { name: /Ogro/ }), {

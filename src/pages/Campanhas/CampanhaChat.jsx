@@ -295,6 +295,7 @@ const CampanhaChat = ({ visao = 'chat' }) => {
             tokens={grid.tokens}
             podeMover={grid.podeMover}
             onMover={grid.mover}
+            rastros={grid.rastrosAtivos}
             aviso={aviso}
           />
           {(chatAberto || isMobile) && (
