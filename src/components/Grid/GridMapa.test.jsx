@@ -1,6 +1,6 @@
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 
 import { GRID_CONFIG_PADRAO } from 'common/utils/grid';
 import GridMapa from './GridMapa';
@@ -604,6 +604,97 @@ describe('GridMapa — sinais, estado dos tokens, auras e seguir', () => {
 
     fireEvent.pointerOut(goblin, { pointerType: 'mouse' });
     expect(container.querySelector('[data-detalhe]')).toBeNull();
+  });
+
+  describe('cartão editável do dono', () => {
+    const detalhes = {
+      t1: {
+        recursos: {
+          pv: { atual: 5, max: 10 },
+          energia: { atual: 0, max: 4 },
+          fadiga: null,
+          numeros: true,
+        },
+        condicoes: [],
+      },
+      t2: {
+        recursos: { pv: { atual: 3, max: 10 }, energia: null, fadiga: null, numeros: true },
+        condicoes: [],
+      },
+    };
+    const editavel = props =>
+      renderMapa({
+        detalhes,
+        podeEditarRecursos: token => token.id === 't1',
+        onAlterarRecurso: vi.fn(() => Promise.resolve()),
+        ...props,
+      });
+
+    it('+ e digitar chamam onAlterarRecurso com o valor limitado a 0..max', () => {
+      const onAlterarRecurso = vi.fn(() => Promise.resolve());
+      const { container } = editavel({ onAlterarRecurso });
+      fireEvent.pointerOver(screen.getByRole('button', { name: /Wesley/ }), {
+        pointerType: 'mouse',
+      });
+      const cartao = container.querySelector('[data-detalhe]');
+      fireEvent.click(within(cartao).getByRole('button', { name: 'Aumentar PV' }));
+      expect(onAlterarRecurso).toHaveBeenLastCalledWith(
+        expect.objectContaining({ id: 't1' }),
+        'pv',
+        6,
+      );
+      expect(
+        within(cartao).getByRole('button', { name: 'Diminuir Energia' }),
+      ).toBeDisabled();
+      const campo = within(cartao).getByLabelText('Energia atual');
+      fireEvent.change(campo, { target: { value: '40' } });
+      fireEvent.blur(campo);
+      expect(onAlterarRecurso).toHaveBeenLastCalledWith(
+        expect.objectContaining({ id: 't1' }),
+        'energia',
+        4,
+      );
+    });
+
+    it('cartão de outro token ou sem as props não é editável', () => {
+      const { container, unmount } = editavel();
+      fireEvent.pointerOver(screen.getByRole('button', { name: /Goblin/ }), {
+        pointerType: 'mouse',
+      });
+      expect(container.querySelector('[data-detalhe]')).toHaveTextContent('PV 3/10');
+      expect(container.querySelector('[data-recurso]')).toBeNull();
+      unmount();
+
+      const sem = renderMapa({ detalhes });
+      fireEvent.pointerOver(screen.getByRole('button', { name: /Wesley/ }), {
+        pointerType: 'mouse',
+      });
+      expect(sem.container.querySelector('[data-detalhe]')).toHaveTextContent('PV 5/10');
+      expect(sem.container.querySelector('[data-recurso]')).toBeNull();
+    });
+
+    it('fica aberto com o mouse no cartão e o toque o fixa (sem sumir em 3 s)', () => {
+      vi.useFakeTimers();
+      const { container } = editavel();
+      const wesley = screen.getByRole('button', { name: /Wesley/ });
+      fireEvent.pointerOver(wesley, { pointerType: 'mouse' });
+      fireEvent.pointerOut(wesley, { pointerType: 'mouse' });
+      fireEvent.pointerOver(container.querySelector('[data-detalhe]'), {
+        pointerType: 'mouse',
+      });
+      act(() => vi.advanceTimersByTime(1000));
+      expect(container.querySelector('[data-detalhe]')).not.toBeNull();
+      fireEvent.pointerOut(container.querySelector('[data-detalhe]'), {
+        pointerType: 'mouse',
+      });
+      act(() => vi.advanceTimersByTime(1000));
+      expect(container.querySelector('[data-detalhe]')).toBeNull();
+
+      fireEvent.pointerDown(wesley, ponteiro(125, 175, { pointerType: 'touch' }));
+      fireEvent.pointerUp(viewportDe(), ponteiro(125, 175, { pointerType: 'touch' }));
+      act(() => vi.advanceTimersByTime(10000));
+      expect(container.querySelector('[data-recurso="pv"]')).not.toBeNull();
+    });
   });
 
   it('toque num token mostra o cartão por 3 s', () => {

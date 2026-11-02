@@ -28,6 +28,7 @@ import {
   subscribeChatMensagens,
   subscribeChatSecretasDoUsuario,
   subscribePersonagem,
+  atualizarRecursoAtualPersonagem,
   updatePersonagem,
 } from 'service/storage';
 import { executarMacro as rodarMacroNoWorker } from 'common/lua/executarMacro';
@@ -67,6 +68,7 @@ vi.mock('service/storage', () => ({
   subscribeGridPings: vi.fn(() => vi.fn()),
   setGridPing: vi.fn(() => Promise.resolve()),
   subscribePersonagem: vi.fn(() => vi.fn()),
+  atualizarRecursoAtualPersonagem: vi.fn(() => Promise.resolve()),
   subscribeGridCombate: vi.fn(() => vi.fn()),
   alterarGridCombate: vi.fn(),
   subscribeGridCamadas: vi.fn(() => () => {}),
@@ -1044,6 +1046,33 @@ describe('CampanhaChat', () => {
             'https://ex.com/veneno.png',
           ),
         );
+      });
+
+      it('edita o PV atual no cartão do próprio token e grava na ficha certa; o Ogro não edita', async () => {
+        const { container } = renderChat(null, '/campanhas/camp-1/grid');
+        const aldric = await screen.findByRole('button', { name: /Aldric, coluna/ });
+        await waitFor(() => expect(subscribePersonagem).toHaveBeenCalled());
+
+        fireEvent.pointerOver(aldric, { pointerType: 'mouse' });
+        const cartao = container.querySelector('[data-detalhe]');
+        expect(within(cartao).getByLabelText('PV atual')).toHaveValue('5');
+        fireEvent.click(within(cartao).getByRole('button', { name: 'Aumentar PV' }));
+        await waitFor(() =>
+          expect(atualizarRecursoAtualPersonagem).toHaveBeenCalledWith('p-1', 'pv', 6),
+        );
+
+        const campo = within(cartao).getByLabelText('PV atual');
+        fireEvent.change(campo, { target: { value: '99' } });
+        fireEvent.keyDown(campo, { key: 'Enter' });
+        await waitFor(() =>
+          expect(atualizarRecursoAtualPersonagem).toHaveBeenLastCalledWith('p-1', 'pv', 10),
+        );
+
+        fireEvent.pointerOut(aldric, { pointerType: 'mouse' });
+        fireEvent.pointerOver(screen.getByRole('button', { name: /Ogro/ }), {
+          pointerType: 'mouse',
+        });
+        expect(container.querySelector('[data-recurso]')).toBeNull();
       });
 
       it('sinal ao vivo do mestre aparece com o nome; jogador não tem "Puxar vista"', async () => {

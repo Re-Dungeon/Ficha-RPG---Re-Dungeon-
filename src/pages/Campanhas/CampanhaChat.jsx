@@ -15,6 +15,7 @@ import GridOnIcon from '@mui/icons-material/GridOn';
 import { useAuth } from 'context/AuthContext';
 import { useSelecao } from 'context/selecaoContext';
 import {
+  atualizarRecursoAtualPersonagem,
   getCondicoesPorUniverso,
   getPersonagens,
   getRmCampanha,
@@ -207,6 +208,23 @@ const CampanhaChat = ({ visao = 'chat' }) => {
     token => grid.ehMeu(token) && Boolean(autorDoTokenRolado(token)),
     [grid, autorDoTokenRolado],
   );
+  // Edição de PV/Energia/Fadiga atuais no cartão do próprio token de jogador
+  // (ficha do usuário; as barras de todos atualizam pelo listener das fichas).
+  const podeEditarRecursos = useCallback(
+    token =>
+      token.tipo === 'jogador' &&
+      Boolean(token.refId) &&
+      meusPersonagens.some(p => p.id === token.refId),
+    [meusPersonagens],
+  );
+  const handleAlterarRecurso = useCallback(async (token, recurso, valor) => {
+    try {
+      await atualizarRecursoAtualPersonagem(token.refId, recurso, valor);
+    } catch (error) {
+      setErro('Não foi possível atualizar o recurso do personagem.');
+      throw error;
+    }
+  }, []);
   const fichaDoTokenRolando = tokenRolando?.refId
     ? (meusPersonagens.find(p => p.id === tokenRolando.refId) ?? null)
     : null;
@@ -437,6 +455,8 @@ const CampanhaChat = ({ visao = 'chat' }) => {
             podeEditarArea={area => podeEditarArea(area, currentUser.uid, grid.veTudo)}
             corAreaPadrao={corDoPing(currentUser.uid, campanha?.mestreId ?? null)}
             podeRolarToken={podeRolarToken}
+            podeEditarRecursos={podeEditarRecursos}
+            onAlterarRecurso={handleAlterarRecurso}
             onRolarToken={setTokenRolando}
             acoesCombate={{
               encerrarTurno: grid.meuTurno ? grid.encerrarTurno : undefined,

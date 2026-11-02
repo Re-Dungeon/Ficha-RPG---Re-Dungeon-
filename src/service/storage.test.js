@@ -28,6 +28,7 @@ vi.mock('firebase/firestore', async () => {
 });
 
 import {
+  atualizarRecursoAtualPersonagem,
   consumirRecursosPersonagem,
   getBeneficiosPorUniverso,
   getOrigensPorUniverso,
@@ -217,5 +218,57 @@ describe('combat persistence compatibility', () => {
         historicoAcoes: payload.estadoCombate.historicoAcoes,
       }),
     );
+  });
+});
+
+describe('atualizarRecursoAtualPersonagem', () => {
+  const executar = async (dados, recurso, valor) => {
+    const update = vi.fn();
+    vi.mocked(runTransaction).mockImplementationOnce(async (_db, callback) =>
+      callback({
+        get: vi.fn().mockResolvedValue({ exists: () => true, data: () => dados }),
+        update,
+      }),
+    );
+    const gravado = await atualizarRecursoAtualPersonagem('p1', recurso, valor);
+    return { gravado, update };
+  };
+
+  it('grava só status.hp.atual por caminho pontilhado, limitado ao máximo', async () => {
+    const { gravado, update } = await executar(
+      { status: { hp: { atual: 5, base: 3 } }, statusMaximos: { hp: 20 } },
+      'pv',
+      99,
+    );
+    expect(gravado).toBe(20);
+    const alteracoes = update.mock.calls[0][1];
+    expect(alteracoes['status.hp.atual']).toBe(20);
+    expect(Object.keys(alteracoes).sort()).toEqual(['status.hp.atual', 'updatedAt']);
+  });
+
+  it('respeita o legado: só saude grava status.saude.atual; com os dois, grava os dois', async () => {
+    let r = await executar(
+      { status: { saude: { atual: 5 } }, statusMaximos: { saude: { maximo: 8 } } },
+      'pv',
+      3,
+    );
+    expect(r.update.mock.calls[0][1]['status.saude.atual']).toBe(3);
+    expect(r.update.mock.calls[0][1]['status.hp.atual']).toBeUndefined();
+    r = await executar(
+      { status: { hp: { atual: 5 }, saude: { atual: 5 } }, statusMaximos: { hp: 8 } },
+      'pv',
+      -4,
+    );
+    expect(r.update.mock.calls[0][1]).toMatchObject({
+      'status.hp.atual': 0,
+      'status.saude.atual': 0,
+    });
+  });
+
+  it('serve energia e fadiga e rejeita recurso ou valor inválido', async () => {
+    const r = await executar({ status: { fadiga: { atual: 2, maximo: 10 } } }, 'fadiga', 6);
+    expect(r.update.mock.calls[0][1]['status.fadiga.atual']).toBe(6);
+    await expect(atualizarRecursoAtualPersonagem('p1', 'ouro', 1)).rejects.toThrow();
+    await expect(atualizarRecursoAtualPersonagem('p1', 'pv', 'x')).rejects.toThrow();
   });
 });

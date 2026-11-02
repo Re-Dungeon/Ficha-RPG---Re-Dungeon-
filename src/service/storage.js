@@ -188,6 +188,57 @@ export const updatePersonagem = async (id, data) => {
 
 export const removePersonagem = id => removeFirestoreItem('personagens', id);
 
+// Grava SÓ o valor atual de PV/Energia/Fadiga (edição pelo token do grid),
+// por caminho pontilhado (`status.hp.atual`): base/extra/bônus e o resto da
+// ficha ficam intactos. Respeita o legado (`saude` = nome antigo de `hp`; se a
+// ficha tem os dois, grava os dois). Limita a 0..máximo da ficha e devolve o
+// valor gravado.
+const CHAVES_STATUS_RECURSO = { pv: ['hp', 'saude'], energia: ['energia'], fadiga: ['fadiga'] };
+
+export const atualizarRecursoAtualPersonagem = async (personagemId, recurso, valor) => {
+  const chaves = CHAVES_STATUS_RECURSO[recurso];
+  const numero = Math.round(Number(valor));
+  if (!personagemId || !chaves || !Number.isFinite(numero)) {
+    throw new Error('Recurso inválido para atualizar.');
+  }
+
+  return runTransaction(db, async transaction => {
+    const ref = doc(db, 'personagens', personagemId);
+    const snapshot = await transaction.get(ref);
+    if (!snapshot.exists()) {
+      throw new Error('Personagem não encontrado para atualizar os recursos.');
+    }
+
+    const dados = snapshot.data() ?? {};
+    const status = dados.status ?? {};
+    const maximos = dados.statusMaximos ?? {};
+    let existentes = chaves.filter(chave => status[chave] && typeof status[chave] === 'object');
+    if (!existentes.length) existentes = [chaves[0]];
+
+    const maximoDe = valorMax =>
+      valorMax && typeof valorMax === 'object' ? valorMax.maximo : valorMax;
+    let maximo = NaN;
+    for (const chave of chaves) {
+      const candidato = Number(maximoDe(maximos[chave]) ?? status[chave]?.maximo);
+      if (Number.isFinite(candidato)) {
+        maximo = candidato;
+        break;
+      }
+    }
+    const atual = Math.min(
+      Math.max(numero, 0),
+      Number.isFinite(maximo) ? Math.max(maximo, 0) : numero,
+    );
+
+    const alteracoes = { updatedAt: serverTimestamp() };
+    existentes.forEach(chave => {
+      alteracoes[`status.${chave}.atual`] = atual;
+    });
+    transaction.update(ref, alteracoes);
+    return atual;
+  });
+};
+
 export const consumirRecursosPersonagem = async (personagemId, recursos = {}) => {
   const gastoEnergia = Math.max(0, Number(recursos?.energia ?? 0) || 0);
   const gastoFadiga = Math.max(0, Number(recursos?.fadiga ?? 0) || 0);
