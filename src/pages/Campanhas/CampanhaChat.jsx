@@ -14,7 +14,7 @@ import GridOnIcon from '@mui/icons-material/GridOn';
 
 import { useAuth } from 'context/AuthContext';
 import { useSelecao } from 'context/selecaoContext';
-import { getPersonagens, getRmCampanha } from 'service/storage';
+import { getCondicoesPorUniverso, getPersonagens, getRmCampanha } from 'service/storage';
 import { personagensNaCampanha } from 'common/utils/chat';
 import { contarNaoLidas, idDaUltimaMensagem } from 'common/utils/mesa';
 import { MOBILE } from 'common/styles/breakpoints';
@@ -29,6 +29,7 @@ import { EmptyState } from 'pages/Personagens/styles';
 import { ChatPageWrapper, MesaBarra, MesaChatPainel, MesaCorpo } from './styles';
 
 const FALAR_COMO_MESTRE = '__mestre__';
+const SEM_CONDICOES = [];
 
 // Mesa da campanha: `visao` "chat" (/campanhas/:id/chat) ou "grid"
 // (/campanhas/:id/grid — mapa tático com o chat num painel lateral). As duas
@@ -53,8 +54,15 @@ const CampanhaChat = ({ visao = 'chat' }) => {
   const isMobile = useIsMobile();
   const [abaMesa, setAbaMesa] = useState('mapa');
   const [ultimaVistaId, setUltimaVistaId] = useState(undefined);
+  // Catálogo de condições do universo (ícones/nomes das condições nos tokens
+  // do grid), guardado com o universo a que pertence.
+  const [catalogoCondicoes, setCatalogoCondicoes] = useState({
+    universoId: null,
+    lista: SEM_CONDICOES,
+  });
 
   const isMestre = campanha?.mestreId === currentUser.uid;
+  const universoId = campanha?.universoId ?? null;
   const temAcesso = isMestre || meusPersonagens.length > 0;
 
   useEffect(() => {
@@ -94,6 +102,25 @@ const CampanhaChat = ({ visao = 'chat' }) => {
     if (personagem) selecionarPersonagem(personagem);
   }, [falandoComo, meusPersonagens, selecionarPersonagem]);
 
+  // Só a visão grid usa o catálogo. Falha não é erro para o usuário: os
+  // tokens só ficam sem os ícones de condição.
+  useEffect(() => {
+    if (visao !== 'grid' || !universoId) return undefined;
+    let isMounted = true;
+    getCondicoesPorUniverso(universoId)
+      .then(lista => {
+        if (isMounted)
+          setCatalogoCondicoes({ universoId, lista: lista ?? SEM_CONDICOES });
+      })
+      .catch(error => {
+        // eslint-disable-next-line no-console
+        console.error('Falha ao carregar o catálogo de condições:', error);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, [universoId, visao]);
+
   const handleVoltar = useCallback(() => navigate('/campanhas'), [navigate]);
 
   useEffect(() => {
@@ -128,6 +155,13 @@ const CampanhaChat = ({ visao = 'chat' }) => {
     personagemId: autor?.personagemId ?? null,
     isMestre: Boolean(autor?.isMestre),
     ehMestreDaCampanha: isMestre,
+    // Nome no meu sinal do mapa (quem estou sendo no "Falando como").
+    nome: autor?.autorNome ?? null,
+    mestreId: campanha?.mestreId ?? null,
+    catalogoCondicoes:
+      catalogoCondicoes.universoId === universoId
+        ? catalogoCondicoes.lista
+        : SEM_CONDICOES,
   });
   if (ultimaVistaId === undefined && !chat.carregando) {
     setUltimaVistaId(idDaUltimaMensagem(chat.mensagens));
@@ -297,6 +331,10 @@ const CampanhaChat = ({ visao = 'chat' }) => {
             onMover={grid.mover}
             rastros={grid.rastrosAtivos}
             aviso={aviso}
+            mestre={grid.veTudo}
+            onPing={grid.pingar}
+            pings={grid.pings}
+            detalhes={grid.detalhes}
           />
           {(chatAberto || isMobile) && (
             <MesaChatPainel>

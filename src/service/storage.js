@@ -993,6 +993,9 @@ export const removeChatMacro = (campanhaId, macroId) =>
 // chatMembros/{uid}) e MOVE os tokens atribuídos a ele (`donos`) — a regra só
 // deixa mudar `col`/`lin` e o rastro do movimento (`rastro`/`movidoEm`). Tokens `oculto` não chegam ao jogador: a consulta
 // dele PRECISA filtrar `oculto == false` (senão a regra recusa a lista).
+// O jogador também grava o próprio sinal no mapa (`gridCenas/{cenaId}/pings/
+// {uid}`, setGridPing) e lê ao vivo as fichas dos tokens de jogador
+// (subscribePersonagem, somente leitura) para as barras de PV/Energia/Fadiga.
 const gridRef = campanhaId => doc(db, 'rmCampanhas', campanhaId, 'grid', 'atual');
 const gridCenaRef = (campanhaId, cenaId) =>
   doc(db, 'rmCampanhas', campanhaId, 'gridCenas', cenaId);
@@ -1049,6 +1052,51 @@ export const moverGridToken = (campanhaId, cenaId, tokenId, col, lin, rastro = n
     ...(rastro ? { rastro, movidoEm: serverTimestamp() } : {}),
     updatedAt: serverTimestamp(),
   });
+
+const gridPingsRef = (campanhaId, cenaId) =>
+  collection(gridCenaRef(campanhaId, cenaId), 'pings');
+
+// Chama `onChange([{ uid, x, y, puxar, nome, criadoEm }])`. serverTimestamps
+// 'none' (padrão): o meu sinal pendente chega com `criadoEm` null
+// (detectarPings ignora).
+export const subscribeGridPings = (campanhaId, cenaId, onChange, onError) =>
+  onSnapshot(
+    gridPingsRef(campanhaId, cenaId),
+    snapshot =>
+      onChange(
+        snapshot.docs.map(docSnapshot => ({
+          uid: docSnapshot.id,
+          ...docSnapshot.data(),
+        })),
+      ),
+    onError,
+  );
+
+// Um doc por pessoa (id = uid), sobrescrito a cada sinal (sem acúmulo/TTL).
+// `puxar` (centralizar a vista de todos) só o mestre — a regra garante.
+export const setGridPing = (
+  campanhaId,
+  cenaId,
+  uid,
+  { x, y, puxar = false, nome = null },
+) =>
+  setDoc(doc(gridPingsRef(campanhaId, cenaId), uid), {
+    x,
+    y,
+    puxar: Boolean(puxar),
+    ...(nome ? { nome } : {}),
+    criadoEm: serverTimestamp(),
+  });
+
+// Ficha ao vivo (somente leitura — a regra deixa qualquer usuário logado ler
+// `personagens`). Chama `onChange({ id, ...dados } | null)`.
+export const subscribePersonagem = (personagemId, onChange, onError) =>
+  onSnapshot(
+    doc(db, 'personagens', personagemId),
+    snapshot =>
+      onChange(snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null),
+    onError,
+  );
 
 // ── Música da mesa — rmCampanhas/{id}/audio/atual ──────────────────────────
 // Estado da faixa do YouTube que toca para todos com a mesa aberta (modelo em

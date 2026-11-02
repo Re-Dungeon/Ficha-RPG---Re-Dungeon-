@@ -7,18 +7,22 @@ import { useAuth } from 'context/AuthContext';
 import {
   addChatMensagem,
   addChatRolagemSecreta,
+  getCondicoesPorUniverso,
   getPersonagens,
   getChatMacros,
   getRmCampanha,
   moverGridToken,
+  setGridPing,
   setAudioMesa,
   subscribeAudioMesa,
   setChatMembro,
   subscribeGridCena,
   subscribeGridCenaAtiva,
+  subscribeGridPings,
   subscribeGridTokens,
   subscribeChatMensagens,
   subscribeChatSecretasDoUsuario,
+  subscribePersonagem,
 } from 'service/storage';
 import { executarMacro as rodarMacroNoWorker } from 'common/lua/executarMacro';
 import useIsMobile from 'hooks/useIsMobile';
@@ -53,7 +57,23 @@ vi.mock('service/storage', () => ({
   subscribeGridCena: vi.fn(),
   subscribeGridTokens: vi.fn(),
   moverGridToken: vi.fn(),
+  getCondicoesPorUniverso: vi.fn(() => Promise.resolve([])),
+  subscribeGridPings: vi.fn(() => vi.fn()),
+  setGridPing: vi.fn(() => Promise.resolve()),
+  subscribePersonagem: vi.fn(() => vi.fn()),
 }));
+
+// O jsdom não tem PointerEvent (o grid lê pointerType/altKey dos eventos).
+if (typeof window.PointerEvent === 'undefined') {
+  class PointerEventDeTeste extends MouseEvent {
+    constructor(tipo, init = {}) {
+      super(tipo, init);
+      this.pointerId = init.pointerId ?? 1;
+      this.pointerType = init.pointerType ?? 'mouse';
+    }
+  }
+  window.PointerEvent = PointerEventDeTeste;
+}
 
 const LayoutFake = () => <Outlet context={{ setHeaderExtra: vi.fn() }} />;
 
@@ -828,6 +848,120 @@ describe('CampanhaChat', () => {
 
       fireEvent.click(screen.getByRole('button', { name: 'Ocultar chat' }));
       expect(screen.queryByText('Bem-vindos à taverna.')).not.toBeInTheDocument();
+    });
+
+    describe('Fase 2: condições, recursos e sinais', () => {
+      const FICHA_ALDRIC = {
+        id: 'p-1',
+        status: { hp: { atual: 5 } },
+        statusMaximos: { hp: 10 },
+        condicoesAtivas: [{ condicaoId: 'c1', stack: 1 }],
+      };
+      let emitirPings;
+
+      beforeEach(() => {
+        getRmCampanha.mockResolvedValue({
+          id: 'camp-1',
+          nome: 'A Torre',
+          mestreId: 'uid-mestre',
+          universoId: 'univ-1',
+        });
+        getCondicoesPorUniverso.mockResolvedValue([
+          { id: 'c1', nome: 'Envenenado', linkImagem: 'https://ex.com/veneno.png' },
+        ]);
+        subscribeGridTokens.mockImplementation(
+          (_campanhaId, _cenaId, _opcoes, onChange) => {
+            onChange([{ ...ALDRIC, refId: 'p-1' }, OGRO]);
+            return vi.fn();
+          },
+        );
+        subscribePersonagem.mockImplementation((_id, onChange) => {
+          onChange(FICHA_ALDRIC);
+          return vi.fn();
+        });
+        subscribeGridPings.mockImplementation((_campanhaId, _cenaId, onChange) => {
+          emitirPings = onChange;
+          onChange([]);
+          return vi.fn();
+        });
+        setGridPing.mockResolvedValue();
+      });
+
+      it('catálogo de condições só é carregado na visão grid', async () => {
+        renderChat();
+        await screen.findByText('Bem-vindos à taverna.');
+        expect(getCondicoesPorUniverso).not.toHaveBeenCalled();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Grid' }));
+        await screen.findByRole('button', { name: /Aldric, coluna/ });
+        expect(getCondicoesPorUniverso).toHaveBeenCalledWith('univ-1');
+      });
+
+      it('token do jogador mostra a barra de PV e a condição da ficha ao vivo', async () => {
+        const { container } = renderChat(null, '/campanhas/camp-1/grid');
+        await screen.findByRole('button', { name: /Aldric, coluna/ });
+        expect(subscribePersonagem).toHaveBeenCalledWith(
+          'p-1',
+          expect.any(Function),
+          expect.any(Function),
+        );
+        const aldric = container.querySelector('[data-token-id="t1"]');
+        expect(aldric.querySelector('[data-barra="pv"] > span')).toHaveStyle({
+          width: '50%',
+        });
+        await waitFor(() =>
+          expect(aldric.querySelector('[data-condicao="c1"] img')).toHaveAttribute(
+            'src',
+            'https://ex.com/veneno.png',
+          ),
+        );
+      });
+
+      it('sinal ao vivo do mestre aparece com o nome; jogador não tem "Puxar vista"', async () => {
+        const { container } = renderChat(null, '/campanhas/camp-1/grid');
+        await screen.findByRole('button', { name: /Aldric, coluna/ });
+        expect(
+          screen.queryByRole('button', { name: 'Puxar vista' }),
+        ).not.toBeInTheDocument();
+
+        act(() =>
+          emitirPings([
+            {
+              uid: 'uid-mestre',
+              x: 40,
+              y: 40,
+              puxar: true,
+              nome: 'Mestre',
+              criadoEm: { seconds: 3, nanoseconds: 0 },
+            },
+          ]),
+        );
+        expect(container.querySelector('[data-ping="uid-mestre"]')).toHaveTextContent(
+          'Mestre',
+        );
+      });
+
+      it('Alt+clique no mapa grava o sinal com o nome de quem fala', async () => {
+        renderChat(null, '/campanhas/camp-1/grid');
+        await screen.findByRole('button', { name: /Aldric, coluna/ });
+        fireEvent.pointerDown(
+          screen.getByRole('application', { name: 'Grid da campanha' }),
+          {
+            clientX: 50,
+            clientY: 60,
+            pointerId: 1,
+            pointerType: 'mouse',
+            button: 0,
+            altKey: true,
+          },
+        );
+        expect(setGridPing).toHaveBeenCalledWith(
+          'camp-1',
+          'cena-1',
+          'uid-jogador',
+          expect.objectContaining({ puxar: false, nome: 'Aldric' }),
+        );
+      });
     });
 
     it('celular: alterna Mapa | Chat (começa no mapa) e conta as mensagens novas', async () => {
