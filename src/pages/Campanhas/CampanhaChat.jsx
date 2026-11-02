@@ -385,6 +385,14 @@ const CampanhaChat = ({ visao = 'chat' }) => {
             detalhes={grid.detalhes}
             combate={grid.combate}
             travamento={grid.travamento}
+            camadas={grid.camadas}
+            marcadores={grid.marcadores}
+            desenhos={grid.desenhos}
+            onDesenhar={grid.desenhar}
+            acoesDesenho={{
+              apagarMeus: grid.apagarMeusDesenhos,
+              apagarTodos: grid.veTudo ? grid.apagarTodosDesenhos : undefined,
+            }}
             acoesCombate={{
               encerrarTurno: grid.meuTurno ? grid.encerrarTurno : undefined,
               restaurarPp: podeRestaurarPp ? handleRestaurarPp : undefined,

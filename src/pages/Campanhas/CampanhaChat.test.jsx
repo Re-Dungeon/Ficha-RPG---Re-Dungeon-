@@ -66,6 +66,15 @@ vi.mock('service/storage', () => ({
   subscribePersonagem: vi.fn(() => vi.fn()),
   subscribeGridCombate: vi.fn(() => vi.fn()),
   alterarGridCombate: vi.fn(),
+  subscribeGridCamadas: vi.fn(() => () => {}),
+  subscribeGridMarcadores: vi.fn(() => () => {}),
+  subscribeGridDesenhos: vi.fn(() => () => {}),
+  setGridCamada: vi.fn(() => Promise.resolve()),
+  addGridMarcador: vi.fn(() => Promise.resolve()),
+  updateGridMarcador: vi.fn(() => Promise.resolve()),
+  removeGridMarcador: vi.fn(() => Promise.resolve()),
+  addGridDesenho: vi.fn(() => Promise.resolve()),
+  removeGridDesenhos: vi.fn(() => Promise.resolve()),
   updatePersonagem: vi.fn(),
   normalizarPersonagemCarregado: vi.fn(personagem => personagem),
 }));
@@ -696,6 +705,22 @@ describe('CampanhaChat', () => {
     const [ALDRIC, OGRO] = TOKENS_POR_CENA['cena-1'];
     const horario = segundos => ({ seconds: segundos, nanoseconds: 0 });
 
+    it('mostra o botão Desenhar no mapa e liga a paleta (jogador sem Apagar todos)', async () => {
+      renderChat(null, '/campanhas/camp-1/grid');
+      await screen.findByRole('button', { name: /Aldric, coluna/ });
+
+      const botao = screen.getByRole('button', { name: 'Desenhar' });
+      expect(botao).toHaveAttribute('aria-pressed', 'false');
+      fireEvent.click(botao);
+      expect(botao).toHaveAttribute('aria-pressed', 'true');
+      expect(
+        screen.getByRole('button', { name: 'Apagar meus desenhos' }),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: 'Apagar todos' }),
+      ).not.toBeInTheDocument();
+    });
+
     it('rastro de um movimento ao vivo aparece com a distância e some em 10 s', async () => {
       renderChat(null, '/campanhas/camp-1/grid');
       await screen.findByRole('button', { name: /Aldric, coluna/ });
@@ -993,10 +1018,12 @@ describe('CampanhaChat', () => {
       let emitirCombate;
 
       beforeEach(() => {
-        subscribeGridTokens.mockImplementation((_campanhaId, _cenaId, _opcoes, onChange) => {
-          onChange([{ ...ALDRIC, refId: 'p-1' }, OGRO]);
-          return vi.fn();
-        });
+        subscribeGridTokens.mockImplementation(
+          (_campanhaId, _cenaId, _opcoes, onChange) => {
+            onChange([{ ...ALDRIC, refId: 'p-1' }, OGRO]);
+            return vi.fn();
+          },
+        );
         subscribePersonagem.mockImplementation((_id, onChange) => {
           onChange(FICHA_ALDRIC);
           return vi.fn();
@@ -1012,7 +1039,9 @@ describe('CampanhaChat', () => {
 
       it('na minha vez: faixa, "Encerrar meu turno" passa a vez com a mensagem', async () => {
         renderChat(null, '/campanhas/camp-1/grid');
-        const encerrar = await screen.findByRole('button', { name: 'Encerrar meu turno' });
+        const encerrar = await screen.findByRole('button', {
+          name: 'Encerrar meu turno',
+        });
         expect(screen.getByText('Rodada 1')).toBeInTheDocument();
         expect(subscribeGridCombate).toHaveBeenCalledWith(
           'camp-1',
@@ -1078,7 +1107,9 @@ describe('CampanhaChat', () => {
         expect(
           screen.queryByRole('button', { name: 'Seu turno! Restaurar PP' }),
         ).not.toBeInTheDocument();
-        expect(screen.queryByRole('button', { name: 'Próximo turno' })).not.toBeInTheDocument();
+        expect(
+          screen.queryByRole('button', { name: 'Próximo turno' }),
+        ).not.toBeInTheDocument();
       });
 
       it('"só na sua vez": fora da vez o jogador não move e vê o aviso', async () => {
@@ -1091,9 +1122,12 @@ describe('CampanhaChat', () => {
           return vi.fn();
         });
         const { container } = renderChat(null, '/campanhas/camp-1/grid');
-        fireEvent.keyDown(await screen.findByRole('button', { name: /^Aldric, coluna/ }), {
-          key: 'ArrowDown',
-        });
+        fireEvent.keyDown(
+          await screen.findByRole('button', { name: /^Aldric, coluna/ }),
+          {
+            key: 'ArrowDown',
+          },
+        );
         expect(moverGridToken).not.toHaveBeenCalled();
         expect(container.querySelector('[data-travamento]')).toHaveTextContent(
           'Movimento só na sua vez',
@@ -1116,13 +1150,20 @@ describe('CampanhaChat', () => {
       expect(corpo).toHaveAttribute('data-aba', 'mapa');
       // Mapa | Chat substitui Chat|Grid e "Ocultar chat".
       expect(screen.queryByRole('button', { name: 'Grid' })).not.toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: 'Ocultar chat' })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: 'Ocultar chat' }),
+      ).not.toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Chat' })).toBeInTheDocument();
 
       act(() =>
         novasMensagens([
           ...MENSAGENS,
-          { ...MENSAGENS[0], id: 'm4', texto: 'Rolem iniciativa.', createdAt: new Date(Date.now() + 60000) },
+          {
+            ...MENSAGENS[0],
+            id: 'm4',
+            texto: 'Rolem iniciativa.',
+            createdAt: new Date(Date.now() + 60000),
+          },
         ]),
       );
       fireEvent.click(await screen.findByRole('button', { name: 'Chat, 1 novas' }));

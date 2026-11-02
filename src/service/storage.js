@@ -14,6 +14,7 @@ import {
   setDoc,
   updateDoc,
   where,
+  writeBatch,
 } from 'firebase/firestore';
 import { db } from 'service/firebase';
 
@@ -1138,6 +1139,111 @@ export const alterarGridCombate = (campanhaId, cenaId, calcular) =>
     }
     return true;
   });
+
+// ── Grid — camadas (paredes/névoa), marcadores e desenhos (Fase 3B) ─────────
+// Mesmo acesso do grid: o jogador só lê (e desenha). Quem grava camadas e
+// marcadores é o mestre (Re:Master). serverTimestamps 'none' (padrão): um
+// createdAt pendente chega null (ordene esses por último).
+const gridCamadasRef = (campanhaId, cenaId) =>
+  collection(gridCenaRef(campanhaId, cenaId), 'camadas');
+const gridMarcadoresRef = (campanhaId, cenaId) =>
+  collection(gridCenaRef(campanhaId, cenaId), 'marcadores');
+const gridDesenhosRef = (campanhaId, cenaId) =>
+  collection(gridCenaRef(campanhaId, cenaId), 'desenhos');
+
+// Um listener na coleção: `onChange({ paredes, nevoa })` — dados crus do doc
+// ou null para cada um.
+export const subscribeGridCamadas = (campanhaId, cenaId, onChange, onError) =>
+  onSnapshot(
+    gridCamadasRef(campanhaId, cenaId),
+    snapshot => {
+      const camadas = { paredes: null, nevoa: null };
+      snapshot.docs.forEach(docSnapshot => {
+        if (docSnapshot.id in camadas) camadas[docSnapshot.id] = docSnapshot.data();
+      });
+      onChange(camadas);
+    },
+    onError,
+  );
+
+// Substitui o doc inteiro (`dados` = campos da camada, sem datas).
+export const setGridCamada = (campanhaId, cenaId, camadaId, dados) =>
+  setDoc(doc(gridCamadasRef(campanhaId, cenaId), camadaId), {
+    ...dados,
+    updatedAt: serverTimestamp(),
+  });
+
+// Chama `onChange([{ id, ...dados }])`. Sem `incluirSecretos` filtra
+// `secreto == false` (senão a regra recusa a consulta).
+export const subscribeGridMarcadores = (
+  campanhaId,
+  cenaId,
+  { incluirSecretos = false } = {},
+  onChange,
+  onError,
+) =>
+  onSnapshot(
+    incluirSecretos
+      ? gridMarcadoresRef(campanhaId, cenaId)
+      : query(gridMarcadoresRef(campanhaId, cenaId), where('secreto', '==', false)),
+    snapshot =>
+      onChange(snapshot.docs.map(docSnapshot => ({ id: docSnapshot.id, ...docSnapshot.data() }))),
+    onError,
+  );
+
+export const addGridMarcador = async (campanhaId, cenaId, marcador) => {
+  const ref = await addDoc(gridMarcadoresRef(campanhaId, cenaId), {
+    ...marcador,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  return ref.id;
+};
+
+export const updateGridMarcador = (campanhaId, cenaId, marcadorId, patch) =>
+  updateDoc(doc(gridMarcadoresRef(campanhaId, cenaId), marcadorId), {
+    ...patch,
+    updatedAt: serverTimestamp(),
+  });
+
+export const removeGridMarcador = (campanhaId, cenaId, marcadorId) =>
+  deleteDoc(doc(gridMarcadoresRef(campanhaId, cenaId), marcadorId));
+
+// Um doc por traço. Chama `onChange([{ id, ...dados }])`, sem ordenação.
+export const subscribeGridDesenhos = (campanhaId, cenaId, onChange, onError) =>
+  onSnapshot(
+    gridDesenhosRef(campanhaId, cenaId),
+    snapshot =>
+      onChange(snapshot.docs.map(docSnapshot => ({ id: docSnapshot.id, ...docSnapshot.data() }))),
+    onError,
+  );
+
+// Cria o traço `{ uid, cor, pontos }` e, no mesmo lote, apaga `idsParaApagar`
+// (o excedente do limite por pessoa). Devolve o id do novo.
+export const addGridDesenho = async (
+  campanhaId,
+  cenaId,
+  { uid, cor, pontos },
+  idsParaApagar = [],
+) => {
+  const lote = writeBatch(db);
+  const novoRef = doc(gridDesenhosRef(campanhaId, cenaId));
+  lote.set(novoRef, { uid, cor, pontos, createdAt: serverTimestamp() });
+  idsParaApagar.forEach(id => lote.delete(doc(gridDesenhosRef(campanhaId, cenaId), id)));
+  await lote.commit();
+  return novoRef.id;
+};
+
+// "Apagar meus/todos": lotes de 450 (limite do Firestore é 500 por lote).
+export const removeGridDesenhos = async (campanhaId, cenaId, ids) => {
+  for (let i = 0; i < ids.length; i += 450) {
+    const lote = writeBatch(db);
+    ids
+      .slice(i, i + 450)
+      .forEach(id => lote.delete(doc(gridDesenhosRef(campanhaId, cenaId), id)));
+    await lote.commit();
+  }
+};
 
 // ── Música da mesa — rmCampanhas/{id}/audio/atual ──────────────────────────
 // Estado da faixa do YouTube que toca para todos com a mesa aberta (modelo em
