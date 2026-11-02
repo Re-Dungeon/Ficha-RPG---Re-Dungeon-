@@ -4,7 +4,11 @@ import Avatar from '@mui/material/Avatar';
 import IconButton from '@mui/material/IconButton';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 
-import { TIPOS_MENSAGEM, formatarHorarioMensagem, rotuloPersona } from 'common/utils/chat';
+import {
+  TIPOS_MENSAGEM,
+  formatarHorarioMensagem,
+  rotuloPersona,
+} from 'common/utils/chat';
 
 import CombateMensagem from './CombateMensagem';
 import RolagemMensagem from './RolagemMensagem';
@@ -27,10 +31,14 @@ const ChatMensagem = ({ mensagem, minha, podeApagar, onApagar }) => {
   const [imagemFalhou, setImagemFalhou] = useState(false);
 
   if (mensagem.tipo === TIPOS_MENSAGEM.ROLAGEM && mensagem.rolagem) {
-    return <RolagemMensagem mensagem={mensagem} podeApagar={podeApagar} onApagar={onApagar} />;
+    return (
+      <RolagemMensagem mensagem={mensagem} podeApagar={podeApagar} onApagar={onApagar} />
+    );
   }
   if (mensagem.tipo === TIPOS_MENSAGEM.COMBATE) {
-    return <CombateMensagem mensagem={mensagem} podeApagar={podeApagar} onApagar={onApagar} />;
+    return (
+      <CombateMensagem mensagem={mensagem} podeApagar={podeApagar} onApagar={onApagar} />
+    );
   }
 
   const { autorNome, autorAvatar, isMestre, tipo, texto, url, createdAt } = mensagem;
@@ -82,7 +90,9 @@ const ChatMensagem = ({ mensagem, minha, podeApagar, onApagar }) => {
             <MensagemMacroTexto>{texto}</MensagemMacroTexto>
           </>
         )}
-        {tipo !== TIPOS_MENSAGEM.IMAGEM && tipo !== TIPOS_MENSAGEM.MACRO && <MensagemTexto>{texto}</MensagemTexto>}
+        {tipo !== TIPOS_MENSAGEM.IMAGEM && tipo !== TIPOS_MENSAGEM.MACRO && (
+          <MensagemTexto>{texto}</MensagemTexto>
+        )}
 
         {podeApagar && (
           <MensagemAcoes className="chat-acoes">
@@ -111,6 +121,7 @@ ChatMensagem.propTypes = {
     tipo: PropTypes.string,
     rolagem: PropTypes.object,
     macroNome: PropTypes.string,
+    rotulo: PropTypes.string,
     combate: PropTypes.object,
     texto: PropTypes.string,
     url: PropTypes.string,

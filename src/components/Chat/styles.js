@@ -219,7 +219,9 @@ export const GradeDados = styled.div`
     cursor: pointer;
     font: inherit;
     font-size: 0.8rem;
-    transition: border-color 0.15s ease, color 0.15s ease;
+    transition:
+      border-color 0.15s ease,
+      color 0.15s ease;
 
     &:hover,
     &:focus-visible {
@@ -270,6 +272,12 @@ export const RolagemExpressao = styled.span`
   color: var(--color-accent);
 `;
 
+export const RolagemRotulo = styled.span`
+  color: var(--text-primary);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+`;
+
 export const RolagemTotal = styled.strong`
   color: var(--text-primary);
   font-size: 1.05rem;
@@ -282,7 +290,11 @@ export const RolagemDetalhe = styled.span`
 export const ResultadoDado = styled.span`
   font-weight: ${props => (props.$critico ? 700 : 400)};
   color: ${props =>
-    props.$critico === 'sucesso' ? '#5fd38d' : props.$critico === 'falha' ? '#ff6b6b' : 'inherit'};
+    props.$critico === 'sucesso'
+      ? '#5fd38d'
+      : props.$critico === 'falha'
+        ? '#ff6b6b'
+        : 'inherit'};
 `;
 
 export const EtiquetaSecreta = styled.span`
@@ -318,7 +330,8 @@ export const PreviaMacro = styled.div`
   overflow-y: auto;
   padding: 10px 12px;
   border-radius: 8px;
-  border: 1px dashed ${props => (props.$erro ? 'rgba(255, 107, 107, 0.6)' : 'var(--border-hover)')};
+  border: 1px dashed
+    ${props => (props.$erro ? 'rgba(255, 107, 107, 0.6)' : 'var(--border-hover)')};
   color: ${props => (props.$erro ? '#ff8f8f' : 'var(--text-secondary)')};
   font-family: Consolas, 'Fira Code', monospace;
   font-size: 0.8rem;

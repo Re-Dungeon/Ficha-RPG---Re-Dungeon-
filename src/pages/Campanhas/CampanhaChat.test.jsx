@@ -7,10 +7,13 @@ import { useAuth } from 'context/AuthContext';
 import {
   addChatMensagem,
   addChatRolagemSecreta,
+  addGridArea,
   alterarGridCombate,
   getCondicoesPorUniverso,
   getPersonagens,
+  getArts,
   getChatMacros,
+  getCombosAtaque,
   getRmCampanha,
   moverGridToken,
   setGridPing,
@@ -75,6 +78,14 @@ vi.mock('service/storage', () => ({
   removeGridMarcador: vi.fn(() => Promise.resolve()),
   addGridDesenho: vi.fn(() => Promise.resolve()),
   removeGridDesenhos: vi.fn(() => Promise.resolve()),
+  getArts: vi.fn(() => Promise.resolve([])),
+  getCombosAtaque: vi.fn(() => Promise.resolve([])),
+  getCombosDefesa: vi.fn(() => Promise.resolve([])),
+  subscribeGridAreas: vi.fn(() => () => {}),
+  addGridArea: vi.fn(() => Promise.resolve()),
+  updateGridArea: vi.fn(() => Promise.resolve()),
+  removeGridArea: vi.fn(() => Promise.resolve()),
+  removeGridAreas: vi.fn(() => Promise.resolve()),
   updatePersonagem: vi.fn(),
   normalizarPersonagemCarregado: vi.fn(personagem => personagem),
 }));
@@ -880,6 +891,92 @@ describe('CampanhaChat', () => {
 
       fireEvent.click(screen.getByRole('button', { name: 'Ocultar chat' }));
       expect(screen.queryByText('Bem-vindos à taverna.')).not.toBeInTheDocument();
+    });
+
+    describe('Fase 3C: ações', () => {
+      const tocarToken = nome => {
+        const token = screen.getByRole('button', { name: nome });
+        const clique = { clientX: 60, clientY: 60, pointerId: 1, pointerType: 'mouse', button: 0 };
+        fireEvent.pointerDown(token, clique);
+        fireEvent.pointerUp(screen.getByRole('application', { name: 'Grid da campanha' }), clique);
+      };
+
+      it('"Rolar…" só aparece no meu token; a rolagem sai com o rótulo, assinada pelo token', async () => {
+        renderChat(null, '/campanhas/camp-1/grid');
+        await screen.findByRole('button', { name: /Aldric, coluna/ });
+
+        tocarToken(/Ogro/);
+        expect(screen.queryByRole('button', { name: 'Rolar…' })).not.toBeInTheDocument();
+
+        tocarToken(/Aldric, coluna/);
+        fireEvent.click(screen.getByRole('button', { name: 'Rolar…' }));
+        const dialogo = await screen.findByRole('dialog');
+        fireEvent.change(within(dialogo).getByLabelText('Expressão'), {
+          target: { value: '1d6+2' },
+        });
+        fireEvent.change(within(dialogo).getByLabelText('Rótulo (opcional)'), {
+          target: { value: 'Teste de força' },
+        });
+        await act(async () => fireEvent.click(within(dialogo).getByRole('button', { name: 'Rolar' })));
+
+        await waitFor(() =>
+          expect(addChatMensagem).toHaveBeenCalledWith(
+            'camp-1',
+            expect.objectContaining({
+              tipo: 'rolagem',
+              personagemId: 'p-1',
+              autorNome: 'Aldric',
+              rotulo: 'Teste de força',
+            }),
+          ),
+        );
+        await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+      });
+
+      it('token que é ficha minha oferece os combos salvos e rola com o rótulo do combo', async () => {
+        TOKENS_POR_CENA['cena-1'][0].refId = 'p-1';
+        getCombosAtaque.mockResolvedValue([{ id: 'c1', nome: 'Golpe Duplo', perfilDano: '2d8+5' }]);
+        getArts.mockResolvedValue([{ id: 'a1', nome: 'Chama', dados: '3d6 de fogo' }]);
+        try {
+          renderChat(null, '/campanhas/camp-1/grid');
+          await screen.findByRole('button', { name: /Aldric, coluna/ });
+          tocarToken(/Aldric, coluna/);
+          fireEvent.click(screen.getByRole('button', { name: 'Rolar…' }));
+          const dialogo = await screen.findByRole('dialog');
+          expect(await within(dialogo).findByText('Chama')).toBeInTheDocument();
+          await act(async () =>
+            fireEvent.click(within(dialogo).getByRole('button', { name: /Golpe Duplo/ })),
+          );
+          await waitFor(() =>
+            expect(addChatMensagem).toHaveBeenCalledWith(
+              'camp-1',
+              expect.objectContaining({ personagemId: 'p-1', rotulo: 'Ataque: Golpe Duplo' }),
+            ),
+          );
+        } finally {
+          delete TOKENS_POR_CENA['cena-1'][0].refId;
+        }
+      });
+
+      it('mostra o botão Área e posiciona um raio na cena (grava com meu uid)', async () => {
+        renderChat(null, '/campanhas/camp-1/grid');
+        await screen.findByRole('button', { name: /Aldric, coluna/ });
+        fireEvent.click(screen.getByRole('button', { name: 'Área' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Raio' }));
+        fireEvent.change(screen.getByLabelText('Tamanho (m)'), { target: { value: '3' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Posicionar no mapa' }));
+        const clique = { clientX: 200, clientY: 200, pointerId: 1, pointerType: 'mouse', button: 0 };
+        const viewport = screen.getByRole('application', { name: 'Grid da campanha' });
+        fireEvent.pointerDown(viewport, clique);
+        await act(async () => fireEvent.pointerUp(viewport, clique));
+        await waitFor(() =>
+          expect(addGridArea).toHaveBeenCalledWith(
+            'camp-1',
+            'cena-1',
+            expect.objectContaining({ uid: 'uid-jogador', forma: 'raio', metros: 3 }),
+          ),
+        );
+      });
     });
 
     describe('Fase 2: condições, recursos e sinais', () => {

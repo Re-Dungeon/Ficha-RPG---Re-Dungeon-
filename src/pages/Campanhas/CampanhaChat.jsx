@@ -22,13 +22,19 @@ import {
   updatePersonagem,
 } from 'service/storage';
 import { personagensNaCampanha } from 'common/utils/chat';
+import { corDoPing } from 'common/utils/grid';
+import { podeEditarArea } from 'common/utils/gridAreas';
+import { autorDoToken } from 'common/utils/gridRolagem';
 import { contarNaoLidas, idDaUltimaMensagem } from 'common/utils/mesa';
 import { MOBILE } from 'common/styles/breakpoints';
 import useIsMobile from 'hooks/useIsMobile';
 import useChatCampanha from 'hooks/useChatCampanha';
 import useGridCampanha from 'hooks/useGridCampanha';
+import useOpcoesDeRolagem from 'hooks/useOpcoesDeRolagem';
+import useRolarDoToken from 'hooks/useRolarDoToken';
 import ChatSala from 'components/Chat/ChatSala';
 import GridMapa from 'components/Grid/GridMapa';
+import RolarDoTokenDialog from 'components/Grid/RolarDoTokenDialog';
 import ErrorSnackbar from 'components/ErrorSnackbar/ErrorSnackbar';
 import { EmptyState } from 'pages/Personagens/styles';
 import {
@@ -76,6 +82,8 @@ const CampanhaChat = ({ visao = 'chat' }) => {
   // usado — o botão some até o próximo turno. Recarregar a página durante o
   // próprio turno mostra o botão de novo (limitação aceita).
   const [ppRestauradoEm, setPpRestauradoEm] = useState(null);
+  // Token em nome de quem se está rolando (diálogo "Rolar…" do grid).
+  const [tokenRolando, setTokenRolando] = useState(null);
 
   const isMestre = campanha?.mestreId === currentUser.uid;
   const universoId = campanha?.universoId ?? null;
@@ -181,6 +189,37 @@ const CampanhaChat = ({ visao = 'chat' }) => {
     // Mensagens de combate ("Encerrar meu turno") assinadas como no chat.
     autorCombate: autor,
   });
+
+  // "Rolar…" no token: o autor é o do TOKEN (não o "Falando como"). Jogador:
+  // a ficha do token (ou a do "Falando como" se o token não tem ficha); mestre:
+  // a persona do token de NPC/criatura.
+  const autorDoTokenRolado = useCallback(
+    token =>
+      autorDoToken(token, {
+        uid: currentUser.uid,
+        personagensDoUsuario: meusPersonagens,
+        personagemPadraoId: autor?.personagemId ?? null,
+        mestre: Boolean(isMestre && autor?.isMestre),
+      }),
+    [currentUser.uid, meusPersonagens, autor, isMestre],
+  );
+  const podeRolarToken = useCallback(
+    token => grid.ehMeu(token) && Boolean(autorDoTokenRolado(token)),
+    [grid, autorDoTokenRolado],
+  );
+  const fichaDoTokenRolando = tokenRolando?.refId
+    ? (meusPersonagens.find(p => p.id === tokenRolando.refId) ?? null)
+    : null;
+  const opcoesRolagem = useOpcoesDeRolagem(fichaDoTokenRolando?.id ?? null, {
+    ativo: Boolean(fichaDoTokenRolando),
+  });
+  const rolarDoToken = useRolarDoToken(campanhaId, { onErro: setErro });
+  const handleRolarDoToken = useCallback(
+    (expressao, rotulo) =>
+      rolarDoToken({ autor: autorDoTokenRolado(tokenRolando), expressao, rotulo }),
+    [rolarDoToken, autorDoTokenRolado, tokenRolando],
+  );
+  const fecharRolarDoToken = useCallback(() => setTokenRolando(null), []);
 
   // Combate: na vez de um token de jogador meu, "Seu turno! Restaurar PP"
   // faz o mesmo que "Iniciar novo turno" da ficha (não é automático).
@@ -393,6 +432,12 @@ const CampanhaChat = ({ visao = 'chat' }) => {
               apagarMeus: grid.apagarMeusDesenhos,
               apagarTodos: grid.veTudo ? grid.apagarTodosDesenhos : undefined,
             }}
+            areas={grid.areas}
+            acoesAreas={grid.acoesAreas}
+            podeEditarArea={area => podeEditarArea(area, currentUser.uid, grid.veTudo)}
+            corAreaPadrao={corDoPing(currentUser.uid, campanha?.mestreId ?? null)}
+            podeRolarToken={podeRolarToken}
+            onRolarToken={setTokenRolando}
             acoesCombate={{
               encerrarTurno: grid.meuTurno ? grid.encerrarTurno : undefined,
               restaurarPp: podeRestaurarPp ? handleRestaurarPp : undefined,
@@ -411,6 +456,14 @@ const CampanhaChat = ({ visao = 'chat' }) => {
             </MesaChatPainel>
           )}
         </MesaCorpo>
+        <RolarDoTokenDialog
+          open={Boolean(tokenRolando)}
+          token={tokenRolando}
+          grupos={opcoesRolagem.grupos}
+          carregando={opcoesRolagem.carregando}
+          onRolar={handleRolarDoToken}
+          onClose={fecharRolarDoToken}
+        />
         <ErrorSnackbar open={!!erroExibido} mensagem={erroExibido} onClose={fecharErro} />
       </ChatPageWrapper>
     );

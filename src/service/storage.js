@@ -2,6 +2,7 @@ import {
   addDoc,
   collection,
   deleteDoc,
+  deleteField,
   doc,
   getDoc,
   getDocs,
@@ -1091,6 +1092,51 @@ export const setGridPing = (
     ...(nome ? { nome } : {}),
     criadoEm: serverTimestamp(),
   });
+
+const gridAreasRef = (campanhaId, cenaId) =>
+  collection(gridCenaRef(campanhaId, cenaId), 'templates');
+
+// Templates de área da cena (common/utils/gridAreas.js). Chama
+// `onChange([{ id, ...dados }])`; quem lê normaliza (normalizarArea).
+export const subscribeGridAreas = (campanhaId, cenaId, onChange, onError) =>
+  onSnapshot(
+    gridAreasRef(campanhaId, cenaId),
+    snapshot =>
+      onChange(snapshot.docs.map(docSnapshot => ({ id: docSnapshot.id, ...docSnapshot.data() }))),
+    onError,
+  );
+
+// `area` = montarArea(...) (sem timestamps). Devolve o id do novo template.
+export const addGridArea = async (campanhaId, cenaId, area) => {
+  const ref = await addDoc(gridAreasRef(campanhaId, cenaId), {
+    ...area,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  return ref.id;
+};
+
+// Só origem/alvo mudam (a regra garante); `alvo` null apaga o campo.
+export const updateGridArea = (campanhaId, cenaId, areaId, { origem, alvo }) =>
+  updateDoc(doc(gridAreasRef(campanhaId, cenaId), areaId), {
+    origem,
+    alvo: alvo ?? deleteField(),
+    updatedAt: serverTimestamp(),
+  });
+
+export const removeGridArea = (campanhaId, cenaId, areaId) =>
+  deleteDoc(doc(gridAreasRef(campanhaId, cenaId), areaId));
+
+// "Remover todos": lotes de 400 (limite do Firestore é 500 por lote).
+export const removeGridAreas = async (campanhaId, cenaId, ids) => {
+  for (let i = 0; i < ids.length; i += 400) {
+    const lote = writeBatch(db);
+    ids
+      .slice(i, i + 400)
+      .forEach(id => lote.delete(doc(gridAreasRef(campanhaId, cenaId), id)));
+    await lote.commit();
+  }
+};
 
 // Ficha ao vivo (somente leitura — a regra deixa qualquer usuário logado ler
 // `personagens`). Chama `onChange({ id, ...dados } | null)`.

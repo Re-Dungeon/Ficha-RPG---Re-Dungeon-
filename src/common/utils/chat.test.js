@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import {
   CHAT_TEXTO_MAX,
+  ROTULO_ROLAGEM_MAX,
+  normalizarRotulo,
   campanhaIdsDosPersonagens,
   descreverMensagemCombate,
   formatarIniciativa,
@@ -86,7 +88,9 @@ describe('montarMensagem*', () => {
   });
 
   it('jogador nunca assume persona do mestre', () => {
-    expect(montarMensagemTexto({ ...jogador, persona: 'npc' }, 'oi').persona).toBe('jogador');
+    expect(montarMensagemTexto({ ...jogador, persona: 'npc' }, 'oi').persona).toBe(
+      'jogador',
+    );
   });
 
   it('mestre falando como NPC leva nome, avatar e persona do NPC', () => {
@@ -112,7 +116,12 @@ describe('montarMensagem*', () => {
   });
 
   it('monta mensagem de imagem do mestre sem personagem', () => {
-    const mestre = { uid: 'uid-m', personagemId: 'ignorado', autorNome: 'Mestre', isMestre: true };
+    const mestre = {
+      uid: 'uid-m',
+      personagemId: 'ignorado',
+      autorNome: 'Mestre',
+      isMestre: true,
+    };
     expect(montarMensagemImagem(mestre, ' https://exemplo.com/mapa.gif ')).toEqual({
       uid: 'uid-m',
       personagemId: null,
@@ -128,17 +137,62 @@ describe('montarMensagem*', () => {
 });
 
 describe('montarMensagemRolagem', () => {
-  const rolagem = { grupos: [{ quantidade: 1, faces: 6, resultados: [6] }], termos: [8], modificador: 8, total: 14 };
+  const rolagem = {
+    grupos: [{ quantidade: 1, faces: 6, resultados: [6] }],
+    termos: [8],
+    modificador: 8,
+    total: 14,
+  };
   const autor = { uid: 'u1', personagemId: 'p1', autorNome: 'Wesley Chase' };
 
   it('rolagem pública não leva o campo secreta', () => {
     const mensagem = montarMensagemRolagem(autor, rolagem);
-    expect(mensagem).toMatchObject({ tipo: 'rolagem', texto: '', url: null, rolagem, persona: 'jogador' });
+    expect(mensagem).toMatchObject({
+      tipo: 'rolagem',
+      texto: '',
+      url: null,
+      rolagem,
+      persona: 'jogador',
+    });
     expect(mensagem).not.toHaveProperty('secreta');
   });
 
   it('rolagem secreta leva secreta: true', () => {
     expect(montarMensagemRolagem(autor, rolagem, true).secreta).toBe(true);
+  });
+
+  it('com rótulo, grava o rótulo normalizado', () => {
+    expect(
+      montarMensagemRolagem(autor, rolagem, false, '  Ataque:   Golpe Duplo ').rotulo,
+    ).toBe('Ataque: Golpe Duplo');
+  });
+
+  it('rótulo ausente ou vazio é omitido', () => {
+    expect(montarMensagemRolagem(autor, rolagem)).not.toHaveProperty('rotulo');
+    expect(montarMensagemRolagem(autor, rolagem, false, '   ')).not.toHaveProperty(
+      'rotulo',
+    );
+    expect(montarMensagemRolagem(autor, rolagem, false, null)).not.toHaveProperty(
+      'rotulo',
+    );
+  });
+
+  it('trunca o rótulo em ROTULO_ROLAGEM_MAX', () => {
+    const mensagem = montarMensagemRolagem(autor, rolagem, false, 'x'.repeat(300));
+    expect(mensagem.rotulo).toHaveLength(ROTULO_ROLAGEM_MAX);
+  });
+
+  it('rótulo combinado com secreta', () => {
+    const mensagem = montarMensagemRolagem(autor, rolagem, true, 'Arte: Bola de Fogo');
+    expect(mensagem).toMatchObject({ secreta: true, rotulo: 'Arte: Bola de Fogo' });
+  });
+});
+
+describe('normalizarRotulo', () => {
+  it('normaliza espaços e devolve null para vazio', () => {
+    expect(normalizarRotulo(' a  b ')).toBe('a b');
+    expect(normalizarRotulo(undefined)).toBeNull();
+    expect(normalizarRotulo('')).toBeNull();
   });
 });
 
@@ -165,7 +219,12 @@ describe('mesclarMensagens', () => {
       { id: 'p-pendente', createdAt: null },
     ];
     const secretas = [{ id: 's2', createdAt: new Date(2 * 60000) }];
-    expect(mesclarMensagens(publicas, secretas).map(m => m.id)).toEqual(['p1', 's2', 'p3', 'p-pendente']);
+    expect(mesclarMensagens(publicas, secretas).map(m => m.id)).toEqual([
+      'p1',
+      's2',
+      'p3',
+      'p-pendente',
+    ]);
   });
 });
 
@@ -181,7 +240,9 @@ describe('rotuloPersona', () => {
 
 describe('normalizarAvatar', () => {
   it('mantém link http(s) e descarta data: URL, vazio ou longo demais', () => {
-    expect(normalizarAvatar('https://exemplo.com/a.png')).toBe('https://exemplo.com/a.png');
+    expect(normalizarAvatar('https://exemplo.com/a.png')).toBe(
+      'https://exemplo.com/a.png',
+    );
     expect(normalizarAvatar('data:image/png;base64,AAAA')).toBeNull();
     expect(normalizarAvatar('')).toBeNull();
     expect(normalizarAvatar(`https://exemplo.com/${'a'.repeat(2000)}`)).toBeNull();
@@ -196,7 +257,9 @@ describe('formatarHorarioMensagem', () => {
   });
 
   it('mostra dia/mês para mensagens de outros dias', () => {
-    expect(formatarHorarioMensagem(new Date(2026, 9, 3, 14, 30), agora)).toBe('03/10 14:30');
+    expect(formatarHorarioMensagem(new Date(2026, 9, 3, 14, 30), agora)).toBe(
+      '03/10 14:30',
+    );
   });
 
   it('aceita Timestamp do Firestore (toDate) e ignora valor ausente', () => {
@@ -259,7 +322,12 @@ describe('mensagens de combate', () => {
   });
 
   it('corta nome (100) e iniciativa (200); sem nome = oculto; fim sem nome nem rodada', () => {
-    const longa = Array.from({ length: 250 }, (_, i) => ({ nome: `T${i}`, total: i, d20: 1, reacao: 0 }));
+    const longa = Array.from({ length: 250 }, (_, i) => ({
+      nome: `T${i}`,
+      total: i,
+      d20: 1,
+      reacao: 0,
+    }));
     const inicio = montarMensagemCombate(mestre, {
       evento: 'inicio',
       cenaId: 'c',
@@ -269,17 +337,21 @@ describe('mensagens de combate', () => {
     });
     expect(inicio.combate.nome).toHaveLength(100);
     expect(inicio.combate.iniciativa).toHaveLength(200);
-    expect(montarMensagemCombate(mestre, { evento: 'turno', cenaId: 'c', rodada: 2 }).combate).toEqual({
+    expect(
+      montarMensagemCombate(mestre, { evento: 'turno', cenaId: 'c', rodada: 2 }).combate,
+    ).toEqual({
       evento: 'turno',
       cenaId: 'c',
       rodada: 2,
       nome: null,
       oculto: true,
     });
-    expect(montarMensagemCombate(mestre, { evento: 'fim', cenaId: 'c' }).combate).toEqual({
-      evento: 'fim',
-      cenaId: 'c',
-    });
+    expect(montarMensagemCombate(mestre, { evento: 'fim', cenaId: 'c' }).combate).toEqual(
+      {
+        evento: 'fim',
+        cenaId: 'c',
+      },
+    );
   });
 
   it('formatarIniciativa mostra a Reação com sinal', () => {
@@ -304,12 +376,16 @@ describe('mensagens de combate', () => {
       iniciativa: ['Wesley 17 (d20 12 + Reação 5)'],
       linhas: ['Rodada 1 · Turno de Wesley'],
     });
-    expect(descreverMensagemCombate({ evento: 'rodada', rodada: 3, nome: null, oculto: true })).toEqual({
+    expect(
+      descreverMensagemCombate({ evento: 'rodada', rodada: 3, nome: null, oculto: true }),
+    ).toEqual({
       titulo: 'Rodada 3',
       iniciativa: null,
       linhas: ['Turno de um oponente oculto'],
     });
-    expect(descreverMensagemCombate({ evento: 'turno', nome: 'Brina' }).titulo).toBe('Turno de Brina');
+    expect(descreverMensagemCombate({ evento: 'turno', nome: 'Brina' }).titulo).toBe(
+      'Turno de Brina',
+    );
     expect(descreverMensagemCombate({ evento: 'fim' })).toEqual({
       titulo: 'Combate encerrado',
       iniciativa: null,

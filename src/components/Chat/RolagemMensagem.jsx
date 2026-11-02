@@ -18,6 +18,7 @@ import {
   RolagemDetalhe,
   RolagemExpressao,
   RolagemLinha,
+  RolagemRotulo,
   RolagemTotal,
 } from './styles';
 
@@ -35,7 +36,9 @@ const Detalhe = ({ rolagem }) => (
         {grupo.resultados.map((resultado, indice) => (
           <React.Fragment key={indice}>
             {indice > 0 && ', '}
-            <ResultadoDado $critico={criticoDoResultado(grupo.faces, resultado)}>{resultado}</ResultadoDado>
+            <ResultadoDado $critico={criticoDoResultado(grupo.faces, resultado)}>
+              {resultado}
+            </ResultadoDado>
           </React.Fragment>
         ))}
         ]
@@ -55,12 +58,15 @@ Detalhe.propTypes = {
 
 // Linha compacta: 🎲 Wesley Chase rolou 1d6 + 8 = 14 {[6] + 8}
 const RolagemMensagem = ({ mensagem, podeApagar, onApagar }) => {
-  const { rolagem, autorNome, isMestre, secreta, createdAt } = mensagem;
+  const { rolagem, autorNome, isMestre, secreta, createdAt, rotulo } = mensagem;
   const persona = rotuloPersona(mensagem);
 
   return (
     <RolagemLinha $secreta={Boolean(secreta)} data-testid="chat-mensagem">
-      <DadoIcone faces={rolagem.grupos[0]?.faces ?? 20} sx={{ fontSize: 20, color: 'var(--color-primary)' }} />
+      <DadoIcone
+        faces={rolagem.grupos[0]?.faces ?? 20}
+        sx={{ fontSize: 20, color: 'var(--color-primary)' }}
+      />
       {secreta && (
         <EtiquetaSecreta>
           <LockOutlinedIcon sx={{ fontSize: 12 }} />
@@ -71,12 +77,21 @@ const RolagemMensagem = ({ mensagem, podeApagar, onApagar }) => {
           gap), mas eles mantêm o texto legível ao copiar e para leitores de tela. */}
       <RolagemAutor $mestre={isMestre}>{autorNome}</RolagemAutor>{' '}
       {persona && <MensagemPersona>{persona}</MensagemPersona>}{' '}
-      <span>rolou</span> <RolagemExpressao>{resumoRolagem(rolagem)}</RolagemExpressao> <span>=</span>{' '}
+      {rotulo ? (
+        <>
+          <span>—</span> <RolagemRotulo>{rotulo}</RolagemRotulo> <span>·</span>
+        </>
+      ) : (
+        <span>rolou</span>
+      )}{' '}
+      <RolagemExpressao>{resumoRolagem(rolagem)}</RolagemExpressao> <span>=</span>{' '}
       <RolagemTotal>{rolagem.total}</RolagemTotal> <Detalhe rolagem={rolagem} />{' '}
       <MensagemHorario>{formatarHorarioMensagem(createdAt)}</MensagemHorario>
-
       {podeApagar && (
-        <MensagemAcoes className="chat-acoes" style={{ top: '50%', transform: 'translateY(-50%)' }}>
+        <MensagemAcoes
+          className="chat-acoes"
+          style={{ top: '50%', transform: 'translateY(-50%)' }}
+        >
           <IconButton
             size="small"
             aria-label="Apagar mensagem"
@@ -102,6 +117,7 @@ RolagemMensagem.propTypes = {
     isMestre: PropTypes.bool,
     persona: PropTypes.string,
     secreta: PropTypes.bool,
+    rotulo: PropTypes.string,
     createdAt: PropTypes.oneOfType([PropTypes.object, PropTypes.instanceOf(Date)]),
   }).isRequired,
   podeApagar: PropTypes.bool.isRequired,
