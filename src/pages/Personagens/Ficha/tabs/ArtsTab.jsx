@@ -34,9 +34,17 @@ import NucleosSection from '../arts/NucleosSection';
 import VarianteFormDialog from '../arts/VarianteFormDialog';
 import VarianteViewDialog from '../arts/VarianteViewDialog';
 import VariantesSection from '../arts/VariantesSection';
-import { ArtsHeader, StatCard, StatLabel, StatsGrid, StatValue } from '../arts/styles';
+import {
+  ArtsHeader,
+  ManualLimitButton,
+  ManualLimitControls,
+  StatCard,
+  StatLabel,
+  StatsGrid,
+  StatValue,
+} from '../arts/styles';
 
-const ArtsTab = ({ personagem }) => {
+const ArtsTab = ({ personagem, onSave }) => {
   const [nucleos, setNucleos] = useState([]);
   const [arts, setArts] = useState([]);
   const [variantes, setVariantes] = useState([]);
@@ -115,9 +123,31 @@ const ArtsTab = ({ personagem }) => {
       ),
     [bonusCultivoTotal.primarios, personagem.atributosBase, personagem.atributosBonus, personagem.atributosExtra],
   );
-  const limite = calcularLimiteArts(primariosTotais);
+  const limiteCalculado = useMemo(
+    () => calcularLimiteArts(primariosTotais),
+    [primariosTotais],
+  );
+  const limiteAdicional = useMemo(
+    () => Math.max(0, Number(personagem.artsLimiteAdicional ?? 0) || 0),
+    [personagem.artsLimiteAdicional],
+  );
+  const limite = limiteCalculado + limiteAdicional;
   const ativas = arts.filter(art => art.ativa).length;
   const bloqueadas = arts.length - ativas;
+
+  const handleAjustarLimiteManual = useCallback(
+    delta => {
+      if (!onSave) {
+        return;
+      }
+      const proximo = Math.max(0, limiteAdicional + delta);
+      if (proximo === limiteAdicional) {
+        return;
+      }
+      onSave({ artsLimiteAdicional: proximo });
+    },
+    [limiteAdicional, onSave],
+  );
 
   const nucleosPorId = useMemo(() => new Map(nucleos.map(nucleo => [nucleo.id, nucleo])), [nucleos]);
   const artsPorId = useMemo(() => new Map(arts.map(art => [art.id, art])), [arts]);
@@ -298,6 +328,20 @@ const ArtsTab = ({ personagem }) => {
         </StatCard>
       </StatsGrid>
 
+      <ManualLimitControls>
+        <ManualLimitButton type="button" $variant="adicionar" onClick={() => handleAjustarLimiteManual(1)}>
+          + ADICIONAR LIMITE
+        </ManualLimitButton>
+        <ManualLimitButton
+          type="button"
+          $variant="remover"
+          onClick={() => handleAjustarLimiteManual(-1)}
+          disabled={limiteAdicional === 0}
+        >
+          − REMOVER LIMITE
+        </ManualLimitButton>
+      </ManualLimitControls>
+
       {!carregando && (
         <>
           <NucleosSection
@@ -396,6 +440,7 @@ const ArtsTab = ({ personagem }) => {
 
 ArtsTab.propTypes = {
   personagem: PropTypes.object.isRequired,
+  onSave: PropTypes.func,
 };
 
 export default ArtsTab;

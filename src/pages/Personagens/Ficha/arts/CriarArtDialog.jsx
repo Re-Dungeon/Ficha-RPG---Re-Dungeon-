@@ -40,7 +40,7 @@ import {
 } from '../progressao/styles';
 import { StatusValueRow } from '../styles';
 import ArtCatalogoCard from './ArtCatalogoCard';
-import { ART_AUTORAL_INICIAL, DOMINIO_LABELS, TIPO_ACAO_OPTIONS, TIPO_ART_OPTIONS } from './constants';
+import { ART_AUTORAL_INICIAL, DOMINIO_LABELS, resolverTipoCusto, TIPO_ACAO_OPTIONS, TIPO_ART_OPTIONS, TIPO_CUSTO_OPTIONS } from './constants';
 import { CatalogArtsGrid } from './styles';
 import styled, { keyframes } from 'styled-components';
 
@@ -148,7 +148,8 @@ const PrimaryButton = styled(Button)`
 
 const artAutoralSchema = yup.object({
   nome: nomeSchema,
-  tipo: yup.string().required(),
+  categoria: yup.string().required(),
+  tipoCusto: yup.string().required('Selecione o tipo de custo'),
   dominio: yup.number().min(1).max(5).required(),
   recarga: campoCurtoSchema,
   duracao: campoCurtoSchema,
@@ -172,6 +173,7 @@ const artAutoralSchema = yup.object({
 const CAMPOS_ART_CATALOGO = [
   'dominio',
   'custo',
+  'tipoCusto',
   'dados',
   'recarga',
   'duracao',
@@ -245,7 +247,14 @@ const CriarArtDialog = ({ open, onClose, personagem, nucleos, condicoes, onCreat
 
   const handleAutoralSubmit = useCallback(
     (values, { setSubmitting }) => {
-      onCreate({ origem: 'autoral', ...values, nucleoId, ativa: true });
+      const payload = {
+        ...values,
+        categoria: values.categoria ?? values.tipo,
+        tipo: values.categoria ?? values.tipo,
+        tipoCusto: values.tipoCusto ?? ART_AUTORAL_INICIAL.tipoCusto,
+      };
+      delete payload.categoria;
+      onCreate({ origem: 'autoral', ...payload, nucleoId, ativa: true });
       setSubmitting(false);
       onClose();
     },
@@ -266,6 +275,7 @@ const CriarArtDialog = ({ open, onClose, personagem, nucleos, condicoes, onCreat
         alcance: habilidade.alcance ?? '',
         alvos: habilidade.alvo ?? '',
         custo: habilidade.custo ?? '',
+        tipoCusto: resolverTipoCusto(habilidade.tipoCusto),
         recarga: habilidade.recarga ?? '',
         dados: habilidade.dados ?? '',
         duracao: habilidade.duracao ?? '',
@@ -287,6 +297,7 @@ const CriarArtDialog = ({ open, onClose, personagem, nucleos, condicoes, onCreat
         nucleoId,
         ativa: true,
         ...extrairCamposArt(item),
+        tipoCusto: resolverTipoCusto(item.tipoCusto),
       });
       onClose();
     },
@@ -455,14 +466,30 @@ const CriarArtDialog = ({ open, onClose, personagem, nucleos, condicoes, onCreat
                         size="small"
                       />
                       <StyledTextField
-                        name="tipo"
-                        label="Tipo"
+                        name="categoria"
+                        label="Categoria"
                         select
-                        value={values.tipo}
+                        value={values.categoria ?? values.tipo ?? TIPO_ART_OPTIONS[0]}
                         onChange={handleChange}
+                        onBlur={handleBlur}
                         size="small"
                       >
                         {TIPO_ART_OPTIONS.map(opcao => (
+                          <MenuItem key={opcao} value={opcao}>
+                            {opcao}
+                          </MenuItem>
+                        ))}
+                      </StyledTextField>
+                      <StyledTextField
+                        name="tipoCusto"
+                        label="Tipo de Custo"
+                        select
+                        value={values.tipoCusto ?? TIPO_CUSTO_OPTIONS[0]}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        size="small"
+                      >
+                        {TIPO_CUSTO_OPTIONS.map(opcao => (
                           <MenuItem key={opcao} value={opcao}>
                             {opcao}
                           </MenuItem>

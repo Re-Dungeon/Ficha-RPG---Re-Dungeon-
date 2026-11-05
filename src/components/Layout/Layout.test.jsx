@@ -1,14 +1,16 @@
 import React, { useEffect } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
-import { MemoryRouter, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useLocation, useOutletContext, useParams } from 'react-router-dom';
 
 import { useAuth } from 'context/AuthContext';
 import { useSelecao } from 'context/selecaoContext';
 import Login from 'pages/Login/Login';
 import Layout from './Layout';
+import useIsMobile from 'hooks/useIsMobile';
 
 vi.mock('context/AuthContext', () => ({ useAuth: vi.fn() }));
+vi.mock('hooks/useIsMobile', () => ({ default: vi.fn() }));
 
 const PERSONAGENS = {
   wesley: { id: 'wesley', nome: 'Wesley Chase', campanhas: ['torre'] },
@@ -65,7 +67,47 @@ const clicarNav = nome => fireEvent.click(screen.getByRole('link', { name: nome 
 
 describe('Layout — alternar entre Fichas e Campanhas', () => {
   beforeEach(() => {
+    useIsMobile.mockReturnValue(false);
     useAuth.mockReturnValue({ currentUser: { uid: 'u1', email: 'a@b.c' }, logout: vi.fn() });
+  });
+
+  it('não repassa TabIndicatorProps para o DOM no mobile', async () => {
+    useIsMobile.mockReturnValue(true);
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const MobileTabsFixture = () => {
+      const { setHeaderExtra } = useOutletContext();
+      useEffect(() => {
+        setHeaderExtra({
+          tabs: {
+            value: 0,
+            onChange: () => {},
+            items: [{ value: 0, label: 'Resumo' }, { value: 1, label: 'Inventário' }],
+          },
+        });
+      }, [setHeaderExtra]);
+
+      return <div>Conteúdo mobile</div>;
+    };
+
+    render(
+      <MemoryRouter initialEntries={['/personagens']}>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route path="/personagens" element={<MobileTabsFixture />} />
+          </Route>
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText('Conteúdo mobile')).toBeInTheDocument();
+    expect(consoleError).not.toHaveBeenCalledWith(
+      expect.stringContaining('TabIndicatorProps'),
+      expect.anything(),
+      expect.anything(),
+    );
+
+    consoleError.mockRestore();
   });
 
   it('da ficha abre o chat da campanha do personagem e volta para a mesma ficha', async () => {
@@ -93,23 +135,27 @@ describe('Layout — alternar entre Fichas e Campanhas', () => {
     expect(await screen.findByText('Ficha de Solitário')).toBeInTheDocument();
   });
 
-  it('celular: o menu da conta mostra o e-mail e sai (só visível abaixo de 600px)', async () => {
+  it('celular: mantém o botão de usuário com menu funcional da conta', async () => {
     const logout = vi.fn();
+    useIsMobile.mockReturnValue(true);
     useAuth.mockReturnValue({ currentUser: { uid: 'u1', email: 'a@b.c' }, logout });
     renderApp('/personagens');
     await screen.findByText('Lista de fichas');
 
-    // jsdom não aplica a media query: o botão existe, mas oculto no desktop.
-    fireEvent.click(screen.getByLabelText('Conta'));
-    expect(await screen.findByRole('menuitem', { name: 'a@b.c' })).toBeInTheDocument();
+    const botaoUsuario = screen.getByRole('button', { name: /a@b\.c/i });
+    expect(botaoUsuario).toBeInTheDocument();
+
+    fireEvent.click(botaoUsuario);
+    expect(await screen.findByRole('menuitem', { name: /a@b\.c/i })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('menuitem', { name: 'Sair' }));
     expect(logout).toHaveBeenCalledTimes(1);
   });
 
-  it('exibe a identidade Re e os dados da conta autenticada no topo', async () => {
+  it('exibe a identidade Re e o botão de usuário com menu da conta', async () => {
+    const logout = vi.fn();
     useAuth.mockReturnValue({
       currentUser: { uid: 'u1', email: 'aline.borges@re.com', displayName: 'Aline Borges', photoURL: 'https://re.test/avatar.png' },
-      logout: vi.fn(),
+      logout,
     });
 
     renderApp('/personagens');
@@ -117,8 +163,12 @@ describe('Layout — alternar entre Fichas e Campanhas', () => {
 
     expect(screen.getByText('Re')).toBeInTheDocument();
     expect(screen.getByText('GERENCIADOR DE PERSONAGENS')).toBeInTheDocument();
-    expect(screen.getByText('Aline Borges')).toBeInTheDocument();
-    expect(screen.getByText('aline.borges@re.com')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Aline Borges' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Aline Borges' }));
+    expect(await screen.findByRole('menuitem', { name: /Aline Borges.*aline\.borges@re\.com/i })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Sair' }));
+    expect(logout).toHaveBeenCalledTimes(1);
   });
 
   it('não renderiza o header na rota pública de login', () => {

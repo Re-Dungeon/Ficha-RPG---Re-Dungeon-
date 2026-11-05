@@ -1,0 +1,1377 @@
+﻿
+> {"numTotalTestSuites":2,"numPassedTestSuites":0,"numFailedTestSuites":2,"numP
+endingTestSuites":0,"numTotalTests":50,"numPassedTests":45,"numFailedTests":5,"
+numPendingTests":0,"numTodoTests":0,"snapshot":{"added":0,"failure":false,"file
+sAdded":0,"filesRemoved":0,"filesRemovedList":[],"filesUnmatched":0,"filesUpdat
+ed":0,"matched":0,"total":0,"unchecked":0,"uncheckedKeysByFile":[],"unmatched":
+0,"updated":0,"didUpdate":false},"startTime":1793667875551,"success":false,"tes
+tResults":[{"assertionResults":[{"ancestorTitles":["AtributosTab â€” fluxo de 
+ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o abre a modal do 
+atributo, recalcula o Total ao editar a Base e salva o valor 
+correto","status":"passed","title":"abre a modal do atributo, recalcula o 
+Total ao editar a Base e salva o valor correto","duration":618.3788,"failureMes
+sages":[],"meta":{}},{"ancestorTitles":["AtributosTab â€” fluxo de 
+ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o descarta as 
+ediÃ§Ãµes da modal ao clicar em Cancelar","status":"passed","title":"descarta 
+as ediÃ§Ãµes da modal ao clicar em Cancelar","duration":311.35639999999967,"fai
+lureMessages":[],"meta":{}},{"ancestorTitles":["AtributosTab â€” fluxo de 
+ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o mantÃ©m o valor 
+bruto do bÃ´nus no campo editÃ¡vel mesmo quando hÃ¡ bÃ´nus de 
+cultivo","status":"passed","title":"mantÃ©m o valor bruto do bÃ´nus no campo 
+editÃ¡vel mesmo quando hÃ¡ bÃ´nus de cultivo","duration":48.488200000000234,"fa
+ilureMessages":[],"meta":{}},{"ancestorTitles":["AtributosTab â€” fluxo de 
+ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o aplica o 
+balanceamento adaptativo de prontidÃ£o conforme a tabela 
+oficial","status":"passed","title":"aplica o balanceamento adaptativo de 
+prontidÃ£o conforme a tabela oficial","duration":1.1158000000000357,"failureMes
+sages":[],"meta":{}},{"ancestorTitles":["AtributosTab â€” fluxo de 
+ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o abre o menu 
+contextual do Ataque e a calculadora com o valor real da 
+ficha","status":"passed","title":"abre o menu contextual do Ataque e a 
+calculadora com o valor real da ficha","duration":436.0890999999997,"failureMes
+sages":[],"meta":{}},{"ancestorTitles":["AtributosTab â€” fluxo de 
+ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o abre o menu 
+contextual da Defesa e a calculadora com o valor real da 
+ficha","status":"passed","title":"abre o menu contextual da Defesa e a 
+calculadora com o valor real da ficha","duration":289.7086999999997,"failureMes
+sages":[],"meta":{}},{"ancestorTitles":["AtributosTab â€” fluxo de 
+ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o salva combinaÃ§Ã£o 
+defensiva usando DEF como valor-base e nÃ£o 
+ATA","status":"passed","title":"salva combinaÃ§Ã£o defensiva usando DEF como 
+valor-base e nÃ£o ATA","duration":189.14600000000064,"failureMessages":[],"meta
+":{}},{"ancestorTitles":["AtributosTab â€” fluxo de 
+ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o permite selecionar 
+mÃºltiplas artes na combinaÃ§Ã£o e soma os bÃ´nus sem 
+duplicar","status":"failed","title":"permite selecionar mÃºltiplas artes na 
+combinaÃ§Ã£o e soma os bÃ´nus sem duplicar","duration":931.1067000000003,"failu
+reMessages":["TestingLibraryElementError: Unable to find an accessible element 
+with the role \"button\" and name `/salvar/i`\n\nThere are no accessible 
+roles. But there might be some inaccessible roles. If you wish to access them, 
+then set the `hidden` option to `true`. Learn more about this here: https://tes
+ting-library.com/docs/dom-testing-library/api-queries#byrole\n\nIgnored nodes: 
+comments, script, style\n\u001b[36m<div\u001b[39m\n  \u001b[33maria-labelledby\
+u001b[39m=\u001b[32m\"calculadora-ataque-titulo\"\u001b[39m\n  
+\u001b[33maria-modal\u001b[39m=\u001b[32m\"true\"\u001b[39m\n  
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiPaper-root MuiPaper-elevation 
+MuiPaper-rounded MuiPaper-elevation24 MuiDialog-paper MuiDialog-paperWidthLg 
+MuiDialog-paperFullWidth 
+css-10u5rhp-MuiPaper-root-MuiDialog-paper\"\u001b[39m\n  
+\u001b[33mdata-mui-focusable\u001b[39m=\u001b[32m\"\"\u001b[39m\n  
+\u001b[33mrole\u001b[39m=\u001b[32m\"dialog\"\u001b[39m\n  
+\u001b[33mstyle\u001b[39m=\u001b[32m\"--Paper-shadow: 0px 11px 15px -7px 
+rgba(0,0,0,0.2),0px 24px 38px 3px rgba(0,0,0,0.14),0px 9px 46px 8px 
+rgba(0,0,0,0.12);\"\u001b[39m\n  \u001b[33mtabindex\u001b[39m=\u001b[32m\"-1\"\
+u001b[39m\n\u001b[36m>\u001b[39m\n  \u001b[36m<div\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-8iuzgc\"\u001b[39m\n  
+\u001b[36m>\u001b[39m\n    \u001b[36m<div\u001b[39m\n      
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-14vy2aj\"\u001b[39m\n    
+\u001b[36m/>\u001b[39m\n    \u001b[36m<p\u001b[39m\n      
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiTypography-root MuiTypography-body1 
+css-8lviy0-MuiTypography-root\"\u001b[39m\n      
+\u001b[33mid\u001b[39m=\u001b[32m\"calculadora-ataque-titulo\"\u001b[39m\n    
+\u001b[36m>\u001b[39m\n      \u001b[0mCalculadora de Ataque\u001b[0m\n    
+\u001b[36m</p>\u001b[39m\n    \u001b[36m<button\u001b[39m\n      
+\u001b[33maria-label\u001b[39m=\u001b[32m\"Reabrir aviso da 
+calculadora\"\u001b[39m\n      
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiButtonBase-root MuiIconButton-root 
+MuiIconButton-sizeMedium 
+css-rwx2xk-MuiButtonBase-root-MuiIconButton-root\"\u001b[39m\n      
+\u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n      
+\u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n    
+\u001b[36m>\u001b[39m\n      \u001b[36m<svg\u001b[39m\n        
+\u001b[33maria-hidden\u001b[39m=\u001b[32m\"true\"\u001b[39m\n        
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiSvgIcon-root MuiSvgIcon-fontSizeSmall 
+css-120dh41-MuiSvgIcon-root\"\u001b[39m\n        
+\u001b[33mdata-testid\u001b[39m=\u001b[32m\"InfoOutlinedIcon\"\u001b[39m\n     
+   \u001b[33mfocusable\u001b[39m=\u001b[32m\"false\"\u001b[39m\n        
+\u001b[33mviewBox\u001b[39m=\u001b[32m\"0 0 24 24\"\u001b[39m\n      
+\u001b[36m>\u001b[39m\n        \u001b[36m<path\u001b[39m\n          
+\u001b[33md\u001b[39m=\u001b[32m\"M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 
+2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 18c-4.41 0-8-3.59-8-8s3.59-8 
+8-8 8 3.59 8 8-3.59 8-8 8\"\u001b[39m\n        \u001b[36m/>\u001b[39m\n      
+\u001b[36m</svg>\u001b[39m\n    \u001b[36m</button>\u001b[39m\n    
+\u001b[36m<button\u001b[39m\n      
+\u001b[33maria-label\u001b[39m=\u001b[32m\"Fechar calculadora\"\u001b[39m\n    
+  \u001b[33mclass\u001b[39m=\u001b[32m\"MuiButtonBase-root MuiIconButton-root 
+MuiIconButton-sizeMedium 
+css-2wdnx3-MuiButtonBase-root-MuiIconButton-root\"\u001b[39m\n      
+\u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n      
+\u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n    
+\u001b[36m>\u001b[39m\n      \u001b[36m<svg\u001b[39m\n        
+\u001b[33maria-hidden\u001b[39m=\u001b[32m\"true\"\u001b[39m\n        
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiSvgIcon-root MuiSvgIcon-fontSizeSmall 
+css-120dh41-MuiSvgIcon-root\"\u001b[39m\n        
+\u001b[33mdata-testid\u001b[39m=\u001b[32m\"CloseIcon\"\u001b[39m\n        
+\u001b[33mfocusable\u001b[39m=\u001b[32m\"false\"\u001b[39m\n        
+\u001b[33mviewBox\u001b[39m=\u001b[32m\"0 0 24 24\"\u001b[39m\n      
+\u001b[36m>\u001b[39m\n        \u001b[36m<path\u001b[39m\n          
+\u001b[33md\u001b[39m=\u001b[32m\"M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 
+10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z\"\u001b[39m\n    
+    \u001b[36m/>\u001b[39m\n      \u001b[36m</svg>\u001b[39m\n    
+\u001b[36m</button>\u001b[39m\n  \u001b[36m</div>\u001b[39m\n  
+\u001b[36m<div\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiDialogContent-root 
+css-4eyxdl-MuiDialogContent-root\"\u001b[39m\n  \u001b[36m>\u001b[39m\n    
+\u001b[36m<div\u001b[39m\n      
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-kq3ele\"\u001b[39m\n    
+\u001b[36m>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-1we9nwn\"\u001b[39m\n    
+  \u001b[36m>\u001b[39m\n        \u001b[36m<div\u001b[39m\n          
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-1p44k52\"\u001b[39m\n    
+    \u001b[36m>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-1l9lhyk\"\u001b[39m\n    
+      \u001b[36m>\u001b[39m\n            \u001b[36m<div\u001b[39m\n            
+  \u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-16d592y\"\u001b[39m\n  
+          \u001b[36m>\u001b[39m\n              \u001b[36m<div\u001b[39m\n      
+          \u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root 
+css-ija8xy\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                
+\u001b[36m<div\u001b[39m\n                  
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-1bg7452\"\u001b[39m\n    
+            \u001b[36m>\u001b[39m\n                  
+\u001b[36m<svg\u001b[39m\n                    
+\u001b[33maria-hidden\u001b[39m=\u001b[32m\"true\"\u001b[39m\n                 
+   \u001b[33mclass\u001b[39m=\u001b[32m\"MuiSvgIcon-root 
+MuiSvgIcon-fontSizeSmall css-120dh41-MuiSvgIcon-root\"\u001b[39m\n             
+       \u001b[33mdata-testid\u001b[39m=\u001b[32m\"ShieldIcon\"\u001b[39m\n    
+                \u001b[33mfocusable\u001b[39m=\u001b[32m\"false\"\u001b[39m\n  
+                  \u001b[33mviewBox\u001b[39m=\u001b[32m\"0 0 24 
+24\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    
+\u001b[36m<path\u001b[39m\n                      
+\u001b[33md\u001b[39m=\u001b[32m\"M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 
+9-6.45 9-12V5z\"\u001b[39m\n                    \u001b[36m/>\u001b[39m\n       
+           \u001b[36m</svg>\u001b[39m\n                  
+\u001b[36m<div\u001b[39m\n                    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-tc4muw\"\u001b[39m\n     
+             \u001b[36m>\u001b[39m\n                    
+\u001b[36m<div\u001b[39m\n                      
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-14lf27x\"\u001b[39m\n    
+                \u001b[36m>\u001b[39m\n                      
+\u001b[0mConfiguraÃ§Ã£o do Ataque\u001b[0m\n                    
+\u001b[36m</div>\u001b[39m\n                    \u001b[36m<div\u001b[39m\n     
+                 \u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root 
+css-1oa11ow\"\u001b[39m\n                    \u001b[36m>\u001b[39m\n           
+           \u001b[0mNova combinaÃ§Ã£o\u001b[0m\n                    
+\u001b[36m</div>\u001b[39m\n                  \u001b[36m</div>\u001b[39m\n     
+           \u001b[36m</div>\u001b[39m\n                
+\u001b[36m<button\u001b[39m\n                  
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiButtonBase-root MuiButton-root 
+MuiButton-text MuiButton-sizeSmall MuiButton-colorPrimary 
+css-xcl8wi-MuiButtonBase-root-MuiButton-root\"\u001b[39m\n                  
+\u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n                  
+\u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n                
+\u001b[36m>\u001b[39m\n                  \u001b[36m<span\u001b[39m\n           
+         \u001b[33mclass\u001b[39m=\u001b[32m\"MuiButton-icon 
+MuiButton-startIcon css-t70kls-MuiButton-startIcon\"\u001b[39m\n               
+   \u001b[36m>\u001b[39m\n                    \u001b[36m<svg\u001b[39m\n       
+               \u001b[33maria-hidden\u001b[39m=\u001b[32m\"true\"\u001b[39m\n  
+                    \u001b[33mclass\u001b[39m=\u001b[32m\"MuiSvgIcon-root 
+MuiSvgIcon-fontSizeSmall css-120dh41-MuiSvgIcon-root\"\u001b[39m\n             
+         \u001b[33mdata-testid\u001b[39m=\u001b[32m\"AddIcon\"\u001b[39m\n     
+                 \u001b[33mfocusable\u001b[39m=\u001b[32m\"false\"\u001b[39m\n 
+                     \u001b[33mviewBox\u001b[39m=\u001b[32m\"0 0 24 
+24\"\u001b[39m\n                    \u001b[36m>\u001b[39m\n                    
+  \u001b[36m<path\u001b[39m\n                        
+\u001b[33md\u001b[39m=\u001b[32m\"M19 
+13h-6v6h-2v-6H5v-2h6V5h2v6h6z\"\u001b[39m\n                      
+\u001b[36m/>\u001b[39m\n                    \u001b[36m</svg>\u001b[39m\n       
+           \u001b[36m</span>\u001b[39m\n                  \u001b[0mNova 
+CombinaÃ§Ã£o\u001b[0m\n                \u001b[36m</button>\u001b[39m\n         
+     \u001b[36m</div>\u001b[39m\n            \u001b[36m</div>\u001b[39m\n      
+      \u001b[36m<div\u001b[39m\n              
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-1pwn56s\"\u001b[39m\n    
+        \u001b[36m>\u001b[39m\n              \u001b[36m<div\u001b[39m\n        
+        \u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root 
+css-8z4cbb\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                
+\u001b[36m<div\u001b[39m\n                  
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiFormControl-root 
+MuiFormControl-fullWidth MuiTextField-root 
+css-fpobzr-MuiFormControl-root-MuiTextField-root\"\u001b[39m\n                
+\u001b[36m>\u001b[39m\n                  \u001b[36m<label\u001b[39m\n          
+          \u001b[33mclass\u001b[39m=\u001b[32m\"MuiFormLabel-root 
+MuiInputLabel-root MuiInputLabel-formControl MuiInputL...\n    at 
+Object.getElementError (D:\\Bagre.exe\\01_PROJETOS\\Ficha-RPG---Re-Dungeon-\\no
+de_modules\\@testing-library\\dom\\dist\\config.js:37:19)\n    at D:\\Bagre.exe
+\\01_PROJETOS\\Ficha-RPG---Re-Dungeon-\\node_modules\\@testing-library\\dom\\di
+st\\query-helpers.js:76:38\n    at D:\\Bagre.exe\\01_PROJETOS\\Ficha-RPG---Re-D
+ungeon-\\node_modules\\@testing-library\\dom\\dist\\query-helpers.js:52:17\n   
+ at D:\\Bagre.exe\\01_PROJETOS\\Ficha-RPG---Re-Dungeon-\\node_modules\\@testing
+-library\\dom\\dist\\query-helpers.js:95:19\n    at D:\\Bagre.exe\\01_PROJETOS\
+\Ficha-RPG---Re-Dungeon-\\src\\pages\\Personagens\\Ficha\\tabs\\AtributosTab.te
+st.jsx:292:36\n    at file:///D:/Bagre.exe/01_PROJETOS/Ficha-RPG---Re-Dungeon-/
+node_modules/@vitest/runner/dist/index.js:533:5\n    at runTest (file:///D:/Bag
+re.exe/01_PROJETOS/Ficha-RPG---Re-Dungeon-/node_modules/@vitest/runner/dist/ind
+ex.js:1056:11)\n    at runSuite (file:///D:/Bagre.exe/01_PROJETOS/Ficha-RPG---R
+e-Dungeon-/node_modules/@vitest/runner/dist/index.js:1205:15)\n    at runSuite 
+(file:///D:/Bagre.exe/01_PROJETOS/Ficha-RPG---Re-Dungeon-/node_modules/@vitest/
+runner/dist/index.js:1205:15)\n    at runFiles (file:///D:/Bagre.exe/01_PROJETO
+S/Ficha-RPG---Re-Dungeon-/node_modules/@vitest/runner/dist/index.js:1262:5)"],"
+meta":{}},{"ancestorTitles":["AtributosTab â€” fluxo de 
+ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o soma o custo da arte 
+ao custo de potencializaÃ§Ã£o na Defesa e consome exatamente o 
+total","status":"passed","title":"soma o custo da arte ao custo de 
+potencializaÃ§Ã£o na Defesa e consome exatamente o total","duration":462.266799
+9999994,"failureMessages":[],"meta":{}},{"ancestorTitles":["AtributosTab â€” 
+fluxo de ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o abre o menu 
+contextual da ProntidÃ£o com a Central de AÃ§Ãµes e o modal de 
+mecÃ¢nicas","status":"passed","title":"abre o menu contextual da ProntidÃ£o 
+com a Central de AÃ§Ãµes e o modal de mecÃ¢nicas","duration":425.89809999999943
+,"failureMessages":[],"meta":{}},{"ancestorTitles":["AtributosTab â€” fluxo de 
+ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o abre o painel de 
+detalhes da aÃ§Ã£o na central de aÃ§Ãµes","status":"passed","title":"abre o 
+painel de detalhes da aÃ§Ã£o na central de aÃ§Ãµes","duration":414.112700000000
+6,"failureMessages":[],"meta":{}},{"ancestorTitles":["AtributosTab â€” fluxo 
+de ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o mostra tokens de 
+comportamento na central de aÃ§Ãµes","status":"passed","title":"mostra tokens 
+de comportamento na central de aÃ§Ãµes","duration":379.22729999999956,"failureM
+essages":[],"meta":{}},{"ancestorTitles":["AtributosTab â€” fluxo de 
+ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o desconta PP 
+corretamente ao executar Ataque na central de 
+aÃ§Ãµes","status":"passed","title":"desconta PP corretamente ao executar 
+Ataque na central de aÃ§Ãµes","duration":341.90769999999975,"failureMessages":[
+],"meta":{}},{"ancestorTitles":["AtributosTab â€” fluxo de 
+ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o normaliza rÃ³tulos 
+de turno para evitar duplicaÃ§Ã£o do 
+prefixo","status":"passed","title":"normaliza rÃ³tulos de turno para evitar 
+duplicaÃ§Ã£o do prefixo","duration":2.3645000000005894,"failureMessages":[],"me
+ta":{}},{"ancestorTitles":["AtributosTab â€” fluxo de 
+ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o marca Ataque Duplo e 
+Usar Habilidade / Arte como aÃ§Ãµes Ãºnicas e bloqueia uso duplicado no mesmo 
+turno","status":"passed","title":"marca Ataque Duplo e Usar Habilidade / Arte 
+como aÃ§Ãµes Ãºnicas e bloqueia uso duplicado no mesmo turno","duration":469.94
+14999999999,"failureMessages":[],"meta":{}},{"ancestorTitles":["AtributosTab 
+â€” fluxo de ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o 
+bloqueia a execuÃ§Ã£o de Ataque mais de uma vez no mesmo 
+turno","status":"passed","title":"bloqueia a execuÃ§Ã£o de Ataque mais de uma 
+vez no mesmo turno","duration":559.8787000000002,"failureMessages":[],"meta":{}
+},{"ancestorTitles":["AtributosTab â€” fluxo de 
+ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o aplica custos 
+percentuais da prontidÃ£o mÃ¡xima em 315 PP para Ataque, Ataque Duplo e 
+Contra-ataque","status":"passed","title":"aplica custos percentuais da 
+prontidÃ£o mÃ¡xima em 315 PP para Ataque, Ataque Duplo e Contra-ataque","durati
+on":364.47079999999914,"failureMessages":[],"meta":{}},{"ancestorTitles":["Atri
+butosTab â€” fluxo de ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de 
+ediÃ§Ã£o filtra aÃ§Ãµes por nome, categoria e ignora maiÃºsculas e acentos na 
+busca da central de aÃ§Ãµes","status":"passed","title":"filtra aÃ§Ãµes por 
+nome, categoria e ignora maiÃºsculas e acentos na busca da central de aÃ§Ãµes",
+"duration":485.1831000000002,"failureMessages":[],"meta":{}},{"ancestorTitles":
+["AtributosTab â€” fluxo de ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de 
+ediÃ§Ã£o aplica custo automÃ¡tico de auxiliar aliado e abre fluxo de 
+confirmaÃ§Ã£o sem perguntar PP manual","status":"passed","title":"aplica custo 
+automÃ¡tico de auxiliar aliado e abre fluxo de confirmaÃ§Ã£o sem perguntar PP m
+anual","duration":814.9197000000004,"failureMessages":[],"meta":{}},{"ancestorT
+itles":["AtributosTab â€” fluxo de ediÃ§Ã£o"],"fullName":"AtributosTab â€” 
+fluxo de ediÃ§Ã£o mostra estado vazio e limpa a pesquisa sem fechar a central 
+de aÃ§Ãµes","status":"passed","title":"mostra estado vazio e limpa a pesquisa 
+sem fechar a central de aÃ§Ãµes","duration":347.85019999999895,"failureMessages
+":[],"meta":{}},{"ancestorTitles":["AtributosTab â€” fluxo de 
+ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o exibe a categoria 
+RecuperaÃ§Ã£o com as aÃ§Ãµes de recuperaÃ§Ã£o na central de 
+aÃ§Ãµes","status":"passed","title":"exibe a categoria RecuperaÃ§Ã£o com as 
+aÃ§Ãµes de recuperaÃ§Ã£o na central de aÃ§Ãµes","duration":200.9514999999992,"f
+ailureMessages":[],"meta":{}},{"ancestorTitles":["AtributosTab â€” fluxo de 
+ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o organiza aÃ§Ãµes 
+novas nas categorias corretas e bloqueia custo pendente da central de 
+aÃ§Ãµes","status":"passed","title":"organiza aÃ§Ãµes novas nas categorias 
+corretas e bloqueia custo pendente da central de aÃ§Ãµes","duration":492.918400
+0000005,"failureMessages":[],"meta":{}},{"ancestorTitles":["AtributosTab â€” 
+fluxo de ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o filtra 
+itens nÃ£o consumÃveis do popup de usar item e mantÃ©m consumÃveis 
+vÃ¡lidos","status":"passed","title":"filtra itens nÃ£o consumÃveis do popup de 
+usar item e mantÃ©m consumÃveis vÃ¡lidos","duration":367.83779999999933,"failur
+eMessages":[],"meta":{}},{"ancestorTitles":["AtributosTab â€” fluxo de 
+ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o apresenta o card de 
+item com imagem, raridade e efeito em dados antes do 
+uso","status":"passed","title":"apresenta o card de item com imagem, raridade 
+e efeito em dados antes do uso","duration":468.9519,"failureMessages":[],"meta"
+:{}},{"ancestorTitles":["AtributosTab â€” fluxo de 
+ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o abre a etapa de 
+aplicaÃ§Ã£o com seleÃ§Ã£o mÃºltipla e consome apenas uma unidade ao 
+confirmar","status":"passed","title":"abre a etapa de aplicaÃ§Ã£o com 
+seleÃ§Ã£o mÃºltipla e consome apenas uma unidade ao confirmar","duration":650.2
+389999999996,"failureMessages":[],"meta":{}},{"ancestorTitles":["AtributosTab 
+â€” fluxo de ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o permite 
+usar um item real do inventÃ¡rio a partir da central de 
+aÃ§Ãµes","status":"passed","title":"permite usar um item real do inventÃ¡rio a 
+partir da central de aÃ§Ãµes","duration":549.0805999999993,"failureMessages":[]
+,"meta":{}},{"ancestorTitles":["AtributosTab â€” fluxo de 
+ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o permite selecionar o 
+status de um item fixo antes de confirmar a 
+recuperaÃ§Ã£o","status":"passed","title":"permite selecionar o status de um 
+item fixo antes de confirmar a recuperaÃ§Ã£o","duration":439.086299999999,"fail
+ureMessages":[],"meta":{}},{"ancestorTitles":["AtributosTab â€” fluxo de 
+ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o permite usar um item 
+com efeito em dados, escolher a recuperaÃ§Ã£o e aplicar a fadiga 
+corretamente","status":"passed","title":"permite usar um item com efeito em 
+dados, escolher a recuperaÃ§Ã£o e aplicar a fadiga corretamente","duration":623
+.9263999999985,"failureMessages":[],"meta":{}},{"ancestorTitles":["AtributosTab
+ â€” fluxo de ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o 
+recupera 20% dos PP mÃ¡ximos e bloqueia reutilizaÃ§Ã£o no mesmo 
+turno","status":"passed","title":"recupera 20% dos PP mÃ¡ximos e bloqueia 
+reutilizaÃ§Ã£o no mesmo turno","duration":292.47309999999925,"failureMessages":
+[],"meta":{}},{"ancestorTitles":["AtributosTab â€” fluxo de 
+ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o ativa a aÃ§Ã£o extra 
+com custo progressivo da prontidÃ£o e cria benefÃcio pendente no 
+turno","status":"passed","title":"ativa a aÃ§Ã£o extra com custo progressivo 
+da prontidÃ£o e cria benefÃcio pendente no turno","duration":560.0529000000006,
+"failureMessages":[],"meta":{}},{"ancestorTitles":["AtributosTab â€” fluxo de 
+ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o bloqueia uma segunda 
+ativaÃ§Ã£o de aÃ§Ã£o extra no mesmo turno","status":"passed","title":"bloqueia 
+uma segunda ativaÃ§Ã£o de aÃ§Ã£o extra no mesmo turno","duration":392.604700000
+0017,"failureMessages":[],"meta":{}},{"ancestorTitles":["AtributosTab â€” 
+fluxo de ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o cancela a 
+seleÃ§Ã£o da aÃ§Ã£o extra e devolve os PP 
+pagos","status":"passed","title":"cancela a seleÃ§Ã£o da aÃ§Ã£o extra e 
+devolve os PP pagos","duration":359.0612999999994,"failureMessages":[],"meta":{
+}},{"ancestorTitles":["AtributosTab â€” fluxo de 
+ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o mantÃ©m aÃ§Ãµes com 
+custo zero fora do benefÃcio da aÃ§Ã£o extra e preserva o texto original do 
+botÃ£o","status":"passed","title":"mantÃ©m aÃ§Ãµes com custo zero fora do 
+benefÃcio da aÃ§Ã£o extra e preserva o texto original do botÃ£o","duration":538
+.1676000000007,"failureMessages":[],"meta":{}},{"ancestorTitles":["AtributosTab
+ â€” fluxo de ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o 
+seleciona o descanso curto, mostra a prÃ©via de recuperaÃ§Ã£o e persiste 
+SaÃºde, Energia, Fadiga e PP","status":"passed","title":"seleciona o descanso 
+curto, mostra a prÃ©via de recuperaÃ§Ã£o e persiste SaÃºde, Energia, Fadiga e P
+P","duration":423.09299999999894,"failureMessages":[],"meta":{}},{"ancestorTitl
+es":["AtributosTab â€” fluxo de ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo 
+de ediÃ§Ã£o seleciona o descanso longo e restaura a Fadiga atÃ© o mÃ¡ximo sem 
+exceder o limite","status":"passed","title":"seleciona o descanso longo e 
+restaura a Fadiga atÃ© o mÃ¡ximo sem exceder o limite","duration":527.211200000
+0016,"failureMessages":[],"meta":{}},{"ancestorTitles":["AtributosTab â€” 
+fluxo de ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o abre a 
+calculadora com o bÃ´nus extra vazio e trata valor em branco como 
+zero","status":"passed","title":"abre a calculadora com o bÃ´nus extra vazio e 
+trata valor em branco como zero","duration":215.2732999999971,"failureMessages"
+:[],"meta":{}},{"ancestorTitles":["AtributosTab â€” fluxo de 
+ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o solicita 
+confirmaÃ§Ã£o antes de excluir uma combinaÃ§Ã£o 
+salva","status":"passed","title":"solicita confirmaÃ§Ã£o antes de excluir uma 
+combinaÃ§Ã£o salva","duration":480.0567999999985,"failureMessages":[],"meta":{}
+},{"ancestorTitles":["AtributosTab â€” fluxo de 
+ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o desvincula a 
+combinaÃ§Ã£o selecionada ao clicar em nova combinaÃ§Ã£o e salva como criaÃ§Ã£o 
+nova","status":"passed","title":"desvincula a combinaÃ§Ã£o selecionada ao 
+clicar em nova combinaÃ§Ã£o e salva como criaÃ§Ã£o nova","duration":878.7030000
+000013,"failureMessages":[],"meta":{}},{"ancestorTitles":["AtributosTab â€” 
+fluxo de ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o salva 
+combinaÃ§Ã£o com Fadiga e persiste o recurso 
+selecionado","status":"failed","title":"salva combinaÃ§Ã£o com Fadiga e 
+persiste o recurso selecionado","duration":1010.1329000000005,"failureMessages"
+:["TestingLibraryElementError: Unable to find an accessible element with the 
+role \"button\" and name `/Fadiga Atual\\/MÃ¡xima.*Fadiga 
+suficiente/i`\n\nHere are the accessible roles:\n\n  paragraph:\n\n  Name 
+\"\":\n  \u001b[36m<p\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiTypography-root MuiTypography-body1 
+css-8lviy0-MuiTypography-root\"\u001b[39m\n    
+\u001b[33mid\u001b[39m=\u001b[32m\"calculadora-ataque-titulo\"\u001b[39m\n  
+\u001b[36m/>\u001b[39m\n\n  
+--------------------------------------------------\n  button:\n\n  Name 
+\"Reabrir aviso da calculadora\":\n  \u001b[36m<button\u001b[39m\n    
+\u001b[33maria-label\u001b[39m=\u001b[32m\"Reabrir aviso da 
+calculadora\"\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiButtonBase-root MuiIconButton-root 
+MuiIconButton-sizeMedium 
+css-rwx2xk-MuiButtonBase-root-MuiIconButton-root\"\u001b[39m\n    
+\u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n    
+\u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n  
+\u001b[36m/>\u001b[39m\n\n  Name \"Fechar calculadora\":\n  
+\u001b[36m<button\u001b[39m\n    
+\u001b[33maria-label\u001b[39m=\u001b[32m\"Fechar calculadora\"\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiButtonBase-root MuiIconButton-root 
+MuiIconButton-sizeMedium 
+css-2wdnx3-MuiButtonBase-root-MuiIconButton-root\"\u001b[39m\n    
+\u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n    
+\u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n  
+\u001b[36m/>\u001b[39m\n\n  
+--------------------------------------------------button:\n\n  Name \"Nova 
+CombinaÃ§Ã£o\":\n  \u001b[36m<button\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiButtonBase-root MuiButton-root 
+MuiButton-text MuiButton-sizeSmall MuiButton-colorPrimary 
+css-xcl8wi-MuiButtonBase-root-MuiButton-root\"\u001b[39m\n    
+\u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n    
+\u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n  
+\u001b[36m/>\u001b[39m\n\n  Name \"SaÃºde\":\n  \u001b[36m<button\u001b[39m\n  
+  \u001b[33maria-label\u001b[39m=\u001b[32m\"SaÃºde\"\u001b[39m\n    
+\u001b[33maria-pressed\u001b[39m=\u001b[32m\"false\"\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiButtonBase-root MuiButton-root 
+MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary 
+css-1hs7q36-MuiButtonBase-root-MuiButton-root\"\u001b[39m\n    
+\u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n    
+\u001b[33mtitle\u001b[39m=\u001b[32m\"SaÃºde Atual/MÃ¡xima 0 / 0 Custo 0 pts 
+SaÃºde suficiente\"\u001b[39m\n    
+\u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n  
+\u001b[36m/>\u001b[39m\n\n  Name \"Energia\":\n  \u001b[36m<button\u001b[39m\n 
+   \u001b[33maria-label\u001b[39m=\u001b[32m\"Energia\"\u001b[39m\n    
+\u001b[33maria-pressed\u001b[39m=\u001b[32m\"true\"\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiButtonBase-root MuiButton-root 
+MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary 
+css-jbpjaa-MuiButtonBase-root-MuiButton-root\"\u001b[39m\n    
+\u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n    
+\u001b[33mtitle\u001b[39m=\u001b[32m\"Energia Atual/MÃ¡xima 56 / 100 Custo 19 
+pts Energia suficiente\"\u001b[39m\n    
+\u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n  
+\u001b[36m/>\u001b[39m\n\n  Name \"Fadiga\":\n  \u001b[36m<button\u001b[39m\n  
+  \u001b[33maria-label\u001b[39m=\u001b[32m\"Fadiga\"\u001b[39m\n    
+\u001b[33maria-pressed\u001b[39m=\u001b[32m\"false\"\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiButtonBase-root MuiButton-root 
+MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary 
+css-1hs7q36-MuiButtonBase-root-MuiButton-root\"\u001b[39m\n    
+\u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n    
+\u001b[33mtitle\u001b[39m=\u001b[32m\"Fadiga Atual/MÃ¡xima 150 / 150 Custo 0 
+pts Fadiga suficiente\"\u001b[39m\n    
+\u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n  
+\u001b[36m/>\u001b[39m\n\n  
+--------------------------------------------------\n  textbox:\n\n  Name 
+\"Nome da combinaÃ§Ã£o\":\n  \u001b[36m<input\u001b[39m\n    
+\u001b[33maria-invalid\u001b[39m=\u001b[32m\"false\"\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiInputBase-input 
+MuiOutlinedInput-input 
+css-16wblaj-MuiInputBase-input-MuiOutlinedInput-input\"\u001b[39m\n    
+\u001b[33mid\u001b[39m=\u001b[32m\"_r_2ro_\"\u001b[39m\n    
+\u001b[33mtype\u001b[39m=\u001b[32m\"text\"\u001b[39m\n    
+\u001b[33mvalue\u001b[39m=\u001b[32m\"Corte Carmesim\"\u001b[39m\n  
+\u001b[36m/>\u001b[39m\n\n  
+--------------------------------------------------\n  combobox:\n\n  Name 
+\"Tipo de dano\":\n  \u001b[36m<div\u001b[39m\n    
+\u001b[33maria-expanded\u001b[39m=\u001b[32m\"false\"\u001b[39m\n    
+\u001b[33maria-haspopup\u001b[39m=\u001b[32m\"listbox\"\u001b[39m\n    
+\u001b[33maria-labelledby\u001b[39m=\u001b[32m\"tipo-dano-label\"\u001b[39m\n  
+  \u001b[33mclass\u001b[39m=\u001b[32m\"MuiSelect-select MuiSelect-outlined 
+MuiInputBase-input MuiOutlinedInput-input css-18jp67o-MuiNativeSelect-root-MuiS
+elect-select-MuiInputBase-input-MuiOutlinedInput-input\"\u001b[39m\n    
+\u001b[33mrole\u001b[39m=\u001b[32m\"combobox\"\u001b[39m\n    
+\u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n  
+\u001b[36m/>\u001b[39m\n\n  Name \"Arte/Habilidade\":\n  
+\u001b[36m<div\u001b[39m\n    
+\u001b[33maria-expanded\u001b[39m=\u001b[32m\"false\"\u001b[39m\n    
+\u001b[33maria-haspopup\u001b[39m=\u001b[32m\"listbox\"\u001b[39m\n    
+\u001b[33maria-labelledby\u001b[39m=\u001b[32m\"art-label\"\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiSelect-select MuiSelect-outlined 
+MuiSelect-multiple MuiInputBase-input MuiOutlinedInput-input css-18jp67o-MuiNat
+iveSelect-root-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input\"\u00
+1b[39m\n    \u001b[33mrole\u001b[39m=\u001b[32m\"combobox\"\u001b[39m\n    
+\u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n  
+\u001b[36m/>\u001b[39m\n\n  Name \"Item/Equipamento\":\n  
+\u001b[36m<div\u001b[39m\n    
+\u001b[33maria-expanded\u001b[39m=\u001b[32m\"false\"\u001b[39m\n    
+\u001b[33maria-haspopup\u001b[39m=\u001b[32m\"listbox\"\u001b[39m\n    
+\u001b[33maria-labelledby\u001b[39m=\u001b[32m\"item-label\"\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiSelect-select MuiSelect-outlined 
+MuiInputBase-input MuiOutlinedInput-input css-18jp67o-MuiNativeSelect-root-MuiS
+elect-select-MuiInputBase-input-MuiOutlinedInput-input\"\u001b[39m\n    
+\u001b[33mrole\u001b[39m=\u001b[32m\"combobox\"\u001b[39m\n    
+\u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n  
+\u001b[36m/>\u001b[39m\n\n  
+--------------------------------------------------\n  spinbutton:\n\n  Name 
+\"BÃ´nus extra\":\n  \u001b[36m<input\u001b[39m\n    
+\u001b[33maria-invalid\u001b[39m=\u001b[32m\"false\"\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiInputBase-input 
+MuiOutlinedInput-input 
+css-16wblaj-MuiInputBase-input-MuiOutlinedInput-input\"\u001b[39m\n    
+\u001b[33mid\u001b[39m=\u001b[32m\"_r_2rv_\"\u001b[39m\n    
+\u001b[33mtype\u001b[39m=\u001b[32m\"number\"\u001b[39m\n    
+\u001b[33mvalue\u001b[39m=\u001b[32m\"\"\u001b[39m\n  
+\u001b[36m/>\u001b[39m\n\n  
+--------------------------------------------------\n  slider:\n\n  Name 
+\"PotencializaÃ§Ã£o de Energia\":\n  \u001b[36m<input\u001b[39m\n    
+\u001b[33maria-label\u001b[39m=\u001b[32m\"PotencializaÃ§Ã£o de 
+Energia\"\u001b[39m\n    
+\u001b[33maria-orientation\u001b[39m=\u001b[32m\"horizontal\"\u001b[39m\n    
+\u001b[33maria-valuemax\u001b[39m=\u001b[32m\"30\"\u001b[39m\n    
+\u001b[33maria-valuemin\u001b[39m=\u001b[32m\"0\"\u001b[39m\n    
+\u001b[33maria-valuenow\u001b[39m=\u001b[32m\"19\"\u001b[39m\n    
+\u001b[33mdata-index\u001b[39m=\u001b[32m\"0\"\u001b[39m\n    
+\u001b[33mmax\u001b[39m=\u001b[32m\"30\"\u001b[39m\n    
+\u001b[33mmin\u001b[39m=\u001b[32m\"0\"\u001b[39m\n    
+\u001b[33mstep\u001b[39m=\u001b[32m\"1\"\u001b[39m\n    
+\u001b[33mstyle\u001b[39m=\u001b[32m\"border: 0px; height: 100%; margin: -1px; 
+overflow: hidden; padding: 0px; position: absolute; white-space: nowrap; 
+width: 100%; direction: ltr;\"\u001b[39m\n    
+\u001b[33mtype\u001b[39m=\u001b[32m\"range\"\u001b[39m\n    
+\u001b[33mvalue\u001b[39m=\u001b[32m\"19\"\u001b[39m\n  
+\u001b[36m/>\u001b[39m\n\n  
+--------------------------------------------------\n  paragraph:\n\n  Name 
+\"\":\n  \u001b[36m<p\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiTypography-root MuiTypography-body1 
+css-12hdh8a-MuiTypography-root\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name 
+\"\":\n  \u001b[36m<p\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiTypography-root MuiTypography-body1 
+css-1vo8c3n-MuiTypography-root\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name 
+\"\":\n  \u001b[36m<p\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiTypography-root MuiTypography-body2 
+css-uipq3i-MuiTypography-root\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  
+--------------------------------------------------button:\n\n  Name 
+\"Fechar\":\n  \u001b[36m<button\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiButtonBase-root MuiButton-root 
+MuiButton-contained MuiButton-sizeMedium MuiButton-colorInherit 
+css-qzp6lr-MuiButtonBase-root-MuiButton-root\"\u001b[39m\n    
+\u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n    
+\u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n  
+\u001b[36m/>\u001b[39m\n\n  Name \"Salvar\":\n  \u001b[36m<button\u001b[39m\n  
+  \u001b[33maria-label\u001b[39m=\u001b[32m\"Salvar\"\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiButtonBase-root MuiButton-root 
+MuiButton-contained MuiButton-sizeMedium MuiButton-colorPrimary 
+css-agmvrj-MuiButtonBase-root-MuiButton-root\"\u001b[39m\n    
+\u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n    
+\u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n  
+\u001b[36m/>\u001b[39m\n\n  
+--------------------------------------------------\n\nIgnored nodes: comments, 
+script, style\n\u001b[36m<div\u001b[39m\n  \u001b[33maria-labelledby\u001b[39m=
+\u001b[32m\"calculadora-ataque-titulo\"\u001b[39m\n  
+\u001b[33maria-modal\u001b[39m=\u001b[32m\"true\"\u001b[39m\n  
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiPaper-root MuiPaper-elevation 
+MuiPaper-rounded MuiPaper-elevation24 MuiDialog-paper MuiDialog-paperWidthLg 
+MuiDialog-paperFullWidth 
+css-10u5rhp-MuiPaper-root-MuiDialog-paper\"\u001b[39m\n  
+\u001b[33mdata-mui-focusable\u001b[39m=\u001b[32m\"\"\u001b[39m\n  
+\u001b[33mrole\u001b[39m=\u001b[32m\"dialog\"\u001b[39m\n  
+\u001b[33mstyle\u001b[39m=\u001b[32m\"--Paper-shadow: 0px 11px 15px -7px 
+rgba(0,0,0,0.2),0px 24px 38px 3px rgba(0,0,0,0.14),0px 9px 46px 8px 
+rgba(0,0,0,0.12);\"\u001b[39m\n  \u001b[33mtabindex\u001b[39m=\u001b[32m\"-1\"\
+u001b[39m\n\u001b[36m>\u001b[39m\n  \u001b[36m<div\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-8iuzgc\"\u001b[39m\n  
+\u001b[36m>\u001b[39m\n    \u001b[36m<div\u001b[39m\n      
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-14vy2aj\"\u001b[39m\n    
+\u001b[36m/>\u001b[39m\n    \u001b[36m<p\u001b[39m\n      
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiTypography-root MuiTypography-body1 
+css-8lviy0-MuiTypography-root\"\u001b[39m\n      
+\u001b[33mid\u001b[39m=\u001b[32m\"calculadora-ataque-titulo\"\u001b[39m\n    
+\u001b[36m>\u001b[39m\n      \u001b[0mCalculadora de Ataque\u001b[0m\n    
+\u001b[36m</p>\u001b[39m\n    \u001b[36m<button\u001b[39m\n      
+\u001b[33maria-label\u001b[39m=\u001b[32m\"Reabrir aviso da 
+calculadora\"\u001b[39m\n      
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiButtonBase-root MuiIconButton-root 
+MuiIconButton-sizeMedium 
+css-rwx2xk-MuiButtonBase-root-MuiIconButton-root\"\u001b[39m\n      
+\u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n      
+\u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n    
+\u001b[36m>\u001b[39m\n      \u001b[36m<svg\u001b[39m\n        
+\u001b[33maria-hidden\u001b[39m=\u001b[32m\"true\"\u001b[39m\n        
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiSvgIcon-root MuiSvgIcon-fontSizeSmall 
+css-120dh41-MuiSvgIcon-root\"\u001b[39m\n        
+\u001b[33mdata-testid\u001b[39m=\u001b[32m\"InfoOutlinedIcon\"\u001b[39m\n     
+   \u001b[33mfocusable\u001b[39m=\u001b[32m\"false\"\u001b[39m\n        
+\u001b[33mviewBox\u001b[39m=\u001b[32m\"0 0 24 24\"\u001b[39m\n      
+\u001b[36m>\u001b[39m\n        \u001b[36m<path\u001b[39m\n          
+\u001b[33md\u001b[39m=\u001b[32m\"M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 
+2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 18c-4.41 0-8-3.59-8-8s3.59-8 
+8-8 8 3.59 8 8-3.59 8-8 8\"\u001b[39m\n        \u001b[36m/>\u001b[39m\n      
+\u001b[36m</svg>\u001b[39m\n    \u001b[36m</button>\u001b[39m\n    
+\u001b[36m<button\u001b[39m\n      
+\u001b[33maria-label\u001b[39m=\u001b[32m\"Fechar calculadora\"\u001b[39m\n    
+  \u001b[33mclass\u001b[39m=\u001b[32m\"MuiButtonBase-root MuiIconButton-root 
+MuiIconButton-sizeMedium 
+css-2wdnx3-MuiButtonBase-root-MuiIconButton-root\"\u001b[39m\n      
+\u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n      
+\u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n    
+\u001b[36m>\u001b[39m\n      \u001b[36m<svg\u001b[39m\n        
+\u001b[33maria-hidden\u001b[39m=\u001b[32m\"true\"\u001b[39m\n        
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiSvgIcon-root MuiSvgIcon-fontSizeSmall 
+css-120dh41-MuiSvgIcon-root\"\u001b[39m\n        
+\u001b[33mdata-testid\u001b[39m=\u001b[32m\"CloseIcon\"\u001b[39m\n        
+\u001b[33mfocusable\u001b[39m=\u001b[32m\"false\"\u001b[39m\n        
+\u001b[33mviewBox\u001b[39m=\u001b[32m\"0 0 24 24\"\u001b[39m\n      
+\u001b[36m>\u001b[39m\n        \u001b[36m<path\u001b[39m\n          
+\u001b[33md\u001b[39m=\u001b[32m\"M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 
+10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z\"\u001b[39m\n    
+    \u001b[36m/>\u001b[39m\n      \u001b[36m</svg>\u001b[39m\n    
+\u001b[36m</button>\u001b[39m\n  \u001b[36m</div>\u001b[39m\n  
+\u001b[36m<div\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiDialogContent-root 
+css-4eyxdl-MuiDialogContent-root\"\u001b[39m\n  \u001b[36m>\u001b[39m\n    
+\u001b[36m<div\u001b[39m\n      
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-kq3ele\"\u001b[39m\n    
+\u001b[36m>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-1we9nwn\"\u001b[39m\n    
+  \u001b[36m>\u001b[39m\n        \u001b[36m<div\u001b[39m\n          
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-1p44k52\"\u001b[39m\n    
+    \u001b[36m>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-1l9lhyk\"\u001b[39m\n    
+      \u001b[36m>\u001b[39m\n            \u001b[36m<div\u001b[39m\n            
+  \u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-16d592y\"\u001b[39m\n  
+          \u001b[36m>\u001b[39m\n              \u001b[36m<div\u001b[39m\n      
+          \u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root 
+css-ija8xy\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                
+\u001b[36m<div\u001b[39m\n                  
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-1bg7452\"\u001b[39m\n    
+            \u001b[36m>\u001b[39m\n                  
+\u001b[36m<svg\u001b[39m\n                    
+\u001b[33maria-hidden\u001b[39m=\u001b[32m\"true\"\u001b[39m\n                 
+   \u001b[33mclass\u001b[39m=\u001b[32m\"MuiSvgIcon-root 
+MuiSvgIcon-fontSizeSmall css-120dh41-MuiSvgIcon-root\"\u001b[39m\n             
+       \u001b[33mdata-testid\u001b[39m=\u001b[32m\"ShieldIcon\"\u001b[39m\n    
+                \u001b[33mfocusable\u001b[39m=\u001b[32m\"false\"\u001b[39m\n  
+                  \u001b[33mviewBox\u001b[39m=\u001b[32m\"0 0 24 
+24\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    
+\u001b[36m<path\u001b[39m\n                      
+\u001b[33md\u001b[39m=\u001b[32m\"M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 
+9-6.45 9-12V5z\"\u001b[39m\n                    \u001b[36m/>\u001b[39m\n       
+           \u001b[36m</svg>\u001b[39m\n                  
+\u001b[36m<div\u001b[39m\n                    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-tc4muw\"\u001b[39m\n     
+             \u001b[36m>\u001b[39m\n                    
+\u001b[36m<div\u001b[39m\n                      
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-14lf27x\"\u001b[39m\n    
+                \u001b[36m>\u001b[39m\n                      
+\u001b[0mConfiguraÃ§Ã£o do Ataque\u001b[0m\n                    
+\u001b[36m</div>\u001b[39m\n                    \u001b[36m<div\u001b[39m\n     
+                 \u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root 
+css-1oa11ow\"\u001b[39m\n                    \u001b[36m>\u001b[39m\n           
+           \u001b[0mNova combinaÃ§Ã£o\u001b[0m\n                    
+\u001b[36m</div>\u001b[39m\n                  \u001b[36m</div>\u001b[39m\n     
+           \u001b[36m</div>\u001b[39m\n                
+\u001b[36m<button\u001b[39m\n                  
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiButtonBase-root MuiButton-root 
+MuiButton-text MuiButton-sizeSmall MuiButton-colorPrimary 
+css-xcl8wi-MuiButtonBase-root-MuiButton-root\"\u001b[39m\n                  
+\u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n                  
+\u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n                
+\u001b[36m>\u001b[39m\n                  \u001b[36m<span\u001b[39m\n           
+         \u001b[33mclass\u001b[39m=\u001b[32m\"MuiButton-icon 
+MuiButton-startIcon css-t70kls-MuiButton-startIcon\"\u001b[39m\n               
+   \u001b[36m>\u001b[39m\n                    \u001b[36m<svg\u001b[39m\n       
+               \u001b[33maria-hidden\u001b[39m=\u001b[32m\"true\"\u001b[39m\n  
+                    \u001b[33mclass\u001b[39m=\u001b[32m\"MuiSvgIcon-root 
+MuiSvgIcon-fontSizeSmall css-120dh41-MuiSvgIcon-root\"\u001b[39m\n             
+         \u001b[33mdata-testid\u001b[39m=\u001b[32m\"AddIcon\"\u001b[39m\n     
+                 \u001b[33mfocusable\u001b[39m=\u001b[32m\"false\"\u001b[39m\n 
+                     \u001b[33mviewBox\u001b[39m=\u001b[32m\"0 0 24 
+24\"\u001b[39m\n                    \u001b[36m>\u001b[39m\n                    
+  \u001b[36m<path\u001b[39m\n                        
+\u001b[33md\u001b[39m=\u001b[32m\"M19 
+13h-6v6h-2v-6H5v-2h6V5h2v6h6z\"\u001b[39m\n                      
+\u001b[36m/>\u001b[39m\n                    \u001b[36m</svg>\u001b[39m\n       
+           \u001b[36m</span>\u001b[39m\n                  \u001b[0mNova 
+CombinaÃ§Ã£o\u001b[0m\n                \u001b[36m</button>\u001b[39m\n         
+     \u001b[36m</div>\u001b[39m\n            \u001b[36m</div>\u001b[39m\n      
+      \u001b[36m<div\u001b[39m\n              
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-1pwn56s\"\u001b[39m\n    
+        \u001b[36m>\u001b[39m\n              \u001b[36m<div\u001b[39m\n        
+        \u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root 
+css-8z4cbb\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                
+\u001b[36m<div\u001b[39m\n                  
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiFormControl-root 
+MuiFormControl-fullWidth MuiTextField-root 
+css-fpobzr-MuiFormControl-root-MuiTextField-root\"\u001b[39m\n                
+\u001b[36m>\u001b[39m\n                  \u001b[36m<label\u001b[39m\n          
+          \u001b[33mclass\u001b[39m=\u001b[32m\"MuiFormLabel-root 
+MuiInputLabel-root MuiInputLabel-formControl MuiInputL...\n    at 
+Object.getElementError (D:\\Bagre.exe\\01_PROJETOS\\Ficha-RPG---Re-Dungeon-\\no
+de_modules\\@testing-library\\dom\\dist\\config.js:37:19)\n    at D:\\Bagre.exe
+\\01_PROJETOS\\Ficha-RPG---Re-Dungeon-\\node_modules\\@testing-library\\dom\\di
+st\\query-helpers.js:76:38\n    at D:\\Bagre.exe\\01_PROJETOS\\Ficha-RPG---Re-D
+ungeon-\\node_modules\\@testing-library\\dom\\dist\\query-helpers.js:52:17\n   
+ at D:\\Bagre.exe\\01_PROJETOS\\Ficha-RPG---Re-Dungeon-\\node_modules\\@testing
+-library\\dom\\dist\\query-helpers.js:95:19\n    at D:\\Bagre.exe\\01_PROJETOS\
+\Ficha-RPG---Re-Dungeon-\\src\\pages\\Personagens\\Ficha\\tabs\\AtributosTab.te
+st.jsx:1409:36\n    at runNextTicks (node:internal/process/task_queues:65:5)\n 
+   at processTimers (node:internal/timers:538:9)\n    at file:///D:/Bagre.exe/0
+1_PROJETOS/Ficha-RPG---Re-Dungeon-/node_modules/@vitest/runner/dist/index.js:53
+3:5\n    at runTest (file:///D:/Bagre.exe/01_PROJETOS/Ficha-RPG---Re-Dungeon-/n
+ode_modules/@vitest/runner/dist/index.js:1056:11)\n    at runSuite (file:///D:/
+Bagre.exe/01_PROJETOS/Ficha-RPG---Re-Dungeon-/node_modules/@vitest/runner/dist/
+index.js:1205:15)"],"meta":{}},{"ancestorTitles":["AtributosTab â€” fluxo de 
+ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o cria uma nova 
+combinaÃ§Ã£o quando o nome igual existe em outro registro com ID 
+diferente","status":"failed","title":"cria uma nova combinaÃ§Ã£o quando o nome 
+igual existe em outro registro com ID diferente","duration":1125.5495999999985,
+"failureMessages":["TestingLibraryElementError: Unable to find an accessible 
+element with the role \"button\" and name `/Fadiga Atual\\/MÃ¡xima.*Fadiga 
+suficiente/i`\n\nHere are the accessible roles:\n\n  paragraph:\n\n  Name 
+\"\":\n  \u001b[36m<p\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiTypography-root MuiTypography-body1 
+css-8lviy0-MuiTypography-root\"\u001b[39m\n    
+\u001b[33mid\u001b[39m=\u001b[32m\"calculadora-ataque-titulo\"\u001b[39m\n  
+\u001b[36m/>\u001b[39m\n\n  
+--------------------------------------------------\n  button:\n\n  Name 
+\"Reabrir aviso da calculadora\":\n  \u001b[36m<button\u001b[39m\n    
+\u001b[33maria-label\u001b[39m=\u001b[32m\"Reabrir aviso da 
+calculadora\"\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiButtonBase-root MuiIconButton-root 
+MuiIconButton-sizeMedium 
+css-rwx2xk-MuiButtonBase-root-MuiIconButton-root\"\u001b[39m\n    
+\u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n    
+\u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n  
+\u001b[36m/>\u001b[39m\n\n  Name \"Fechar calculadora\":\n  
+\u001b[36m<button\u001b[39m\n    
+\u001b[33maria-label\u001b[39m=\u001b[32m\"Fechar calculadora\"\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiButtonBase-root MuiIconButton-root 
+MuiIconButton-sizeMedium 
+css-2wdnx3-MuiButtonBase-root-MuiIconButton-root\"\u001b[39m\n    
+\u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n    
+\u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n  
+\u001b[36m/>\u001b[39m\n\n  
+--------------------------------------------------button:\n\n  Name \"Nova 
+CombinaÃ§Ã£o\":\n  \u001b[36m<button\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiButtonBase-root MuiButton-root 
+MuiButton-text MuiButton-sizeSmall MuiButton-colorPrimary 
+css-xcl8wi-MuiButtonBase-root-MuiButton-root\"\u001b[39m\n    
+\u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n    
+\u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n  
+\u001b[36m/>\u001b[39m\n\n  Name \"SaÃºde\":\n  \u001b[36m<button\u001b[39m\n  
+  \u001b[33maria-label\u001b[39m=\u001b[32m\"SaÃºde\"\u001b[39m\n    
+\u001b[33maria-pressed\u001b[39m=\u001b[32m\"false\"\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiButtonBase-root MuiButton-root 
+MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary 
+css-1hs7q36-MuiButtonBase-root-MuiButton-root\"\u001b[39m\n    
+\u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n    
+\u001b[33mtitle\u001b[39m=\u001b[32m\"SaÃºde Atual/MÃ¡xima 0 / 0 Custo 0 pts 
+SaÃºde suficiente\"\u001b[39m\n    
+\u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n  
+\u001b[36m/>\u001b[39m\n\n  Name \"Energia\":\n  \u001b[36m<button\u001b[39m\n 
+   \u001b[33maria-label\u001b[39m=\u001b[32m\"Energia\"\u001b[39m\n    
+\u001b[33maria-pressed\u001b[39m=\u001b[32m\"true\"\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiButtonBase-root MuiButton-root 
+MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary 
+css-jbpjaa-MuiButtonBase-root-MuiButton-root\"\u001b[39m\n    
+\u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n    
+\u001b[33mtitle\u001b[39m=\u001b[32m\"Energia Atual/MÃ¡xima 56 / 100 Custo 19 
+pts Energia suficiente\"\u001b[39m\n    
+\u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n  
+\u001b[36m/>\u001b[39m\n\n  Name \"Fadiga\":\n  \u001b[36m<button\u001b[39m\n  
+  \u001b[33maria-label\u001b[39m=\u001b[32m\"Fadiga\"\u001b[39m\n    
+\u001b[33maria-pressed\u001b[39m=\u001b[32m\"false\"\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiButtonBase-root MuiButton-root 
+MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary 
+css-1hs7q36-MuiButtonBase-root-MuiButton-root\"\u001b[39m\n    
+\u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n    
+\u001b[33mtitle\u001b[39m=\u001b[32m\"Fadiga Atual/MÃ¡xima 150 / 150 Custo 0 
+pts Fadiga suficiente\"\u001b[39m\n    
+\u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n  
+\u001b[36m/>\u001b[39m\n\n  Name \"Selecionar\":\n  
+\u001b[36m<button\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiButtonBase-root MuiButton-root 
+MuiButton-text MuiButton-sizeSmall MuiButton-colorPrimary 
+css-1wohz6g-MuiButtonBase-root-MuiButton-root\"\u001b[39m\n    
+\u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n    
+\u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n  
+\u001b[36m/>\u001b[39m\n\n  Name \"Excluir\":\n  \u001b[36m<button\u001b[39m\n 
+   \u001b[33mclass\u001b[39m=\u001b[32m\"MuiButtonBase-root MuiButton-root 
+MuiButton-text MuiButton-sizeSmall MuiButton-colorPrimary 
+css-hoy2vl-MuiButtonBase-root-MuiButton-root\"\u001b[39m\n    
+\u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n    
+\u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n  
+\u001b[36m/>\u001b[39m\n\n  Name \"USAR\":\n  \u001b[36m<button\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiButtonBase-root MuiButton-root 
+MuiButton-text MuiButton-sizeSmall MuiButton-colorPrimary 
+css-6yi0ia-MuiButtonBase-root-MuiButton-root\"\u001b[39m\n    
+\u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n    
+\u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n  
+\u001b[36m/>\u001b[39m\n\n  
+--------------------------------------------------\n  textbox:\n\n  Name 
+\"Nome da combinaÃ§Ã£o\":\n  \u001b[36m<input\u001b[39m\n    
+\u001b[33maria-invalid\u001b[39m=\u001b[32m\"false\"\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiInputBase-input 
+MuiOutlinedInput-input 
+css-16wblaj-MuiInputBase-input-MuiOutlinedInput-input\"\u001b[39m\n    
+\u001b[33mid\u001b[39m=\u001b[32m\"_r_2sv_\"\u001b[39m\n    
+\u001b[33mtype\u001b[39m=\u001b[32m\"text\"\u001b[39m\n    
+\u001b[33mvalue\u001b[39m=\u001b[32m\" soco do jose \"\u001b[39m\n  
+\u001b[36m/>\u001b[39m\n\n  
+--------------------------------------------------\n  combobox:\n\n  Name 
+\"Tipo de dano\":\n  \u001b[36m<div\u001b[39m\n    
+\u001b[33maria-expanded\u001b[39m=\u001b[32m\"false\"\u001b[39m\n    
+\u001b[33maria-haspopup\u001b[39m=\u001b[32m\"listbox\"\u001b[39m\n    
+\u001b[33maria-labelledby\u001b[39m=\u001b[32m\"tipo-dano-label\"\u001b[39m\n  
+  \u001b[33mclass\u001b[39m=\u001b[32m\"MuiSelect-select MuiSelect-outlined 
+MuiInputBase-input MuiOutlinedInput-input css-18jp67o-MuiNativeSelect-root-MuiS
+elect-select-MuiInputBase-input-MuiOutlinedInput-input\"\u001b[39m\n    
+\u001b[33mrole\u001b[39m=\u001b[32m\"combobox\"\u001b[39m\n    
+\u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n  
+\u001b[36m/>\u001b[39m\n\n  Name \"Arte/Habilidade\":\n  
+\u001b[36m<div\u001b[39m\n    
+\u001b[33maria-expanded\u001b[39m=\u001b[32m\"false\"\u001b[39m\n    
+\u001b[33maria-haspopup\u001b[39m=\u001b[32m\"listbox\"\u001b[39m\n    
+\u001b[33maria-labelledby\u001b[39m=\u001b[32m\"art-label\"\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiSelect-select MuiSelect-outlined 
+MuiSelect-multiple MuiInputBase-input MuiOutlinedInput-input css-18jp67o-MuiNat
+iveSelect-root-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input\"\u00
+1b[39m\n    \u001b[33mrole\u001b[39m=\u001b[32m\"combobox\"\u001b[39m\n    
+\u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n  
+\u001b[36m/>\u001b[39m\n\n  Name \"Item/Equipamento\":\n  
+\u001b[36m<div\u001b[39m\n    
+\u001b[33maria-expanded\u001b[39m=\u001b[32m\"false\"\u001b[39m\n    
+\u001b[33maria-haspopup\u001b[39m=\u001b[32m\"listbox\"\u001b[39m\n    
+\u001b[33maria-labelledby\u001b[39m=\u001b[32m\"item-label\"\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiSelect-select MuiSelect-outlined 
+MuiInputBase-input MuiOutlinedInput-input css-18jp67o-MuiNativeSelect-root-MuiS
+elect-select-MuiInputBase-input-MuiOutlinedInput-input\"\u001b[39m\n    
+\u001b[33mrole\u001b[39m=\u001b[32m\"combobox\"\u001b[39m\n    
+\u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n  
+\u001b[36m/>\u001b[39m\n\n  
+--------------------------------------------------\n  spinbutton:\n\n  Name 
+\"BÃ´nus extra\":\n  \u001b[36m<input\u001b[39m\n    
+\u001b[33maria-invalid\u001b[39m=\u001b[32m\"false\"\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiInputBase-input 
+MuiOutlinedInput-input 
+css-16wblaj-MuiInputBase-input-MuiOutlinedInput-input\"\u001b[39m\n    
+\u001b[33mid\u001b[39m=\u001b[32m\"_r_2t6_\"\u001b[39m\n    
+\u001b[33mtype\u001b[39m=\u001b[32m\"number\"\u001b[39m\n    
+\u001b[33mvalue\u001b[39m=\u001b[32m\"\"\u001b[39m\n  
+\u001b[36m/>\u001b[39m\n\n  
+--------------------------------------------------\n  slider:\n\n  Name 
+\"PotencializaÃ§Ã£o de Energia\":\n  \u001b[36m<input\u001b[39m\n    
+\u001b[33maria-label\u001b[39m=\u001b[32m\"PotencializaÃ§Ã£o de 
+Energia\"\u001b[39m\n    
+\u001b[33maria-orientation\u001b[39m=\u001b[32m\"horizontal\"\u001b[39m\n    
+\u001b[33maria-valuemax\u001b[39m=\u001b[32m\"30\"\u001b[39m\n    
+\u001b[33maria-valuemin\u001b[39m=\u001b[32m\"0\"\u001b[39m\n    
+\u001b[33maria-valuenow\u001b[39m=\u001b[32m\"19\"\u001b[39m\n    
+\u001b[33mdata-index\u001b[39m=\u001b[32m\"0\"\u001b[39m\n    
+\u001b[33mmax\u001b[39m=\u001b[32m\"30\"\u001b[39m\n    
+\u001b[33mmin\u001b[39m=\u001b[32m\"0\"\u001b[39m\n    
+\u001b[33mstep\u001b[39m=\u001b[32m\"1\"\u001b[39m\n    
+\u001b[33mstyle\u001b[39m=\u001b[32m\"border: 0px; height: 100%; margin: -1px; 
+overflow: hidden; padding: 0px; position: absolute; white-space: nowrap; 
+width: 100%; direction: ltr;\"\u001b[39m\n    
+\u001b[33mtype\u001b[39m=\u001b[32m\"range\"\u001b[39m\n    
+\u001b[33mvalue\u001b[39m=\u001b[32m\"19\"\u001b[39m\n  
+\u001b[36m/>\u001b[39m\n\n  
+--------------------------------------------------\n  paragraph:\n\n  Name 
+\"\":\n  \u001b[36m<p\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiTypography-root MuiTypography-body1 
+css-12hdh8a-MuiTypography-root\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name 
+\"\":\n  \u001b[36m<p\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiTypography-root MuiTypography-body1 
+css-1vo8c3n-MuiTypography-root\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  
+--------------------------------------------------button:\n\n  Name 
+\"Fechar\":\n  \u001b[36m<button\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiButtonBase-root MuiButton-root 
+MuiButton-contained MuiButton-sizeMedium MuiButton-colorInherit 
+css-qzp6lr-MuiButtonBase-root-MuiButton-root\"\u001b[39m\n    
+\u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n    
+\u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n  
+\u001b[36m/>\u001b[39m\n\n  Name \"Salvar\":\n  \u001b[36m<button\u001b[39m\n  
+  \u001b[33maria-label\u001b[39m=\u001b[32m\"Salvar\"\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiButtonBase-root MuiButton-root 
+MuiButton-contained MuiButton-sizeMedium MuiButton-colorPrimary 
+css-agmvrj-MuiButtonBase-root-MuiButton-root\"\u001b[39m\n    
+\u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n    
+\u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n  
+\u001b[36m/>\u001b[39m\n\n  
+--------------------------------------------------\n\nIgnored nodes: comments, 
+script, style\n\u001b[36m<div\u001b[39m\n  \u001b[33maria-labelledby\u001b[39m=
+\u001b[32m\"calculadora-ataque-titulo\"\u001b[39m\n  
+\u001b[33maria-modal\u001b[39m=\u001b[32m\"true\"\u001b[39m\n  
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiPaper-root MuiPaper-elevation 
+MuiPaper-rounded MuiPaper-elevation24 MuiDialog-paper MuiDialog-paperWidthLg 
+MuiDialog-paperFullWidth 
+css-10u5rhp-MuiPaper-root-MuiDialog-paper\"\u001b[39m\n  
+\u001b[33mdata-mui-focusable\u001b[39m=\u001b[32m\"\"\u001b[39m\n  
+\u001b[33mrole\u001b[39m=\u001b[32m\"dialog\"\u001b[39m\n  
+\u001b[33mstyle\u001b[39m=\u001b[32m\"--Paper-shadow: 0px 11px 15px -7px 
+rgba(0,0,0,0.2),0px 24px 38px 3px rgba(0,0,0,0.14),0px 9px 46px 8px 
+rgba(0,0,0,0.12);\"\u001b[39m\n  \u001b[33mtabindex\u001b[39m=\u001b[32m\"-1\"\
+u001b[39m\n\u001b[36m>\u001b[39m\n  \u001b[36m<div\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-8iuzgc\"\u001b[39m\n  
+\u001b[36m>\u001b[39m\n    \u001b[36m<div\u001b[39m\n      
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-14vy2aj\"\u001b[39m\n    
+\u001b[36m/>\u001b[39m\n    \u001b[36m<p\u001b[39m\n      
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiTypography-root MuiTypography-body1 
+css-8lviy0-MuiTypography-root\"\u001b[39m\n      
+\u001b[33mid\u001b[39m=\u001b[32m\"calculadora-ataque-titulo\"\u001b[39m\n    
+\u001b[36m>\u001b[39m\n      \u001b[0mCalculadora de Ataque\u001b[0m\n    
+\u001b[36m</p>\u001b[39m\n    \u001b[36m<button\u001b[39m\n      
+\u001b[33maria-label\u001b[39m=\u001b[32m\"Reabrir aviso da 
+calculadora\"\u001b[39m\n      
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiButtonBase-root MuiIconButton-root 
+MuiIconButton-sizeMedium 
+css-rwx2xk-MuiButtonBase-root-MuiIconButton-root\"\u001b[39m\n      
+\u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n      
+\u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n    
+\u001b[36m>\u001b[39m\n      \u001b[36m<svg\u001b[39m\n        
+\u001b[33maria-hidden\u001b[39m=\u001b[32m\"true\"\u001b[39m\n        
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiSvgIcon-root MuiSvgIcon-fontSizeSmall 
+css-120dh41-MuiSvgIcon-root\"\u001b[39m\n        
+\u001b[33mdata-testid\u001b[39m=\u001b[32m\"InfoOutlinedIcon\"\u001b[39m\n     
+   \u001b[33mfocusable\u001b[39m=\u001b[32m\"false\"\u001b[39m\n        
+\u001b[33mviewBox\u001b[39m=\u001b[32m\"0 0 24 24\"\u001b[39m\n      
+\u001b[36m>\u001b[39m\n        \u001b[36m<path\u001b[39m\n          
+\u001b[33md\u001b[39m=\u001b[32m\"M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 
+2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 18c-4.41 0-8-3.59-8-8s3.59-8 
+8-8 8 3.59 8 8-3.59 8-8 8\"\u001b[39m\n        \u001b[36m/>\u001b[39m\n      
+\u001b[36m</svg>\u001b[39m\n    \u001b[36m</button>\u001b[39m\n    
+\u001b[36m<button\u001b[39m\n      
+\u001b[33maria-label\u001b[39m=\u001b[32m\"Fechar calculadora\"\u001b[39m\n    
+  \u001b[33mclass\u001b[39m=\u001b[32m\"MuiButtonBase-root MuiIconButton-root 
+MuiIconButton-sizeMedium 
+css-2wdnx3-MuiButtonBase-root-MuiIconButton-root\"\u001b[39m\n      
+\u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n      
+\u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n    
+\u001b[36m>\u001b[39m\n      \u001b[36m<svg\u001b[39m\n        
+\u001b[33maria-hidden\u001b[39m=\u001b[32m\"true\"\u001b[39m\n        
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiSvgIcon-root MuiSvgIcon-fontSizeSmall 
+css-120dh41-MuiSvgIcon-root\"\u001b[39m\n        
+\u001b[33mdata-testid\u001b[39m=\u001b[32m\"CloseIcon\"\u001b[39m\n        
+\u001b[33mfocusable\u001b[39m=\u001b[32m\"false\"\u001b[39m\n        
+\u001b[33mviewBox\u001b[39m=\u001b[32m\"0 0 24 24\"\u001b[39m\n      
+\u001b[36m>\u001b[39m\n        \u001b[36m<path\u001b[39m\n          
+\u001b[33md\u001b[39m=\u001b[32m\"M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 
+10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z\"\u001b[39m\n    
+    \u001b[36m/>\u001b[39m\n      \u001b[36m</svg>\u001b[39m\n    
+\u001b[36m</button>\u001b[39m\n  \u001b[36m</div>\u001b[39m\n  
+\u001b[36m<div\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiDialogContent-root 
+css-4eyxdl-MuiDialogContent-root\"\u001b[39m\n  \u001b[36m>\u001b[39m\n    
+\u001b[36m<div\u001b[39m\n      
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-kq3ele\"\u001b[39m\n    
+\u001b[36m>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-1we9nwn\"\u001b[39m\n    
+  \u001b[36m>\u001b[39m\n        \u001b[36m<div\u001b[39m\n          
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-1p44k52\"\u001b[39m\n    
+    \u001b[36m>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-1l9lhyk\"\u001b[39m\n    
+      \u001b[36m>\u001b[39m\n            \u001b[36m<div\u001b[39m\n            
+  \u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-16d592y\"\u001b[39m\n  
+          \u001b[36m>\u001b[39m\n              \u001b[36m<div\u001b[39m\n      
+          \u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root 
+css-ija8xy\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                
+\u001b[36m<div\u001b[39m\n                  
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-1bg7452\"\u001b[39m\n    
+            \u001b[36m>\u001b[39m\n                  
+\u001b[36m<svg\u001b[39m\n                    
+\u001b[33maria-hidden\u001b[39m=\u001b[32m\"true\"\u001b[39m\n                 
+   \u001b[33mclass\u001b[39m=\u001b[32m\"MuiSvgIcon-root 
+MuiSvgIcon-fontSizeSmall css-120dh41-MuiSvgIcon-root\"\u001b[39m\n             
+       \u001b[33mdata-testid\u001b[39m=\u001b[32m\"ShieldIcon\"\u001b[39m\n    
+                \u001b[33mfocusable\u001b[39m=\u001b[32m\"false\"\u001b[39m\n  
+                  \u001b[33mviewBox\u001b[39m=\u001b[32m\"0 0 24 
+24\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    
+\u001b[36m<path\u001b[39m\n                      
+\u001b[33md\u001b[39m=\u001b[32m\"M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 
+9-6.45 9-12V5z\"\u001b[39m\n                    \u001b[36m/>\u001b[39m\n       
+           \u001b[36m</svg>\u001b[39m\n                  
+\u001b[36m<div\u001b[39m\n                    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-tc4muw\"\u001b[39m\n     
+             \u001b[36m>\u001b[39m\n                    
+\u001b[36m<div\u001b[39m\n                      
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-14lf27x\"\u001b[39m\n    
+                \u001b[36m>\u001b[39m\n                      
+\u001b[0mConfiguraÃ§Ã£o do Ataque\u001b[0m\n                    
+\u001b[36m</div>\u001b[39m\n                    \u001b[36m<div\u001b[39m\n     
+                 \u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root 
+css-1oa11ow\"\u001b[39m\n                    \u001b[36m>\u001b[39m\n           
+           \u001b[0mNova combinaÃ§Ã£o\u001b[0m\n                    
+\u001b[36m</div>\u001b[39m\n                  \u001b[36m</div>\u001b[39m\n     
+           \u001b[36m</div>\u001b[39m\n                
+\u001b[36m<button\u001b[39m\n                  
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiButtonBase-root MuiButton-root 
+MuiButton-text MuiButton-sizeSmall MuiButton-colorPrimary 
+css-xcl8wi-MuiButtonBase-root-MuiButton-root\"\u001b[39m\n                  
+\u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n                  
+\u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n                
+\u001b[36m>\u001b[39m\n                  \u001b[36m<span\u001b[39m\n           
+         \u001b[33mclass\u001b[39m=\u001b[32m\"MuiButton-icon 
+MuiButton-startIcon css-t70kls-MuiButton-startIcon\"\u001b[39m\n               
+   \u001b[36m>\u001b[39m\n                    \u001b[36m<svg\u001b[39m\n       
+               \u001b[33maria-hidden\u001b[39m=\u001b[32m\"true\"\u001b[39m\n  
+                    \u001b[33mclass\u001b[39m=\u001b[32m\"MuiSvgIcon-root 
+MuiSvgIcon-fontSizeSmall css-120dh41-MuiSvgIcon-root\"\u001b[39m\n             
+         \u001b[33mdata-testid\u001b[39m=\u001b[32m\"AddIcon\"\u001b[39m\n     
+                 \u001b[33mfocusable\u001b[39m=\u001b[32m\"false\"\u001b[39m\n 
+                     \u001b[33mviewBox\u001b[39m=\u001b[32m\"0 0 24 
+24\"\u001b[39m\n                    \u001b[36m>\u001b[39m\n                    
+  \u001b[36m<path\u001b[39m\n                        
+\u001b[33md\u001b[39m=\u001b[32m\"M19 
+13h-6v6h-2v-6H5v-2h6V5h2v6h6z\"\u001b[39m\n                      
+\u001b[36m/>\u001b[39m\n                    \u001b[36m</svg>\u001b[39m\n       
+           \u001b[36m</span>\u001b[39m\n                  \u001b[0mNova 
+CombinaÃ§Ã£o\u001b[0m\n                \u001b[36m</button>\u001b[39m\n         
+     \u001b[36m</div>\u001b[39m\n            \u001b[36m</div>\u001b[39m\n      
+      \u001b[36m<div\u001b[39m\n              
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-1pwn56s\"\u001b[39m\n    
+        \u001b[36m>\u001b[39m\n              \u001b[36m<div\u001b[39m\n        
+        \u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root 
+css-8z4cbb\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                
+\u001b[36m<div\u001b[39m\n                  
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiFormControl-root 
+MuiFormControl-fullWidth MuiTextField-root 
+css-fpobzr-MuiFormControl-root-MuiTextField-root\"\u001b[39m\n                
+\u001b[36m>\u001b[39m\n                  \u001b[36m<label\u001b[39m\n          
+          \u001b[33mclass\u001b[39m=\u001b[32m\"MuiFormLabel-root 
+MuiInputLabel-root MuiInputLabel-formControl MuiInputL...\n    at 
+Object.getElementError (D:\\Bagre.exe\\01_PROJETOS\\Ficha-RPG---Re-Dungeon-\\no
+de_modules\\@testing-library\\dom\\dist\\config.js:37:19)\n    at D:\\Bagre.exe
+\\01_PROJETOS\\Ficha-RPG---Re-Dungeon-\\node_modules\\@testing-library\\dom\\di
+st\\query-helpers.js:76:38\n    at D:\\Bagre.exe\\01_PROJETOS\\Ficha-RPG---Re-D
+ungeon-\\node_modules\\@testing-library\\dom\\dist\\query-helpers.js:52:17\n   
+ at D:\\Bagre.exe\\01_PROJETOS\\Ficha-RPG---Re-Dungeon-\\node_modules\\@testing
+-library\\dom\\dist\\query-helpers.js:95:19\n    at D:\\Bagre.exe\\01_PROJETOS\
+\Ficha-RPG---Re-Dungeon-\\src\\pages\\Personagens\\Ficha\\tabs\\AtributosTab.te
+st.jsx:1458:36\n    at runNextTicks (node:internal/process/task_queues:65:5)\n 
+   at processTimers (node:internal/timers:538:9)\n    at file:///D:/Bagre.exe/0
+1_PROJETOS/Ficha-RPG---Re-Dungeon-/node_modules/@vitest/runner/dist/index.js:53
+3:5\n    at runTest (file:///D:/Bagre.exe/01_PROJETOS/Ficha-RPG---Re-Dungeon-/n
+ode_modules/@vitest/runner/dist/index.js:1056:11)\n    at runSuite (file:///D:/
+Bagre.exe/01_PROJETOS/Ficha-RPG---Re-Dungeon-/node_modules/@vitest/runner/dist/
+index.js:1205:15)"],"meta":{}},{"ancestorTitles":["AtributosTab â€” fluxo de 
+ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o calcula o custo da 
+potencializaÃ§Ã£o pelo recurso selecionado","status":"passed","title":"calcula 
+o custo da potencializaÃ§Ã£o pelo recurso selecionado","duration":490.172200000
+0009,"failureMessages":[],"meta":{}},{"ancestorTitles":["AtributosTab â€” 
+fluxo de ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o move o 
+custo da arte para o recurso clicado sem deixar o custo preso na 
+energia","status":"failed","title":"move o custo da arte para o recurso 
+clicado sem deixar o custo preso na energia","duration":718.647399999998,"failu
+reMessages":["TestingLibraryElementError: Unable to find an accessible element 
+with the role \"button\" and name `/energia/i`\n\nThere are no accessible 
+roles. But there might be some inaccessible roles. If you wish to access them, 
+then set the `hidden` option to `true`. Learn more about this here: https://tes
+ting-library.com/docs/dom-testing-library/api-queries#byrole\n\nIgnored nodes: 
+comments, script, style\n\u001b[36m<div\u001b[39m\n  \u001b[33maria-labelledby\
+u001b[39m=\u001b[32m\"calculadora-ataque-titulo\"\u001b[39m\n  
+\u001b[33maria-modal\u001b[39m=\u001b[32m\"true\"\u001b[39m\n  
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiPaper-root MuiPaper-elevation 
+MuiPaper-rounded MuiPaper-elevation24 MuiDialog-paper MuiDialog-paperWidthLg 
+MuiDialog-paperFullWidth 
+css-10u5rhp-MuiPaper-root-MuiDialog-paper\"\u001b[39m\n  
+\u001b[33mdata-mui-focusable\u001b[39m=\u001b[32m\"\"\u001b[39m\n  
+\u001b[33mrole\u001b[39m=\u001b[32m\"dialog\"\u001b[39m\n  
+\u001b[33mstyle\u001b[39m=\u001b[32m\"--Paper-shadow: 0px 11px 15px -7px 
+rgba(0,0,0,0.2),0px 24px 38px 3px rgba(0,0,0,0.14),0px 9px 46px 8px 
+rgba(0,0,0,0.12);\"\u001b[39m\n  \u001b[33mtabindex\u001b[39m=\u001b[32m\"-1\"\
+u001b[39m\n\u001b[36m>\u001b[39m\n  \u001b[36m<div\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-8iuzgc\"\u001b[39m\n  
+\u001b[36m>\u001b[39m\n    \u001b[36m<div\u001b[39m\n      
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-14vy2aj\"\u001b[39m\n    
+\u001b[36m/>\u001b[39m\n    \u001b[36m<p\u001b[39m\n      
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiTypography-root MuiTypography-body1 
+css-8lviy0-MuiTypography-root\"\u001b[39m\n      
+\u001b[33mid\u001b[39m=\u001b[32m\"calculadora-ataque-titulo\"\u001b[39m\n    
+\u001b[36m>\u001b[39m\n      \u001b[0mCalculadora de Ataque\u001b[0m\n    
+\u001b[36m</p>\u001b[39m\n    \u001b[36m<button\u001b[39m\n      
+\u001b[33maria-label\u001b[39m=\u001b[32m\"Reabrir aviso da 
+calculadora\"\u001b[39m\n      
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiButtonBase-root MuiIconButton-root 
+MuiIconButton-sizeMedium 
+css-rwx2xk-MuiButtonBase-root-MuiIconButton-root\"\u001b[39m\n      
+\u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n      
+\u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n    
+\u001b[36m>\u001b[39m\n      \u001b[36m<svg\u001b[39m\n        
+\u001b[33maria-hidden\u001b[39m=\u001b[32m\"true\"\u001b[39m\n        
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiSvgIcon-root MuiSvgIcon-fontSizeSmall 
+css-120dh41-MuiSvgIcon-root\"\u001b[39m\n        
+\u001b[33mdata-testid\u001b[39m=\u001b[32m\"InfoOutlinedIcon\"\u001b[39m\n     
+   \u001b[33mfocusable\u001b[39m=\u001b[32m\"false\"\u001b[39m\n        
+\u001b[33mviewBox\u001b[39m=\u001b[32m\"0 0 24 24\"\u001b[39m\n      
+\u001b[36m>\u001b[39m\n        \u001b[36m<path\u001b[39m\n          
+\u001b[33md\u001b[39m=\u001b[32m\"M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 
+2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 18c-4.41 0-8-3.59-8-8s3.59-8 
+8-8 8 3.59 8 8-3.59 8-8 8\"\u001b[39m\n        \u001b[36m/>\u001b[39m\n      
+\u001b[36m</svg>\u001b[39m\n    \u001b[36m</button>\u001b[39m\n    
+\u001b[36m<button\u001b[39m\n      
+\u001b[33maria-label\u001b[39m=\u001b[32m\"Fechar calculadora\"\u001b[39m\n    
+  \u001b[33mclass\u001b[39m=\u001b[32m\"MuiButtonBase-root MuiIconButton-root 
+MuiIconButton-sizeMedium 
+css-2wdnx3-MuiButtonBase-root-MuiIconButton-root\"\u001b[39m\n      
+\u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n      
+\u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n    
+\u001b[36m>\u001b[39m\n      \u001b[36m<svg\u001b[39m\n        
+\u001b[33maria-hidden\u001b[39m=\u001b[32m\"true\"\u001b[39m\n        
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiSvgIcon-root MuiSvgIcon-fontSizeSmall 
+css-120dh41-MuiSvgIcon-root\"\u001b[39m\n        
+\u001b[33mdata-testid\u001b[39m=\u001b[32m\"CloseIcon\"\u001b[39m\n        
+\u001b[33mfocusable\u001b[39m=\u001b[32m\"false\"\u001b[39m\n        
+\u001b[33mviewBox\u001b[39m=\u001b[32m\"0 0 24 24\"\u001b[39m\n      
+\u001b[36m>\u001b[39m\n        \u001b[36m<path\u001b[39m\n          
+\u001b[33md\u001b[39m=\u001b[32m\"M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 
+10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z\"\u001b[39m\n    
+    \u001b[36m/>\u001b[39m\n      \u001b[36m</svg>\u001b[39m\n    
+\u001b[36m</button>\u001b[39m\n  \u001b[36m</div>\u001b[39m\n  
+\u001b[36m<div\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiDialogContent-root 
+css-4eyxdl-MuiDialogContent-root\"\u001b[39m\n  \u001b[36m>\u001b[39m\n    
+\u001b[36m<div\u001b[39m\n      
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-kq3ele\"\u001b[39m\n    
+\u001b[36m>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-1we9nwn\"\u001b[39m\n    
+  \u001b[36m>\u001b[39m\n        \u001b[36m<div\u001b[39m\n          
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-1p44k52\"\u001b[39m\n    
+    \u001b[36m>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-1l9lhyk\"\u001b[39m\n    
+      \u001b[36m>\u001b[39m\n            \u001b[36m<div\u001b[39m\n            
+  \u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-16d592y\"\u001b[39m\n  
+          \u001b[36m>\u001b[39m\n              \u001b[36m<div\u001b[39m\n      
+          \u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root 
+css-ija8xy\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                
+\u001b[36m<div\u001b[39m\n                  
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-1bg7452\"\u001b[39m\n    
+            \u001b[36m>\u001b[39m\n                  
+\u001b[36m<svg\u001b[39m\n                    
+\u001b[33maria-hidden\u001b[39m=\u001b[32m\"true\"\u001b[39m\n                 
+   \u001b[33mclass\u001b[39m=\u001b[32m\"MuiSvgIcon-root 
+MuiSvgIcon-fontSizeSmall css-120dh41-MuiSvgIcon-root\"\u001b[39m\n             
+       \u001b[33mdata-testid\u001b[39m=\u001b[32m\"ShieldIcon\"\u001b[39m\n    
+                \u001b[33mfocusable\u001b[39m=\u001b[32m\"false\"\u001b[39m\n  
+                  \u001b[33mviewBox\u001b[39m=\u001b[32m\"0 0 24 
+24\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    
+\u001b[36m<path\u001b[39m\n                      
+\u001b[33md\u001b[39m=\u001b[32m\"M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 
+9-6.45 9-12V5z\"\u001b[39m\n                    \u001b[36m/>\u001b[39m\n       
+           \u001b[36m</svg>\u001b[39m\n                  
+\u001b[36m<div\u001b[39m\n                    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-tc4muw\"\u001b[39m\n     
+             \u001b[36m>\u001b[39m\n                    
+\u001b[36m<div\u001b[39m\n                      
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-14lf27x\"\u001b[39m\n    
+                \u001b[36m>\u001b[39m\n                      
+\u001b[0mConfiguraÃ§Ã£o do Ataque\u001b[0m\n                    
+\u001b[36m</div>\u001b[39m\n                    \u001b[36m<div\u001b[39m\n     
+                 \u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root 
+css-1oa11ow\"\u001b[39m\n                    \u001b[36m>\u001b[39m\n           
+           \u001b[0mNova combinaÃ§Ã£o\u001b[0m\n                    
+\u001b[36m</div>\u001b[39m\n                  \u001b[36m</div>\u001b[39m\n     
+           \u001b[36m</div>\u001b[39m\n                
+\u001b[36m<button\u001b[39m\n                  
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiButtonBase-root MuiButton-root 
+MuiButton-text MuiButton-sizeSmall MuiButton-colorPrimary 
+css-xcl8wi-MuiButtonBase-root-MuiButton-root\"\u001b[39m\n                  
+\u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n                  
+\u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n                
+\u001b[36m>\u001b[39m\n                  \u001b[36m<span\u001b[39m\n           
+         \u001b[33mclass\u001b[39m=\u001b[32m\"MuiButton-icon 
+MuiButton-startIcon css-t70kls-MuiButton-startIcon\"\u001b[39m\n               
+   \u001b[36m>\u001b[39m\n                    \u001b[36m<svg\u001b[39m\n       
+               \u001b[33maria-hidden\u001b[39m=\u001b[32m\"true\"\u001b[39m\n  
+                    \u001b[33mclass\u001b[39m=\u001b[32m\"MuiSvgIcon-root 
+MuiSvgIcon-fontSizeSmall css-120dh41-MuiSvgIcon-root\"\u001b[39m\n             
+         \u001b[33mdata-testid\u001b[39m=\u001b[32m\"AddIcon\"\u001b[39m\n     
+                 \u001b[33mfocusable\u001b[39m=\u001b[32m\"false\"\u001b[39m\n 
+                     \u001b[33mviewBox\u001b[39m=\u001b[32m\"0 0 24 
+24\"\u001b[39m\n                    \u001b[36m>\u001b[39m\n                    
+  \u001b[36m<path\u001b[39m\n                        
+\u001b[33md\u001b[39m=\u001b[32m\"M19 
+13h-6v6h-2v-6H5v-2h6V5h2v6h6z\"\u001b[39m\n                      
+\u001b[36m/>\u001b[39m\n                    \u001b[36m</svg>\u001b[39m\n       
+           \u001b[36m</span>\u001b[39m\n                  \u001b[0mNova 
+CombinaÃ§Ã£o\u001b[0m\n                \u001b[36m</button>\u001b[39m\n         
+     \u001b[36m</div>\u001b[39m\n            \u001b[36m</div>\u001b[39m\n      
+      \u001b[36m<div\u001b[39m\n              
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-1pwn56s\"\u001b[39m\n    
+        \u001b[36m>\u001b[39m\n              \u001b[36m<div\u001b[39m\n        
+        \u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root 
+css-8z4cbb\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                
+\u001b[36m<div\u001b[39m\n                  
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiFormControl-root 
+MuiFormControl-fullWidth MuiTextField-root 
+css-fpobzr-MuiFormControl-root-MuiTextField-root\"\u001b[39m\n                
+\u001b[36m>\u001b[39m\n                  \u001b[36m<label\u001b[39m\n          
+          \u001b[33mclass\u001b[39m=\u001b[32m\"MuiFormLabel-root 
+MuiInputLabel-root MuiInputLabel-formControl MuiInputL...\n    at 
+Object.getElementError (D:\\Bagre.exe\\01_PROJETOS\\Ficha-RPG---Re-Dungeon-\\no
+de_modules\\@testing-library\\dom\\dist\\config.js:37:19)\n    at D:\\Bagre.exe
+\\01_PROJETOS\\Ficha-RPG---Re-Dungeon-\\node_modules\\@testing-library\\dom\\di
+st\\query-helpers.js:76:38\n    at D:\\Bagre.exe\\01_PROJETOS\\Ficha-RPG---Re-D
+ungeon-\\node_modules\\@testing-library\\dom\\dist\\query-helpers.js:52:17\n   
+ at D:\\Bagre.exe\\01_PROJETOS\\Ficha-RPG---Re-Dungeon-\\node_modules\\@testing
+-library\\dom\\dist\\query-helpers.js:95:19\n    at D:\\Bagre.exe\\01_PROJETOS\
+\Ficha-RPG---Re-Dungeon-\\src\\pages\\Personagens\\Ficha\\tabs\\AtributosTab.te
+st.jsx:1522:40\n    at runNextTicks (node:internal/process/task_queues:65:5)\n 
+   at processTimers (node:internal/timers:538:9)\n    at file:///D:/Bagre.exe/0
+1_PROJETOS/Ficha-RPG---Re-Dungeon-/node_modules/@vitest/runner/dist/index.js:53
+3:5\n    at runTest (file:///D:/Bagre.exe/01_PROJETOS/Ficha-RPG---Re-Dungeon-/n
+ode_modules/@vitest/runner/dist/index.js:1056:11)\n    at runSuite (file:///D:/
+Bagre.exe/01_PROJETOS/Ficha-RPG---Re-Dungeon-/node_modules/@vitest/runner/dist/
+index.js:1205:15)"],"meta":{}},{"ancestorTitles":["AtributosTab â€” fluxo de 
+ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o move o custo da arte 
+para o recurso clicado na defesa sem deixar o custo preso no card 
+anterior","status":"failed","title":"move o custo da arte para o recurso 
+clicado na defesa sem deixar o custo preso no card anterior","duration":957.782
+5000000012,"failureMessages":["TestingLibraryElementError: Unable to find an 
+accessible element with the role \"button\" and name `/energia/i`\n\nThere are 
+no accessible roles. But there might be some inaccessible roles. If you wish 
+to access them, then set the `hidden` option to `true`. Learn more about this 
+here: https://testing-library.com/docs/dom-testing-library/api-queries#byrole\n
+\nIgnored nodes: comments, script, style\n\u001b[36m<div\u001b[39m\n  \u001b[33
+maria-labelledby\u001b[39m=\u001b[32m\"calculadora-ataque-titulo\"\u001b[39m\n 
+ \u001b[33maria-modal\u001b[39m=\u001b[32m\"true\"\u001b[39m\n  
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiPaper-root MuiPaper-elevation 
+MuiPaper-rounded MuiPaper-elevation24 MuiDialog-paper MuiDialog-paperWidthLg 
+MuiDialog-paperFullWidth 
+css-10u5rhp-MuiPaper-root-MuiDialog-paper\"\u001b[39m\n  
+\u001b[33mdata-mui-focusable\u001b[39m=\u001b[32m\"\"\u001b[39m\n  
+\u001b[33mrole\u001b[39m=\u001b[32m\"dialog\"\u001b[39m\n  
+\u001b[33mstyle\u001b[39m=\u001b[32m\"--Paper-shadow: 0px 11px 15px -7px 
+rgba(0,0,0,0.2),0px 24px 38px 3px rgba(0,0,0,0.14),0px 9px 46px 8px 
+rgba(0,0,0,0.12);\"\u001b[39m\n  \u001b[33mtabindex\u001b[39m=\u001b[32m\"-1\"\
+u001b[39m\n\u001b[36m>\u001b[39m\n  \u001b[36m<div\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-8iuzgc\"\u001b[39m\n  
+\u001b[36m>\u001b[39m\n    \u001b[36m<div\u001b[39m\n      
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-14vy2aj\"\u001b[39m\n    
+\u001b[36m/>\u001b[39m\n    \u001b[36m<p\u001b[39m\n      
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiTypography-root MuiTypography-body1 
+css-8lviy0-MuiTypography-root\"\u001b[39m\n      
+\u001b[33mid\u001b[39m=\u001b[32m\"calculadora-ataque-titulo\"\u001b[39m\n    
+\u001b[36m>\u001b[39m\n      \u001b[0mCalculadora de Defesa\u001b[0m\n    
+\u001b[36m</p>\u001b[39m\n    \u001b[36m<button\u001b[39m\n      
+\u001b[33maria-label\u001b[39m=\u001b[32m\"Reabrir aviso da 
+calculadora\"\u001b[39m\n      
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiButtonBase-root MuiIconButton-root 
+MuiIconButton-sizeMedium 
+css-rwx2xk-MuiButtonBase-root-MuiIconButton-root\"\u001b[39m\n      
+\u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n      
+\u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n    
+\u001b[36m>\u001b[39m\n      \u001b[36m<svg\u001b[39m\n        
+\u001b[33maria-hidden\u001b[39m=\u001b[32m\"true\"\u001b[39m\n        
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiSvgIcon-root MuiSvgIcon-fontSizeSmall 
+css-120dh41-MuiSvgIcon-root\"\u001b[39m\n        
+\u001b[33mdata-testid\u001b[39m=\u001b[32m\"InfoOutlinedIcon\"\u001b[39m\n     
+   \u001b[33mfocusable\u001b[39m=\u001b[32m\"false\"\u001b[39m\n        
+\u001b[33mviewBox\u001b[39m=\u001b[32m\"0 0 24 24\"\u001b[39m\n      
+\u001b[36m>\u001b[39m\n        \u001b[36m<path\u001b[39m\n          
+\u001b[33md\u001b[39m=\u001b[32m\"M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 
+2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 18c-4.41 0-8-3.59-8-8s3.59-8 
+8-8 8 3.59 8 8-3.59 8-8 8\"\u001b[39m\n        \u001b[36m/>\u001b[39m\n      
+\u001b[36m</svg>\u001b[39m\n    \u001b[36m</button>\u001b[39m\n    
+\u001b[36m<button\u001b[39m\n      
+\u001b[33maria-label\u001b[39m=\u001b[32m\"Fechar calculadora\"\u001b[39m\n    
+  \u001b[33mclass\u001b[39m=\u001b[32m\"MuiButtonBase-root MuiIconButton-root 
+MuiIconButton-sizeMedium 
+css-2wdnx3-MuiButtonBase-root-MuiIconButton-root\"\u001b[39m\n      
+\u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n      
+\u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n    
+\u001b[36m>\u001b[39m\n      \u001b[36m<svg\u001b[39m\n        
+\u001b[33maria-hidden\u001b[39m=\u001b[32m\"true\"\u001b[39m\n        
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiSvgIcon-root MuiSvgIcon-fontSizeSmall 
+css-120dh41-MuiSvgIcon-root\"\u001b[39m\n        
+\u001b[33mdata-testid\u001b[39m=\u001b[32m\"CloseIcon\"\u001b[39m\n        
+\u001b[33mfocusable\u001b[39m=\u001b[32m\"false\"\u001b[39m\n        
+\u001b[33mviewBox\u001b[39m=\u001b[32m\"0 0 24 24\"\u001b[39m\n      
+\u001b[36m>\u001b[39m\n        \u001b[36m<path\u001b[39m\n          
+\u001b[33md\u001b[39m=\u001b[32m\"M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 
+10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z\"\u001b[39m\n    
+    \u001b[36m/>\u001b[39m\n      \u001b[36m</svg>\u001b[39m\n    
+\u001b[36m</button>\u001b[39m\n  \u001b[36m</div>\u001b[39m\n  
+\u001b[36m<div\u001b[39m\n    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiDialogContent-root 
+css-4eyxdl-MuiDialogContent-root\"\u001b[39m\n  \u001b[36m>\u001b[39m\n    
+\u001b[36m<div\u001b[39m\n      
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-kq3ele\"\u001b[39m\n    
+\u001b[36m>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-1we9nwn\"\u001b[39m\n    
+  \u001b[36m>\u001b[39m\n        \u001b[36m<div\u001b[39m\n          
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-1p44k52\"\u001b[39m\n    
+    \u001b[36m>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-1l9lhyk\"\u001b[39m\n    
+      \u001b[36m>\u001b[39m\n            \u001b[36m<div\u001b[39m\n            
+  \u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-16d592y\"\u001b[39m\n  
+          \u001b[36m>\u001b[39m\n              \u001b[36m<div\u001b[39m\n      
+          \u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root 
+css-ija8xy\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                
+\u001b[36m<div\u001b[39m\n                  
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-1bg7452\"\u001b[39m\n    
+            \u001b[36m>\u001b[39m\n                  
+\u001b[36m<svg\u001b[39m\n                    
+\u001b[33maria-hidden\u001b[39m=\u001b[32m\"true\"\u001b[39m\n                 
+   \u001b[33mclass\u001b[39m=\u001b[32m\"MuiSvgIcon-root 
+MuiSvgIcon-fontSizeSmall css-120dh41-MuiSvgIcon-root\"\u001b[39m\n             
+       \u001b[33mdata-testid\u001b[39m=\u001b[32m\"ShieldIcon\"\u001b[39m\n    
+                \u001b[33mfocusable\u001b[39m=\u001b[32m\"false\"\u001b[39m\n  
+                  \u001b[33mviewBox\u001b[39m=\u001b[32m\"0 0 24 
+24\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    
+\u001b[36m<path\u001b[39m\n                      
+\u001b[33md\u001b[39m=\u001b[32m\"M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 
+9-6.45 9-12V5z\"\u001b[39m\n                    \u001b[36m/>\u001b[39m\n       
+           \u001b[36m</svg>\u001b[39m\n                  
+\u001b[36m<div\u001b[39m\n                    
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-tc4muw\"\u001b[39m\n     
+             \u001b[36m>\u001b[39m\n                    
+\u001b[36m<div\u001b[39m\n                      
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-14lf27x\"\u001b[39m\n    
+                \u001b[36m>\u001b[39m\n                      
+\u001b[0mConfiguraÃ§Ã£o da Defesa\u001b[0m\n                    
+\u001b[36m</div>\u001b[39m\n                    \u001b[36m<div\u001b[39m\n     
+                 \u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root 
+css-1oa11ow\"\u001b[39m\n                    \u001b[36m>\u001b[39m\n           
+           \u001b[0mNova combinaÃ§Ã£o\u001b[0m\n                    
+\u001b[36m</div>\u001b[39m\n                  \u001b[36m</div>\u001b[39m\n     
+           \u001b[36m</div>\u001b[39m\n                
+\u001b[36m<button\u001b[39m\n                  
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiButtonBase-root MuiButton-root 
+MuiButton-text MuiButton-sizeSmall MuiButton-colorPrimary 
+css-xcl8wi-MuiButtonBase-root-MuiButton-root\"\u001b[39m\n                  
+\u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n                  
+\u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n                
+\u001b[36m>\u001b[39m\n                  \u001b[36m<span\u001b[39m\n           
+         \u001b[33mclass\u001b[39m=\u001b[32m\"MuiButton-icon 
+MuiButton-startIcon css-t70kls-MuiButton-startIcon\"\u001b[39m\n               
+   \u001b[36m>\u001b[39m\n                    \u001b[36m<svg\u001b[39m\n       
+               \u001b[33maria-hidden\u001b[39m=\u001b[32m\"true\"\u001b[39m\n  
+                    \u001b[33mclass\u001b[39m=\u001b[32m\"MuiSvgIcon-root 
+MuiSvgIcon-fontSizeSmall css-120dh41-MuiSvgIcon-root\"\u001b[39m\n             
+         \u001b[33mdata-testid\u001b[39m=\u001b[32m\"AddIcon\"\u001b[39m\n     
+                 \u001b[33mfocusable\u001b[39m=\u001b[32m\"false\"\u001b[39m\n 
+                     \u001b[33mviewBox\u001b[39m=\u001b[32m\"0 0 24 
+24\"\u001b[39m\n                    \u001b[36m>\u001b[39m\n                    
+  \u001b[36m<path\u001b[39m\n                        
+\u001b[33md\u001b[39m=\u001b[32m\"M19 
+13h-6v6h-2v-6H5v-2h6V5h2v6h6z\"\u001b[39m\n                      
+\u001b[36m/>\u001b[39m\n                    \u001b[36m</svg>\u001b[39m\n       
+           \u001b[36m</span>\u001b[39m\n                  \u001b[0mNova 
+CombinaÃ§Ã£o\u001b[0m\n                \u001b[36m</button>\u001b[39m\n         
+     \u001b[36m</div>\u001b[39m\n            \u001b[36m</div>\u001b[39m\n      
+      \u001b[36m<div\u001b[39m\n              
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root css-1pwn56s\"\u001b[39m\n    
+        \u001b[36m>\u001b[39m\n              \u001b[36m<div\u001b[39m\n        
+        \u001b[33mclass\u001b[39m=\u001b[32m\"MuiBox-root 
+css-8z4cbb\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                
+\u001b[36m<div\u001b[39m\n                  
+\u001b[33mclass\u001b[39m=\u001b[32m\"MuiFormControl-root 
+MuiFormControl-fullWidth MuiTextField-root 
+css-fpobzr-MuiFormControl-root-MuiTextField-root\"\u001b[39m\n                
+\u001b[36m>\u001b[39m\n                  \u001b[36m<label\u001b[39m\n          
+          \u001b[33mclass\u001b[39m=\u001b[32m\"MuiFormLabel-root 
+MuiInputLabel-root MuiInputLabel-formControl MuiInputL...\n    at 
+Object.getElementError (D:\\Bagre.exe\\01_PROJETOS\\Ficha-RPG---Re-Dungeon-\\no
+de_modules\\@testing-library\\dom\\dist\\config.js:37:19)\n    at D:\\Bagre.exe
+\\01_PROJETOS\\Ficha-RPG---Re-Dungeon-\\node_modules\\@testing-library\\dom\\di
+st\\query-helpers.js:76:38\n    at D:\\Bagre.exe\\01_PROJETOS\\Ficha-RPG---Re-D
+ungeon-\\node_modules\\@testing-library\\dom\\dist\\query-helpers.js:52:17\n   
+ at D:\\Bagre.exe\\01_PROJETOS\\Ficha-RPG---Re-Dungeon-\\node_modules\\@testing
+-library\\dom\\dist\\query-helpers.js:95:19\n    at D:\\Bagre.exe\\01_PROJETOS\
+\Ficha-RPG---Re-Dungeon-\\src\\pages\\Personagens\\Ficha\\tabs\\AtributosTab.te
+st.jsx:1555:40\n    at runNextTicks (node:internal/process/task_queues:65:5)\n 
+   at processTimers (node:internal/timers:538:9)\n    at file:///D:/Bagre.exe/0
+1_PROJETOS/Ficha-RPG---Re-Dungeon-/node_modules/@vitest/runner/dist/index.js:53
+3:5\n    at runTest (file:///D:/Bagre.exe/01_PROJETOS/Ficha-RPG---Re-Dungeon-/n
+ode_modules/@vitest/runner/dist/index.js:1056:11)\n    at runSuite (file:///D:/
+Bagre.exe/01_PROJETOS/Ficha-RPG---Re-Dungeon-/node_modules/@vitest/runner/dist/
+index.js:1205:15)"],"meta":{}},{"ancestorTitles":["AtributosTab â€” fluxo de 
+ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o soma o custo da arte 
+ao custo de potencializaÃ§Ã£o ao consumir a 
+combinaÃ§Ã£o","status":"passed","title":"soma o custo da arte ao custo de 
+potencializaÃ§Ã£o ao consumir a combinaÃ§Ã£o","duration":513.4936000000016,"fai
+lureMessages":[],"meta":{}},{"ancestorTitles":["AtributosTab â€” fluxo de 
+ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o mostra somente Roll, 
+Dano Fixo e Rolling na prÃ©via dos dados","status":"passed","title":"mostra 
+somente Roll, Dano Fixo e Rolling na prÃ©via dos dados","duration":181.13320000
+000022,"failureMessages":[],"meta":{}},{"ancestorTitles":["AtributosTab â€” 
+fluxo de ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o mostra o 
+aumento de potencial e o custo de energia na prÃ©via dos 
+dados","status":"passed","title":"mostra o aumento de potencial e o custo de 
+energia na prÃ©via dos dados","duration":753.7672999999995,"failureMessages":[]
+,"meta":{}},{"ancestorTitles":["AtributosTab â€” fluxo de 
+ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o mostra painel de 
+energia real com saldo e alerta de 
+insuficiÃªncia","status":"passed","title":"mostra painel de energia real com 
+saldo e alerta de insuficiÃªncia","duration":1930.7524000000012,"failureMessage
+s":[],"meta":{}},{"ancestorTitles":["AtributosTab â€” fluxo de 
+ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o mantÃ©m o cÃ¡lculo 
+automÃ¡tico sem o botÃ£o Calcular/Rolar e sem consumir 
+energia","status":"passed","title":"mantÃ©m o cÃ¡lculo automÃ¡tico sem o 
+botÃ£o Calcular/Rolar e sem consumir energia","duration":564.8015000000014,"fai
+lureMessages":[],"meta":{}},{"ancestorTitles":["AtributosTab â€” fluxo de 
+ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o usa a combinaÃ§Ã£o 
+salva com confirmaÃ§Ã£o e desconta energia e fadiga do 
+personagem","status":"passed","title":"usa a combinaÃ§Ã£o salva com 
+confirmaÃ§Ã£o e desconta energia e fadiga do personagem","duration":548.2281000
+000003,"failureMessages":[],"meta":{}},{"ancestorTitles":["AtributosTab â€” 
+fluxo de ediÃ§Ã£o"],"fullName":"AtributosTab â€” fluxo de ediÃ§Ã£o mostra uma 
+mensagem de erro e reabilita o botÃ£o Salvar quando onSave 
+falha","status":"passed","title":"mostra uma mensagem de erro e reabilita o 
+botÃ£o Salvar quando onSave falha","duration":1157.1664999999994,"failureMessag
+es":[],"meta":{}}],"startTime":1793667878083,"endTime":1793667904388.1665,"stat
+us":"failed","message":"","name":"D:/Bagre.exe/01_PROJETOS/Ficha-RPG---Re-Dunge
+on-/src/pages/Personagens/Ficha/tabs/AtributosTab.test.jsx"}]}
+
+

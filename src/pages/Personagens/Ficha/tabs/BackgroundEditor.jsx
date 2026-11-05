@@ -541,6 +541,15 @@ const BackgroundEditor = ({ value, onChange }) => {
     setRecentColors(prev => [color, ...prev.filter(item => item !== color)].slice(0, 8));
   };
 
+  const handleEditorInput = useCallback(event => {
+    if (!editor) return;
+
+    const nextHtml = event?.target?.innerHTML ?? '';
+    if (!nextHtml || editor.getHTML() === nextHtml) return;
+
+    editor.commands.setContent(nextHtml, { emitUpdate: false });
+  }, [editor]);
+
   const applyTextColor = color => {
     if (!editor) return;
     editor.chain().focus().setColor(color).run();
@@ -716,17 +725,19 @@ const BackgroundEditor = ({ value, onChange }) => {
 
   return (
     <>
-      <EditorShell>
-        {renderToolbar('full')}
+      {!expanded && (
+        <EditorShell>
+          {renderToolbar('full')}
 
-        <EditorArea>
-          <EditorContent editor={editor} />
-        </EditorArea>
+          <EditorArea>
+            <EditorContent editor={editor} onInput={handleEditorInput} />
+          </EditorArea>
 
-        <FooterStats>
-          <CompactLabel>{stats.caracteres.toLocaleString('pt-BR')} caracteres • {stats.palavras.toLocaleString('pt-BR')} palavras</CompactLabel>
-        </FooterStats>
-      </EditorShell>
+          <FooterStats>
+            <CompactLabel>{stats.caracteres.toLocaleString('pt-BR')} caracteres • {stats.palavras.toLocaleString('pt-BR')} palavras</CompactLabel>
+          </FooterStats>
+        </EditorShell>
+      )}
 
       <Popover open={Boolean(colorAnchorEl)} anchorEl={colorAnchorEl} onClose={() => setColorAnchorEl(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }} transformOrigin={{ vertical: 'top', horizontal: 'left' }} slotProps={{ paper: { sx: { background: 'rgba(19, 15, 34, 0.98)', border: '1px solid rgba(100,120,255,0.25)', borderRadius: 3, p: 1.5, color: '#fff' } } }}>
         <Box sx={{ display: 'grid', gap: 1.5, maxWidth: 270 }}>
@@ -870,7 +881,7 @@ const BackgroundEditor = ({ value, onChange }) => {
 
             <ExpandedEditorShell>
               <ExpandedEditorArea>
-                <EditorContent editor={editor} />
+                <EditorContent editor={editor} onInput={handleEditorInput} />
               </ExpandedEditorArea>
             </ExpandedEditorShell>
 

@@ -14,20 +14,16 @@ import { auth } from 'service/firebase';
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState(() => auth?.currentUser ?? null);
+  const [loading, setLoading] = useState(() => !auth?.currentUser);
 
   useEffect(() => {
-    const timeout = setTimeout(() => setLoading(false), 5000);
     const unsubscribe = onAuthStateChanged(auth, user => {
-      clearTimeout(timeout);
       setCurrentUser(user);
       setLoading(false);
     });
-    return () => {
-      clearTimeout(timeout);
-      unsubscribe();
-    };
+
+    return () => unsubscribe();
   }, []);
 
   const login = useCallback(

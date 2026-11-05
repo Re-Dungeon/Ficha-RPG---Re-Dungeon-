@@ -13,6 +13,7 @@ import {
   calcularEspacoInventario,
   calcularGanhoSecundarioPorNivel,
   calcularLimiteArts,
+  calcularLimiteArtsFinal,
   calcularLimiteHabilidadesBasicas,
   calcularMaximoAptidoes,
   calcularObstaculoTreino,
@@ -741,6 +742,14 @@ describe('calcularProximoAptidaoEm', () => {
 describe('calcularLimiteArts', () => {
   it('round((FOR+VIT+AGI+PER+INT) * 0.0293), ignorando Sorte (§10)', () => {
     expect(calcularLimiteArts(primariosTotais)).toBe(7);
+  });
+});
+
+describe('calcularLimiteArtsFinal', () => {
+  it('soma o bônus adicional ao cálculo original, sem alterar a fórmula base', () => {
+    expect(calcularLimiteArtsFinal(primariosTotais, 3)).toBe(10);
+    expect(calcularLimiteArtsFinal(primariosTotais, -2)).toBe(7);
+    expect(calcularLimiteArtsFinal(primariosTotais)).toBe(7);
   });
 });
 

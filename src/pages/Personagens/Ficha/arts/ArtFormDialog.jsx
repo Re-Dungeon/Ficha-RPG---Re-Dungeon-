@@ -14,12 +14,13 @@ import MenuItem from '@mui/material/MenuItem';
 import { campoCurtoSchema, descricaoSchema, nomeSchema, urlImagemSchema } from 'common/utils/yupSchemas';
 import { getNome } from 'common/utils/resolveNome';
 
-import { ART_AUTORAL_INICIAL, DOMINIO_LABELS, TIPO_ACAO_OPTIONS, TIPO_ART_OPTIONS } from './constants';
+import { ART_AUTORAL_INICIAL, DOMINIO_LABELS, TIPO_ACAO_OPTIONS, TIPO_ART_OPTIONS, TIPO_CUSTO_OPTIONS } from './constants';
 
 const artEdicaoSchema = yup.object({
   nome: nomeSchema,
   nucleoId: yup.string().required('Selecione um núcleo'),
-  tipo: yup.string().required(),
+  categoria: yup.string().required(),
+  tipoCusto: yup.string().required('Selecione o tipo de custo'),
   dominio: yup.number().min(1).max(5).required(),
   recarga: campoCurtoSchema,
   duracao: campoCurtoSchema,
@@ -83,8 +84,33 @@ const ArtFormBody = ({ formik, nucleos, condicoes, onClose }) => {
           fullWidth
         />
         <div style={{ display: 'flex', gap: 16 }}>
-          <TextField name="tipo" label="Tipo" select value={values.tipo} onChange={handleChange} size="small" fullWidth>
+          <TextField
+            name="categoria"
+            label="Categoria"
+            select
+            value={values.categoria ?? values.tipo ?? TIPO_ART_OPTIONS[0]}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            size="small"
+            fullWidth
+          >
             {TIPO_ART_OPTIONS.map(opcao => (
+              <MenuItem key={opcao} value={opcao}>
+                {opcao}
+              </MenuItem>
+            ))}
+          </TextField>
+          <TextField
+            name="tipoCusto"
+            label="Tipo de Custo"
+            select
+            value={values.tipoCusto ?? TIPO_CUSTO_OPTIONS[0]}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            size="small"
+            fullWidth
+          >
+            {TIPO_CUSTO_OPTIONS.map(opcao => (
               <MenuItem key={opcao} value={opcao}>
                 {opcao}
               </MenuItem>
@@ -202,7 +228,13 @@ const ArtFormDialog = ({ open, onClose, art, nucleos, condicoes, onSubmit }) => 
     if (!open || !art) {
       return;
     }
-    setInitialValues({ ...ART_AUTORAL_INICIAL, ...art });
+    setInitialValues({
+      ...ART_AUTORAL_INICIAL,
+      ...art,
+      categoria: art.categoria ?? art.tipo ?? ART_AUTORAL_INICIAL.categoria,
+      tipo: art.tipo ?? art.categoria ?? ART_AUTORAL_INICIAL.tipo,
+      tipoCusto: art.tipoCusto ?? ART_AUTORAL_INICIAL.tipoCusto,
+    });
   }, [open, art]);
 
   return (
@@ -213,7 +245,14 @@ const ArtFormDialog = ({ open, onClose, art, nucleos, condicoes, onSubmit }) => 
         initialValues={initialValues}
         validationSchema={artEdicaoSchema}
         onSubmit={async (values, { setSubmitting }) => {
-          await onSubmit(values);
+          const payload = {
+            ...values,
+            categoria: values.categoria ?? values.tipo,
+            tipo: values.categoria ?? values.tipo,
+            tipoCusto: values.tipoCusto ?? ART_AUTORAL_INICIAL.tipoCusto,
+          };
+          delete payload.categoria;
+          await onSubmit(payload);
           setSubmitting(false);
           onClose();
         }}

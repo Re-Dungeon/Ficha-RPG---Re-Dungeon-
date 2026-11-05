@@ -1,0 +1,5 @@
+﻿AtributosTab â€” fluxo de ediÃ§Ã£o permite selecionar mÃºltiplas artes na combinaÃ§Ã£o e soma os bÃ´nus sem duplicar
+AtributosTab â€” fluxo de ediÃ§Ã£o salva combinaÃ§Ã£o com Fadiga e persiste o recurso selecionado
+AtributosTab â€” fluxo de ediÃ§Ã£o cria uma nova combinaÃ§Ã£o quando o nome igual existe em outro registro com ID diferente
+AtributosTab â€” fluxo de ediÃ§Ã£o move o custo da arte para o recurso clicado sem deixar o custo preso na energia
+AtributosTab â€” fluxo de ediÃ§Ã£o move o custo da arte para o recurso clicado na defesa sem deixar o custo preso no card anterior

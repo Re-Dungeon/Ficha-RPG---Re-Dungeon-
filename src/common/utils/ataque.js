@@ -235,84 +235,66 @@ export const converterPotencialEmDados = (potencialFinal = 0, tipoDano = 'Contun
   return calcularPerfilGenerico(potencialFinal, tipoDano, contexto);
 };
 
-const parseNumeroProximoAoTermo = (texto, termos) => {
-  const normalizado = normalizeText(texto);
-  if (!normalizado) return 0;
+const isTextoDeDado = valor => {
+  if (typeof valor !== 'string') {
+    return false;
+  }
 
-  for (const termo of termos) {
-    const regex = new RegExp(`${termo}[^0-9+-]*([+-]?\\d+)`, 'i');
-    const match = normalizado.match(regex);
+  const normalizado = normalizeText(valor);
+  return /\d+d\d+/.test(normalizado) || /\d+\s*d\s*\d+/.test(normalizado);
+};
+
+const extrairBonusLiteral = valor => {
+  if (typeof valor === 'number' && Number.isFinite(valor)) {
+    return { valor, origem: String(valor) };
+  }
+
+  if (typeof valor === 'string') {
+    const texto = valor.trim();
+    if (!texto || isTextoDeDado(texto)) {
+      return { valor: 0, origem: 'nenhuma' };
+    }
+
+    const match = texto.match(/^([+-]?\d+)$/);
     if (match) {
-      return parseInteger(match[1]);
+      return { valor: parseInteger(match[1]), origem: texto };
+    }
+
+    const matchSimples = texto.match(/[+-]?\d+/);
+    if (matchSimples && !/[a-z]/i.test(texto)) {
+      return { valor: parseInteger(matchSimples[0]), origem: texto };
     }
   }
 
-  const explicit = normalizado.match(/(?:^|[^a-z])([+-]?\d+)(?![a-z])/);
-  if (explicit) {
-    return parseInteger(explicit[1]);
-  }
-
-  return 0;
+  return { valor: 0, origem: 'nenhuma' };
 };
 
-const palavrasChavePorContexto = contexto => {
-  if (contexto === 'defesa') {
-    return [
-      'defesa',
-      'defense',
-      'protecao',
-      'protecao',
-      'proteção',
-      'protecao',
-      'resistencia',
-      'resistência',
-      'escudo',
-      'blindagem',
-      'armadura',
-      'barreira',
-      'cobertura',
-      'mitigacao',
-      'mitigação',
-    ];
+export const extrairBonusNumericoArtDados = valor => {
+  if (typeof valor === 'number' && Number.isFinite(valor)) {
+    return { valor, origem: String(valor) };
   }
 
-  return ['ataque', 'attack', 'dano', 'damage', 'golpe', 'impacto', 'acerto', 'precisao', 'precision'];
+  if (typeof valor === 'string') {
+    const texto = valor.trim();
+    if (!texto || !/^([+-]?\d+)$/.test(texto)) {
+      return { valor: 0, origem: 'nenhuma' };
+    }
+
+    return { valor: parseInteger(texto), origem: texto };
+  }
+
+  return { valor: 0, origem: 'nenhuma' };
 };
 
-export const extrairBonusNumericoContexto = (valor, contexto = 'ataque') => {
+const extrairBonusDeDados = valor => extrairBonusNumericoArtDados(valor);
+
+export const extrairBonusNumericoContexto = (valor, _contexto = 'ataque') => {
   if (!valor || typeof valor !== 'object') {
     return { valor: 0, origem: 'nenhuma' };
   }
 
-  const textos = [
-    valor.bonus,
-    valor.extra,
-    valor.descricao,
-    valor.nome,
-    valor.dados,
-    valor.tipo,
-    valor.cantico,
-    valor.circuloMagico,
-    valor.habilidadesEspeciais,
-  ]
-    .flatMap(item => (Array.isArray(item) ? item : [item]))
-    .filter(item => item !== undefined && item !== null && item !== '');
-
-  const palavrasChave = palavrasChavePorContexto(contexto);
-
-  for (const texto of textos) {
-    const numero = parseNumeroProximoAoTermo(texto, palavrasChave);
-    if (numero !== 0) {
-      return { valor: numero, origem: texto };
-    }
-  }
-
-  const extra = textos.find(item => typeof item === 'string' && /[+-]?\d+/.test(item));
-  if (extra && !/[dD]\d+/.test(normalizeText(extra))) {
-    const match = String(extra).match(/[+-]?\d+/g);
-    if (match && match.length > 0) {
-      return { valor: parseInteger(match[match.length - 1]), origem: extra };
-    }
+  if (Object.prototype.hasOwnProperty.call(valor, 'dados')) {
+    return extrairBonusDeDados(valor.dados);
   }
 
   return { valor: 0, origem: 'nenhuma' };
@@ -322,38 +304,12 @@ export const extrairBonusNumericoAtaque = valor => extrairBonusNumericoContexto(
 
 export const extrairBonusNumericoDefesa = valor => extrairBonusNumericoContexto(valor, 'defesa');
 
-export const extrairBonusNumericoItem = (item, contexto = 'ataque') => {
+export const extrairBonusNumericoItem = (item, _contexto = 'ataque') => {
   if (!item || typeof item !== 'object') {
     return { valor: 0, origem: 'nenhuma' };
   }
 
-  const textos = [item.extra, item.descricao, item.dados, item.nome, item.tipo, item.habilidadesEspeciais].flatMap(itemTexto =>
-    Array.isArray(itemTexto) ? itemTexto : [itemTexto],
-  );
-
-  const palavrasChave = palavrasChavePorContexto(contexto);
-
-  for (const texto of textos) {
-    if (!texto) continue;
-    const numero = parseNumeroProximoAoTermo(texto, palavrasChave);
-    if (numero !== 0) {
-      return { valor: numero, origem: texto };
-    }
-  }
-
-  const valorExtra = Number(item.extra ?? item.bonus ?? 0);
-  if (Number.isFinite(valorExtra) && valorExtra !== 0) {
-    return { valor: valorExtra, origem: item.extra ?? item.bonus };
-  }
-
-  if (typeof item.extra === 'string' && /[+-]\d+/.test(item.extra)) {
-    const match = item.extra.match(/[+-]?\d+/g);
-    if (match && match.length > 0) {
-      return { valor: parseInteger(match[match.length - 1]), origem: item.extra };
-    }
-  }
-
-  return { valor: 0, origem: 'nenhuma' };
+  return extrairBonusLiteral(item.dados);
 };
 
 export const calcularBonusSelecaoAtaque = (art, item, ataqueBase = 0) => {

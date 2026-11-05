@@ -74,6 +74,23 @@ describe('ArtsTab', () => {
     expect(await screen.findByText('3')).toBeInTheDocument();
   });
 
+  it('exibe o limite final considerando bônus manual adicional e atualiza o valor', async () => {
+    const onSave = vi.fn().mockResolvedValue();
+    render(
+      <SavingProvider>
+        <ArtsTab personagem={{ ...personagem, artsLimiteAdicional: 3 }} onSave={onSave} />
+      </SavingProvider>,
+    );
+
+    expect(await screen.findByText('4')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /adicionar limite/i }));
+    await waitFor(() => expect(onSave).toHaveBeenCalledWith({ artsLimiteAdicional: 4 }));
+
+    fireEvent.click(screen.getByRole('button', { name: /remover limite/i }));
+    await waitFor(() => expect(onSave).toHaveBeenLastCalledWith({ artsLimiteAdicional: 2 }));
+  });
+
   it('cria um núcleo novo pelo diálogo', async () => {
     render(
       <SavingProvider>

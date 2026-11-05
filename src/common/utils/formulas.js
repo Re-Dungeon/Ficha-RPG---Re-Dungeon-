@@ -706,6 +706,11 @@ export const calcularProximoAptidaoEm = primariosTotais => {
 export const calcularLimiteArts = primariosTotais =>
   Math.round(somaAptidoesArts(primariosTotais) * 0.0293);
 
+export const calcularLimiteArtsFinal = (primariosTotais, adicional = 0) => {
+  const bonusManual = Math.max(0, Number(adicional) || 0);
+  return calcularLimiteArts(primariosTotais) + bonusManual;
+};
+
 // Reorganiza quais Arts ficam ativas quando o limite muda: mantém ativas as
 // mais antigas até preencher o limite, bloqueia as mais recentes que sobrarem.
 export const reorganizarArts = (arts, limite) => {
