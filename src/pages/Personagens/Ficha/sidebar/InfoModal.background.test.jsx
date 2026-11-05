@@ -108,4 +108,24 @@ describe('InfoModal / Background rich text', () => {
     expect(screen.getByRole('button', { name: /salvar/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /voltar ao modal/i })).toBeInTheDocument();
   });
+
+  it('mantém uma única instância do editor quando o background é aberto em modo expandido', async () => {
+    render(
+      <SavingProvider>
+        <InfoModal open onClose={vi.fn()} personagem={personagemBase} onSave={vi.fn()} />
+      </SavingProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('tab', { name: /background/i }));
+
+    const editorCompacto = document.querySelector('.ProseMirror');
+    fireEvent.input(editorCompacto, {
+      target: { innerHTML: '<p>ddd</p>' },
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /expandir editor/i }));
+
+    await waitFor(() => expect(document.querySelectorAll('.ProseMirror')).toHaveLength(1));
+    expect(document.querySelector('.ProseMirror')?.textContent).toContain('ddd');
+  });
 });

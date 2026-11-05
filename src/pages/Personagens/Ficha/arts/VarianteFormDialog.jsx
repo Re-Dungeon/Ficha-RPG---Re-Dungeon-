@@ -39,14 +39,15 @@ import {
   HabilidadeNome,
   HabilidadesGrid,
 } from '../progressao/styles';
-import { DOMINIO_LABELS, TIPO_ACAO_OPTIONS, TIPO_ART_OPTIONS, VARIANTE_INICIAL } from './constants';
+import { DOMINIO_LABELS, resolverTipoCusto, TIPO_ACAO_OPTIONS, TIPO_ART_OPTIONS, TIPO_CUSTO_OPTIONS, VARIANTE_INICIAL } from './constants';
 import { CatalogArtsGrid } from './styles';
 import { StatusValueRow } from '../styles';
 
 const varianteSchema = yup.object({
   nome: nomeSchema,
   artId: yup.string().required('Selecione a Art base'),
-  tipo: yup.string().required(),
+  categoria: yup.string().required(),
+  tipoCusto: yup.string().required('Selecione o tipo de custo'),
   tipoAcao: yup.string().required(),
   dominio: yup.number().min(1).max(5).required(),
   recarga: campoCurtoSchema,
@@ -131,7 +132,7 @@ const TitleSub = styled.div`
 
 const extrairCamposVariante = item => {
   const campos = {};
-  ['dominio', 'custo', 'dados', 'recarga', 'duracao', 'alcance', 'alvos', 'descricao', 'imagem', 'cantico', 'circuloMagico']
+  ['dominio', 'custo', 'tipoCusto', 'dados', 'recarga', 'duracao', 'alcance', 'alvos', 'descricao', 'imagem', 'cantico', 'circuloMagico']
     .forEach(campo => {
       if (item[campo] !== undefined) campos[campo] = item[campo];
     });
@@ -214,8 +215,33 @@ const VarianteFormBody = ({ formik, arts, condicoes, onClose }) => {
           fullWidth
         />
         <div style={{ display: 'flex', gap: 16 }}>
-          <TextField name="tipo" label="Tipo" select value={values.tipo} onChange={handleChange} size="small" fullWidth>
+          <TextField
+            name="categoria"
+            label="Categoria"
+            select
+            value={values.categoria ?? values.tipo ?? TIPO_ART_OPTIONS[0]}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            size="small"
+            fullWidth
+          >
             {TIPO_ART_OPTIONS.map(opcao => (
+              <MenuItem key={opcao} value={opcao}>
+                {opcao}
+              </MenuItem>
+            ))}
+          </TextField>
+          <TextField
+            name="tipoCusto"
+            label="Tipo de Custo"
+            select
+            value={values.tipoCusto ?? TIPO_CUSTO_OPTIONS[0]}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            size="small"
+            fullWidth
+          >
+            {TIPO_CUSTO_OPTIONS.map(opcao => (
               <MenuItem key={opcao} value={opcao}>
                 {opcao}
               </MenuItem>
@@ -343,8 +369,8 @@ const VarianteFormDialog = ({ open, onClose, variante, arts, condicoes, onSubmit
     const base = arts.find(art => art.id === proximoArtId);
     const dominioPadrao = base ? ([1, 2, 3, 4, 5].find(nivel => dominioVarianteValido(nivel, base.dominio ?? 1)) ?? '') : '';
     const inicial = variante
-      ? { ...VARIANTE_INICIAL, ...variante }
-      : { ...VARIANTE_INICIAL, artId: proximoArtId, dominio: dominioPadrao };
+      ? { ...VARIANTE_INICIAL, ...variante, categoria: variante.categoria ?? variante.tipo ?? VARIANTE_INICIAL.categoria, tipo: variante.tipo ?? variante.categoria ?? VARIANTE_INICIAL.tipo, tipoCusto: variante.tipoCusto ?? VARIANTE_INICIAL.tipoCusto }
+      : { ...VARIANTE_INICIAL, artId: proximoArtId, dominio: dominioPadrao, categoria: VARIANTE_INICIAL.categoria, tipo: VARIANTE_INICIAL.tipo, tipoCusto: VARIANTE_INICIAL.tipoCusto };
     setInitialValues(inicial);
     setArtIdSelecionado(proximoArtId);
     setOrigem('autoral');
@@ -392,6 +418,7 @@ const VarianteFormDialog = ({ open, onClose, variante, arts, condicoes, onSubmit
         artId: artIdSelecionado,
         nome: habilidade.nome,
         tipo: habilidade.classificacao ?? base?.tipo ?? TIPO_ART_OPTIONS[0],
+        tipoCusto: resolverTipoCusto(habilidade.tipoCusto, base?.tipoCusto ?? ''),
         tipoAcao: habilidade.acao ?? TIPO_ACAO_OPTIONS[0],
         dominio: dominioDisponivel ?? Math.max(1, dominioBase - 1),
         recarga: habilidade.recarga ?? '',
@@ -424,6 +451,7 @@ const VarianteFormDialog = ({ open, onClose, variante, arts, condicoes, onSubmit
         artId: artIdSelecionado,
         nome: getNome(item),
         tipo: item.classificacao ?? base?.tipo ?? TIPO_ART_OPTIONS[0],
+        tipoCusto: resolverTipoCusto(item.tipoCusto, base?.tipoCusto ?? ''),
         tipoAcao: item.acao ?? TIPO_ACAO_OPTIONS[0],
         dominio: dominioDisponivel ?? Math.max(1, dominioBase - 1),
         ...extrairCamposVariante(item),
@@ -548,7 +576,14 @@ const VarianteFormDialog = ({ open, onClose, variante, arts, condicoes, onSubmit
           initialValues={initialValues}
           validationSchema={varianteSchema}
           onSubmit={async (values, { setSubmitting }) => {
-            await onSubmit(values);
+            const payload = {
+              ...values,
+              categoria: values.categoria ?? values.tipo,
+              tipo: values.categoria ?? values.tipo,
+              tipoCusto: values.tipoCusto ?? VARIANTE_INICIAL.tipoCusto,
+            };
+            delete payload.categoria;
+            await onSubmit(payload);
             setSubmitting(false);
             onClose();
           }}

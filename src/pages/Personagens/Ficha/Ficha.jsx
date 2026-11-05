@@ -217,7 +217,7 @@ const Ficha = () => {
               />
             )}
             {aba === 'aptidoes' && <AptidoesTab personagem={personagem} onSave={handleSave} />}
-            {aba === 'arts' && <ArtsTab personagem={personagem} />}
+            {aba === 'arts' && <ArtsTab personagem={personagem} onSave={handleSave} />}
             {aba === 'inventario' && (
               <InventarioTab personagem={personagem} inventarioAtualizacoes={inventarioAtualizacoes} />
             )}

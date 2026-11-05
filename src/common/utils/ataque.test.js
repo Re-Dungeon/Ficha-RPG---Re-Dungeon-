@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { converterPotencialEmDados } from './ataque';
+import {
+  converterPotencialEmDados,
+  extrairBonusNumericoAtaque,
+  extrairBonusNumericoDefesa,
+  extrairBonusNumericoItem,
+} from './ataque';
 
 const validarResultadoMatematico = (potencialFinal, tipoDano, contexto = 'ataque') => {
   const resultado = converterPotencialEmDados(potencialFinal, tipoDano, Math.random, contexto);
@@ -14,6 +19,42 @@ const validarResultadoMatematico = (potencialFinal, tipoDano, contexto = 'ataque
   expect(resultado.maximo).toBeLessThanOrEqual(potencialFinal);
   expect(resultado.maximo).toBe(potencialFinal);
 };
+
+describe('extração de bônus numérico', () => {
+  it('usa somente o campo dados da Art e ignora textos explicativos', () => {
+    expect(extrairBonusNumericoAtaque({ dados: '3' }).valor).toBe(3);
+    expect(extrairBonusNumericoAtaque({ dados: '2d6+3' }).valor).toBe(0);
+    expect(extrairBonusNumericoAtaque({ dados: '1d8' }).valor).toBe(0);
+    expect(extrairBonusNumericoAtaque({ dados: '', bonus: 4, extra: 2 }).valor).toBe(0);
+    expect(extrairBonusNumericoAtaque({ bonus: 4, extra: 2 }).valor).toBe(0);
+    expect(extrairBonusNumericoAtaque({ descricao: 'Ataque +5' }).valor).toBe(0);
+    expect(extrairBonusNumericoAtaque({ nome: 'Espada +7' }).valor).toBe(0);
+    expect(extrairBonusNumericoAtaque({ tipo: 'Arma 9' }).valor).toBe(0);
+    expect(extrairBonusNumericoAtaque({ habilidadesEspeciais: [{ nome: 'Golpe Final', descricao: 'Dano +5' }] }).valor).toBe(0);
+    expect(extrairBonusNumericoDefesa({ dados: '4' }).valor).toBe(4);
+    expect(extrairBonusNumericoDefesa({ dados: '2d6+3' }).valor).toBe(0);
+    expect(extrairBonusNumericoDefesa({ descricao: 'Defesa +5' }).valor).toBe(0);
+  });
+
+  it('preserva a lógica própria dos itens e respeita a soma de múltiplas Artes somente por dados numéricos', () => {
+    const artes = [
+      { dados: '2' },
+      { dados: '3' },
+      { dados: '2d6+3' },
+      { dados: '1d8' },
+      { descricao: 'Ataque +5' },
+      { nome: 'Espada 7' },
+    ];
+
+    const total = artes.reduce((soma, arte) => soma + extrairBonusNumericoAtaque(arte).valor, 0);
+    expect(total).toBe(5);
+    expect(extrairBonusNumericoItem({ nome: 'Espada', dados: '3', extra: '9' }, 'ataque').valor).toBe(3);
+    expect(extrairBonusNumericoItem({ nome: 'Espada', dados: '1d8', extra: '3' }, 'ataque').valor).toBe(0);
+    expect(extrairBonusNumericoItem({ nome: 'Poção Mística', dados: '2d6+3', extra: 'Aumenta dano em 4' }, 'ataque').valor).toBe(0);
+    expect(extrairBonusNumericoItem({ nome: 'Espada +7', extra: '7' }, 'ataque').valor).toBe(0);
+    expect(extrairBonusNumericoItem({ descricao: 'Ataque +5' }, 'ataque').valor).toBe(0);
+  });
+});
 
 describe('converterPotencialEmDados', () => {
   it('mantém o teto exato para cada perfil com potencial 40', () => {

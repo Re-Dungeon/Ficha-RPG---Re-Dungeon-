@@ -719,18 +719,19 @@ const PerfilTab = ({ personagem, onSave, aba }) => {
   const campanhas = useCampanhasPorUniverso(personagem.universo);
   const { racaNome, classesNomes } = useRacaClasseNomes(personagem);
 
-  const chaveRascunho = `rascunho_personagem_${personagem.id}_perfil`;
+  const chaveRascunho = `rascunho_personagem_${personagem.id}_perfil_${aba}`;
   const { lerRascunho, salvarRascunho, limparRascunho } = useDraftLocalStorage(chaveRascunho);
   const [rascunhoDisponivel, setRascunhoDisponivel] = useState(null);
   const atualizadoEmRef = useRef(personagem.updatedAt);
 
   useEffect(() => {
+    setRascunhoDisponivel(null);
     const draft = lerRascunho();
     const atualizadoEm = atualizadoEmRef.current?.toMillis ? atualizadoEmRef.current.toMillis() : 0;
     if (draft && draft.salvoEm > atualizadoEm) {
       setRascunhoDisponivel(draft);
     }
-  }, [lerRascunho]);
+  }, [aba, lerRascunho, personagem.id]);
 
   useEffect(() => {
     if (!personagem.universo) {
@@ -837,7 +838,9 @@ const PerfilTab = ({ personagem, onSave, aba }) => {
           rascunho={rascunhoDisponivel}
           onSave={onSave}
           onRestaurar={() => {
+            if (!rascunhoDisponivel) return;
             formik.setValues(rascunhoDisponivel.valores);
+            limparRascunho();
             setRascunhoDisponivel(null);
           }}
           onDescartar={() => {

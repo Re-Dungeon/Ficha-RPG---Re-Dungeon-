@@ -12,6 +12,24 @@ export const TIPO_ART_OPTIONS = [
 
 export const TIPO_ACAO_OPTIONS = ['Imediata', 'Duradoura', 'Sustentada'];
 
+export const TIPO_CUSTO_OPTIONS = ['Energia', 'Fadiga', 'Saúde', 'Neutro'];
+
+export const resolverTipoCusto = (valorOrigem, valorPreservado = '') => {
+  if (typeof valorOrigem === 'string') {
+    const valorNormalizado = valorOrigem.trim();
+    if (valorNormalizado) {
+      return valorNormalizado;
+    }
+  }
+  if (typeof valorPreservado === 'string') {
+    const valorNormalizado = valorPreservado.trim();
+    if (valorNormalizado) {
+      return valorNormalizado;
+    }
+  }
+  return '';
+};
+
 export const DOMINIO_LABELS = {
   1: 'Básico',
   2: 'Menor',
@@ -55,7 +73,9 @@ export const ART_STAT_CAMPOS = [
 export const ART_AUTORAL_INICIAL = {
   nucleoId: '',
   nome: '',
+  categoria: TIPO_ART_OPTIONS[0],
   tipo: TIPO_ART_OPTIONS[0],
+  tipoCusto: TIPO_CUSTO_OPTIONS[0],
   dominio: 1,
   recarga: '',
   duracao: '',
@@ -82,7 +102,9 @@ export const NUCLEO_INICIAL = {
 export const VARIANTE_INICIAL = {
   artId: '',
   nome: '',
+  categoria: TIPO_ART_OPTIONS[0],
   tipo: TIPO_ART_OPTIONS[0],
+  tipoCusto: TIPO_CUSTO_OPTIONS[0],
   tipoAcao: TIPO_ACAO_OPTIONS[0],
   dominio: '',
   recarga: '',

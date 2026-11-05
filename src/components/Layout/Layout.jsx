@@ -15,6 +15,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import AssignmentIndOutlinedIcon from '@mui/icons-material/AssignmentIndOutlined';
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
+import KeyboardArrowDownOutlinedIcon from '@mui/icons-material/KeyboardArrowDownOutlined';
 import MenuIcon from '@mui/icons-material/Menu';
 import { useAuth } from 'context/AuthContext';
 import { MOBILE } from 'common/styles/breakpoints';
@@ -87,6 +88,8 @@ const Layout = () => {
   const usuarioEmail = currentUser?.email || 'Jogador';
   const usuarioPrimaryText = usuarioDisplayName || usuarioEmail;
   const usuarioSecondaryText = usuarioDisplayName ? usuarioEmail : null;
+  const usuarioEmailCompacto = usuarioEmail.includes('@') ? usuarioEmail.split('@')[0] : usuarioEmail;
+  const usuarioBotaoText = usuarioDisplayName || usuarioEmailCompacto;
 
   return (
     <SelecaoContext.Provider value={selecaoValue}>
@@ -355,132 +358,99 @@ const Layout = () => {
                   ))}
                 </Box>
 
-                <Box
+                <Button
+                  aria-label={usuarioPrimaryText}
+                  aria-controls={menuContaAncora ? 'menu-conta' : undefined}
+                  aria-expanded={Boolean(menuContaAncora)}
+                  aria-haspopup="menu"
+                  onClick={event => setMenuContaAncora(event.currentTarget)}
                   sx={{
-                    display: 'flex',
+                    display: 'inline-flex',
                     alignItems: 'center',
-                    gap: 1,
+                    justifyContent: 'flex-start',
+                    gap: 0.8,
                     minWidth: 0,
-                    maxWidth: { xs: 'none', sm: '260px', md: '290px' },
+                    width: 'auto',
+                    maxWidth: { xs: '100%', sm: '220px', md: '240px' },
+                    background: 'rgba(8, 15, 27, 0.96)',
+                    border: '1px solid rgba(88, 127, 255, 0.5)',
+                    borderRadius: '999px',
+                    px: 0.8,
+                    py: 0.45,
+                    color: '#f3f6ff',
+                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04), 0 8px 22px rgba(4, 11, 20, 0.32)',
+                    textTransform: 'none',
+                    fontWeight: 700,
+                    letterSpacing: '0.01em',
+                    transition: 'all 0.2s ease',
+                    overflow: 'hidden',
+                    '&:hover': {
+                      background: 'rgba(13, 22, 35, 0.98)',
+                      borderColor: 'rgba(98, 146, 255, 0.78)',
+                      boxShadow: '0 0 0 1px rgba(67, 105, 255, 0.18), 0 12px 24px rgba(13, 31, 61, 0.42)',
+                    },
+                    '& .MuiButton-endIcon': { marginLeft: 0.15 },
                   }}
+                  endIcon={<KeyboardArrowDownOutlinedIcon fontSize="small" sx={{ color: 'rgba(255,255,255,0.78)', ml: 0.05 }} />}
                 >
                   <Avatar
                     src={currentUser.photoURL || undefined}
                     alt={usuarioPrimaryText}
                     sx={{
-                      width: 36,
-                      height: 36,
-                      background: 'linear-gradient(135deg, rgba(232, 203, 133, 0.24), rgba(91, 124, 250, 0.18))',
-                      border: '1px solid rgba(232, 203, 133, 0.28)',
+                      width: 28,
+                      height: 28,
+                      background: 'linear-gradient(135deg, rgba(232, 203, 133, 0.22), rgba(91, 124, 250, 0.18))',
+                      border: '1px solid rgba(181, 201, 255, 0.35)',
                       color: '#f3d997',
                       fontWeight: 700,
-                      fontSize: '0.9rem',
+                      fontSize: '0.72rem',
+                      flexShrink: 0,
                     }}
                   >
-                    {!currentUser.photoURL ? (
-                      <AccountCircleOutlinedIcon fontSize="small" />
-                    ) : null}
+                    {!currentUser.photoURL ? <AccountCircleOutlinedIcon fontSize="small" /> : null}
                   </Avatar>
 
-                  {!tabs && (
-                    <Box sx={{ minWidth: 0, display: { xs: 'none', sm: 'block' } }}>
-                      {usuarioSecondaryText ? (
-                        <>
-                          <Typography
-                            variant="body2"
-                            sx={{
-                              color: '#f3f1ee',
-                              fontSize: '0.76rem',
-                              fontWeight: 700,
-                              lineHeight: 1.2,
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              maxWidth: '180px',
-                            }}
-                          >
-                            {usuarioPrimaryText}
-                          </Typography>
-                          <Typography
-                            variant="caption"
-                            sx={{
-                              color: 'rgba(255,255,255,0.68)',
-                              display: 'block',
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              maxWidth: '180px',
-                              lineHeight: 1.2,
-                            }}
-                          >
-                            {usuarioSecondaryText}
-                          </Typography>
-                        </>
-                      ) : (
-                        <Typography
-                          variant="body2"
-                          sx={{
-                            color: '#f3f1ee',
-                            fontSize: '0.76rem',
-                            fontWeight: 700,
-                            lineHeight: 1.2,
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            maxWidth: '200px',
-                          }}
-                        >
-                          {usuarioPrimaryText}
-                        </Typography>
-                      )}
-                    </Box>
-                  )}
-                </Box>
-
-                <Button
-                  size="small"
-                  onClick={logout}
-                  sx={{
-                    color: '#f0ddae',
-                    border: '1px solid rgba(232, 203, 133, 0.38)',
-                    borderRadius: '10px',
-                    px: 1.5,
-                    py: 0.7,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.12em',
-                    fontWeight: 700,
-                    fontSize: '0.62rem',
-                    background: 'rgba(232, 203, 133, 0.04)',
-                    minWidth: 'auto',
-                    lineHeight: 1.2,
-                    transition: 'all 0.2s ease',
-                    '&:hover': {
-                      background: 'rgba(232, 203, 133, 0.09)',
-                      borderColor: 'rgba(232, 203, 133, 0.65)',
-                      boxShadow: 'inset 0 0 0 1px rgba(232, 203, 133, 0.1)',
-                    },
-                    [MOBILE]: { display: 'none' },
-                  }}
-                >
-                  Sair
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: '#eef4ff',
+                      fontSize: '0.75rem',
+                      fontWeight: 700,
+                      lineHeight: 1.2,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      maxWidth: '145px',
+                      flex: 1,
+                      minWidth: 0,
+                    }}
+                  >
+                    {usuarioBotaoText}
+                  </Typography>
                 </Button>
 
-                <IconButton
-                  aria-label="Conta"
-                  aria-haspopup="menu"
-                  onClick={event => setMenuContaAncora(event.currentTarget)}
-                  sx={{ display: 'none', color: '#f0ddae', [MOBILE]: { display: 'inline-flex' } }}
-                >
-                  <AccountCircleOutlinedIcon />
-                </IconButton>
                 <Menu
+                  id="menu-conta"
                   anchorEl={menuContaAncora}
                   open={Boolean(menuContaAncora)}
                   onClose={() => setMenuContaAncora(null)}
                   anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
                   transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                  slotProps={{
+                    paper: {
+                      sx: {
+                        mt: 1,
+                        minWidth: { xs: 220, sm: 240 },
+                        borderRadius: '16px',
+                        border: '1px solid rgba(96, 127, 255, 0.32)',
+                        background: 'rgba(11, 16, 27, 0.98)',
+                        boxShadow: '0 18px 40px rgba(2, 8, 18, 0.74)',
+                        overflow: 'hidden',
+                      },
+                    },
+                  }}
                 >
-                  <MenuItem disabled sx={{ fontSize: '0.8rem', '&.Mui-disabled': { opacity: 1 } }}>
+                  <MenuItem disabled sx={{ fontSize: '0.78rem', py: 1.2, '&.Mui-disabled': { opacity: 1, color: '#e9efff' } }}>
                     {usuarioSecondaryText ? `${usuarioPrimaryText} — ${usuarioSecondaryText}` : usuarioPrimaryText}
                   </MenuItem>
                   <MenuItem onClick={handleSairDoMenu}>Sair</MenuItem>
@@ -514,8 +484,10 @@ const Layout = () => {
                 scrollButtons="auto"
                 allowScrollButtonsMobile
                 textColor="inherit"
-                TabIndicatorProps={{
-                  style: { height: 2, borderRadius: 999, background: 'linear-gradient(90deg, #e8cb85 0%, #b69a58 100%)' },
+                slotProps={{
+                  indicator: {
+                    style: { height: 2, borderRadius: 999, background: 'linear-gradient(90deg, #e8cb85 0%, #b69a58 100%)' },
+                  },
                 }}
                 sx={{ flex: 1, minWidth: 0, '& .MuiTabs-scrollButtons': { width: 24, color: '#f0dca8' } }}
               >

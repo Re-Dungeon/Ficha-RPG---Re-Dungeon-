@@ -62,6 +62,47 @@ export const StatValue = styled.div`
   }
 `;
 
+export const ManualLimitControls = styled.div`
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  margin: 8px 0 24px;
+
+  ${MOBILE} {
+    flex-direction: column;
+  }
+`;
+
+export const ManualLimitButton = styled.button`
+  flex: 1;
+  appearance: none;
+  border-radius: 12px;
+  border: 1px solid rgba(232, 203, 133, 0.38);
+  background: ${({ $variant }) =>
+    $variant === 'remover' ? 'rgba(127, 29, 29, 0.35)' : 'rgba(21, 94, 61, 0.35)'};
+  color: ${({ $variant }) => ($variant === 'remover' ? '#fca5a5' : '#86efac')};
+  padding: 12px 16px;
+  font-size: 0.86rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22);
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    filter: brightness(1.08);
+    border-color: rgba(232, 203, 133, 0.7);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+    filter: grayscale(0.1);
+  }
+`;
+
 export const SectionBlock = styled.section`
   margin-top: 32px;
 `;

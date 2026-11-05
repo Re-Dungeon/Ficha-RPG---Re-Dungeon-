@@ -11,6 +11,7 @@ import {
   getCombosAtaque,
   getCombosDefesa,
   getItensInventario,
+  getVariantes,
   removeComboAtaque,
   removeComboDefesa,
   removeItemInventario,
@@ -31,6 +32,7 @@ vi.mock('service/storage', () => ({
   getFirestoreItem: vi.fn().mockResolvedValue(null),
   getArts: vi.fn().mockResolvedValue([]),
   getItensInventario: vi.fn().mockResolvedValue([]),
+  getVariantes: vi.fn().mockResolvedValue([]),
   updateItemInventario: vi.fn().mockResolvedValue(null),
   removeItemInventario: vi.fn().mockResolvedValue(null),
   getCombosAtaque: vi.fn().mockResolvedValue([]),
@@ -54,6 +56,16 @@ vi.mock('service/storage', () => ({
 
 const renderComProvider = ui => render(<SavingProvider>{ui}</SavingProvider>);
 
+const getResourceButton = (dialog, label) => {
+  const button = dialog.querySelector(`button[aria-label*="${label}"]`);
+
+  if (!button) {
+    throw new Error(`Botão de recurso não encontrado para: ${label}`);
+  }
+
+  return button;
+};
+
 beforeEach(() => {
   window.localStorage.clear();
   window.localStorage.setItem('re.calculadora_ataque.aviso.anon', 'true');
@@ -62,6 +74,7 @@ beforeEach(() => {
   vi.mocked(getCombosAtaque).mockResolvedValue([]);
   vi.mocked(getCombosDefesa).mockResolvedValue([]);
   vi.mocked(getItensInventario).mockResolvedValue([]);
+  vi.mocked(getVariantes).mockResolvedValue([]);
   vi.mocked(updateItemInventario).mockResolvedValue(null);
   vi.mocked(removeItemInventario).mockResolvedValue(null);
   vi.mocked(addComboAtaque).mockResolvedValue(null);
@@ -1346,7 +1359,7 @@ describe('AtributosTab — fluxo de edição', () => {
     const dialog = await screen.findByRole('dialog', { name: /calculadora de ataque/i });
     fireEvent.change(within(dialog).getByLabelText(/nome da combinação/i), { target: { value: 'Corte Carmesim' } });
     fireEvent.change(within(dialog).getByRole('slider', { name: /potencialização de energia/i }), { target: { value: 19 } });
-    fireEvent.click(within(dialog).getByRole('button', { name: /Fadiga Atual\/Máxima.*Fadiga suficiente/i }));
+    fireEvent.click(getResourceButton(dialog, 'Fadiga'));
     fireEvent.click(within(dialog).getByRole('button', { name: /^salvar$/i }));
 
     await waitFor(() => expect(addComboAtaque).toHaveBeenCalledWith(
@@ -1395,7 +1408,7 @@ describe('AtributosTab — fluxo de edição', () => {
     const dialog = await screen.findByRole('dialog', { name: /calculadora de ataque/i });
     fireEvent.change(within(dialog).getByLabelText(/nome da combinação/i), { target: { value: ' soco do jose ' } });
     fireEvent.change(within(dialog).getByRole('slider', { name: /potencialização de energia/i }), { target: { value: 19 } });
-    fireEvent.click(within(dialog).getByRole('button', { name: /Fadiga Atual\/Máxima.*Fadiga suficiente/i }));
+    fireEvent.click(getResourceButton(dialog, 'Fadiga'));
     fireEvent.click(within(dialog).getByRole('button', { name: /^salvar$/i }));
 
     await waitFor(() => expect(addComboAtaque).toHaveBeenCalledWith(
@@ -1436,11 +1449,67 @@ describe('AtributosTab — fluxo de edição', () => {
     const slider = within(dialog).getByRole('slider', { name: /potencialização de energia/i });
 
     fireEvent.change(slider, { target: { value: 19 } });
-    fireEvent.click(within(dialog).getByRole('button', { name: /fadiga/i }));
+    fireEvent.click(getResourceButton(dialog, 'Fadiga'));
 
     await waitFor(() => expect(dialog.textContent).toMatch(/Fadiga/i));
     expect(dialog.textContent).toMatch(/29 pts/i);
     expect(dialog.textContent).not.toMatch(/Energia.*19 pts/i);
+  });
+
+  it('soma os custos das artes por recurso mesmo quando selecionadas com tipos diferentes', async () => {
+    vi.mocked(getArts).mockResolvedValue([
+      { id: 'a1', nome: 'Chama do Vazio', custo: '10 PE', tipoCusto: 'Energia' },
+      { id: 'a2', nome: 'Marca de Cansaço', custo: '5 PF', tipoCusto: 'Fadiga' },
+      { id: 'a3', nome: 'Escudo de Ferro', custo: '8 PS', tipoCusto: 'Saúde' },
+    ]);
+
+    const onSave = vi.fn().mockResolvedValue();
+    renderComProvider(
+      <AtributosTab personagem={personagem} onSave={onSave} onExcluir={vi.fn()} />,
+    );
+
+    fireEvent.contextMenu(screen.getByRole('button', { name: /ataque/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /calculadora de ataque/i }));
+
+    const dialog = await screen.findByRole('dialog', { name: /calculadora de ataque/i });
+    fireEvent.mouseDown(within(dialog).getByRole('combobox', { name: /arte\/habilidade/i }));
+    fireEvent.click(screen.getByRole('option', { name: /chama do vazio/i }));
+    fireEvent.click(screen.getByRole('option', { name: /marca de cansaço/i }));
+    fireEvent.click(screen.getByRole('option', { name: /escudo de ferro/i }));
+
+    const energiaCard = getResourceButton(dialog, 'Energia');
+    const fadigaCard = getResourceButton(dialog, 'Fadiga');
+    const saudeCard = getResourceButton(dialog, 'Saúde');
+
+    expect(energiaCard).toHaveTextContent('POT. 0 + ARTE 10 = 10');
+    expect(fadigaCard).toHaveTextContent('POT. 0 + ARTE 5 = 5');
+    expect(saudeCard).toHaveTextContent('POT. 0 + ARTE 8 = 8');
+  });
+
+  it('prioriza tipoCusto ao calcular o custo da arte e mantém fallback legado para registros antigos', async () => {
+    vi.mocked(getArts).mockResolvedValue([
+      { id: 'a1', nome: 'Lâmina sem indicação textual', custo: '4', tipoCusto: 'Fadiga' },
+    ]);
+
+    const onSave = vi.fn().mockResolvedValue();
+    renderComProvider(
+      <AtributosTab personagem={personagem} onSave={onSave} onExcluir={vi.fn()} />,
+    );
+
+    fireEvent.contextMenu(screen.getByRole('button', { name: /ataque/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /calculadora de ataque/i }));
+
+    const dialog = await screen.findByRole('dialog', { name: /calculadora de ataque/i });
+    fireEvent.mouseDown(within(dialog).getByRole('combobox', { name: /arte\/habilidade/i }));
+    fireEvent.click(screen.getByRole('option', { name: /lâmina sem indicação textual/i }));
+
+    const energiaCard = getResourceButton(dialog, 'Energia');
+    const fadigaCard = getResourceButton(dialog, 'Fadiga');
+    const saudeCard = getResourceButton(dialog, 'Saúde');
+
+    expect(energiaCard).toHaveTextContent('POT. 0 + ARTE 0 = 0');
+    expect(fadigaCard).toHaveTextContent('POT. 0 + ARTE 4 = 4');
+    expect(saudeCard).toHaveTextContent('POT. 0 + ARTE 0 = 0');
   });
 
   it('move o custo da arte para o recurso clicado sem deixar o custo preso na energia', async () => {
@@ -1459,9 +1528,9 @@ describe('AtributosTab — fluxo de edição', () => {
     const dialog = await screen.findByRole('dialog', { name: /calculadora de ataque/i });
     fireEvent.mouseDown(within(dialog).getByRole('combobox', { name: /arte\/habilidade/i }));
     fireEvent.click(screen.getByRole('option', { name: /lâmina de fogo/i }));
-    const energiaCard = within(dialog).getByRole('button', { name: /energia/i });
-    const saudeCard = within(dialog).getByRole('button', { name: /saúde/i });
-    const fadigaCard = within(dialog).getByRole('button', { name: /fadiga/i });
+    const energiaCard = getResourceButton(dialog, 'Energia');
+    const saudeCard = getResourceButton(dialog, 'Saúde');
+    const fadigaCard = getResourceButton(dialog, 'Fadiga');
 
     expect(energiaCard).toHaveTextContent('POT. 0 + ARTE 15 = 15');
     fireEvent.click(saudeCard);
@@ -1492,9 +1561,9 @@ describe('AtributosTab — fluxo de edição', () => {
     const dialog = await screen.findByRole('dialog', { name: /calculadora de defesa/i });
     fireEvent.mouseDown(within(dialog).getByRole('combobox', { name: /arte\/habilidade/i }));
     fireEvent.click(screen.getByRole('option', { name: /escudo solar/i }));
-    const energiaCard = within(dialog).getByRole('button', { name: /energia/i });
-    const saudeCard = within(dialog).getByRole('button', { name: /saúde/i });
-    const fadigaCard = within(dialog).getByRole('button', { name: /fadiga/i });
+    const energiaCard = getResourceButton(dialog, 'Energia');
+    const saudeCard = getResourceButton(dialog, 'Saúde');
+    const fadigaCard = getResourceButton(dialog, 'Fadiga');
 
     expect(energiaCard).toHaveTextContent('POT. 0 + ARTE 15 = 15');
     fireEvent.click(saudeCard);
@@ -1559,6 +1628,42 @@ describe('AtributosTab — fluxo de edição', () => {
     fireEvent.click(within(confirmDialog).getByRole('button', { name: /confirmar uso/i }));
 
     await waitFor(() => expect(consumirRecursosPersonagem).toHaveBeenCalledWith('p1', { energia: 22, fadiga: 0 }));
+  });
+
+  it('permite selecionar múltiplos itens e salvar seu conjunto sem duplicar ids', async () => {
+    vi.mocked(getItensInventario).mockResolvedValue([
+      { id: 'item-1', nome: 'Espada de Bronze', dados: '3' },
+      { id: 'item-2', nome: 'Escudo de Ferro A', dados: '2' },
+      { id: 'item-3', nome: 'Escudo de Ferro B', dados: '2' },
+    ]);
+    vi.mocked(addComboAtaque).mockResolvedValue('combo-multi');
+
+    const onSave = vi.fn().mockResolvedValue();
+    renderComProvider(
+      <AtributosTab personagem={personagem} onSave={onSave} onExcluir={vi.fn()} />,
+    );
+
+    fireEvent.contextMenu(screen.getByRole('button', { name: /ataque/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /calculadora de ataque/i }));
+
+    const dialog = await screen.findByRole('dialog', { name: /calculadora de ataque/i });
+    fireEvent.mouseDown(within(dialog).getByRole('combobox', { name: /item\/equipamento/i }));
+    fireEvent.click(screen.getByRole('option', { name: /espada de bronze/i }));
+    fireEvent.click(screen.getByRole('option', { name: /escudo de ferro a/i }));
+    fireEvent.click(screen.getByRole('option', { name: /escudo de ferro b/i }));
+
+    expect(within(dialog).getByText('3 equipamentos selecionados')).toBeInTheDocument();
+    fireEvent.change(within(dialog).getByLabelText(/nome da combinação/i), { target: { value: 'Golpe em conjunto' } });
+    fireEvent.click(within(dialog).getByText(/^Salvar$/i));
+
+    await waitFor(() => expect(addComboAtaque).toHaveBeenCalledWith(
+      'p1',
+      expect.objectContaining({
+        nome: 'Golpe em conjunto',
+        itemInventarioId: 'item-1',
+        itemInventarioIds: ['item-1', 'item-2', 'item-3'],
+      }),
+    ));
   });
 
   it('mostra somente Roll, Dano Fixo e Rolling na prévia dos dados', async () => {
@@ -1699,6 +1804,29 @@ describe('AtributosTab — fluxo de edição', () => {
     expect(within(dialog).queryByText(/Rolagem concluída:/i)).not.toBeInTheDocument();
   });
 
+  it('explica corretamente que o custo total inclui potencialização e custos próprios de artes', async () => {
+    window.localStorage.removeItem('re.calculadora_ataque.aviso.anon');
+
+    const personagemComEnergia = {
+      ...personagem,
+      id: 'p1',
+      status: { energia: { atual: 44, base: 0, extra: 0, bonus: 0, maximo: 44 } },
+      statusMaximos: { energia: 44 },
+    };
+
+    renderComProvider(
+      <AtributosTab personagem={personagemComEnergia} onSave={vi.fn().mockResolvedValue()} onExcluir={vi.fn()} />,
+    );
+
+    fireEvent.contextMenu(screen.getByRole('button', { name: /ataque/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /calculadora de ataque/i }));
+
+    const aviso = await screen.findByRole('dialog', { name: /atenção aos custos/i });
+    expect(aviso).toHaveTextContent(/já inclui a potencialização e os custos próprios de artes/i);
+    expect(aviso).toHaveTextContent(/potencialização \+ arte/i);
+    expect(aviso).not.toHaveTextContent(/corresponde somente ao recurso gasto na potencialização/i);
+  });
+
   it('usa a combinação salva com confirmação e desconta energia e fadiga do personagem', async () => {
     vi.mocked(getCombosAtaque).mockResolvedValueOnce([
       {
@@ -1756,6 +1884,76 @@ describe('AtributosTab — fluxo de edição', () => {
         fadiga: expect.objectContaining({ atual: 25 }),
       }),
     })));
+  });
+
+  it('consolida energia, fadiga e saúde no uso de uma combinação salva e consome tudo em uma operação', async () => {
+    vi.mocked(getArts).mockResolvedValue([
+      { id: 'a1', nome: 'Arte A', custo: '5 PE', tipoCusto: 'energia' },
+      { id: 'a2', nome: 'Habilidade B', custo: '15 PF', tipoCusto: 'fadiga' },
+      { id: 'a3', nome: 'Arte C', custo: '10 PS', tipoCusto: 'saude' },
+    ]);
+    vi.mocked(getCombosAtaque).mockResolvedValueOnce([
+      {
+        id: 'combo-multi',
+        nome: 'Combo Mista',
+        tipoDano: 'Contundente',
+        artIds: ['a1', 'a2', 'a3'],
+        potencializacao: 20,
+        custoEnergia: 8,
+        custoFadiga: 15,
+        custoSaude: 10,
+        costResourceType: 'ambos',
+        updatedAt: { seconds: 1700000000 },
+      },
+    ]);
+    vi.mocked(consumirRecursosPersonagem).mockResolvedValue({
+      energia: { atual: 121, maximo: 147 },
+      fadiga: { atual: 13, maximo: 28 },
+      saude: { atual: 42, maximo: 52 },
+      gastoEnergia: 8,
+      gastoFadiga: 15,
+      gastoSaude: 10,
+    });
+
+    const personagemComRecursos = {
+      ...personagem,
+      id: 'p1',
+      status: {
+        energia: { atual: 129, maximo: 147 },
+        fadiga: { atual: 28, maximo: 28 },
+        hp: { atual: 52, maximo: 52 },
+      },
+      statusMaximos: { energia: 147, fadiga: 28, hp: 52 },
+    };
+
+    renderComProvider(
+      <AtributosTab personagem={personagemComRecursos} onSave={vi.fn().mockResolvedValue()} onExcluir={vi.fn()} />,
+    );
+
+    fireEvent.contextMenu(screen.getByRole('button', { name: /ataque/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /calculadora de ataque/i }));
+
+    const dialog = await screen.findByRole('dialog', { name: /calculadora de ataque/i });
+    fireEvent.click(within(dialog).getByRole('button', { name: /^usar$/i }));
+
+    const confirmDialog = await screen.findByRole('dialog', { name: /utilizar combinação/i });
+    expect(confirmDialog).toHaveTextContent(/Energia/i);
+    expect(confirmDialog).toHaveTextContent(/Fadiga/i);
+    expect(confirmDialog).toHaveTextContent(/Saúde/i);
+    expect(confirmDialog).toHaveTextContent(/129\/147/i);
+    expect(confirmDialog).toHaveTextContent(/28\/28/i);
+    expect(confirmDialog).toHaveTextContent(/52\/52/i);
+    expect(confirmDialog).toHaveTextContent(/Custo\s*8/i);
+    expect(confirmDialog).toHaveTextContent(/Custo\s*15/i);
+    expect(confirmDialog).toHaveTextContent(/Custo\s*10/i);
+
+    fireEvent.click(within(confirmDialog).getByRole('button', { name: /confirmar uso/i }));
+
+    await waitFor(() => expect(consumirRecursosPersonagem).toHaveBeenCalledWith('p1', {
+      energia: 8,
+      fadiga: 15,
+      saude: 10,
+    }));
   });
 
   it('mostra uma mensagem de erro e reabilita o botão Salvar quando onSave falha', async () => {

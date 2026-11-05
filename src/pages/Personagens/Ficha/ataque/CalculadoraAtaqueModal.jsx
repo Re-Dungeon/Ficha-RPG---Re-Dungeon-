@@ -1,7 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import Alert from '@mui/material/Alert';
+import Accordion from '@mui/material/Accordion';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import AccordionSummary from '@mui/material/AccordionSummary';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
@@ -22,8 +25,10 @@ import Typography from '@mui/material/Typography';
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
+import CheckIcon from '@mui/icons-material/Check';
 import CasinoIcon from '@mui/icons-material/Casino';
 import BoltIcon from '@mui/icons-material/Bolt';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ShieldIcon from '@mui/icons-material/Shield';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
@@ -42,7 +47,6 @@ import {
   calcularPotencialBase,
   calcularPotencialFinal,
   converterPotencialEmDados,
-  extrairBonusNumericoAtaque,
   extrairBonusNumericoItem,
 } from 'common/utils/ataque';
 import {
@@ -50,6 +54,7 @@ import {
   getCombosAtaque,
   getCombosDefesa,
   getItensInventario,
+  getVariantes,
   addComboAtaque,
   addComboDefesa,
   updateComboAtaque,
@@ -71,14 +76,14 @@ const StyledDialog = styled(Dialog)(({ theme }) => ({
     border: '1.5px solid rgba(232, 203, 133, 0.78)',
     borderRadius: 18,
     boxShadow: '0 18px 42px rgba(0, 0, 0, 0.7), inset 0 0 14px rgba(232, 203, 133, 0.12)',
-    overflow: 'hidden',
+    overflow: 'visible',
     color: '#f1f1f4',
   },
   '& .MuiDialogContent-root': {
     padding: 0,
     flex: '1 1 auto',
     minHeight: 0,
-    overflow: 'hidden',
+    overflow: 'visible',
     background: 'linear-gradient(180deg, rgba(11, 13, 24, 0.2), rgba(13, 12, 23, 0.32))',
   },
   '& .MuiDialog-container': {
@@ -246,7 +251,7 @@ const SectionCard = styled(Box)(() => ({
   border: '1px solid rgba(232, 203, 133, 0.48)',
   borderRadius: 14,
   boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.03), 0 8px 20px rgba(0, 0, 0, 0.18)',
-  overflow: 'hidden',
+  overflow: 'visible',
 }));
 
 const SectionHeader = styled(Box)(() => ({
@@ -288,74 +293,125 @@ const TwoColFields = styled(Box)(() => ({
   display: 'grid',
   gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
   gap: 12,
+  alignItems: 'flex-start',
   [MOBILE]: {
     gridTemplateColumns: 'minmax(0, 1fr)',
   },
 }));
 
-const StyledTextField = styled(TextField)(({ theme }) => ({
+const fieldRootCss = {
+  width: '100%',
+  '& .MuiFormControl-root, & .MuiTextField-root': {
+    minHeight: 0,
+  },
   '& .MuiOutlinedInput-root': {
-    background: 'rgba(10, 13, 28, 0.8)',
-    borderRadius: 10,
+    background: 'rgba(10, 13, 28, 0.82)',
+    borderRadius: 12,
     color: '#f1f1f4',
+    minHeight: 58,
     transition: 'all 0.2s ease',
-    '& fieldset': {
+    '& .MuiOutlinedInput-notchedOutline': {
       borderColor: 'rgba(91, 124, 250, 0.5)',
       borderWidth: 1.1,
+      borderStyle: 'solid',
+      transition: 'all 0.2s ease',
+      '& legend': {
+        maxWidth: '0.01px',
+        padding: 0,
+        visibility: 'hidden',
+      },
     },
-    '&:hover fieldset': {
+    '&:hover .MuiOutlinedInput-notchedOutline': {
       borderColor: 'rgba(232, 203, 133, 0.75)',
     },
-    '&.Mui-focused fieldset': {
+    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
       borderColor: '#f4dda2',
       boxShadow: '0 0 0 1px rgba(244, 221, 162, 0.16)',
     },
   },
   '& .MuiInputLabel-root': {
+    position: 'static',
+    display: 'block',
+    width: '100%',
+    marginBottom: '8px',
+    transform: 'none',
     color: '#c9c7d8',
+    fontSize: '0.68rem',
+    lineHeight: '1.2',
+    letterSpacing: '0.08em',
+    textTransform: 'uppercase',
+    fontWeight: 700,
+    background: 'transparent',
+    padding: 0,
+    whiteSpace: 'normal',
+    overflowWrap: 'anywhere',
     '&.Mui-focused': {
       color: '#f4dda2',
+      transform: 'none',
+    },
+    '&.MuiInputLabel-shrink': {
+      transform: 'none',
+      color: '#f4dda2',
+      marginBottom: '8px',
     },
   },
   '& .MuiInputBase-input': {
     color: '#f1f1f4',
+    fontSize: '0.96rem',
+    lineHeight: 1.5,
     paddingTop: 12,
     paddingBottom: 12,
+    paddingLeft: 14,
+    paddingRight: 14,
+    boxSizing: 'border-box',
+    whiteSpace: 'normal',
+    overflowWrap: 'anywhere',
   },
+  '& .MuiSelect-select': {
+    display: 'flex',
+    alignItems: 'center',
+    color: '#f1f1f4',
+    minHeight: 58,
+    lineHeight: 1.4,
+    paddingTop: 12,
+    paddingBottom: 12,
+    paddingRight: 42,
+    paddingLeft: 14,
+    whiteSpace: 'normal',
+    overflowWrap: 'anywhere',
+    textOverflow: 'clip',
+    boxSizing: 'border-box',
+  },
+  '& .MuiSelect-icon': {
+    color: '#f4dda2',
+    right: 12,
+  },
+};
+
+const StyledTextField = styled(TextField, {
+  shouldForwardProp: prop => prop !== 'InputLabelProps' && prop !== 'inputLabelProps',
+})(({ theme }) => ({
+  ...fieldRootCss,
   [theme.breakpoints.down('sm')]: {
     '& .MuiInputBase-input': {
-      fontSize: '0.96rem',
+      fontSize: '0.92rem',
     },
   },
 }));
 
 const StyledSelect = styled(FormControl)(() => ({
+  ...fieldRootCss,
   '& .MuiOutlinedInput-root': {
-    background: 'rgba(10, 13, 28, 0.8)',
-    borderRadius: 10,
-    color: '#f1f1f4',
-    '& fieldset': {
-      borderColor: 'rgba(91, 124, 250, 0.5)',
-      borderWidth: 1.1,
-    },
-    '&:hover fieldset': {
-      borderColor: 'rgba(232, 203, 133, 0.75)',
-    },
-    '&.Mui-focused fieldset': {
-      borderColor: '#f4dda2',
-      boxShadow: '0 0 0 1px rgba(244, 221, 162, 0.16)',
-    },
+    ...fieldRootCss['& .MuiOutlinedInput-root'],
   },
   '& .MuiInputLabel-root': {
-    color: '#c9c7d8',
-    '&.Mui-focused': {
-      color: '#f4dda2',
-    },
+    ...fieldRootCss['& .MuiInputLabel-root'],
   },
   '& .MuiSelect-select': {
-    color: '#f1f1f4',
-    paddingTop: 12,
-    paddingBottom: 12,
+    ...fieldRootCss['& .MuiSelect-select'],
+  },
+  '& .MuiSelect-icon': {
+    ...fieldRootCss['& .MuiSelect-icon'],
   },
 }));
 
@@ -471,18 +527,125 @@ const ResultValue = styled(Typography)(() => ({
   letterSpacing: '0.06em',
 }));
 
-const ComboCard = styled(Box)(() => ({
+const ComboCard = styled(Accordion)(() => ({
+  width: '100%',
+  borderRadius: 14,
+  overflow: 'visible',
+  background: 'linear-gradient(180deg, rgba(17, 20, 31, 0.88), rgba(11, 12, 22, 0.96))',
+  border: '1px solid rgba(232, 203, 133, 0.38)',
+  boxShadow: 'none',
+  '&:before': {
+    display: 'none',
+  },
+  '&.MuiAccordion-root': {
+    margin: 0,
+  },
+  '&.Mui-expanded': {
+    borderColor: 'rgba(244, 221, 162, 0.82)',
+    boxShadow: '0 0 0 1px rgba(244, 221, 162, 0.12), 0 10px 30px rgba(0, 0, 0, 0.18)',
+  },
+  '&.selected': {
+    borderColor: 'rgba(244, 221, 162, 0.96)',
+    background: 'linear-gradient(180deg, rgba(31, 25, 38, 0.98), rgba(14, 13, 23, 0.98))',
+    boxShadow: '0 0 0 1px rgba(244, 221, 162, 0.12), 0 0 18px rgba(232, 203, 133, 0.18), inset 0 0 18px rgba(244, 221, 162, 0.06)',
+  },
+  '@media (prefers-reduced-motion: reduce)': {
+    transition: 'none',
+  },
+}));
+
+const ComboSummary = styled(AccordionSummary)(() => ({
+  minHeight: 72,
+  padding: '10px 12px',
+  background: 'rgba(9, 11, 20, 0.72)',
+  '& .MuiAccordionSummary-content': {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+    margin: '8px 0',
+    minHeight: 52,
+    width: '100%',
+  },
+  '& .MuiAccordionSummary-expandIconWrapper': {
+    color: '#f4dda2',
+    transition: 'transform 0.2s ease',
+  },
+  '&.Mui-expanded .MuiAccordionSummary-expandIconWrapper': {
+    transform: 'rotate(180deg)',
+  },
+  '&:hover': {
+    background: 'rgba(20, 21, 29, 0.92)',
+  },
+}));
+
+const ComboAccordionDetails = styled(AccordionDetails)(() => ({
   display: 'flex',
   flexDirection: 'column',
   gap: 12,
-  flex: '0 0 auto',
+  padding: '0 12px 14px',
+  background: 'linear-gradient(180deg, rgba(11, 12, 19, 0.88), rgba(9, 9, 16, 0.96))',
+  overflow: 'visible',
+}));
+
+const ComboHeader = styled(Box)(() => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: 8,
+  minWidth: 0,
   width: '100%',
-  minHeight: 0,
-  background: 'linear-gradient(180deg, rgba(17, 20, 31, 0.86), rgba(11, 12, 22, 0.92))',
-  border: '1px solid rgba(232, 203, 133, 0.46)',
-  borderRadius: 12,
-  padding: 12,
-  boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.02)',
+}));
+
+const ComboNameBlock = styled(Box)(() => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: 8,
+  minWidth: 0,
+  flex: '1 1 auto',
+}));
+
+const ComboHeaderMetaRow = styled(Box)(() => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: 8,
+  justifyContent: 'flex-end',
+  flexWrap: 'wrap',
+}));
+
+const SelectionStatus = styled(Box)(() => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: 20,
+  height: 20,
+  borderRadius: '50%',
+  background: 'radial-gradient(circle, rgba(244, 221, 162, 0.2), rgba(232, 203, 133, 0.08))',
+  border: '1px solid rgba(244, 221, 162, 0.55)',
+  color: '#f4dda2',
+  boxShadow: '0 0 12px rgba(232, 203, 133, 0.18)',
+  flexShrink: 0,
+  animation: 'comboSelectionIcon 0.45s ease-out',
+  '@media (prefers-reduced-motion: reduce)': {
+    animation: 'none',
+  },
+}));
+
+const EditingStatus = styled(Box)(() => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 4,
+  maxWidth: '100%',
+  borderRadius: 999,
+  padding: '3px 7px',
+  fontSize: '0.56rem',
+  fontWeight: 700,
+  letterSpacing: '0.08em',
+  textTransform: 'uppercase',
+  color: '#dfe9ff',
+  background: 'rgba(91, 124, 250, 0.12)',
+  border: '1px solid rgba(91, 124, 250, 0.35)',
+  whiteSpace: 'nowrap',
 }));
 
 const ComboListScroller = styled(Box)(() => ({
@@ -527,6 +690,8 @@ const ComboActions = styled(Box)(() => ({
   gap: 8,
   width: '100%',
   minWidth: 0,
+  marginTop: 4,
+  paddingBottom: 2,
   '@media (max-width: 480px)': {
     gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
   },
@@ -595,8 +760,14 @@ const UseComboButton = styled(Button)(() => ({
   justifyContent: 'center',
   whiteSpace: 'nowrap',
   boxSizing: 'border-box',
+  transition: 'filter 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease',
   '&:hover': {
     background: 'linear-gradient(135deg, rgba(244, 221, 162, 1), rgba(198, 165, 93, 0.98))',
+    filter: 'brightness(1.04)',
+  },
+  '&:focus-visible': {
+    outline: '2px solid rgba(244, 221, 162, 0.9)',
+    outlineOffset: 2,
   },
   '&:disabled': {
     opacity: 0.55,
@@ -619,9 +790,15 @@ const TinyActionButton = styled(Button)(() => ({
   justifyContent: 'center',
   whiteSpace: 'nowrap',
   boxSizing: 'border-box',
+  transition: 'border-color 0.2s ease, background 0.2s ease, transform 0.2s ease',
   '&:hover': {
     borderColor: 'rgba(232, 203, 133, 0.8)',
     background: 'rgba(232, 203, 133, 0.08)',
+    transform: 'translateY(-1px)',
+  },
+  '&:focus-visible': {
+    outline: '2px solid rgba(91, 124, 250, 0.8)',
+    outlineOffset: 2,
   },
 }));
 
@@ -640,9 +817,15 @@ const TinyDangerButton = styled(Button)(() => ({
   justifyContent: 'center',
   whiteSpace: 'nowrap',
   boxSizing: 'border-box',
+  transition: 'background 0.2s ease, border-color 0.2s ease, transform 0.2s ease',
   '&:hover': {
     background: 'rgba(132, 30, 30, 0.86)',
     borderColor: 'rgba(239, 68, 68, 0.75)',
+    transform: 'translateY(-1px)',
+  },
+  '&:focus-visible': {
+    outline: '2px solid rgba(239, 68, 68, 0.8)',
+    outlineOffset: 2,
   },
 }));
 
@@ -676,6 +859,14 @@ const ResourceSelectCard = styled(Button)(() => ({
   '&:hover': {
     borderColor: 'rgba(232, 203, 133, 0.6)',
     background: 'rgba(22, 19, 31, 0.86)',
+    transform: 'translateY(-1px)',
+  },
+  '&:focus-visible': {
+    outline: '2px solid rgba(244, 221, 162, 0.8)',
+    outlineOffset: 2,
+  },
+  '&:active': {
+    transform: 'translateY(0)',
   },
 }));
 
@@ -782,7 +973,7 @@ const ConfirmDialog = styled(Dialog)(() => ({
     border: '1.5px solid rgba(232, 203, 133, 0.82)',
     borderRadius: 18,
     boxShadow: '0 20px 42px rgba(0, 0, 0, 0.68), inset 0 0 18px rgba(232, 203, 133, 0.12)',
-    overflow: 'hidden',
+    overflow: 'visible',
     color: '#f1f1f4',
   },
   '& .MuiDialogContent-root': {
@@ -1065,12 +1256,35 @@ const ConfirmCompactRow = styled(Box)(() => ({
   },
 }));
 
+const normalizarArtIdsSelecionadas = valor => {
+  const valores = Array.isArray(valor) ? valor : valor ? [valor] : [];
+  const ids = valores
+    .filter(Boolean)
+    .map(String)
+    .filter((id, indice, lista) => lista.indexOf(id) === indice);
+
+  return ids;
+};
+
+const normalizarItemInventarioSelecionados = valor => {
+  const valores = Array.isArray(valor) ? valor : valor ? [valor] : [];
+  const ids = valores
+    .filter(Boolean)
+    .map(String)
+    .filter((id, indice, lista) => lista.indexOf(id) === indice);
+
+  return ids;
+};
+
 const defaultForm = {
+  id: '',
   nome: '',
   tipoDano: 'Contundente',
   artId: '',
+  artIds: [],
   itemInventarioId: '',
-  bonusExtra: 0,
+  itemInventarioIds: [],
+  bonusExtra: '',
   potencializacao: 0,
 };
 
@@ -1101,7 +1315,7 @@ const getContextConfig = contexto => {
   const isDefesa = contexto === 'defesa';
   return {
     titulo: isDefesa ? 'Calculadora de Defesa' : 'Calculadora de Ataque',
-    tituloAviso: isDefesa ? 'Sobre a Calculadora de Defesa' : 'Sobre a Calculadora de Ataque',
+    tituloAviso: isDefesa ? 'Atenção aos custos da Defesa' : 'Atenção aos custos',
     tituloMecanicas: isDefesa ? 'Mecânicas de Defesa' : 'Mecânicas de Ataque',
     nomeConfiguracao: isDefesa ? 'Configuração da Defesa' : 'Configuração do Ataque',
     tipoDanoLabel: isDefesa ? 'Tipo de Proteção' : 'Tipo de dano',
@@ -1138,14 +1352,81 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
     () => TIPOS_DANO_ATAQUE.map(tipo => ({ value: tipo, label: getTipoDanoLabel(tipo, contexto) })),
     [contexto],
   );
+
+  const selectMenuProps = useMemo(() => ({
+    disablePortal: false,
+    keepMounted: true,
+    anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+    transformOrigin: { vertical: 'top', horizontal: 'left' },
+    slotProps: {
+      paper: {
+        sx: {
+          width: 'min(340px, calc(100vw - 24px))',
+          borderRadius: 2,
+          border: '1px solid rgba(232, 203, 133, 0.48)',
+          background: 'linear-gradient(180deg, rgba(17, 15, 27, 0.98), rgba(9, 10, 18, 0.98))',
+          boxShadow: '0 18px 42px rgba(0, 0, 0, 0.72)',
+          overflow: 'hidden',
+          mt: 1,
+          zIndex: 2000,
+          '& .MuiMenuItem-root': {
+            color: '#f1f1f4',
+            minHeight: 30,
+            height: 30,
+            px: 1.25,
+            py: 0,
+            fontSize: '0.76rem',
+            lineHeight: 1.2,
+            '&:hover': {
+              background: 'rgba(232, 203, 133, 0.08)',
+            },
+            '&.Mui-selected': {
+              background: 'rgba(91, 124, 250, 0.18)',
+              color: '#f4dda2',
+            },
+          },
+          '& .MuiMenuList-root': {
+            paddingTop: 4,
+            paddingBottom: 4,
+            maxHeight: 220,
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            scrollbarWidth: 'thin',
+            scrollbarColor: 'rgba(232, 203, 133, 0.6) rgba(17, 20, 31, 0.85)',
+            '&::-webkit-scrollbar': {
+              width: 8,
+            },
+            '&::-webkit-scrollbar-track': {
+              background: 'rgba(17, 20, 31, 0.85)',
+              borderRadius: 999,
+            },
+            '&::-webkit-scrollbar-thumb': {
+              background: 'rgba(232, 203, 133, 0.6)',
+              borderRadius: 999,
+              border: '2px solid rgba(17, 20, 31, 0.85)',
+            },
+          },
+        },
+      },
+      list: {
+        sx: {
+          maxHeight: 220,
+          overflowY: 'auto',
+          overflowX: 'hidden',
+        },
+      },
+    },
+  }), []);
   const [form, setForm] = useState(defaultForm);
   const [combos, setCombos] = useState([]);
   const [arts, setArts] = useState([]);
+  const [variantes, setVariantes] = useState([]);
   const [itens, setItens] = useState([]);
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState('');
   const [preview, setPreview] = useState(null);
   const [selectedComboId, setSelectedComboId] = useState('');
+  const [expandedComboId, setExpandedComboId] = useState('');
   const [resourceSelecionada, setResourceSelecionada] = useState('energia');
   const [confirmarNovaCombinacao, setConfirmarNovaCombinacao] = useState(false);
   const [avisoInformativoAberto, setAvisoInformativoAberto] = useState(false);
@@ -1165,15 +1446,27 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
     setAvisoInformativoAberto(false);
   };
 
-  const normalizarTipoRecurso = tipo => {
-    if (tipo === 'saude' || tipo === 'hp') {
+  const normalizarTipoRecurso = useCallback(tipo => {
+    const valor = String(tipo ?? '')
+      .trim()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+
+    if (valor === 'saude' || valor === 'saudes' || valor === 'hp') {
       return 'saude';
     }
-    if (tipo === 'energia' || tipo === 'fadiga') {
-      return tipo;
+    if (valor === 'energia' || valor === 'energias') {
+      return 'energia';
     }
-    return tipo;
-  };
+    if (valor === 'fadiga' || valor === 'fadigas') {
+      return 'fadiga';
+    }
+    if (valor === 'neutro') {
+      return 'neutro';
+    }
+    return valor;
+  }, []);
   const [comboEmExclusao, setComboEmExclusao] = useState(null);
   const [comboEmUso, setComboEmUso] = useState(null);
   const [processandoUsoComboId, setProcessandoUsoComboId] = useState('');
@@ -1199,14 +1492,18 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
 
     Promise.all([
       getArts(personagem.id),
+      getVariantes(personagem.id),
       getItensInventario(personagem.id),
       comboGetter(personagem.id),
     ])
-      .then(([artsCarregadas, itensCarregados, combosCarregados]) => {
+      .then(([artsCarregadas, variantesCarregadas, itensCarregados, combosCarregados]) => {
         if (!ativo) return;
+        const combosOrdenados = (combosCarregados ?? []).sort((a, b) => (b.updatedAt?.seconds ?? 0) - (a.updatedAt?.seconds ?? 0));
         setArts(artsCarregadas ?? []);
+        setVariantes(variantesCarregadas ?? []);
         setItens(itensCarregados ?? []);
-        setCombos((combosCarregados ?? []).sort((a, b) => (b.updatedAt?.seconds ?? 0) - (a.updatedAt?.seconds ?? 0)));
+        setCombos(combosOrdenados);
+        setExpandedComboId(current => current || (combosOrdenados[0]?.id ?? ''));
       })
       .finally(() => {
         if (ativo) setCarregando(false);
@@ -1217,18 +1514,135 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
     };
   }, [isDefesaContexto, open, personagem?.id]);
 
-  const artSelecionada = useMemo(
-    () => arts.find(art => art.id === form.artId) ?? null,
-    [arts, form.artId],
+  const opcoesArtes = useMemo(() => {
+    const mapArtIdParaNome = new Map((arts ?? []).map(art => [art.id, art.nome || 'Art sem nome']));
+    const variantesPorArt = new Map();
+
+    (variantes ?? []).forEach(variante => {
+      const artId = variante?.artId;
+      if (!artId) {
+        return;
+      }
+
+      const lista = variantesPorArt.get(artId) ?? [];
+      lista.push({
+        ...variante,
+        isVariante: true,
+        parentArtId: artId,
+        parentNome: mapArtIdParaNome.get(artId) ?? 'Art',
+        nomeExibicao: `${mapArtIdParaNome.get(artId) ?? 'Art'} · ${variante.nome || 'Variante sem nome'}`,
+      });
+      variantesPorArt.set(artId, lista);
+    });
+
+    return (arts ?? [])
+      .flatMap(art => {
+        const opcoes = [{
+          ...art,
+          isVariante: false,
+          parentArtId: null,
+          parentNome: null,
+          nomeExibicao: art.nome || 'Art sem nome',
+        }];
+        const listaVariantes = (variantesPorArt.get(art.id) ?? [])
+          .sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+
+        return opcoes.concat(listaVariantes.map(variante => ({
+          ...variante,
+          isVariante: true,
+          parentArtId: art.id,
+          parentNome: art.nome || 'Art',
+          nomeExibicao: `${art.nome || 'Art'} · ${variante.nome || 'Variante sem nome'}`,
+        })));
+      })
+      .sort((a, b) => {
+        if (a.parentArtId !== b.parentArtId) {
+          const nomeA = a.parentNome ?? a.nomeExibicao ?? a.nome ?? '';
+          const nomeB = b.parentNome ?? b.nomeExibicao ?? b.nome ?? '';
+          return nomeA.localeCompare(nomeB);
+        }
+
+        return (a.nomeExibicao ?? a.nome ?? '').localeCompare(b.nomeExibicao ?? b.nome ?? '');
+      });
+  }, [arts, variantes]);
+
+  const opcoesArtesPorId = useMemo(
+    () => new Map(opcoesArtes.map(opcao => [opcao.id, opcao])),
+    [opcoesArtes],
   );
 
-  const itemSelecionado = useMemo(
-    () => itens.find(item => item.id === form.itemInventarioId) ?? null,
-    [itens, form.itemInventarioId],
+  const artIdsSelecionadas = useMemo(
+    () => normalizarArtIdsSelecionadas(form.artIds ?? form.artId),
+    [form.artId, form.artIds],
   );
 
-  const bonusArte = useMemo(() => extrairBonusNumericoAtaque(artSelecionada).valor, [artSelecionada]);
-  const bonusItem = useMemo(() => extrairBonusNumericoItem(itemSelecionado).valor, [itemSelecionado]);
+  const artSelecionadas = useMemo(
+    () => {
+      const ids = new Set(artIdsSelecionadas);
+      return opcoesArtes.filter(opcao => ids.has(opcao.id));
+    },
+    [artIdsSelecionadas, opcoesArtes],
+  );
+
+  const tipoCustoArtSelecionada = useMemo(() => {
+    const tipos = artSelecionadas
+      .map(art => normalizarTipoRecurso(art?.tipoCusto))
+      .filter(tipo => tipo === 'energia' || tipo === 'fadiga' || tipo === 'saude');
+
+    if (tipos.length === 0) {
+      return null;
+    }
+
+    const primeiroTipo = tipos[0];
+    return tipos.every(tipo => tipo === primeiroTipo) ? primeiroTipo : null;
+  }, [artSelecionadas, normalizarTipoRecurso]);
+
+  useEffect(() => {
+    if (!tipoCustoArtSelecionada || artSelecionadas.length === 1) {
+      return;
+    }
+
+    setResourceSelecionada(prev => (prev === tipoCustoArtSelecionada ? prev : tipoCustoArtSelecionada));
+  }, [artSelecionadas.length, tipoCustoArtSelecionada]);
+
+  const itemInventarioSelecionados = useMemo(
+    () => normalizarItemInventarioSelecionados(form.itemInventarioIds ?? form.itemInventarioId),
+    [form.itemInventarioId, form.itemInventarioIds],
+  );
+
+  const itensSelecionados = useMemo(
+    () => itens.filter(item => itemInventarioSelecionados.includes(item.id)),
+    [itens, itemInventarioSelecionados],
+  );
+
+  const obterBonusNumericoDaArtNaCalculadora = useCallback(art => {
+    if (!art || typeof art !== 'object') {
+      return 0;
+    }
+
+    const dados = art.dados;
+    if (typeof dados === 'number' && Number.isFinite(dados)) {
+      return dados;
+    }
+
+    if (typeof dados === 'string') {
+      const texto = dados.trim();
+      if (/^([+-]?\d+)$/.test(texto)) {
+        return Number(texto);
+      }
+    }
+
+    return 0;
+  }, []);
+
+  const bonusArte = useMemo(
+    () => artSelecionadas.reduce((total, art) => total + obterBonusNumericoDaArtNaCalculadora(art), 0),
+    [artSelecionadas, obterBonusNumericoDaArtNaCalculadora],
+  );
+  const bonusItem = useMemo(
+    () => itensSelecionados.reduce((total, item) => total + extrairBonusNumericoItem(item).valor, 0),
+    [itensSelecionados],
+  );
   const potencialBase = useMemo(
     () => calcularPotencialBase(valorBaseAtual, bonusArte, bonusItem, formatarValor(form.bonusExtra)),
     [valorBaseAtual, bonusArte, bonusItem, form.bonusExtra],
@@ -1307,7 +1721,16 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
     return `Editando: ${comboSelecionada?.nome || 'combinação'}`;
   }, [comboSelecionada?.nome, selectedComboId]);
 
-  const parseArtCostForResource = (art, recurso) => {
+  const energiaAtual = Number(personagem?.status?.energia?.atual ?? 0);
+  const energiaMaxima = Number(personagem?.statusMaximos?.energia ?? personagem?.status?.energia?.maximo ?? 0);
+  const fadigaAtual = Number(personagem?.status?.fadiga?.atual ?? 0);
+  const fadigaMaxima = Number(personagem?.statusMaximos?.fadiga ?? personagem?.status?.fadiga?.maximo ?? 0);
+  const saudeAtual = Number(personagem?.status?.hp?.atual ?? personagem?.status?.saude?.atual ?? 0);
+  const saudeMaxima = Number(personagem?.statusMaximos?.hp ?? personagem?.statusMaximos?.saude ?? personagem?.status?.hp?.maximo ?? personagem?.status?.saude?.maximo ?? 0);
+  const energiaDadosDisponiveis = Number.isFinite(energiaAtual) && Number.isFinite(energiaMaxima) && (energiaMaxima > 0 || energiaAtual >= 0);
+  const fadigaDadosDisponiveis = Number.isFinite(fadigaAtual) && Number.isFinite(fadigaMaxima) && (fadigaMaxima > 0 || fadigaAtual >= 0);
+  const saudeDadosDisponiveis = Number.isFinite(saudeAtual) && Number.isFinite(saudeMaxima) && (saudeMaxima > 0 || saudeAtual >= 0);
+  const parseArtCostForResource = useCallback((art, recurso) => {
     const raw = String(art?.custo ?? '').trim();
     if (!raw) {
       return 0;
@@ -1320,6 +1743,24 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
 
     const numero = Number(numeroMatch[0].replace(',', '.'));
     if (!Number.isFinite(numero) || numero <= 0) {
+      return 0;
+    }
+
+    const tipoCustoMapeado = normalizarTipoRecurso(art?.tipoCusto);
+
+    if (tipoCustoMapeado === 'energia') {
+      return recurso === 'energia' ? numero : 0;
+    }
+
+    if (tipoCustoMapeado === 'fadiga') {
+      return recurso === 'fadiga' ? numero : 0;
+    }
+
+    if (tipoCustoMapeado === 'saude') {
+      return recurso === 'saude' ? numero : 0;
+    }
+
+    if (tipoCustoMapeado === 'neutro') {
       return 0;
     }
 
@@ -1346,44 +1787,88 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
     }
 
     return 0;
-  };
+  }, [normalizarTipoRecurso]);
 
-  const energiaAtual = Number(personagem?.status?.energia?.atual ?? 0);
-  const energiaMaxima = Number(personagem?.statusMaximos?.energia ?? personagem?.status?.energia?.maximo ?? 0);
-  const fadigaAtual = Number(personagem?.status?.fadiga?.atual ?? 0);
-  const fadigaMaxima = Number(personagem?.statusMaximos?.fadiga ?? personagem?.status?.fadiga?.maximo ?? 0);
-  const saudeAtual = Number(personagem?.status?.hp?.atual ?? personagem?.status?.saude?.atual ?? 0);
-  const saudeMaxima = Number(personagem?.statusMaximos?.hp ?? personagem?.statusMaximos?.saude ?? personagem?.status?.hp?.maximo ?? personagem?.status?.saude?.maximo ?? 0);
-  const energiaDadosDisponiveis = Number.isFinite(energiaAtual) && Number.isFinite(energiaMaxima) && (energiaMaxima > 0 || energiaAtual >= 0);
-  const fadigaDadosDisponiveis = Number.isFinite(fadigaAtual) && Number.isFinite(fadigaMaxima) && (fadigaMaxima > 0 || fadigaAtual >= 0);
-  const saudeDadosDisponiveis = Number.isFinite(saudeAtual) && Number.isFinite(saudeMaxima) && (saudeMaxima > 0 || saudeAtual >= 0);
-  const custoArteBase = useMemo(
-    () => parseArtCostForResource(artSelecionada, resourceSelecionada),
-    [artSelecionada, resourceSelecionada],
+  const custoArteSelecionada = useMemo(
+    () => artSelecionadas.reduce((total, art) => total + parseArtCostForResource(art, resourceSelecionada), 0),
+    [artSelecionadas, parseArtCostForResource, resourceSelecionada],
   );
+  const tiposCustoArtSelecionada = useMemo(
+    () => artSelecionadas
+      .map(art => normalizarTipoRecurso(art?.tipoCusto))
+      .filter(tipo => ['energia', 'fadiga', 'saude'].includes(tipo)),
+    [artSelecionadas, normalizarTipoRecurso],
+  );
+  const hasMixedArtResourceCosts = tiposCustoArtSelecionada.length > 1 && new Set(tiposCustoArtSelecionada).size > 1;
+  const hasExplicitSingleArtResourceType = Boolean(tipoCustoArtSelecionada && artSelecionadas.length === 1);
+  const custoArtePorRecurso = useMemo(() => {
+    const totais = { energia: 0, fadiga: 0, saude: 0 };
+
+    if (!hasMixedArtResourceCosts && !hasExplicitSingleArtResourceType) {
+      totais[resourceSelecionada] = custoArteSelecionada;
+      return totais;
+    }
+
+    artSelecionadas.forEach(art => {
+      const tipo = normalizarTipoRecurso(art?.tipoCusto);
+
+      if (tipo === 'energia') {
+        totais.energia += parseArtCostForResource(art, 'energia');
+        return;
+      }
+
+      if (tipo === 'fadiga') {
+        totais.fadiga += parseArtCostForResource(art, 'fadiga');
+        return;
+      }
+
+      if (tipo === 'saude') {
+        totais.saude += parseArtCostForResource(art, 'saude');
+      }
+    });
+
+    return totais;
+  }, [artSelecionadas, custoArteSelecionada, hasExplicitSingleArtResourceType, hasMixedArtResourceCosts, normalizarTipoRecurso, parseArtCostForResource, resourceSelecionada]);
   const custoArteEnergia = useMemo(
-    () => (resourceSelecionada === 'energia' ? custoArteBase : 0),
-    [custoArteBase, resourceSelecionada],
+    () => custoArtePorRecurso.energia,
+    [custoArtePorRecurso],
   );
   const custoArteFadiga = useMemo(
-    () => (resourceSelecionada === 'fadiga' ? custoArteBase : 0),
-    [custoArteBase, resourceSelecionada],
+    () => custoArtePorRecurso.fadiga,
+    [custoArtePorRecurso],
   );
   const custoArteSaude = useMemo(
-    () => (resourceSelecionada === 'saude' ? custoArteBase : 0),
-    [custoArteBase, resourceSelecionada],
+    () => custoArtePorRecurso.saude,
+    [custoArtePorRecurso],
   );
+  const custoPotencializacaoEnergia = useMemo(
+    () => calcularCustoEnergia(energiaMaxima, form.potencializacao),
+    [energiaMaxima, form.potencializacao],
+  );
+  const custoPotencializacaoFadiga = useMemo(
+    () => calcularCustoPercentualRecurso(fadigaMaxima, form.potencializacao),
+    [fadigaMaxima, form.potencializacao],
+  );
+  const custoPotencializacaoSaude = useMemo(
+    () => calcularCustoPercentualRecurso(saudeMaxima, form.potencializacao),
+    [form.potencializacao, saudeMaxima],
+  );
+  const custoPotencializacaoPorRecurso = useMemo(() => ({
+    energia: resourceSelecionada === 'energia' ? custoPotencializacaoEnergia : 0,
+    fadiga: resourceSelecionada === 'fadiga' ? custoPotencializacaoFadiga : 0,
+    saude: resourceSelecionada === 'saude' ? custoPotencializacaoSaude : 0,
+  }), [custoPotencializacaoEnergia, custoPotencializacaoFadiga, custoPotencializacaoSaude, resourceSelecionada]);
   const custoEnergia = useMemo(
-    () => (resourceSelecionada === 'energia' ? calcularCustoEnergia(energiaMaxima, form.potencializacao) + custoArteEnergia : 0),
-    [custoArteEnergia, energiaMaxima, form.potencializacao, resourceSelecionada],
+    () => custoArteEnergia + custoPotencializacaoPorRecurso.energia,
+    [custoArteEnergia, custoPotencializacaoPorRecurso],
   );
   const custoFadiga = useMemo(
-    () => (resourceSelecionada === 'fadiga' ? calcularCustoPercentualRecurso(fadigaMaxima, form.potencializacao) + custoArteFadiga : 0),
-    [custoArteFadiga, fadigaMaxima, form.potencializacao, resourceSelecionada],
+    () => custoArteFadiga + custoPotencializacaoPorRecurso.fadiga,
+    [custoArteFadiga, custoPotencializacaoPorRecurso],
   );
   const custoSaude = useMemo(
-    () => (resourceSelecionada === 'saude' ? calcularCustoPercentualRecurso(saudeMaxima, form.potencializacao) + custoArteSaude : 0),
-    [custoArteSaude, form.potencializacao, resourceSelecionada, saudeMaxima],
+    () => custoArteSaude + custoPotencializacaoPorRecurso.saude,
+    [custoArteSaude, custoPotencializacaoPorRecurso],
   );
   const energiaAposUso = Math.max(0, energiaAtual - custoEnergia);
   const fadigaAposUso = Math.max(0, fadigaAtual - custoFadiga);
@@ -1414,6 +1899,7 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
     : saudeSuficiente
       ? 'Saúde suficiente'
       : `Saúde insuficiente — faltam ${Math.max(0, custoSaude - saudeAtual)} pontos.`;
+  const getResourceA11yLabel = (label, atual, maximo, statusMensagem) => `${label} Atual/Máxima ${atual} / ${maximo}. ${statusMensagem}`;
   const nomeRecursoPotencializacao = resourceSelecionada === 'saude'
     ? 'Saúde'
     : resourceSelecionada === 'fadiga'
@@ -1426,8 +1912,8 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
         form.nome ||
         form.tipoDano !== 'Contundente' ||
         form.artId ||
-        form.itemInventarioId ||
-        form.bonusExtra !== 0 ||
+        itemInventarioSelecionados.length > 0 ||
+        Number(form.bonusExtra || 0) !== 0 ||
         form.potencializacao !== 0 ||
         resourceSelecionada !== 'energia',
       );
@@ -1453,16 +1939,22 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
               ? 'fadiga'
               : 'energia';
 
+    const artIdsCombo = normalizarArtIdsSelecionadas(comboSelecionada?.artIds ?? comboSelecionada?.artId ?? []);
+    const artIdsForm = normalizarArtIdsSelecionadas(form.artIds ?? form.artId ?? []);
+
+    const itemIdsCombo = normalizarItemInventarioSelecionados(comboSelecionada?.itemInventarioIds ?? comboSelecionada?.itemInventarioId ?? []);
+    const itemIdsForm = itemInventarioSelecionados;
+
     return (
       String(form.nome || '').trim() !== String(comboSelecionada.nome || '').trim() ||
       String(form.tipoDano || 'Contundente') !== String(comboSelecionada.tipoDano || 'Contundente') ||
-      String(form.artId || '') !== String(comboSelecionada.artId || '') ||
-      String(form.itemInventarioId || '') !== String(comboSelecionada.itemInventarioId || '') ||
+      artIdsForm.join(',') !== artIdsCombo.join(',') ||
+      itemIdsForm.join(',') !== itemIdsCombo.join(',') ||
       Number(form.bonusExtra || 0) !== Number(comboSelecionada.bonusExtra || 0) ||
       Number(form.potencializacao || 0) !== Number(comboSelecionada.potencializacao || 0) ||
       resourceSelecionada !== (tipoRecursoConsolidado === 'ambos' ? 'energia' : tipoRecursoConsolidado || 'energia')
     );
-  }, [comboSelecionada, form.artId, form.bonusExtra, form.itemInventarioId, form.nome, form.potencializacao, form.tipoDano, resourceSelecionada, selectedComboId]);
+  }, [comboSelecionada, form.artId, form.artIds, form.bonusExtra, form.nome, form.potencializacao, form.tipoDano, itemInventarioSelecionados, normalizarTipoRecurso, resourceSelecionada, selectedComboId]);
 
   const getResourceTypeForCombo = combo => {
     const explicit = normalizarTipoRecurso(combo?.costResourceType);
@@ -1505,29 +1997,73 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
   };
 
   const obterCustoArtCombo = (combo, recurso) => {
-    const artDoCombo = combo?.artId ? arts.find(art => art.id === combo.artId) ?? null : null;
-    return parseArtCostForResource(artDoCombo, recurso);
+    const artIdsDoCombo = normalizarArtIdsSelecionadas(combo?.artIds ?? combo?.artId ?? []);
+    if (artIdsDoCombo.length === 0) {
+      return 0;
+    }
+
+    return artIdsDoCombo.reduce((total, artId) => {
+      const opcao = opcoesArtesPorId.get(artId);
+      return total + parseArtCostForResource(opcao ?? null, recurso);
+    }, 0);
+  };
+
+  const obterCustosConsolidadosCombo = combo => {
+    const custoPersistido = {
+      energia: Number(combo?.custoEnergia ?? 0),
+      fadiga: Number(combo?.custoFadiga ?? 0),
+      saude: Number(combo?.custoSaude ?? combo?.custoHp ?? 0),
+    };
+
+    const tipoExplicito = normalizarTipoRecurso(combo?.costResourceType);
+    const tipoPotencializacao = tipoExplicito === 'ambos' ? (resourceSelecionada || 'energia') : tipoExplicito;
+    const custoPotencial = {
+      energia: tipoPotencializacao === 'energia'
+        ? Math.max(0, calcularCustoEnergia(energiaMaxima, Number(combo?.potencializacao ?? 0)))
+        : 0,
+      fadiga: tipoPotencializacao === 'fadiga'
+        ? Math.max(0, calcularCustoPercentualRecurso(fadigaMaxima, Number(combo?.potencializacao ?? 0)))
+        : 0,
+      saude: tipoPotencializacao === 'saude'
+        ? Math.max(0, calcularCustoPercentualRecurso(saudeMaxima, Number(combo?.potencializacao ?? 0)))
+        : 0,
+    };
+
+    if (['energia', 'fadiga', 'saude'].includes(tipoExplicito) || tipoExplicito === 'ambos') {
+      return {
+        energia: Math.max(0, custoPersistido.energia > 0 ? custoPersistido.energia : obterCustoArtCombo(combo, 'energia') + custoPotencial.energia),
+        fadiga: Math.max(0, custoPersistido.fadiga > 0 ? custoPersistido.fadiga : obterCustoArtCombo(combo, 'fadiga') + custoPotencial.fadiga),
+        saude: Math.max(0, custoPersistido.saude > 0 ? custoPersistido.saude : obterCustoArtCombo(combo, 'saude') + custoPotencial.saude),
+      };
+    }
+
+    const tipo = getResourceTypeForCombo(combo);
+    const custoPotencialPadrao = {
+      energia: tipo === 'energia' ? Math.max(0, calcularCustoEnergia(energiaMaxima, Number(combo?.potencializacao ?? 0))) : 0,
+      fadiga: tipo === 'fadiga' ? Math.max(0, calcularCustoPercentualRecurso(fadigaMaxima, Number(combo?.potencializacao ?? 0))) : 0,
+      saude: tipo === 'saude' ? Math.max(0, calcularCustoPercentualRecurso(saudeMaxima, Number(combo?.potencializacao ?? 0))) : 0,
+    };
+
+    return {
+      energia: Math.max(0, obterCustoArtCombo(combo, 'energia') + custoPotencialPadrao.energia),
+      fadiga: Math.max(0, obterCustoArtCombo(combo, 'fadiga') + custoPotencialPadrao.fadiga),
+      saude: Math.max(0, obterCustoArtCombo(combo, 'saude') + custoPotencialPadrao.saude),
+    };
   };
 
   const obterCustoCombo = combo => {
-    if (!energiaDadosDisponiveis) return 0;
-    const tipo = getResourceTypeForCombo(combo);
-    if (tipo === 'fadiga') return 0;
-    return Math.max(0, calcularCustoEnergia(energiaMaxima, Number(combo?.potencializacao ?? 0)) + obterCustoArtCombo(combo, 'energia'));
+    const custos = obterCustosConsolidadosCombo(combo);
+    return Math.max(0, custos.energia);
   };
 
   const obterCustoFadigaCombo = combo => {
-    if (!fadigaDadosDisponiveis) return 0;
-    const tipo = getResourceTypeForCombo(combo);
-    if (tipo === 'energia' || tipo === 'saude') return 0;
-    return Math.max(0, calcularCustoPercentualRecurso(fadigaMaxima, Number(combo?.potencializacao ?? 0)) + obterCustoArtCombo(combo, 'fadiga'));
+    const custos = obterCustosConsolidadosCombo(combo);
+    return Math.max(0, custos.fadiga);
   };
 
   const obterCustoSaudeCombo = combo => {
-    if (!saudeDadosDisponiveis) return 0;
-    const tipo = getResourceTypeForCombo(combo);
-    if (tipo === 'energia' || tipo === 'fadiga') return 0;
-    return Math.max(0, calcularCustoPercentualRecurso(saudeMaxima, Number(combo?.potencializacao ?? 0)) + obterCustoArtCombo(combo, 'saude'));
+    const custos = obterCustosConsolidadosCombo(combo);
+    return Math.max(0, custos.saude);
   };
 
   const obterCustoSelecionado = combo => {
@@ -1544,7 +2080,34 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
   const atualizarCampo = field => event => {
     const valor = event.target.value;
     setErro('');
-    const valorNumerico = field === 'bonusExtra' || field === 'potencializacao'
+
+    if (field === 'bonusExtra') {
+      const valorNormalizado = valor === '' ? '' : Number.isFinite(Number(valor)) ? Number(valor) : valor;
+      setForm(current => ({ ...current, [field]: valorNormalizado }));
+      return;
+    }
+
+    if (field === 'artIds') {
+      const artIds = normalizarArtIdsSelecionadas(valor);
+      setForm(current => ({
+        ...current,
+        artIds,
+        artId: artIds[0] ?? '',
+      }));
+      return;
+    }
+
+    if (field === 'itemInventarioIds') {
+      const itemIds = normalizarItemInventarioSelecionados(valor);
+      setForm(current => ({
+        ...current,
+        itemInventarioIds: itemIds,
+        itemInventarioId: itemIds[0] ?? '',
+      }));
+      return;
+    }
+
+    const valorNumerico = field === 'potencializacao'
       ? Number(valor || 0)
       : valor;
     setForm(current => ({ ...current, [field]: valorNumerico }));
@@ -1557,29 +2120,28 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
       return;
     }
 
-    const comboIdParaSalvar = selectedComboId || '';
-    const custoEnergiaPersistido = resourceSelecionada === 'energia'
-      ? calcularCustoEnergia(energiaMaxima, Number(form.potencializacao || 0)) + custoArteEnergia
-      : 0;
-    const custoFadigaPersistido = resourceSelecionada === 'fadiga'
-      ? calcularCustoPercentualRecurso(fadigaMaxima, Number(form.potencializacao || 0)) + custoArteFadiga
-      : 0;
-    const custoSaudePersistido = resourceSelecionada === 'saude'
-      ? calcularCustoPercentualRecurso(saudeMaxima, Number(form.potencializacao || 0)) + custoArteSaude
-      : 0;
+    const comboIdParaSalvar = selectedComboId || form.id || '';
+    const artIdsSalvaveis = artIdsSelecionadas;
+    const itemIdsSalvaveis = itemInventarioSelecionados;
+    const custoEnergiaPersistido = Number(custoEnergia || 0);
+    const custoFadigaPersistido = Number(custoFadiga || 0);
+    const custoSaudePersistido = Number(custoSaude || 0);
+    const costResourceType = resourceSelecionada || 'energia';
 
     const payload = {
       nome: nomeSalvavel,
       tipoDano: form.tipoDano,
-      artId: artSelecionada?.id ?? '',
-      itemInventarioId: itemSelecionado?.id ?? '',
+      artId: artIdsSalvaveis[0] ?? '',
+      artIds: artIdsSalvaveis,
+      itemInventarioId: itemIdsSalvaveis[0] ?? '',
+      itemInventarioIds: itemIdsSalvaveis,
       bonusExtra: Number(form.bonusExtra || 0),
       potencializacao: Number(form.potencializacao || 0),
       custoEnergia: custoEnergiaPersistido,
       custoFadiga: custoFadigaPersistido,
       custoSaude: custoSaudePersistido,
-      custoArte: resourceSelecionada === 'saude' ? custoArteSaude : resourceSelecionada === 'fadiga' ? custoArteFadiga : custoArteEnergia,
-      costResourceType: resourceSelecionada,
+      custoArte: Math.max(0, custoArteEnergia + custoArteFadiga + custoArteSaude),
+      costResourceType,
       valorBaseFicha: valorBaseAtual,
       ...(isDefesaContexto ? { defesaDaFicha: valorBaseAtual } : { ataqueDaFicha: valorBaseAtual }),
       bonusArte: bonusArte,
@@ -1591,21 +2153,28 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
 
     try {
       const comboAPI = isDefesaContexto
-      ? { add: addComboDefesa, update: updateComboDefesa, remove: removeComboDefesa, getAll: getCombosDefesa }
-      : { add: addComboAtaque, update: updateComboAtaque, remove: removeComboAtaque, getAll: getCombosAtaque };
+        ? { add: addComboDefesa, update: updateComboDefesa, remove: removeComboDefesa, getAll: getCombosDefesa }
+        : { add: addComboAtaque, update: updateComboAtaque, remove: removeComboAtaque, getAll: getCombosAtaque };
 
-    if (comboIdParaSalvar) {
+      let comboAtualizadoId = comboIdParaSalvar;
+
+      if (comboIdParaSalvar) {
         await comboAPI.update(personagem.id, comboIdParaSalvar, payload);
         setSelectedComboId(comboIdParaSalvar);
       } else {
-        await comboAPI.add(personagem.id, payload);
-        setSelectedComboId('');
+        const novoCombo = await comboAPI.add(personagem.id, payload);
+        comboAtualizadoId = novoCombo?.id || '';
+        setSelectedComboId(comboAtualizadoId);
       }
 
       const atualizados = await comboAPI.getAll(personagem.id);
       setCombos((atualizados ?? []).sort((a, b) => (b.updatedAt?.seconds ?? 0) - (a.updatedAt?.seconds ?? 0)));
       setErro('');
-      setForm(current => ({ ...current, nome: nomeSalvavel }));
+      setForm(current => ({
+        ...current,
+        id: comboAtualizadoId,
+        nome: nomeSalvavel,
+      }));
     } catch {
       setErro('Não foi possível salvar a combinação de ataque.');
     }
@@ -1613,15 +2182,21 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
 
   const handleSelecionarCombo = combo => {
     setSelectedComboId(combo.id);
+    setExpandedComboId(combo.id);
     setErro('');
     const recursoCombo = getResourceTypeForCombo(combo);
+    const artIdsCombo = normalizarArtIdsSelecionadas(combo?.artIds ?? combo?.artId ?? []);
     setResourceSelecionada(recursoCombo === 'saude' || recursoCombo === 'energia' || recursoCombo === 'fadiga' ? recursoCombo : 'energia');
+    const itemIdsCombo = normalizarItemInventarioSelecionados(combo?.itemInventarioIds ?? combo?.itemInventarioId ?? []);
     setForm({
+      id: combo.id ?? '',
       nome: combo.nome ?? '',
       tipoDano: combo.tipoDano ?? 'Contundente',
-      artId: combo.artId ?? '',
-      itemInventarioId: combo.itemInventarioId ?? '',
-      bonusExtra: Number(combo.bonusExtra ?? 0),
+      artId: artIdsCombo[0] ?? '',
+      artIds: artIdsCombo,
+      itemInventarioId: itemIdsCombo[0] ?? '',
+      itemInventarioIds: itemIdsCombo,
+      bonusExtra: combo.bonusExtra ?? '',
       potencializacao: Number(combo.potencializacao ?? 0),
     });
   };
@@ -1650,14 +2225,15 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
 
   const handleUsarCombo = combo => {
     const tipoRecurso = getResourceTypeForCombo(combo);
-    const custoCombo = tipoRecurso === 'fadiga' || tipoRecurso === 'saude' ? 0 : obterCustoCombo(combo);
-    const custoFadigaCombo = tipoRecurso === 'energia' || tipoRecurso === 'saude' ? 0 : obterCustoFadigaCombo(combo);
-    const custoSaudeCombo = tipoRecurso === 'energia' || tipoRecurso === 'fadiga' ? 0 : obterCustoSaudeCombo(combo);
-    const energiaRestante = Math.max(0, energiaAtual - (tipoRecurso === 'energia' || tipoRecurso === 'ambos' ? custoCombo : 0));
-    const fadigaRestante = Math.max(0, fadigaAtual - (tipoRecurso === 'fadiga' || tipoRecurso === 'ambos' ? custoFadigaCombo : 0));
-    const saudeRestante = Math.max(0, saudeAtual - (tipoRecurso === 'saude' || tipoRecurso === 'ambos' ? custoSaudeCombo : 0));
+    const custosCombo = obterCustosConsolidadosCombo(combo);
+    const custoCombo = Math.max(0, custosCombo.energia);
+    const custoFadigaCombo = Math.max(0, custosCombo.fadiga);
+    const custoSaudeCombo = Math.max(0, custosCombo.saude);
+    const energiaRestante = Math.max(0, energiaAtual - custoCombo);
+    const fadigaRestante = Math.max(0, fadigaAtual - custoFadigaCombo);
+    const saudeRestante = Math.max(0, saudeAtual - custoSaudeCombo);
 
-    if (tipoRecurso === 'energia' || tipoRecurso === 'ambos') {
+    if (custoCombo > 0) {
       if (!energiaDadosDisponiveis) {
         setErro('Energia indisponível para usar esta combinação no momento.');
         return;
@@ -1669,14 +2245,9 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
       }
     }
 
-    if (tipoRecurso === 'fadiga' || tipoRecurso === 'ambos') {
+    if (custoFadigaCombo > 0) {
       if (!fadigaDadosDisponiveis) {
         setErro('Fadiga indisponível para usar esta combinação no momento.');
-        return;
-      }
-
-      if (Number(combo?.potencializacao ?? 0) > 0 && custoFadigaCombo <= 0) {
-        setErro('Para usar Fadiga como recurso, informe um custo positivo de Fadiga antes de confirmar.');
         return;
       }
 
@@ -1686,14 +2257,9 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
       }
     }
 
-    if (tipoRecurso === 'saude' || tipoRecurso === 'ambos') {
+    if (custoSaudeCombo > 0) {
       if (!saudeDadosDisponiveis) {
         setErro('Saúde indisponível para usar esta combinação no momento.');
-        return;
-      }
-
-      if (Number(combo?.potencializacao ?? 0) > 0 && custoSaudeCombo <= 0) {
-        setErro('Para usar Saúde como recurso, informe um custo positivo de Saúde antes de confirmar.');
         return;
       }
 
@@ -1706,9 +2272,9 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
     setErro('');
     setComboEmUso({
       combo,
-      custo: tipoRecurso === 'energia' || tipoRecurso === 'ambos' ? custoCombo : 0,
-      custoFadiga: tipoRecurso === 'fadiga' || tipoRecurso === 'ambos' ? custoFadigaCombo : 0,
-      custoSaude: tipoRecurso === 'saude' || tipoRecurso === 'ambos' ? custoSaudeCombo : 0,
+      custo: custoCombo,
+      custoFadiga: custoFadigaCombo,
+      custoSaude: custoSaudeCombo,
       resourceType: tipoRecurso,
       energiaAtual,
       energiaMaxima,
@@ -1732,7 +2298,6 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
       custo,
       custoFadiga,
       custoSaude,
-      resourceType,
       energiaAtual: energiaAtualAntes,
       energiaMaxima: energiaMaximaCombo,
       fadigaAtual: fadigaAtualAntes,
@@ -1745,19 +2310,19 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
     const custoSaudeFinal = Number(custoSaude ?? 0);
     const idEmUso = combo?.id ?? 'combo';
 
-    if ((resourceType === 'energia' || resourceType === 'ambos') && energiaAtualAntes < custoFinal) {
+    if (custoFinal > 0 && energiaAtualAntes < custoFinal) {
       setErro(`Energia insuficiente — faltam ${Math.max(0, custoFinal - energiaAtualAntes)} pontos.`);
       setComboEmUso(null);
       return;
     }
 
-    if ((resourceType === 'fadiga' || resourceType === 'ambos') && fadigaAtualAntes < custoFadigaFinal) {
+    if (custoFadigaFinal > 0 && fadigaAtualAntes < custoFadigaFinal) {
       setErro(`Fadiga insuficiente — faltam ${Math.max(0, custoFadigaFinal - fadigaAtualAntes)} pontos.`);
       setComboEmUso(null);
       return;
     }
 
-    if ((resourceType === 'saude' || resourceType === 'ambos') && saudeAtualAntes < custoSaudeFinal) {
+    if (custoSaudeFinal > 0 && saudeAtualAntes < custoSaudeFinal) {
       setErro(`Saúde insuficiente — faltam ${Math.max(0, custoSaudeFinal - saudeAtualAntes)} pontos.`);
       setComboEmUso(null);
       return;
@@ -1766,10 +2331,13 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
     setProcessandoUsoComboId(idEmUso);
 
     try {
+      const temEnergiaNoStatus = Boolean(personagem?.status?.energia);
+      const temFadigaNoStatus = Boolean(personagem?.status?.fadiga);
+      const temSaudeNoStatus = Boolean(personagem?.status?.saude || personagem?.status?.hp);
       const payloadConsumo = {
-        energia: resourceType === 'energia' || resourceType === 'ambos' ? custoFinal : 0,
-        fadiga: resourceType === 'fadiga' || resourceType === 'ambos' ? custoFadigaFinal : 0,
-        ...(resourceType === 'saude' || resourceType === 'ambos' ? { saude: custoSaudeFinal } : {}),
+        ...(temEnergiaNoStatus ? { energia: custoFinal } : {}),
+        ...(temFadigaNoStatus ? { fadiga: custoFadigaFinal } : {}),
+        ...(temSaudeNoStatus ? { saude: custoSaudeFinal } : {}),
       };
 
       const resultado = await consumirRecursosPersonagem(personagem.id, payloadConsumo);
@@ -1782,47 +2350,54 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
         ...statusAtual,
         hp: {
           ...((statusAtual.hp ?? statusAtual.saude ?? {})),
-          atual: resourceType === 'saude' || resourceType === 'ambos' ? proximaSaude : Number(statusAtual?.hp?.atual ?? statusAtual?.saude?.atual ?? saudeAtualAntes),
+          atual: custoSaudeFinal > 0 ? proximaSaude : Number(statusAtual?.hp?.atual ?? statusAtual?.saude?.atual ?? saudeAtualAntes),
           maximo: saudeMaximaCombo || Number(statusAtual?.hp?.maximo ?? statusAtual?.saude?.maximo ?? 0),
         },
         ...(Object.prototype.hasOwnProperty.call(statusAtual, 'saude') || Object.prototype.hasOwnProperty.call(statusAtual, 'hp')
           ? {
               saude: {
                 ...((statusAtual.saude ?? statusAtual.hp ?? {})),
-                atual: resourceType === 'saude' || resourceType === 'ambos' ? proximaSaude : Number(statusAtual?.saude?.atual ?? statusAtual?.hp?.atual ?? saudeAtualAntes),
+                atual: custoSaudeFinal > 0 ? proximaSaude : Number(statusAtual?.saude?.atual ?? statusAtual?.hp?.atual ?? saudeAtualAntes),
                 maximo: saudeMaximaCombo || Number(statusAtual?.saude?.maximo ?? statusAtual?.hp?.maximo ?? 0),
               },
             }
           : {}),
         energia: {
           ...((statusAtual.energia ?? {})),
-          atual: resourceType === 'energia' || resourceType === 'ambos' ? proximaEnergia : Number(statusAtual?.energia?.atual ?? energiaAtualAntes),
+          atual: custoFinal > 0 ? proximaEnergia : Number(statusAtual?.energia?.atual ?? energiaAtualAntes),
           maximo: energiaMaximaCombo || Number(statusAtual?.energia?.maximo ?? 0),
         },
         fadiga: {
           ...((statusAtual.fadiga ?? {})),
-          atual: resourceType === 'fadiga' || resourceType === 'ambos' ? proximaFadiga : Number(statusAtual?.fadiga?.atual ?? fadigaAtualAntes),
+          atual: custoFadigaFinal > 0 ? proximaFadiga : Number(statusAtual?.fadiga?.atual ?? fadigaAtualAntes),
           maximo: fadigaMaximaCombo || Number(statusAtual?.fadiga?.maximo ?? 0),
         },
       };
 
       const proximoStatusMaximos = {
         ...(personagem?.statusMaximos ?? {}),
-        hp: resourceType === 'saude' || resourceType === 'ambos' ? (saudeMaximaCombo || Number(personagem?.statusMaximos?.hp ?? personagem?.statusMaximos?.saude ?? statusAtual?.hp?.maximo ?? statusAtual?.saude?.maximo ?? 0)) : Number(personagem?.statusMaximos?.hp ?? personagem?.statusMaximos?.saude ?? statusAtual?.hp?.maximo ?? statusAtual?.saude?.maximo ?? 0),
+        hp: custoSaudeFinal > 0 ? (saudeMaximaCombo || Number(personagem?.statusMaximos?.hp ?? personagem?.statusMaximos?.saude ?? statusAtual?.hp?.maximo ?? statusAtual?.saude?.maximo ?? 0)) : Number(personagem?.statusMaximos?.hp ?? personagem?.statusMaximos?.saude ?? statusAtual?.hp?.maximo ?? statusAtual?.saude?.maximo ?? 0),
         ...(Object.prototype.hasOwnProperty.call(personagem?.statusMaximos ?? {}, 'saude') || Object.prototype.hasOwnProperty.call(statusAtual, 'saude')
           ? {
-              saude: resourceType === 'saude' || resourceType === 'ambos' ? (saudeMaximaCombo || Number(personagem?.statusMaximos?.saude ?? personagem?.statusMaximos?.hp ?? statusAtual?.saude?.maximo ?? statusAtual?.hp?.maximo ?? 0)) : Number(personagem?.statusMaximos?.saude ?? personagem?.statusMaximos?.hp ?? statusAtual?.saude?.maximo ?? statusAtual?.hp?.maximo ?? 0),
+              saude: custoSaudeFinal > 0 ? (saudeMaximaCombo || Number(personagem?.statusMaximos?.saude ?? personagem?.statusMaximos?.hp ?? statusAtual?.saude?.maximo ?? statusAtual?.hp?.maximo ?? 0)) : Number(personagem?.statusMaximos?.saude ?? personagem?.statusMaximos?.hp ?? statusAtual?.saude?.maximo ?? statusAtual?.hp?.maximo ?? 0),
             }
           : {}),
-        energia: resourceType === 'energia' || resourceType === 'ambos' ? (energiaMaximaCombo || Number(personagem?.statusMaximos?.energia ?? statusAtual?.energia?.maximo ?? 0)) : Number(personagem?.statusMaximos?.energia ?? statusAtual?.energia?.maximo ?? 0),
-        fadiga: resourceType === 'fadiga' || resourceType === 'ambos' ? (fadigaMaximaCombo || Number(personagem?.statusMaximos?.fadiga ?? statusAtual?.fadiga?.maximo ?? 0)) : Number(personagem?.statusMaximos?.fadiga ?? statusAtual?.fadiga?.maximo ?? 0),
+        energia: custoFinal > 0 ? (energiaMaximaCombo || Number(personagem?.statusMaximos?.energia ?? statusAtual?.energia?.maximo ?? 0)) : Number(personagem?.statusMaximos?.energia ?? statusAtual?.energia?.maximo ?? 0),
+        fadiga: custoFadigaFinal > 0 ? (fadigaMaximaCombo || Number(personagem?.statusMaximos?.fadiga ?? statusAtual?.fadiga?.maximo ?? 0)) : Number(personagem?.statusMaximos?.fadiga ?? statusAtual?.fadiga?.maximo ?? 0),
       };
 
       await onSave?.({ status: proximaStatus, statusMaximos: proximoStatusMaximos });
-      const resourceLabel = resourceType === 'ambos' ? 'Energia + Fadiga' : resourceType === 'saude' ? 'Saúde' : resourceType === 'fadiga' ? 'Fadiga' : 'Energia';
-      setNotificacaoUso(
-        `Combo utilizado! Recurso: ${resourceLabel}. ${resourceType === 'energia' || resourceType === 'ambos' ? `Energia consumida: ${custoFinal}. Energia restante: ${proximaEnergia}/${energiaMaximaCombo || energiaAtualAntes}.` : resourceType === 'saude' ? `Saúde consumida: ${custoSaudeFinal}. Saúde restante: ${proximaSaude}/${saudeMaximaCombo || saudeAtualAntes}.` : `Fadiga consumida: ${custoFadigaFinal}. Fadiga restante: ${proximaFadiga}/${fadigaMaximaCombo || fadigaAtualAntes}.`}`,
-      );
+      const resourceLabel = [
+        custoFinal > 0 ? 'Energia' : null,
+        custoFadigaFinal > 0 ? 'Fadiga' : null,
+        custoSaudeFinal > 0 ? 'Saúde' : null,
+      ].filter(Boolean).join(' + ') || 'Neutro';
+      const detalhesUso = [
+        custoFinal > 0 ? `Energia consumida: ${custoFinal}. Energia restante: ${proximaEnergia}/${energiaMaximaCombo || energiaAtualAntes}.` : null,
+        custoFadigaFinal > 0 ? `Fadiga consumida: ${custoFadigaFinal}. Fadiga restante: ${proximaFadiga}/${fadigaMaximaCombo || fadigaAtualAntes}.` : null,
+        custoSaudeFinal > 0 ? `Saúde consumida: ${custoSaudeFinal}. Saúde restante: ${proximaSaude}/${saudeMaximaCombo || saudeAtualAntes}.` : null,
+      ].filter(Boolean).join(' ');
+      setNotificacaoUso(`Combo utilizado! Recurso: ${resourceLabel}. ${detalhesUso}`);
       setErro('');
       setComboEmUso(null);
     } catch (error) {
@@ -1913,13 +2488,13 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
               Atenção aos custos
             </Typography>
             <DialogContentText sx={{ color: '#e9ebff', lineHeight: 1.7, fontSize: '0.9rem', m: 0 }}>
-              O custo de Saúde, Energia ou Fadiga apresentado pela calculadora corresponde exclusivamente à mecânica de <strong>Potencialização</strong>.
+              O custo total de Saúde, Energia ou Fadiga exibido pela calculadora já inclui a <strong>Potencialização</strong> e os custos próprios de Artes, Habilidades, equipamentos e outros efeitos.
             </DialogContentText>
             <DialogContentText sx={{ color: '#e9ebff', lineHeight: 1.7, fontSize: '0.9rem', m: 0 }}>
-              Custos próprios de Artes, Habilidades, equipamentos e outros efeitos não estão incluídos nesse valor e devem ser considerados separadamente.
+              A decomposição em <strong>POT.</strong> + <strong>ARTE</strong> mostra cada parcela separadamente antes do total final ser consumido.
             </DialogContentText>
             <DialogContentText sx={{ color: '#e9ebff', lineHeight: 1.7, fontSize: '0.9rem', m: 0 }}>
-              Ao utilizar uma combinação, o desconto automático corresponde somente ao recurso gasto na Potencialização.
+              Ao utilizar uma combinação, o desconto automático corresponde ao custo consolidado de <strong>Potencialização + Arte</strong> no recurso aplicado, sem separar a cobrança entre os dois componentes no momento do consumo.
             </DialogContentText>
           </Box>
 
@@ -1977,7 +2552,7 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
           </CloseButton>
         </HeaderBar>
 
-      <DialogContent sx={{ display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
+      <DialogContent sx={{ display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'visible' }}>
         <ModalBody ref={conteudoPrincipalRef}>
           <BoardGrid>
             <Box sx={{ display: 'grid', gap: 2 }}>
@@ -2027,8 +2602,14 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
 
                   <TwoColFields>
                     <StyledSelect fullWidth>
-                      <InputLabel id="tipo-dano-label">{contextConfig.tipoDanoLabel}</InputLabel>
-                      <Select labelId="tipo-dano-label" label={contextConfig.tipoDanoLegenda} value={form.tipoDano} onChange={atualizarCampo('tipoDano')}>
+                      <InputLabel id="tipo-dano-label" shrink={Boolean(form.tipoDano)}>{contextConfig.tipoDanoLabel}</InputLabel>
+                      <Select
+                        labelId="tipo-dano-label"
+                        label={contextConfig.tipoDanoLegenda}
+                        value={form.tipoDano}
+                        onChange={atualizarCampo('tipoDano')}
+                        MenuProps={selectMenuProps}
+                      >
                         {tiposDanoOptions.map(tipo => (
                           <MenuItem key={tipo.value} value={tipo.value}>{tipo.label}</MenuItem>
                         ))}
@@ -2036,11 +2617,52 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
                     </StyledSelect>
 
                     <StyledSelect fullWidth>
-                      <InputLabel id="art-label">Arte/Habilidade</InputLabel>
-                      <Select labelId="art-label" label="Arte/Habilidade" value={form.artId} onChange={atualizarCampo('artId')}>
-                        <MenuItem value="">Nenhuma</MenuItem>
-                        {arts.map(art => (
-                          <MenuItem key={art.id} value={art.id}>{art.nome}</MenuItem>
+                      <InputLabel id="art-label" shrink={false}>Arte/Habilidade</InputLabel>
+                      <Select
+                        labelId="art-label"
+                        label="Arte/Habilidade"
+                        multiple
+                        displayEmpty
+                        value={artIdsSelecionadas}
+                        onChange={atualizarCampo('artIds')}
+                        MenuProps={selectMenuProps}
+                        renderValue={selected => {
+                          const selecao = normalizarArtIdsSelecionadas(selected);
+
+                          if (selecao.length === 0) {
+                            return 'Nenhuma';
+                          }
+
+                          if (selecao.length === 1) {
+                            return opcoesArtesPorId.get(selecao[0])?.nomeExibicao || opcoesArtesPorId.get(selecao[0])?.nome || 'Habilidade sem nome';
+                          }
+
+                          return `${selecao.length} habilidades selecionadas`;
+                        }}
+                      >
+                        {opcoesArtes.map(opcao => (
+                          <MenuItem key={opcao.id} value={opcao.id} sx={{
+                            ...(opcao.isVariante ? {
+                              pl: 3,
+                              fontSize: '0.72rem',
+                              color: '#dfe4ff',
+                              '&::before': {
+                                content: '""',
+                                display: 'inline-block',
+                                width: 8,
+                                height: 1,
+                                background: 'rgba(232, 203, 133, 0.75)',
+                                marginRight: 1,
+                                borderRadius: 999,
+                                flexShrink: 0,
+                              },
+                            } : {
+                              fontWeight: 700,
+                              color: '#f4dda2',
+                            }),
+                          }}>
+                            {opcao.nomeExibicao}
+                          </MenuItem>
                         ))}
                       </Select>
                     </StyledSelect>
@@ -2048,16 +2670,36 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
 
                   <TwoColFields>
                     <StyledSelect fullWidth>
-                      <InputLabel id="item-label">Item/Equipamento</InputLabel>
-                      <Select labelId="item-label" label="Item/Equipamento" value={form.itemInventarioId} onChange={atualizarCampo('itemInventarioId')}>
-                        <MenuItem value="">Nenhum</MenuItem>
+                      <InputLabel id="item-label" shrink={false}>Item/Equipamento</InputLabel>
+                      <Select
+                        labelId="item-label"
+                        label="Item/Equipamento"
+                        multiple
+                        displayEmpty
+                        value={itemInventarioSelecionados}
+                        onChange={atualizarCampo('itemInventarioIds')}
+                        MenuProps={selectMenuProps}
+                        renderValue={selected => {
+                          const valorSelecionado = normalizarItemInventarioSelecionados(selected);
+
+                          if (valorSelecionado.length === 0) {
+                            return 'Nenhum';
+                          }
+
+                          if (valorSelecionado.length === 1) {
+                            return itens.find(item => item.id === valorSelecionado[0])?.nome || 'Item sem nome';
+                          }
+
+                          return `${valorSelecionado.length} equipamentos selecionados`;
+                        }}
+                      >
                         {itens.map(item => (
                           <MenuItem key={item.id} value={item.id}>{item.nome || 'Item sem nome'}</MenuItem>
                         ))}
                       </Select>
                     </StyledSelect>
 
-                    <StyledTextField label="Bônus extra" type="number" value={form.bonusExtra} onChange={atualizarCampo('bonusExtra')} fullWidth />
+                    <StyledTextField label="Bônus extra" type="number" value={form.bonusExtra} onChange={atualizarCampo('bonusExtra')} fullWidth InputLabelProps={{ shrink: false }} />
                   </TwoColFields>
 
                   <Box sx={{ display: 'grid', gap: 1.5 }}>
@@ -2101,6 +2743,7 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
                     >
                       <ResourceSelectCard
                         onClick={() => setResourceSelecionada('saude')}
+                        aria-label={getResourceA11yLabel('Saúde', saudeAtual, saudeMaxima, saudeStatusMensagem)}
                         aria-pressed={resourceSelecionada === 'saude'}
                         sx={resourceSelecionada === 'saude' ? {
                           borderColor: 'rgba(239, 68, 68, 0.9)',
@@ -2171,6 +2814,7 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
 
                       <ResourceSelectCard
                         onClick={() => setResourceSelecionada('energia')}
+                        aria-label={getResourceA11yLabel('Energia', energiaAtual, energiaMaxima, energiaStatusMensagem)}
                         aria-pressed={resourceSelecionada === 'energia'}
                         sx={resourceSelecionada === 'energia' ? {
                           borderColor: 'rgba(232, 203, 133, 0.9)',
@@ -2241,6 +2885,7 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
 
                       <ResourceSelectCard
                         onClick={() => setResourceSelecionada('fadiga')}
+                        aria-label={getResourceA11yLabel('Fadiga', fadigaAtual, fadigaMaxima, fadigaStatusMensagem)}
                         aria-pressed={resourceSelecionada === 'fadiga'}
                         sx={resourceSelecionada === 'fadiga' ? {
                           borderColor: 'rgba(232, 203, 133, 0.9)',
@@ -2429,57 +3074,121 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
                       {combos.map(combo => {
                         const comboResourceType = getResourceTypeForCombo(combo);
                         const comboResourceLabel = comboResourceType === 'saude' ? 'Saúde' : comboResourceType === 'fadiga' ? 'Fadiga' : 'Energia';
+                        const custosCombo = obterCustosConsolidadosCombo(combo);
+                        const recursosResumo = Object.entries(custosCombo).filter(([, valor]) => Number(valor) > 0);
+                        const isComboSelecionado = selectedComboId === combo.id;
+                        const isComboEmEdicao = isComboSelecionado && hasUnsavedChanges;
+                        const expanded = expandedComboId === combo.id;
 
                         return (
-                          <ComboCard key={combo.id}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, minWidth: 0 }}>
-                              <Box sx={{ fontWeight: 800, color: '#f4dda2', letterSpacing: '0.04em', textTransform: 'uppercase', fontSize: '0.8rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{combo.nome}</Box>
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-                                <Box sx={{ borderRadius: 999, px: 1, py: 0.35, fontSize: '0.7rem', fontWeight: 700, color: '#f0d9a6', background: 'rgba(232, 203, 133, 0.08)', border: '1px solid rgba(232, 203, 133, 0.24)', maxWidth: '100%', wordBreak: 'break-word' }}>
-                                  {getTipoDanoLabel(combo.tipoDano ?? 'Contundente', contexto)}
-                                </Box>
-                                <ResourceBadge variant={comboResourceType === 'saude' ? 'saude' : comboResourceType === 'fadiga' ? 'fadiga' : 'energia'}>
-                                  {comboResourceType === 'saude' ? <FavoriteIcon fontSize="inherit" sx={{ fontSize: '0.7rem' }} /> : comboResourceType === 'fadiga' ? <ShieldIcon fontSize="inherit" sx={{ fontSize: '0.7rem' }} /> : <BoltIcon fontSize="inherit" sx={{ fontSize: '0.7rem' }} />}
-                                  {comboResourceLabel}
-                                </ResourceBadge>
-                              </Box>
-                            </Box>
+                          <ComboCard
+                            key={combo.id}
+                            className={isComboSelecionado ? 'selected' : ''}
+                            square
+                            expanded={expanded}
+                            onChange={(_, nextExpanded) => setExpandedComboId(nextExpanded ? combo.id : '')}
+                            disableGutters
+                          >
+                            <ComboSummary expandIcon={<ExpandMoreIcon />} aria-controls={`combo-panel-${combo.id}`} id={`combo-header-${combo.id}`}>
+                              <ComboHeader>
+                                <ComboNameBlock>
+                                  <Box sx={{ fontWeight: 800, color: '#f4dda2', letterSpacing: '0.04em', textTransform: 'uppercase', fontSize: '0.72rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>{combo.nome}</Box>
+                                  {isComboSelecionado && (
+                                    <SelectionStatus aria-label={isComboEmEdicao ? 'Combinação em edição' : 'Combinação selecionada'}>
+                                      {isComboEmEdicao ? <AutoFixHighIcon fontSize="inherit" sx={{ fontSize: '0.72rem' }} /> : <CheckIcon fontSize="inherit" sx={{ fontSize: '0.72rem' }} />}
+                                    </SelectionStatus>
+                                  )}
+                                </ComboNameBlock>
 
-                            <ComboDetails>
-                            <DetailLine>
-                              <span>Rolling</span>
-                              <DetailValue>{formatarRollingCombo(combo)}</DetailValue>
-                            </DetailLine>
-                            <DetailLine>
-                              <span>Potencial total</span>
-                              <DetailValue>{Number(combo?.potencialFinal ?? combo?.potencialBase ?? 0)}</DetailValue>
-                            </DetailLine>
-                            <DetailLine>
-                              <span>Potencialização</span>
-                              <DetailValue>{Number(combo?.potencializacao ?? 0)}%</DetailValue>
-                            </DetailLine>
-                            <DetailLine>
-                              <span>Recurso</span>
-                              <DetailValue>{getResourceTypeForCombo(combo) === 'ambos' ? 'Energia + Fadiga' : getResourceTypeForCombo(combo) === 'saude' ? 'Saúde' : getResourceTypeForCombo(combo) === 'fadiga' ? 'Fadiga' : 'Energia'}</DetailValue>
-                            </DetailLine>
-                            <DetailLine>
-                              <span>Custo</span>
-                              <DetailValue>{obterCustoSelecionado(combo)} pts</DetailValue>
-                            </DetailLine>
-                          </ComboDetails>
+                                <ComboHeaderMetaRow>
+                                  <Box sx={{ borderRadius: 999, px: 1, py: 0.35, fontSize: '0.68rem', fontWeight: 700, color: '#f0d9a6', background: 'rgba(232, 203, 133, 0.08)', border: '1px solid rgba(232, 203, 133, 0.24)', maxWidth: '100%', wordBreak: 'break-word' }}>
+                                    {getTipoDanoLabel(combo.tipoDano ?? 'Contundente', contexto)}
+                                  </Box>
+                                  <ResourceBadge variant={comboResourceType === 'saude' ? 'saude' : comboResourceType === 'fadiga' ? 'fadiga' : 'energia'}>
+                                    {comboResourceType === 'saude' ? <FavoriteIcon fontSize="inherit" sx={{ fontSize: '0.7rem' }} /> : comboResourceType === 'fadiga' ? <ShieldIcon fontSize="inherit" sx={{ fontSize: '0.7rem' }} /> : <BoltIcon fontSize="inherit" sx={{ fontSize: '0.7rem' }} />}
+                                    {comboResourceLabel}
+                                  </ResourceBadge>
+                                </ComboHeaderMetaRow>
+                              </ComboHeader>
+                            </ComboSummary>
 
-                          <ComboActions>
-                            <TinyActionButton size="small" onClick={() => handleSelecionarCombo(combo)}>Selecionar</TinyActionButton>
-                            <TinyDangerButton size="small" onClick={() => handleExcluirCombo(combo)}>Excluir</TinyDangerButton>
-                            <UseComboButton
-                              size="small"
-                              type="button"
-                              onClick={() => handleUsarCombo(combo)}
-                              disabled={processandoUsoComboId === combo.id || ((getResourceTypeForCombo(combo) === 'energia' || getResourceTypeForCombo(combo) === 'ambos') && (!energiaDadosDisponiveis || energiaAtual < obterCustoCombo(combo))) || ((getResourceTypeForCombo(combo) === 'fadiga' || getResourceTypeForCombo(combo) === 'ambos') && (!fadigaDadosDisponiveis || fadigaAtual < obterCustoFadigaCombo(combo))) || ((getResourceTypeForCombo(combo) === 'saude' || getResourceTypeForCombo(combo) === 'ambos') && (!saudeDadosDisponiveis || saudeAtual < obterCustoSaudeCombo(combo)))}
-                            >
-                              {processandoUsoComboId === combo.id ? 'Processando...' : 'USAR'}
-                            </UseComboButton>
-                          </ComboActions>
+                            <ComboAccordionDetails id={`combo-panel-${combo.id}`}>
+                              {isComboEmEdicao && (
+                                <EditingStatus>
+                                  <AutoFixHighIcon fontSize="inherit" sx={{ fontSize: '0.56rem' }} />
+                                  Em edição
+                                </EditingStatus>
+                              )}
+
+                              <ComboDetails>
+                                <DetailLine>
+                                  <span>Rolling</span>
+                                  <DetailValue>{formatarRollingCombo(combo)}</DetailValue>
+                                </DetailLine>
+                                <DetailLine>
+                                  <span>Potencial total</span>
+                                  <DetailValue>{Number(combo?.potencialFinal ?? combo?.potencialBase ?? 0)}</DetailValue>
+                                </DetailLine>
+                                <DetailLine>
+                                  <span>Potencialização</span>
+                                  <DetailValue>{Number(combo?.potencializacao ?? 0)}%</DetailValue>
+                                </DetailLine>
+                                <DetailLine>
+                                  <span>Artes/Habilidades</span>
+                                  <DetailValue>{normalizarArtIdsSelecionadas(combo?.artIds ?? combo?.artId ?? []).length || 0}</DetailValue>
+                                </DetailLine>
+                                <DetailLine>
+                                  <span>Itens</span>
+                                  <DetailValue>
+                                    {(() => {
+                                      const idsCombo = normalizarItemInventarioSelecionados(combo?.itemInventarioIds ?? combo?.itemInventarioId ?? []);
+                                      const itensCombo = itens.filter(item => idsCombo.includes(item.id));
+                                      if (idsCombo.length === 0) {
+                                        return 'Nenhum';
+                                      }
+                                      const nomes = itensCombo.map(item => item.nome || 'Item sem nome').slice(0, 2);
+                                      return `${idsCombo.length} · ${nomes.join(', ')}${idsCombo.length > nomes.length ? '...' : ''}`;
+                                    })()}
+                                  </DetailValue>
+                                </DetailLine>
+                                {recursosResumo.length > 0 ? (
+                                  recursosResumo.map(([recurso, valor]) => (
+                                    <DetailLine key={`${combo.id}-${recurso}`}>
+                                      <span>{recurso === 'energia' ? 'Energia' : recurso === 'fadiga' ? 'Fadiga' : 'Saúde'}</span>
+                                      <DetailValue>{valor} pts</DetailValue>
+                                    </DetailLine>
+                                  ))
+                                ) : (
+                                  <DetailLine>
+                                    <span>Custo</span>
+                                    <DetailValue>{obterCustoSelecionado(combo)} pts</DetailValue>
+                                  </DetailLine>
+                                )}
+                              </ComboDetails>
+
+                              <ComboActions>
+                                <TinyActionButton
+                                  size="small"
+                                  onClick={() => handleSelecionarCombo(combo)}
+                                  sx={isComboSelecionado ? {
+                                    borderColor: 'rgba(244, 221, 162, 0.8)',
+                                    background: 'rgba(232, 203, 133, 0.08)',
+                                    color: '#f4dda2',
+                                  } : undefined}
+                                >
+                                  Selecionar
+                                </TinyActionButton>
+                                <TinyDangerButton size="small" onClick={() => handleExcluirCombo(combo)}>Excluir</TinyDangerButton>
+                                <UseComboButton
+                                  size="small"
+                                  type="button"
+                                  onClick={() => handleUsarCombo(combo)}
+                                  disabled={processandoUsoComboId === combo.id || ((getResourceTypeForCombo(combo) === 'energia' || getResourceTypeForCombo(combo) === 'ambos') && (!energiaDadosDisponiveis || energiaAtual < obterCustoCombo(combo))) || ((getResourceTypeForCombo(combo) === 'fadiga' || getResourceTypeForCombo(combo) === 'ambos') && (!fadigaDadosDisponiveis || fadigaAtual < obterCustoFadigaCombo(combo))) || ((getResourceTypeForCombo(combo) === 'saude' || getResourceTypeForCombo(combo) === 'ambos') && (!saudeDadosDisponiveis || saudeAtual < obterCustoSaudeCombo(combo)))}
+                                >
+                                  {processandoUsoComboId === combo.id ? 'Processando...' : 'USAR'}
+                                </UseComboButton>
+                              </ComboActions>
+                            </ComboAccordionDetails>
                           </ComboCard>
                         );
                       })}
@@ -2533,50 +3242,38 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
 
             <ConfirmSection>
               <ConfirmSectionHeader>
-                <span>Recurso do uso</span>
-                <span>{comboEmUso?.resourceType === 'ambos' ? 'Energia + Fadiga' : comboEmUso?.resourceType === 'saude' ? 'Saúde' : comboEmUso?.resourceType === 'fadiga' ? 'Fadiga' : 'Energia'}</span>
+                <span>Recursos consumidos</span>
+                <span>{comboEmUso?.resourceType === 'ambos' ? 'Energia + Fadiga + Saúde' : comboEmUso?.resourceType === 'saude' ? 'Saúde' : comboEmUso?.resourceType === 'fadiga' ? 'Fadiga' : 'Energia'}</span>
               </ConfirmSectionHeader>
 
-              <ConfirmResourcePanel tone={comboEmUso?.resourceType === 'saude' ? 'saude' : comboEmUso?.resourceType === 'fadiga' ? 'fadiga' : 'energia'}>
-                <ConfirmResourceBadge tone={comboEmUso?.resourceType === 'saude' ? 'saude' : comboEmUso?.resourceType === 'fadiga' ? 'fadiga' : 'energia'}>
-                  {comboEmUso?.resourceType === 'saude' ? '♥ Saúde' : comboEmUso?.resourceType === 'fadiga' ? '◈ Fadiga' : '⚡ Energia'}
-                </ConfirmResourceBadge>
+              {[
+                { chave: 'energia', mostrar: Boolean(personagem?.status?.energia), label: 'Energia', atual: comboEmUso?.energiaAtual ?? energiaAtual, maximo: comboEmUso?.energiaMaxima ?? energiaMaxima, custo: comboEmUso?.custo ?? 0, restante: comboEmUso?.energiaRestante ?? energiaAtual, tone: 'energia', icon: '⚡' },
+                { chave: 'fadiga', mostrar: Boolean(personagem?.status?.fadiga), label: 'Fadiga', atual: comboEmUso?.fadigaAtual ?? fadigaAtual, maximo: comboEmUso?.fadigaMaxima ?? fadigaMaxima, custo: comboEmUso?.custoFadiga ?? 0, restante: comboEmUso?.fadigaRestante ?? fadigaAtual, tone: 'fadiga', icon: '◈' },
+                { chave: 'saude', mostrar: Boolean(personagem?.status?.saude || personagem?.status?.hp), label: 'Saúde', atual: comboEmUso?.saudeAtual ?? saudeAtual, maximo: comboEmUso?.saudeMaxima ?? saudeMaxima, custo: comboEmUso?.custoSaude ?? 0, restante: comboEmUso?.saudeRestante ?? saudeAtual, tone: 'saude', icon: '♥' },
+              ].filter(item => item.mostrar).map(item => (
+                <ConfirmResourcePanel key={item.chave} tone={item.tone}>
+                  <ConfirmResourceBadge tone={item.tone}>
+                    {item.icon} {item.label}
+                  </ConfirmResourceBadge>
 
-                <ConfirmResourceGrid>
-                  <ConfirmResourceStat>
-                    <ConfirmResourceStatLabel>Atual</ConfirmResourceStatLabel>
-                    <ConfirmResourceStatValue>
-                      {comboEmUso?.resourceType === 'saude'
-                        ? `${comboEmUso?.saudeAtual ?? saudeAtual}/${comboEmUso?.saudeMaxima ?? saudeMaxima}`
-                        : comboEmUso?.resourceType === 'fadiga'
-                          ? `${comboEmUso?.fadigaAtual ?? fadigaAtual}/${comboEmUso?.fadigaMaxima ?? fadigaMaxima}`
-                          : `${comboEmUso?.energiaAtual ?? energiaAtual}/${comboEmUso?.energiaMaxima ?? energiaMaxima}`}
-                    </ConfirmResourceStatValue>
-                  </ConfirmResourceStat>
+                  <ConfirmResourceGrid>
+                    <ConfirmResourceStat>
+                      <ConfirmResourceStatLabel>Atual</ConfirmResourceStatLabel>
+                      <ConfirmResourceStatValue>{`${item.atual}/${item.maximo}`}</ConfirmResourceStatValue>
+                    </ConfirmResourceStat>
 
-                  <ConfirmResourceStat>
-                    <ConfirmResourceStatLabel>Custo</ConfirmResourceStatLabel>
-                    <ConfirmResourceStatValue>
-                      {comboEmUso?.resourceType === 'saude'
-                        ? `${comboEmUso?.custoSaude ?? 0}`
-                        : comboEmUso?.resourceType === 'fadiga'
-                          ? `${comboEmUso?.custoFadiga ?? 0}`
-                          : `${comboEmUso?.custo ?? 0}`}
-                    </ConfirmResourceStatValue>
-                  </ConfirmResourceStat>
+                    <ConfirmResourceStat>
+                      <ConfirmResourceStatLabel>Custo</ConfirmResourceStatLabel>
+                      <ConfirmResourceStatValue>{`${item.custo}`}</ConfirmResourceStatValue>
+                    </ConfirmResourceStat>
 
-                  <ConfirmResourceStat>
-                    <ConfirmResourceStatLabel>Após uso</ConfirmResourceStatLabel>
-                    <ConfirmResourceStatValue>
-                      {comboEmUso?.resourceType === 'saude'
-                        ? `${comboEmUso?.saudeRestante ?? saudeAtual}/${comboEmUso?.saudeMaxima ?? saudeMaxima}`
-                        : comboEmUso?.resourceType === 'fadiga'
-                          ? `${comboEmUso?.fadigaRestante ?? fadigaAtual}/${comboEmUso?.fadigaMaxima ?? fadigaMaxima}`
-                          : `${comboEmUso?.energiaRestante ?? energiaAtual}/${comboEmUso?.energiaMaxima ?? energiaMaxima}`}
-                    </ConfirmResourceStatValue>
-                  </ConfirmResourceStat>
-                </ConfirmResourceGrid>
-              </ConfirmResourcePanel>
+                    <ConfirmResourceStat>
+                      <ConfirmResourceStatLabel>Após uso</ConfirmResourceStatLabel>
+                      <ConfirmResourceStatValue>{`${item.restante}/${item.maximo}`}</ConfirmResourceStatValue>
+                    </ConfirmResourceStat>
+                  </ConfirmResourceGrid>
+                </ConfirmResourcePanel>
+              ))}
             </ConfirmSection>
 
             <ConfirmSection>
@@ -2586,7 +3283,7 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
 
               <ConfirmInfoGrid>
                 <ConfirmInfoRow>
-                  <ConfirmInfoLabel>Rolling</ConfirmInfoLabel>
+                  <ConfirmInfoLabel>Roll</ConfirmInfoLabel>
                   <ConfirmInfoValue>{formatarRollingCombo(comboEmUso?.combo)}</ConfirmInfoValue>
                 </ConfirmInfoRow>
                 <ConfirmInfoRow>
@@ -2594,32 +3291,33 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
                   <ConfirmInfoValue>{Number(comboEmUso?.combo?.potencializacao ?? 0)}%</ConfirmInfoValue>
                 </ConfirmInfoRow>
                 <ConfirmInfoRow>
-                  <ConfirmInfoLabel>Recurso selecionado</ConfirmInfoLabel>
+                  <ConfirmInfoLabel>Artes/Habilidades</ConfirmInfoLabel>
+                  <ConfirmInfoValue>{normalizarArtIdsSelecionadas(comboEmUso?.combo?.artIds ?? comboEmUso?.combo?.artId ?? []).length || 0}</ConfirmInfoValue>
+                </ConfirmInfoRow>
+                <ConfirmInfoRow>
+                  <ConfirmInfoLabel>Custos consolidados</ConfirmInfoLabel>
                   <ConfirmInfoValue>
-                    {comboEmUso?.resourceType === 'ambos' ? 'Energia + Fadiga' : comboEmUso?.resourceType === 'saude' ? 'Saúde' : comboEmUso?.resourceType === 'fadiga' ? 'Fadiga' : 'Energia'}
+                    {[
+                      Number(comboEmUso?.custo ?? 0) > 0 ? `Energia ${comboEmUso?.custo ?? 0}` : null,
+                      Number(comboEmUso?.custoFadiga ?? 0) > 0 ? `Fadiga ${comboEmUso?.custoFadiga ?? 0}` : null,
+                      Number(comboEmUso?.custoSaude ?? 0) > 0 ? `Saúde ${comboEmUso?.custoSaude ?? 0}` : null,
+                    ].filter(Boolean).join(' • ') || 'Neutro'}
                   </ConfirmInfoValue>
                 </ConfirmInfoRow>
               </ConfirmInfoGrid>
             </ConfirmSection>
 
             <ConfirmCompactSummary>
-              {comboEmUso?.resourceType === 'saude' ? (
-                <ConfirmCompactRow>
-                  <span>Saúde após utilização:</span>
-                  <strong>{`${comboEmUso?.saudeRestante ?? saudeAtual}/${comboEmUso?.saudeMaxima ?? saudeMaxima}`}</strong>
+              {[
+                { mostrar: Boolean(personagem?.status?.energia), label: 'Energia após utilização:', value: `${comboEmUso?.energiaRestante ?? energiaAtual}/${comboEmUso?.energiaMaxima ?? energiaMaxima}` },
+                { mostrar: Boolean(personagem?.status?.fadiga), label: 'Fadiga após utilização:', value: `${comboEmUso?.fadigaRestante ?? fadigaAtual}/${comboEmUso?.fadigaMaxima ?? fadigaMaxima}` },
+                { mostrar: Boolean(personagem?.status?.saude || personagem?.status?.hp), label: 'Saúde após utilização:', value: `${comboEmUso?.saudeRestante ?? saudeAtual}/${comboEmUso?.saudeMaxima ?? saudeMaxima}` },
+              ].filter(item => item.mostrar).map(item => (
+                <ConfirmCompactRow key={item.label}>
+                  <span>{item.label}</span>
+                  <strong>{item.value}</strong>
                 </ConfirmCompactRow>
-              ) : (
-                <>
-                  <ConfirmCompactRow>
-                    <span>Energia após utilização:</span>
-                    <strong>{`${comboEmUso?.energiaRestante ?? energiaAtual}/${comboEmUso?.energiaMaxima ?? energiaMaxima}`}</strong>
-                  </ConfirmCompactRow>
-                  <ConfirmCompactRow>
-                    <span>Fadiga após utilização:</span>
-                    <strong>{`${comboEmUso?.fadigaRestante ?? fadigaAtual}/${comboEmUso?.fadigaMaxima ?? fadigaMaxima}`}</strong>
-                  </ConfirmCompactRow>
-                </>
-              )}
+              ))}
             </ConfirmCompactSummary>
 
             <ConfirmNote>
