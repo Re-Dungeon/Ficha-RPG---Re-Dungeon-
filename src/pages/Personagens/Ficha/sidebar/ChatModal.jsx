@@ -9,6 +9,7 @@ import DialogContent from '@mui/material/DialogContent';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import CloseIcon from '@mui/icons-material/Close';
 import ChatOutlinedIcon from '@mui/icons-material/ChatOutlined';
 import GridOnIcon from '@mui/icons-material/GridOn';
@@ -33,6 +34,7 @@ const textoMutedSx = { color: 'var(--text-secondary)', textAlign: 'center', py: 
 export const ChatModalConteudo = ({ personagem, modo = 'modal', onAbrirPainelLateral, onClose = null, campanhaIdInicial = null }) => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
+  const isMobile = useMediaQuery('(max-width: 599.95px)');
   const campanhaIds = useMemo(
     () => campanhaIdsDosPersonagens([personagem]),
     [personagem],
@@ -120,10 +122,18 @@ export const ChatModalConteudo = ({ personagem, modo = 'modal', onAbrirPainelLat
   }
 
   const cabecalho = (
-    <Box sx={{ display: 'flex', width: '100%', alignItems: 'stretch', gap: 1.5, flexWrap: 'wrap' }}>
+    <Box
+      sx={{
+        display: 'flex',
+        width: '100%',
+        alignItems: 'stretch',
+        gap: { xs: 1, sm: 1.5 },
+        flexWrap: 'wrap',
+      }}
+    >
       <Box
         sx={{
-          flex: '1 1 170px',
+          flex: isMobile ? '1 1 100%' : '1 1 170px',
           minWidth: 0,
           display: 'flex',
           flexDirection: 'column',
@@ -158,7 +168,7 @@ export const ChatModalConteudo = ({ personagem, modo = 'modal', onAbrirPainelLat
 
       <Box
         sx={{
-          flex: '1 1 180px',
+          flex: isMobile ? '1 1 100%' : '1 1 180px',
           minWidth: 0,
           display: 'flex',
           flexDirection: 'column',
@@ -166,7 +176,16 @@ export const ChatModalConteudo = ({ personagem, modo = 'modal', onAbrirPainelLat
           gap: 0.25,
         }}
       >
-        <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
+        <Typography
+          variant="body2"
+          sx={{
+            color: 'var(--text-secondary)',
+            minWidth: 0,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: isMobile ? 'nowrap' : 'normal',
+          }}
+        >
           Falando como <strong>{personagem.nome}</strong>
         </Typography>
       </Box>
@@ -175,10 +194,11 @@ export const ChatModalConteudo = ({ personagem, modo = 'modal', onAbrirPainelLat
         sx={{
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'flex-end',
+          justifyContent: isMobile ? 'stretch' : 'flex-end',
           gap: 1,
           flexWrap: 'wrap',
-          ml: 'auto',
+          ml: isMobile ? 0 : 'auto',
+          flex: isMobile ? '1 1 100%' : '0 0 auto',
         }}
       >
         <Button
@@ -194,6 +214,8 @@ export const ChatModalConteudo = ({ personagem, modo = 'modal', onAbrirPainelLat
             background: 'linear-gradient(180deg, rgba(91, 124, 250, 0.2), rgba(91, 124, 250, 0.08))',
             color: 'var(--text-primary)',
             border: '1px solid rgba(91, 124, 250, 0.45)',
+            minWidth: isMobile ? 'auto' : undefined,
+            flex: isMobile ? '1 1 140px' : undefined,
             '&:hover': { background: 'rgba(91, 124, 250, 0.18)' },
           }}
         >
@@ -212,6 +234,8 @@ export const ChatModalConteudo = ({ personagem, modo = 'modal', onAbrirPainelLat
             background: 'linear-gradient(180deg, rgba(91, 124, 250, 0.2), rgba(91, 124, 250, 0.08))',
             color: 'var(--text-primary)',
             border: '1px solid rgba(91, 124, 250, 0.45)',
+            minWidth: isMobile ? 'auto' : undefined,
+            flex: isMobile ? '1 1 140px' : undefined,
             '&:hover': { background: 'rgba(91, 124, 250, 0.18)' },
           }}
         >
@@ -273,7 +297,8 @@ export const ChatModalConteudo = ({ personagem, modo = 'modal', onAbrirPainelLat
           display: 'flex',
           flexDirection: 'column',
           height: '100%',
-          minHeight: { xs: 560, sm: 700 },
+          minHeight: isMobile ? 0 : { xs: 560, sm: 700 },
+          maxHeight: isMobile ? '100dvh' : undefined,
         }}
       >
         <ChatSala
@@ -305,24 +330,33 @@ ChatModalConteudo.propTypes = {
   campanhaIdInicial: PropTypes.string,
 };
 
-const ChatModal = ({ open, onClose, personagem, onAbrirPainelLateral }) => (
-  <Dialog
-    open={open}
-    onClose={onClose}
-    fullWidth
-    maxWidth="md"
-    keepMounted
-    sx={{
-      '& .MuiDialog-paper': {
-        minHeight: { xs: 560, sm: 700 },
-        height: 'min(86vh, 1040px)',
-        maxHeight: 'min(86vh, 1040px)',
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-      },
-    }}
-  >
+const ChatModal = ({ open, onClose, personagem, onAbrirPainelLateral }) => {
+  const isMobile = useMediaQuery('(max-width: 599.95px)');
+
+  return (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullScreen={isMobile}
+      fullWidth
+      maxWidth="md"
+      keepMounted
+      sx={{
+        '& .MuiDialog-paper': {
+          minHeight: isMobile ? '100dvh' : { xs: 560, sm: 700 },
+          height: isMobile ? '100dvh' : 'min(86vh, 1040px)',
+          maxHeight: isMobile ? '100dvh' : 'min(86vh, 1040px)',
+          width: isMobile ? '100vw' : undefined,
+          maxWidth: isMobile ? '100vw' : undefined,
+          m: isMobile ? 0 : undefined,
+          borderRadius: isMobile ? 0 : undefined,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          pb: isMobile ? 'env(safe-area-inset-bottom)' : undefined,
+        },
+      }}
+    >
     <DialogHeaderRow>
       <DialogHeaderTitle>💬 Chat da Campanha</DialogHeaderTitle>
       <DialogFecharButton type="button" aria-label="Fechar" onClick={onClose}>
@@ -332,8 +366,9 @@ const ChatModal = ({ open, onClose, personagem, onAbrirPainelLateral }) => (
     <DialogContent sx={{ p: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
       <ChatModalConteudo personagem={personagem} onAbrirPainelLateral={onAbrirPainelLateral} onClose={onClose} />
     </DialogContent>
-  </Dialog>
-);
+    </Dialog>
+  );
+};
 
 ChatModal.propTypes = {
   open: PropTypes.bool.isRequired,

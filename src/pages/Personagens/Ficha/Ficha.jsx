@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom';
+import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
@@ -301,16 +302,49 @@ const Ficha = () => {
           />
         </FichaMain>
 
-        {chatLateralCampanhaId && (
-          <FichaChatPainel>
-            <ChatModalConteudo
-              personagem={personagem}
-              modo="painel"
+        {chatLateralCampanhaId &&
+          (isMobile ? (
+            <Drawer
+              open={Boolean(chatLateralCampanhaId)}
               onClose={fecharChatLateral}
-              campanhaIdInicial={chatLateralCampanhaId}
-            />
-          </FichaChatPainel>
-        )}
+              anchor="right"
+              slotProps={{
+                paper: {
+                  sx: {
+                    width: '100vw',
+                    maxWidth: '100vw',
+                    height: '100dvh',
+                    maxHeight: '100dvh',
+                    borderRadius: 0,
+                    background: 'var(--bg-secondary)',
+                    borderLeft: '1px solid var(--border-primary)',
+                    boxShadow: '0 0 0 1px rgba(0,0,0,0.15)',
+                    overflow: 'hidden',
+                    pt: 'env(safe-area-inset-top)',
+                    pb: 'env(safe-area-inset-bottom)',
+                  },
+                },
+              }}
+            >
+              <Box sx={{ width: '100%', height: '100dvh', maxHeight: '100dvh', overflow: 'hidden' }}>
+                <ChatModalConteudo
+                  personagem={personagem}
+                  modo="painel"
+                  onClose={fecharChatLateral}
+                  campanhaIdInicial={chatLateralCampanhaId}
+                />
+              </Box>
+            </Drawer>
+          ) : (
+            <FichaChatPainel>
+              <ChatModalConteudo
+                personagem={personagem}
+                modo="painel"
+                onClose={fecharChatLateral}
+                campanhaIdInicial={chatLateralCampanhaId}
+              />
+            </FichaChatPainel>
+          ))}
       </FichaLayout>
     </SavingProvider>
   );
