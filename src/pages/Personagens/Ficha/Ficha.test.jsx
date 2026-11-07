@@ -8,14 +8,43 @@ import { useAuth } from 'context/AuthContext';
 import useIsMobile from 'hooks/useIsMobile';
 import Layout from 'components/Layout/Layout';
 import Ficha from './Ficha';
+import { ChatModalConteudo } from './sidebar/ChatModal';
 
 vi.mock('context/AuthContext', () => ({ useAuth: vi.fn() }));
 vi.mock('service/storage', () => ({
   getPersonagem: vi.fn(),
   removePersonagem: vi.fn(),
   updatePersonagem: vi.fn(),
+  getRmCampanha: vi.fn(),
 }));
 vi.mock('hooks/useIsMobile', () => ({ default: vi.fn() }));
+vi.mock('hooks/useChatCampanha', () => ({
+  default: vi.fn(() => ({
+    mensagens: [],
+    carregando: false,
+    erro: null,
+    limparErro: vi.fn(),
+    enviarTexto: vi.fn(),
+    enviarImagem: vi.fn(),
+    rolar: vi.fn(),
+    apagar: vi.fn(),
+    macros: {
+      lista: [],
+      carregando: false,
+      podeGerenciar: false,
+      rodando: null,
+      salvar: vi.fn(),
+      apagar: vi.fn(),
+      mover: vi.fn(),
+      testar: vi.fn(),
+      executar: vi.fn(),
+    },
+    audio: null,
+  })),
+}));
+vi.mock('hooks/useOpcoesDeRolagem', () => ({
+  default: vi.fn(() => ({ grupos: [] })),
+}));
 
 // Abas e modais viram stubs: o teste é só do shell (sidebar/gaveta + abas).
 const { stubAba, stubModal } = vi.hoisted(() => ({
@@ -40,7 +69,13 @@ vi.mock('./sidebar/SorteModal', () => stubModal('sorte'));
 vi.mock('./sidebar/LojaModal', () => stubModal('loja'));
 vi.mock('./sidebar/CondicoesModal', () => stubModal('condicoes'));
 vi.mock('./sidebar/CodexModal', () => stubModal('codex'));
-vi.mock('./sidebar/ChatModal', () => stubModal('chat'));
+vi.mock('./sidebar/ChatModal', async () => {
+  const actual = await vi.importActual('./sidebar/ChatModal');
+  return {
+    ...actual,
+    default: ({ open }) => (open ? <div>Modal chat</div> : null),
+  };
+});
 vi.mock('./notes/NotesModal', () => stubModal('notas'));
 
 // Com o Layout de verdade: as abas da ficha (e o ☰ da gaveta, no celular)
@@ -86,5 +121,26 @@ describe('Ficha — navegação no celular x desktop', () => {
 
     expect(screen.getByText('Modal classe')).toBeInTheDocument();
     await waitFor(() => expect(screen.queryByRole('button', { name: 'Classe' })).not.toBeInTheDocument());
+  });
+
+  it('chat em painel mobile renderiza sem lançar erro de Box ausente', async () => {
+    useIsMobile.mockReturnValue(true);
+    const campanha = { id: 'campanha-1', nome: 'Campanha Teste', mestreId: 'mestre-1' };
+    const { getRmCampanha } = await import('service/storage');
+    getRmCampanha.mockResolvedValue(campanha);
+
+    render(
+      <MemoryRouter initialEntries={['/personagens/p1']}>
+        <ChatModalConteudo
+          personagem={{ id: 'p1', uid: 'u1', nome: 'Aria', campanhas: ['campanha-1'] }}
+          modo="painel"
+          onClose={vi.fn()}
+          campanhaIdInicial="campanha-1"
+        />
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText('Campanha')).toBeInTheDocument();
+    expect(screen.getByText('Campanha Teste')).toBeInTheDocument();
   });
 });

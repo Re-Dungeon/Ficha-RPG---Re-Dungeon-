@@ -180,12 +180,12 @@ export const ComposerWrapper = styled.form`
   flex-direction: column;
   flex-shrink: 0;
   gap: 6px;
-  padding: 10px 12px 12px;
+  padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
   border-top: 1px solid var(--border-primary);
   background: rgba(10, 9, 19, 0.82);
 
   ${MOBILE} {
-    padding: 8px 8px 10px;
+    padding: 8px 8px calc(12px + env(safe-area-inset-bottom));
   }
 `;
 
@@ -195,6 +195,12 @@ export const ComposerAcoes = styled.div`
   gap: 2px;
   margin-left: -6px;
   flex-wrap: wrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 `;
 
 export const ComposerEntrada = styled.div`
@@ -202,6 +208,10 @@ export const ComposerEntrada = styled.div`
   align-items: flex-end;
   gap: 8px;
   width: 100%;
+
+  ${MOBILE} {
+    gap: 6px;
+  }
 `;
 
 export const PreviewImagem = styled.img`

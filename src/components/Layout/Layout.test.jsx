@@ -71,6 +71,34 @@ describe('Layout — alternar entre Fichas e Campanhas', () => {
     useAuth.mockReturnValue({ currentUser: { uid: 'u1', email: 'a@b.c' }, logout: vi.fn() });
   });
 
+  it('bloqueia a rolagem externa quando o header customizado da ficha está ativo', async () => {
+    const HeaderExtraFixture = () => {
+      const { setHeaderExtra } = useOutletContext();
+      useEffect(() => {
+        setHeaderExtra({
+          nome: 'Gandalf',
+          onVoltar: () => {},
+          tabs: { value: 0, onChange: () => {}, items: [{ value: 0, label: 'Resumo' }] },
+        });
+      }, [setHeaderExtra]);
+
+      return <div>Conteúdo da ficha</div>;
+    };
+
+    render(
+      <MemoryRouter initialEntries={['/personagens']}>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route path="/personagens" element={<HeaderExtraFixture />} />
+          </Route>
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    await screen.findByText('Conteúdo da ficha');
+    expect(screen.getByRole('main')).toHaveStyle({ overflow: 'hidden' });
+  });
+
   it('não repassa TabIndicatorProps para o DOM no mobile', async () => {
     useIsMobile.mockReturnValue(true);
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});

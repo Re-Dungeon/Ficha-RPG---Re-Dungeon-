@@ -78,6 +78,7 @@ const Layout = () => {
     },
   ];
   const tabs = headerExtra?.tabs;
+  const hasHeaderExtra = Boolean(headerExtra);
 
   const handleSairDoMenu = () => {
     setMenuContaAncora(null);
@@ -523,8 +524,13 @@ const Layout = () => {
             flex: 1,
             display: 'flex',
             flexDirection: 'column',
+            minHeight: 0,
             pt: '72px',
-            [MOBILE]: { pt: tabs ? '109px' : '62px' },
+            overflow: hasHeaderExtra ? 'hidden' : 'visible',
+            [MOBILE]: {
+              pt: tabs ? '109px' : '62px',
+              overflow: hasHeaderExtra ? 'hidden' : 'visible',
+            },
           }}
         >
           <Outlet context={{ setHeaderExtra }} />
