@@ -953,6 +953,19 @@ describe('CampanhaChat', () => {
       expect(screen.getByRole('button', { name: /Minimizar chat/ })).toBeInTheDocument();
     });
 
+    it('mantém o estado do painel lateral após recarregar a página', async () => {
+      localStorage.clear();
+      const { unmount } = renderChat(null, '/campanhas/camp-1/lateral');
+      expect(await screen.findByText('Bem-vindos à taverna.')).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('button', { name: /Minimizar chat/ }));
+      expect(JSON.parse(localStorage.getItem('reDungeonChatPainelLateral'))).toBe(true);
+
+      unmount();
+      renderChat(null, '/campanhas/camp-1/lateral');
+      expect(await screen.findByRole('button', { name: /Reabrir chat/ })).toBeInTheDocument();
+    });
+
     describe('Fase 3C: ações', () => {
       const tocarToken = nome => {
         const token = screen.getByRole('button', { name: nome });

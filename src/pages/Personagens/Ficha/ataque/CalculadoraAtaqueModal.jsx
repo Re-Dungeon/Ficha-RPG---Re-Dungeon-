@@ -50,6 +50,7 @@ import {
   extrairBonusNumericoItem,
 } from 'common/utils/ataque';
 import {
+  addChatMensagem,
   getArts,
   getCombosAtaque,
   getCombosDefesa,
@@ -63,6 +64,10 @@ import {
   removeComboDefesa,
   consumirRecursosPersonagem,
 } from 'service/storage';
+import { campanhaIdsDosPersonagens, montarMensagemRolagem } from 'common/utils/chat';
+import { rolarEspecificacao } from 'common/utils/dados';
+import { preparar, rotuloDeRolagem } from 'common/utils/gridRolagem';
+import { expressaoDoCombo } from 'hooks/useOpcoesDeRolagem';
 
 const StyledDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialog-paper': {
@@ -2432,11 +2437,10 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
     try {
       const temEnergiaNoStatus = Boolean(personagem?.status?.energia);
       const temFadigaNoStatus = Boolean(personagem?.status?.fadiga);
-      const temSaudeNoStatus = Boolean(personagem?.status?.saude || personagem?.status?.hp);
       const payloadConsumo = {
-        ...(temEnergiaNoStatus ? { energia: custoFinal } : {}),
-        ...(temFadigaNoStatus ? { fadiga: custoFadigaFinal } : {}),
-        ...(temSaudeNoStatus ? { saude: custoSaudeFinal } : {}),
+        ...(temEnergiaNoStatus ? { energia: custoFinal } : { energia: 0 }),
+        ...(temFadigaNoStatus ? { fadiga: custoFadigaFinal } : { fadiga: 0 }),
+        saude: custoSaudeFinal,
       };
 
       const resultado = await consumirRecursosPersonagem(personagem.id, payloadConsumo);
@@ -2486,6 +2490,26 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
       };
 
       await onSave?.({ status: proximaStatus, statusMaximos: proximoStatusMaximos });
+
+      const campanhaId = campanhaIdsDosPersonagens([personagem])[0] ?? null;
+      const expressaoCombo = expressaoDoCombo(combo, isDefesaContexto ? 'defesa' : 'ataque');
+      const preparacao = expressaoCombo ? preparar(expressaoCombo) : null;
+      let mensagemPublicada = null;
+
+      if (campanhaId && preparacao && !preparacao.erro) {
+        const rolagem = rolarEspecificacao(preparacao);
+        const autor = {
+          uid: currentUser?.uid ?? null,
+          personagemId: personagem?.id ?? null,
+          autorNome: personagem?.nome ?? 'Jogador',
+          autorAvatar: personagem?.linkImagem ?? null,
+          isMestre: false,
+        };
+        const rotulo = rotuloDeRolagem(isDefesaContexto ? 'defesa' : 'ataque', combo?.nome ?? 'Combo');
+        mensagemPublicada = montarMensagemRolagem(autor, rolagem, false, rotulo);
+        await addChatMensagem(campanhaId, mensagemPublicada);
+      }
+
       const resourceLabel = [
         custoFinal > 0 ? 'Energia' : null,
         custoFadigaFinal > 0 ? 'Fadiga' : null,
@@ -2496,7 +2520,11 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
         custoFadigaFinal > 0 ? `Fadiga consumida: ${custoFadigaFinal}. Fadiga restante: ${proximaFadiga}/${fadigaMaximaCombo || fadigaAtualAntes}.` : null,
         custoSaudeFinal > 0 ? `Saúde consumida: ${custoSaudeFinal}. Saúde restante: ${proximaSaude}/${saudeMaximaCombo || saudeAtualAntes}.` : null,
       ].filter(Boolean).join(' ');
-      setNotificacaoUso(`Combo utilizado! Recurso: ${resourceLabel}. ${detalhesUso}`);
+      setNotificacaoUso(
+        mensagemPublicada
+          ? `Combo utilizado! Recurso: ${resourceLabel}. ${detalhesUso} Rolagem publicada no chat da campanha.`
+          : `Combo utilizado! Recurso: ${resourceLabel}. ${detalhesUso}`,
+      );
       setErro('');
       setComboEmUso(null);
     } catch (error) {

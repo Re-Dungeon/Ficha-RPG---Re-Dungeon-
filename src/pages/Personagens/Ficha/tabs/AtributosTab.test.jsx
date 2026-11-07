@@ -4,6 +4,7 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 
 import { SavingProvider } from 'context/SavingContext';
 import {
+  addChatMensagem,
   addComboAtaque,
   addComboDefesa,
   consumirRecursosPersonagem,
@@ -29,6 +30,7 @@ import { calcularCustoPpAcao, getTokensAcao } from '../prontidao/config';
 vi.mock('context/AuthContext', () => ({ useAuth: () => ({ currentUser: null }) }));
 
 vi.mock('service/storage', () => ({
+  addChatMensagem: vi.fn().mockResolvedValue(null),
   getFirestoreItem: vi.fn().mockResolvedValue(null),
   getArts: vi.fn().mockResolvedValue([]),
   getItensInventario: vi.fn().mockResolvedValue([]),
@@ -71,6 +73,7 @@ beforeEach(() => {
   window.localStorage.setItem('re.calculadora_ataque.aviso.anon', 'true');
 
   vi.resetAllMocks();
+  vi.mocked(addChatMensagem).mockResolvedValue(null);
   vi.mocked(getCombosAtaque).mockResolvedValue([]);
   vi.mocked(getCombosDefesa).mockResolvedValue([]);
   vi.mocked(getItensInventario).mockResolvedValue([]);
@@ -121,7 +124,7 @@ describe('AtributosTab — fluxo de edição', () => {
     fireEvent.click(within(dialog).getByRole('button', { name: /salvar/i }));
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: /^salvar$/i }));
+    fireEvent.click(screen.getByRole('button', { name: /salvar personagem/i }));
 
     await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
     expect(onSave.mock.calls[0][0].atributosBase.forca).toBe(50);
@@ -301,6 +304,7 @@ describe('AtributosTab — fluxo de edição', () => {
     const personagemComDefesa = {
       ...personagem,
       id: 'p1',
+      campanhas: ['camp-1'],
       secundariosBase: { ...personagem.secundariosBase, defesa: 20 },
       status: {
         energia: { base: 0, extra: 0, bonus: 0, atual: 50, maximo: 50 },
@@ -331,6 +335,64 @@ describe('AtributosTab — fluxo de edição', () => {
     fireEvent.click(within(confirmDialog).getByRole('button', { name: /confirmar uso/i }));
 
     await waitFor(() => expect(consumirRecursosPersonagem).toHaveBeenCalledWith('p1', { energia: 0, fadiga: 0, saude: 14 }));
+  });
+
+  it('envia a rolagem da combinação de ataque para o chat da campanha após confirmar o uso', async () => {
+    vi.mocked(getCombosAtaque).mockResolvedValue([
+      {
+        id: 'combo-ataque-1',
+        nome: 'Corte Flamejante',
+        perfilDano: '1d20+4',
+        tipoDano: 'Contundente',
+        potencializacao: 10,
+        costResourceType: 'energia',
+        custoEnergia: 6,
+        updatedAt: { seconds: 1700000000 },
+      },
+    ]);
+    vi.mocked(consumirRecursosPersonagem).mockResolvedValue({
+      energia: { atual: 20, maximo: 50 },
+      fadiga: { atual: 8, maximo: 10 },
+      gastoEnergia: 6,
+      gastoFadiga: 0,
+      gastoSaude: 0,
+    });
+
+    const onSave = vi.fn().mockResolvedValue();
+    const personagemComAtaque = {
+      ...personagem,
+      id: 'p1',
+      campanhas: ['camp-1'],
+      nome: 'Teste',
+      status: {
+        energia: { base: 0, extra: 0, bonus: 0, atual: 26, maximo: 50 },
+        fadiga: { base: 0, extra: 0, bonus: 0, atual: 8, maximo: 10 },
+      },
+      statusMaximos: {
+        energia: 50,
+        fadiga: 10,
+      },
+      secundariosBase: { ...personagem.secundariosBase, ataque: 20 },
+    };
+
+    renderComProvider(<AtributosTab personagem={personagemComAtaque} onSave={onSave} onExcluir={vi.fn()} />);
+
+    fireEvent.contextMenu(screen.getByRole('button', { name: /ataque/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /calculadora de ataque/i }));
+
+    const dialog = await screen.findByRole('dialog', { name: /calculadora de ataque/i });
+    fireEvent.click(within(dialog).getByRole('button', { name: /^usar$/i }));
+
+    const confirmDialog = await screen.findByRole('dialog', { name: /utilizar combinação/i });
+    fireEvent.click(within(confirmDialog).getByRole('button', { name: /confirmar uso/i }));
+
+    await waitFor(() => expect(consumirRecursosPersonagem).toHaveBeenCalledWith('p1', { energia: 6, fadiga: 0, saude: 0 }));
+    await waitFor(() => expect(addChatMensagem).toHaveBeenCalledWith('camp-1', expect.objectContaining({
+      tipo: 'rolagem',
+      rotulo: 'Ataque: Corte Flamejante',
+      autorNome: 'Teste',
+      rolagem: expect.objectContaining({ total: expect.any(Number) }),
+    })));
   });
 
   it('aplica identidade visual distinta por tipo de recurso nas combinações salvas', async () => {
@@ -1677,7 +1739,7 @@ describe('AtributosTab — fluxo de edição', () => {
 
     fireEvent.click(within(confirmDialog).getByRole('button', { name: /confirmar uso/i }));
 
-    await waitFor(() => expect(consumirRecursosPersonagem).toHaveBeenCalledWith('p1', { energia: 22, fadiga: 0 }));
+    await waitFor(() => expect(consumirRecursosPersonagem).toHaveBeenCalledWith('p1', { energia: 22, fadiga: 0, saude: 0 }));
   });
 
   it('permite selecionar múltiplos itens e salvar seu conjunto sem duplicar ids', async () => {
@@ -1927,7 +1989,7 @@ describe('AtributosTab — fluxo de edição', () => {
 
     fireEvent.click(within(confirmDialog).getByRole('button', { name: /confirmar uso/i }));
 
-    await waitFor(() => expect(consumirRecursosPersonagem).toHaveBeenCalledWith('p1', { energia: 0, fadiga: 9 }));
+    await waitFor(() => expect(consumirRecursosPersonagem).toHaveBeenCalledWith('p1', { energia: 0, fadiga: 9, saude: 0 }));
     await waitFor(() => expect(onSave).toHaveBeenCalledWith(expect.objectContaining({
       status: expect.objectContaining({
         energia: expect.objectContaining({ atual: 100 }),
@@ -2010,7 +2072,7 @@ describe('AtributosTab — fluxo de edição', () => {
     const onSave = vi.fn().mockRejectedValue(new Error('offline'));
     renderComProvider(<AtributosTab personagem={personagem} onSave={onSave} onExcluir={vi.fn()} />);
 
-    const botaoSalvar = screen.getByRole('button', { name: /^salvar$/i });
+    const botaoSalvar = screen.getByRole('button', { name: /salvar personagem/i });
     fireEvent.click(botaoSalvar);
 
     await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
