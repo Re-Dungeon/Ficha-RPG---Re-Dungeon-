@@ -17,6 +17,7 @@ import FormHelperText from '@mui/material/FormHelperText';
 import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
+import Autocomplete from '@mui/material/Autocomplete';
 
 import { useAuth } from 'context/AuthContext';
 import { addPersonagem, getUniverso } from 'service/storage';
@@ -94,6 +95,15 @@ const CriarPersonagemModal = ({ open, onClose, onCreated }) => {
     },
     [currentUser.uid, onClose, onCreated],
   );
+
+  const filtrarUniversos = useCallback((opcoesFiltradas, estado) => {
+    const termo = (estado.inputValue ?? '').trim().toLowerCase();
+    if (!termo) {
+      return opcoesFiltradas;
+    }
+
+    return opcoesFiltradas.filter(item => getNome(item).toLowerCase().includes(termo));
+  }, []);
 
   return (
     <Dialog
@@ -206,67 +216,64 @@ const CriarPersonagemModal = ({ open, onClose, onCreated }) => {
                 }}
               />
 
-              <FormControl
-                size="small"
-                fullWidth
-                error={touched.universo && Boolean(errors.universo)}
-                sx={{ mb: 1.5 }}
-              >
-                <InputLabel id="novo-personagem-universo-label">Universo</InputLabel>
-                <Select
-                  labelId="novo-personagem-universo-label"
-                  name="universo"
-                  label="Universo"
-                  value={values.universo}
-                  onChange={e => {
-                    handleChange(e);
-                    setUniversoSelecionado(e.target.value);
-                    setFieldValue('campanhas', []);
-                  }}
-                  onBlur={handleBlur}
-                  MenuProps={{
-                    slotProps: {
-                      paper: {
-                        sx: {
-                          bgcolor: 'rgba(10, 9, 19, 0.96)',
-                          border: '1px solid rgba(91, 124, 250, 0.18)',
-                          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.35)',
-                        },
-                      },
+              <Autocomplete
+                options={universos}
+                value={universos.find(item => item.id === values.universo) ?? null}
+                getOptionLabel={item => getNome(item) || ''}
+                isOptionEqualToValue={(opcao, valor) => opcao?.id === valor?.id}
+                onChange={(_event, novoValor) => {
+                  const proximoUniverso = novoValor?.id ?? '';
+                  setFieldValue('universo', proximoUniverso);
+                  setUniversoSelecionado(proximoUniverso);
+                  setFieldValue('campanhas', []);
+                }}
+                onBlur={handleBlur}
+                filterOptions={filtrarUniversos}
+                openOnFocus
+                disableClearable
+                noOptionsText="Nenhum universo encontrado"
+                slotProps={{
+                  listbox: {
+                    style: {
+                      maxHeight: 6 * 48 + 12,
+                      overflow: 'auto',
                     },
-                  }}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: '16px',
-                      background: 'rgba(255, 255, 255, 0.03)',
+                  },
+                  paper: {
+                    sx: {
+                      bgcolor: 'rgba(10, 9, 19, 0.96)',
+                      border: '1px solid rgba(91, 124, 250, 0.18)',
+                      boxShadow: '0 20px 60px rgba(0, 0, 0, 0.35)',
                     },
-                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'rgba(91, 124, 250, 0.65)',
-                    },
-                  }}
-                >
-                  {universos.map(item => (
-                    <MenuItem
-                      key={item.id}
-                      value={item.id}
-                      sx={{
-                        py: 1.5,
-                        '&.Mui-selected': {
-                          backgroundColor: 'rgba(91, 124, 250, 0.16)',
-                        },
-                        '&:hover': {
-                          backgroundColor: 'rgba(91, 124, 250, 0.08)',
-                        },
-                      }}
-                    >
-                      {getNome(item)}
-                    </MenuItem>
-                  ))}
-                </Select>
-                {touched.universo && errors.universo && (
-                  <FormHelperText>{errors.universo}</FormHelperText>
+                  },
+                }}
+                sx={{
+                  mb: 1.5,
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '16px',
+                    background: 'rgba(255, 255, 255, 0.03)',
+                  },
+                  '& .MuiAutocomplete-inputRoot': {
+                    color: 'var(--text-primary)',
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'rgba(91, 124, 250, 0.65)',
+                  },
+                }}
+                renderInput={params => (
+                  <TextField
+                    {...params}
+                    name="universo"
+                    label="Universo"
+                    placeholder="Buscar universo"
+                    error={touched.universo && Boolean(errors.universo)}
+                    helperText={touched.universo && errors.universo ? errors.universo : ''}
+                    size="small"
+                    fullWidth
+                    onBlur={handleBlur}
+                  />
                 )}
-              </FormControl>
+              />
 
               <FormControl
                 size="small"
