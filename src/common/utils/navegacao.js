@@ -4,9 +4,9 @@ import { campanhaIdsDosPersonagens } from 'common/utils/chat';
 // seções reabre o que estava selecionado em vez de voltar para a lista.
 // `selecao` = { personagem: {id, tipo, companheiroDe, campanhas} | null,
 //               campanhaId: string | null,
-//               visaoCampanha: 'chat' | 'grid' } — mantida pelo Layout
-// (context/selecaoContext.js), preenchida pela Ficha e pelo chat e limpa
-// pelas páginas de lista.
+//               visaoCampanha: 'chat' | 'grid' | 'lateral' } — mantida pelo
+// Layout (context/selecaoContext.js), preenchida pela Ficha e pelo chat e
+// limpa pelas páginas de lista.
 
 export const SELECAO_VAZIA = { personagem: null, campanhaId: null, visaoCampanha: 'chat' };
 
@@ -15,12 +15,15 @@ export const destinoFichas = selecao =>
 
 // Com um personagem selecionado, abre a mesa de uma campanha dele — a última
 // aberta, se ele estiver nela, senão a primeira da ficha — já "falando como"
-// ele, na última visão usada (chat ou grid). NPC/Criatura/companheiro não
-// entram na mesa (mesmo critério de common/utils/chat.js), então caem na
+// ele, na última visão usada (chat ou grid). NPC/Criatura continuam bloqueados
+// e companheiros só entram quando estiverem vinculados a uma ficha da campanha
+// (mesmo critério de common/utils/chat.js); se não puderem entrar, caem na
 // última campanha aberta ou na lista.
 export const destinoCampanhas = selecao => {
   const { personagem, campanhaId } = selecao;
-  const visao = selecao.visaoCampanha === 'grid' ? 'grid' : 'chat';
+  const visao = ['grid', 'lateral'].includes(selecao.visaoCampanha)
+    ? selecao.visaoCampanha
+    : 'chat';
   const campanhasDoPersonagem = personagem ? campanhaIdsDosPersonagens([personagem]) : [];
 
   if (campanhasDoPersonagem.length > 0) {

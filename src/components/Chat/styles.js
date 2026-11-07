@@ -7,34 +7,43 @@ const MOBILE = '@media (max-width: 599.95px)';
 export const ChatWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  flex: 1;
+  flex: 1 1 auto;
+  width: 100%;
+  height: 100%;
   min-height: 0;
+  overflow: hidden;
   background: var(--bg-card);
   border: 1px solid var(--border-primary);
   border-radius: 12px;
-  overflow: hidden;
   backdrop-filter: blur(12px);
 `;
 
 export const ChatHeader = styled.div`
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 12px;
-  padding: 12px 16px;
+  flex-shrink: 0;
+  padding: ${props => (props.$compact ? '0 14px 12px' : '12px 14px')};
   border-bottom: 1px solid var(--border-primary);
+  background: linear-gradient(180deg, rgba(17, 15, 27, 0.96), rgba(10, 9, 19, 0.92));
+  box-shadow: inset 0 -1px 0 rgba(232, 203, 133, 0.08);
 
   ${MOBILE} {
     gap: 8px;
-    padding: 8px 10px;
+    padding: ${props => (props.$compact ? '0 10px 8px' : '10px 10px 8px')};
   }
 `;
 
 export const ListaMensagens = styled.div`
-  flex: 1;
+  flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior-y: contain;
+  overscroll-behavior-x: none;
+  touch-action: pan-y;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -169,12 +178,14 @@ export const MensagemAcoes = styled.div`
 export const ComposerWrapper = styled.form`
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 8px 16px 12px;
+  flex-shrink: 0;
+  gap: 6px;
+  padding: 10px 12px 12px;
   border-top: 1px solid var(--border-primary);
+  background: rgba(10, 9, 19, 0.82);
 
   ${MOBILE} {
-    padding: 6px 8px 8px;
+    padding: 8px 8px 10px;
   }
 `;
 
@@ -183,12 +194,14 @@ export const ComposerAcoes = styled.div`
   align-items: center;
   gap: 2px;
   margin-left: -6px;
+  flex-wrap: wrap;
 `;
 
 export const ComposerEntrada = styled.div`
   display: flex;
   align-items: flex-end;
   gap: 8px;
+  width: 100%;
 `;
 
 export const PreviewImagem = styled.img`

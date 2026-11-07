@@ -44,9 +44,9 @@ import SorteModal from './sidebar/SorteModal';
 import LojaModal from './sidebar/LojaModal';
 import CondicoesModal from './sidebar/CondicoesModal';
 import CodexModal from './sidebar/CodexModal';
-import ChatModal from './sidebar/ChatModal';
+import ChatModal, { ChatModalConteudo } from './sidebar/ChatModal';
 import NotesModal from './notes/NotesModal';
-import { FichaLayout, FichaMain } from './styles';
+import { FichaChatPainel, FichaLayout, FichaMain } from './styles';
 
 
 const Ficha = () => {
@@ -64,6 +64,7 @@ const Ficha = () => {
   // Celular: a sidebar vira uma gaveta (Drawer), fechada por padrão.
   const [gavetaAberta, setGavetaAberta] = useState(false);
   const [modalAtivo, setModalAtivo] = useState(null);
+  const [chatLateralCampanhaId, setChatLateralCampanhaId] = useState(null);
   const [erroExclusao, setErroExclusao] = useState(null);
   const [inventarioAtualizacoes, setInventarioAtualizacoes] = useState(0);
 
@@ -125,6 +126,15 @@ const Ficha = () => {
   const abrirModalDaGaveta = useCallback(chave => {
     setGavetaAberta(false);
     setModalAtivo(chave);
+  }, []);
+
+  const abrirChatLateral = useCallback(campanhaId => {
+    setChatLateralCampanhaId(campanhaId);
+    setModalAtivo(null);
+  }, []);
+
+  const fecharChatLateral = useCallback(() => {
+    setChatLateralCampanhaId(null);
   }, []);
 
   const handleInventarioAtualizado = useCallback(() => {
@@ -276,7 +286,12 @@ const Ficha = () => {
             onSave={handleSave}
           />
           <CodexModal open={modalAtivo === 'codex'} onClose={fecharModal} personagem={personagem} />
-          <ChatModal open={modalAtivo === 'chat'} onClose={fecharModal} personagem={personagem} />
+          <ChatModal
+            open={modalAtivo === 'chat'}
+            onClose={fecharModal}
+            personagem={personagem}
+            onAbrirPainelLateral={abrirChatLateral}
+          />
           <NotesModal open={modalAtivo === 'notas'} onClose={fecharModal} personagem={personagem} />
 
           <ErrorSnackbar
@@ -285,6 +300,17 @@ const Ficha = () => {
             onClose={() => setErroExclusao(null)}
           />
         </FichaMain>
+
+        {chatLateralCampanhaId && (
+          <FichaChatPainel>
+            <ChatModalConteudo
+              personagem={personagem}
+              modo="painel"
+              onClose={fecharChatLateral}
+              campanhaIdInicial={chatLateralCampanhaId}
+            />
+          </FichaChatPainel>
+        )}
       </FichaLayout>
     </SavingProvider>
   );

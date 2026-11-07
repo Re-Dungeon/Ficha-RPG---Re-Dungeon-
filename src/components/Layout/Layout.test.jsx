@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation, useOutletContext, useParams } from 'react-router-dom';
 
 import { useAuth } from 'context/AuthContext';
@@ -197,5 +197,33 @@ describe('Layout — alternar entre Fichas e Campanhas', () => {
 
     clicarNav('Fichas');
     expect(await screen.findByText('Lista de fichas')).toBeInTheDocument();
+  });
+
+  it('não abre o visualizador em imagens fora do chat', async () => {
+    const ImagemEventoFake = () => (
+      <div>
+        <img
+          src="https://exemplo.test/imagem.png"
+          alt="Imagem da ficha"
+          style={{ width: 120, height: 80 }}
+        />
+      </div>
+    );
+
+    render(
+      <MemoryRouter initialEntries={['/personagens']}>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route path="/personagens" element={<ImagemEventoFake />} />
+          </Route>
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(screen.getByAltText('Imagem da ficha'));
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
   });
 });

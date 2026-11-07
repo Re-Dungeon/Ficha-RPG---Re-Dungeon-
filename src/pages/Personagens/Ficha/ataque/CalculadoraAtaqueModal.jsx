@@ -527,66 +527,154 @@ const ResultValue = styled(Typography)(() => ({
   letterSpacing: '0.06em',
 }));
 
-const ComboCard = styled(Accordion)(() => ({
-  width: '100%',
-  borderRadius: 14,
-  overflow: 'visible',
-  background: 'linear-gradient(180deg, rgba(17, 20, 31, 0.88), rgba(11, 12, 22, 0.96))',
-  border: '1px solid rgba(232, 203, 133, 0.38)',
-  boxShadow: 'none',
-  '&:before': {
-    display: 'none',
-  },
-  '&.MuiAccordion-root': {
-    margin: 0,
-  },
-  '&.Mui-expanded': {
-    borderColor: 'rgba(244, 221, 162, 0.82)',
-    boxShadow: '0 0 0 1px rgba(244, 221, 162, 0.12), 0 10px 30px rgba(0, 0, 0, 0.18)',
-  },
-  '&.selected': {
-    borderColor: 'rgba(244, 221, 162, 0.96)',
-    background: 'linear-gradient(180deg, rgba(31, 25, 38, 0.98), rgba(14, 13, 23, 0.98))',
-    boxShadow: '0 0 0 1px rgba(244, 221, 162, 0.12), 0 0 18px rgba(232, 203, 133, 0.18), inset 0 0 18px rgba(244, 221, 162, 0.06)',
-  },
-  '@media (prefers-reduced-motion: reduce)': {
-    transition: 'none',
-  },
-}));
+const getComboResourceTheme = resourceType => {
+  const themes = {
+    neutral: {
+      border: 'rgba(232, 203, 133, 0.46)',
+      borderStrong: 'rgba(244, 221, 162, 0.8)',
+      background: 'linear-gradient(180deg, rgba(18, 20, 30, 0.9), rgba(12, 13, 22, 0.96))',
+      summaryBackground: 'rgba(9, 11, 20, 0.76)',
+      detailsBackground: 'linear-gradient(180deg, rgba(11, 12, 19, 0.9), rgba(9, 9, 16, 0.96))',
+      glow: 'rgba(232, 203, 133, 0.18)',
+      badgeBackground: 'rgba(232, 203, 133, 0.12)',
+      badgeBorder: 'rgba(232, 203, 133, 0.46)',
+      badgeColor: '#f4dda2',
+      selectionBackground: 'radial-gradient(circle, rgba(244, 221, 162, 0.2), rgba(232, 203, 133, 0.08))',
+      selectionBorder: 'rgba(244, 221, 162, 0.55)',
+      listHover: 'rgba(20, 21, 29, 0.92)',
+    },
+    energia: {
+      border: 'rgba(34, 211, 238, 0.42)',
+      borderStrong: 'rgba(103, 232, 249, 0.82)',
+      background: 'linear-gradient(180deg, rgba(10, 20, 32, 0.9), rgba(9, 12, 20, 0.96))',
+      summaryBackground: 'rgba(8, 19, 26, 0.78)',
+      detailsBackground: 'linear-gradient(180deg, rgba(8, 17, 25, 0.9), rgba(8, 13, 18, 0.96))',
+      glow: 'rgba(34, 211, 238, 0.2)',
+      badgeBackground: 'rgba(34, 211, 238, 0.12)',
+      badgeBorder: 'rgba(34, 211, 238, 0.52)',
+      badgeColor: '#dffcff',
+      selectionBackground: 'radial-gradient(circle, rgba(34, 211, 238, 0.18), rgba(34, 211, 238, 0.08))',
+      selectionBorder: 'rgba(103, 232, 249, 0.65)',
+      listHover: 'rgba(16, 28, 36, 0.92)',
+    },
+    saude: {
+      border: 'rgba(239, 68, 68, 0.46)',
+      borderStrong: 'rgba(248, 113, 113, 0.82)',
+      background: 'linear-gradient(180deg, rgba(32, 11, 13, 0.9), rgba(16, 10, 12, 0.96))',
+      summaryBackground: 'rgba(24, 10, 12, 0.78)',
+      detailsBackground: 'linear-gradient(180deg, rgba(20, 9, 11, 0.9), rgba(13, 7, 9, 0.96))',
+      glow: 'rgba(239, 68, 68, 0.18)',
+      badgeBackground: 'rgba(239, 68, 68, 0.14)',
+      badgeBorder: 'rgba(239, 68, 68, 0.52)',
+      badgeColor: '#ffd4d4',
+      selectionBackground: 'radial-gradient(circle, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.08))',
+      selectionBorder: 'rgba(248, 113, 113, 0.62)',
+      listHover: 'rgba(30, 13, 14, 0.92)',
+    },
+    fadiga: {
+      border: 'rgba(147, 51, 234, 0.45)',
+      borderStrong: 'rgba(192, 132, 252, 0.82)',
+      background: 'linear-gradient(180deg, rgba(22, 14, 30, 0.9), rgba(12, 10, 20, 0.96))',
+      summaryBackground: 'rgba(20, 12, 28, 0.78)',
+      detailsBackground: 'linear-gradient(180deg, rgba(18, 11, 24, 0.9), rgba(10, 8, 16, 0.96))',
+      glow: 'rgba(147, 51, 234, 0.2)',
+      badgeBackground: 'rgba(147, 51, 234, 0.14)',
+      badgeBorder: 'rgba(147, 51, 234, 0.54)',
+      badgeColor: '#f3e8ff',
+      selectionBackground: 'radial-gradient(circle, rgba(147, 51, 234, 0.2), rgba(147, 51, 234, 0.08))',
+      selectionBorder: 'rgba(192, 132, 252, 0.62)',
+      listHover: 'rgba(26, 15, 34, 0.92)',
+    },
+  };
 
-const ComboSummary = styled(AccordionSummary)(() => ({
-  minHeight: 72,
-  padding: '10px 12px',
-  background: 'rgba(9, 11, 20, 0.72)',
-  '& .MuiAccordionSummary-content': {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 8,
-    margin: '8px 0',
-    minHeight: 52,
+  return themes[resourceType] || themes.neutral;
+};
+
+const ComboCard = styled(Accordion, {
+  shouldForwardProp: prop => prop !== '$resourceType',
+})(({ $resourceType }) => {
+  const theme = getComboResourceTheme($resourceType);
+
+  return {
     width: '100%',
-  },
-  '& .MuiAccordionSummary-expandIconWrapper': {
-    color: '#f4dda2',
-    transition: 'transform 0.2s ease',
-  },
-  '&.Mui-expanded .MuiAccordionSummary-expandIconWrapper': {
-    transform: 'rotate(180deg)',
-  },
-  '&:hover': {
-    background: 'rgba(20, 21, 29, 0.92)',
-  },
-}));
+    borderRadius: 14,
+    overflow: 'visible',
+    background: theme.background,
+    border: `1px solid ${theme.border}`,
+    boxShadow: `0 0 0 1px ${theme.glow}`,
+    transition: 'border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease',
+    '&:before': {
+      display: 'none',
+    },
+    '&.MuiAccordion-root': {
+      margin: 0,
+    },
+    '&.Mui-expanded': {
+      borderColor: theme.borderStrong,
+      boxShadow: `0 0 0 1px ${theme.glow}, 0 10px 30px rgba(0, 0, 0, 0.18), 0 0 18px ${theme.glow}`,
+    },
+    '&.selected': {
+      borderColor: theme.borderStrong,
+      background: theme.background,
+      boxShadow: `0 0 0 1px ${theme.glow}, 0 0 18px ${theme.glow}, inset 0 0 18px ${theme.glow}`,
+    },
+    '&:hover': {
+      borderColor: theme.borderStrong,
+      boxShadow: `0 0 0 1px ${theme.glow}, 0 0 12px ${theme.glow}`,
+    },
+    '@media (prefers-reduced-motion: reduce)': {
+      transition: 'none',
+    },
+  };
+});
 
-const ComboAccordionDetails = styled(AccordionDetails)(() => ({
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 12,
-  padding: '0 12px 14px',
-  background: 'linear-gradient(180deg, rgba(11, 12, 19, 0.88), rgba(9, 9, 16, 0.96))',
-  overflow: 'visible',
-}));
+const ComboSummary = styled(AccordionSummary, {
+  shouldForwardProp: prop => prop !== '$resourceType',
+})(({ $resourceType }) => {
+  const theme = getComboResourceTheme($resourceType);
+
+  return {
+    minHeight: 72,
+    padding: '10px 12px',
+    background: theme.summaryBackground,
+    borderRadius: '14px 14px 0 0',
+    transition: 'background 0.2s ease, border-color 0.2s ease',
+    '& .MuiAccordionSummary-content': {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 8,
+      margin: '8px 0',
+      minHeight: 52,
+      width: '100%',
+    },
+    '& .MuiAccordionSummary-expandIconWrapper': {
+      color: theme.badgeColor,
+      transition: 'transform 0.2s ease',
+    },
+    '&.Mui-expanded .MuiAccordionSummary-expandIconWrapper': {
+      transform: 'rotate(180deg)',
+    },
+    '&:hover': {
+      background: theme.listHover,
+    },
+  };
+});
+
+const ComboAccordionDetails = styled(AccordionDetails, {
+  shouldForwardProp: prop => prop !== '$resourceType',
+})(({ $resourceType }) => {
+  const theme = getComboResourceTheme($resourceType);
+
+  return {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 12,
+    padding: '0 12px 14px',
+    background: theme.detailsBackground,
+    overflow: 'visible',
+  };
+});
 
 const ComboHeader = styled(Box)(() => ({
   display: 'flex',
@@ -613,23 +701,29 @@ const ComboHeaderMetaRow = styled(Box)(() => ({
   flexWrap: 'wrap',
 }));
 
-const SelectionStatus = styled(Box)(() => ({
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  width: 20,
-  height: 20,
-  borderRadius: '50%',
-  background: 'radial-gradient(circle, rgba(244, 221, 162, 0.2), rgba(232, 203, 133, 0.08))',
-  border: '1px solid rgba(244, 221, 162, 0.55)',
-  color: '#f4dda2',
-  boxShadow: '0 0 12px rgba(232, 203, 133, 0.18)',
-  flexShrink: 0,
-  animation: 'comboSelectionIcon 0.45s ease-out',
-  '@media (prefers-reduced-motion: reduce)': {
-    animation: 'none',
-  },
-}));
+const SelectionStatus = styled(Box, {
+  shouldForwardProp: prop => prop !== '$resourceType',
+})(({ $resourceType }) => {
+  const theme = getComboResourceTheme($resourceType);
+
+  return {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 20,
+    height: 20,
+    borderRadius: '50%',
+    background: theme.selectionBackground,
+    border: `1px solid ${theme.selectionBorder}`,
+    color: theme.badgeColor,
+    boxShadow: `0 0 12px ${theme.glow}`,
+    flexShrink: 0,
+    animation: 'comboSelectionIcon 0.45s ease-out',
+    '@media (prefers-reduced-motion: reduce)': {
+      animation: 'none',
+    },
+  };
+});
 
 const EditingStatus = styled(Box)(() => ({
   display: 'inline-flex',
@@ -721,9 +815,10 @@ const DetailValue = styled(Box)(() => ({
   textAlign: 'right',
 }));
 
-const ResourceBadge = styled(Box)(({ variant }) => {
-  const isFadiga = variant === 'fadiga';
-  const isSaude = variant === 'saude';
+const ResourceBadge = styled(Box, {
+  shouldForwardProp: prop => prop !== '$variant',
+})(({ $variant }) => {
+  const theme = getComboResourceTheme($variant || 'neutral');
 
   return {
     display: 'inline-flex',
@@ -736,10 +831,10 @@ const ResourceBadge = styled(Box)(({ variant }) => {
     fontWeight: 800,
     letterSpacing: '0.08em',
     textTransform: 'uppercase',
-    color: isSaude ? '#ffd4d4' : isFadiga ? '#dfe9ff' : '#f4dda2',
-    background: isSaude ? 'rgba(239, 68, 68, 0.14)' : isFadiga ? 'rgba(91, 124, 250, 0.14)' : 'rgba(232, 203, 133, 0.12)',
-    border: `1px solid ${isSaude ? 'rgba(239, 68, 68, 0.52)' : isFadiga ? 'rgba(91, 124, 250, 0.52)' : 'rgba(232, 203, 133, 0.42)'}`,
-    boxShadow: isSaude ? 'inset 0 0 0 1px rgba(239, 68, 68, 0.08)' : isFadiga ? 'inset 0 0 0 1px rgba(91, 124, 250, 0.08)' : 'inset 0 0 0 1px rgba(232, 203, 133, 0.08)',
+    color: theme.badgeColor,
+    background: theme.badgeBackground,
+    border: `1px solid ${theme.badgeBorder}`,
+    boxShadow: `inset 0 0 0 1px ${theme.glow}`,
     whiteSpace: 'nowrap',
   };
 });
@@ -1982,7 +2077,11 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
       return 'fadiga';
     }
 
-    return 'energia';
+    if (custoEnergiaCombo > 0) {
+      return 'energia';
+    }
+
+    return 'neutral';
   };
 
   const formatarRollingCombo = combo => {
@@ -3083,18 +3182,19 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
                         return (
                           <ComboCard
                             key={combo.id}
+                            $resourceType={comboResourceType === 'ambos' ? 'energia' : comboResourceType}
                             className={isComboSelecionado ? 'selected' : ''}
                             square
                             expanded={expanded}
                             onChange={(_, nextExpanded) => setExpandedComboId(nextExpanded ? combo.id : '')}
                             disableGutters
                           >
-                            <ComboSummary expandIcon={<ExpandMoreIcon />} aria-controls={`combo-panel-${combo.id}`} id={`combo-header-${combo.id}`}>
+                            <ComboSummary $resourceType={comboResourceType === 'ambos' ? 'energia' : comboResourceType} expandIcon={<ExpandMoreIcon />} aria-controls={`combo-panel-${combo.id}`} id={`combo-header-${combo.id}`}>
                               <ComboHeader>
                                 <ComboNameBlock>
                                   <Box sx={{ fontWeight: 800, color: '#f4dda2', letterSpacing: '0.04em', textTransform: 'uppercase', fontSize: '0.72rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>{combo.nome}</Box>
                                   {isComboSelecionado && (
-                                    <SelectionStatus aria-label={isComboEmEdicao ? 'Combinação em edição' : 'Combinação selecionada'}>
+                                    <SelectionStatus $resourceType={comboResourceType === 'ambos' ? 'energia' : comboResourceType} aria-label={isComboEmEdicao ? 'Combinação em edição' : 'Combinação selecionada'}>
                                       {isComboEmEdicao ? <AutoFixHighIcon fontSize="inherit" sx={{ fontSize: '0.72rem' }} /> : <CheckIcon fontSize="inherit" sx={{ fontSize: '0.72rem' }} />}
                                     </SelectionStatus>
                                   )}
@@ -3104,7 +3204,7 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
                                   <Box sx={{ borderRadius: 999, px: 1, py: 0.35, fontSize: '0.68rem', fontWeight: 700, color: '#f0d9a6', background: 'rgba(232, 203, 133, 0.08)', border: '1px solid rgba(232, 203, 133, 0.24)', maxWidth: '100%', wordBreak: 'break-word' }}>
                                     {getTipoDanoLabel(combo.tipoDano ?? 'Contundente', contexto)}
                                   </Box>
-                                  <ResourceBadge variant={comboResourceType === 'saude' ? 'saude' : comboResourceType === 'fadiga' ? 'fadiga' : 'energia'}>
+                                  <ResourceBadge $variant={comboResourceType === 'saude' ? 'saude' : comboResourceType === 'fadiga' ? 'fadiga' : comboResourceType === 'neutral' ? 'neutral' : 'energia'}>
                                     {comboResourceType === 'saude' ? <FavoriteIcon fontSize="inherit" sx={{ fontSize: '0.7rem' }} /> : comboResourceType === 'fadiga' ? <ShieldIcon fontSize="inherit" sx={{ fontSize: '0.7rem' }} /> : <BoltIcon fontSize="inherit" sx={{ fontSize: '0.7rem' }} />}
                                     {comboResourceLabel}
                                   </ResourceBadge>
@@ -3112,7 +3212,7 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 
                               </ComboHeader>
                             </ComboSummary>
 
-                            <ComboAccordionDetails id={`combo-panel-${combo.id}`}>
+                            <ComboAccordionDetails $resourceType={comboResourceType === 'ambos' ? 'energia' : comboResourceType} id={`combo-panel-${combo.id}`}>
                               {isComboEmEdicao && (
                                 <EditingStatus>
                                   <AutoFixHighIcon fontSize="inherit" sx={{ fontSize: '0.56rem' }} />

@@ -333,6 +333,56 @@ describe('AtributosTab — fluxo de edição', () => {
     await waitFor(() => expect(consumirRecursosPersonagem).toHaveBeenCalledWith('p1', { energia: 0, fadiga: 0, saude: 14 }));
   });
 
+  it('aplica identidade visual distinta por tipo de recurso nas combinações salvas', async () => {
+    vi.mocked(getCombosAtaque).mockResolvedValue([
+      {
+        id: 'combo-energia',
+        nome: 'Combo Energia',
+        tipoDano: 'Contundente',
+        potencializacao: 15,
+        custoEnergia: 6,
+        costResourceType: 'energia',
+        updatedAt: { seconds: 1700000000 },
+      },
+      {
+        id: 'combo-saude',
+        nome: 'Combo Saúde',
+        tipoDano: 'Contundente',
+        potencializacao: 20,
+        custoSaude: 7,
+        costResourceType: 'saude',
+        updatedAt: { seconds: 1700000001 },
+      },
+      {
+        id: 'combo-fadiga',
+        nome: 'Combo Fadiga',
+        tipoDano: 'Contundente',
+        potencializacao: 25,
+        custoFadiga: 5,
+        costResourceType: 'fadiga',
+        updatedAt: { seconds: 1700000002 },
+      },
+    ]);
+
+    renderComProvider(<AtributosTab personagem={personagem} onSave={vi.fn()} onExcluir={vi.fn()} />);
+
+    fireEvent.contextMenu(screen.getByRole('button', { name: /ataque/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /calculadora de ataque/i }));
+
+    const dialog = await screen.findByRole('dialog', { name: /calculadora de ataque/i });
+    const energiaCard = within(dialog).getByText('Combo Energia').closest('.MuiAccordion-root');
+    const saudeCard = within(dialog).getByText('Combo Saúde').closest('.MuiAccordion-root');
+    const fadigaCard = within(dialog).getByText('Combo Fadiga').closest('.MuiAccordion-root');
+
+    const energiaBadge = Array.from(energiaCard.querySelectorAll('div')).find(element => element.textContent.trim() === 'Energia');
+    const saudeBadge = Array.from(saudeCard.querySelectorAll('div')).find(element => element.textContent.trim() === 'Saúde');
+    const fadigaBadge = Array.from(fadigaCard.querySelectorAll('div')).find(element => element.textContent.trim() === 'Fadiga');
+
+    expect(energiaBadge).toHaveStyle({ background: 'rgba(34, 211, 238, 0.12)' });
+    expect(saudeBadge).toHaveStyle({ background: 'rgba(239, 68, 68, 0.14)' });
+    expect(fadigaBadge).toHaveStyle({ background: 'rgba(147, 51, 234, 0.14)' });
+  });
+
   it('abre o menu contextual da Prontidão com a Central de Ações e o modal de mecânicas', async () => {
     const onSave = vi.fn().mockResolvedValue();
     const personagemComProntidao = {

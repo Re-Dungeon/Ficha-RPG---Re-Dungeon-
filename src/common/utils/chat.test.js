@@ -275,15 +275,21 @@ describe('personagensNaCampanha / campanhaIdsDosPersonagens', () => {
     { id: 'b', campanhas: ['c1'] },
     { id: 'npc', tipo: 'NPC', campanhas: ['c1', 'c3'] },
     { id: 'comp', companheiroDe: 'a', campanhas: ['c1'] },
+    { id: 'compSemCampanha', companheiroDe: 'a' },
     { id: 'sem' },
   ];
 
-  it('filtra só personagens jogáveis (tipo ausente conta) na campanha', () => {
-    expect(personagensNaCampanha(personagens, 'c1').map(p => p.id)).toEqual(['a', 'b']);
+  it('filtra personagens jogáveis e companheiros vinculados à campanha', () => {
+    expect(personagensNaCampanha(personagens, 'c1').map(p => p.id)).toEqual([
+      'a',
+      'b',
+      'comp',
+      'compSemCampanha',
+    ]);
     expect(personagensNaCampanha(personagens, 'c3')).toEqual([]);
   });
 
-  it('lista ids únicos de campanhas dos personagens jogáveis', () => {
+  it('lista ids únicos de campanhas dos personagens jogáveis e companheiros', () => {
     expect(campanhaIdsDosPersonagens(personagens)).toEqual(['c1', 'c2']);
   });
 });

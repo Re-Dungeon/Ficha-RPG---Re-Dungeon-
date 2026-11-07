@@ -1,7 +1,7 @@
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom';
+import { MemoryRouter, Outlet, Route, Routes, useParams } from 'react-router-dom';
 
 import { useAuth } from 'context/AuthContext';
 import {
@@ -104,7 +104,12 @@ if (typeof window.PointerEvent === 'undefined') {
   window.PointerEvent = PointerEventDeTeste;
 }
 
-const LayoutFake = () => <Outlet context={{ setHeaderExtra: vi.fn() }} />;
+const LayoutFake = ({ setHeaderExtra = vi.fn() } = {}) => <Outlet context={{ setHeaderExtra }} />;
+
+const FichaTeste = () => {
+  const { id } = useParams();
+  return <div>Ficha do personagem {id}</div>;
+};
 
 const renderChat = (state = null, pathname = '/campanhas/camp-1/chat') =>
   render(
@@ -112,7 +117,9 @@ const renderChat = (state = null, pathname = '/campanhas/camp-1/chat') =>
       <Routes>
         <Route element={<LayoutFake />}>
           <Route path="/campanhas/:id/chat" element={<CampanhaChat />} />
+          <Route path="/campanhas/:id/lateral" element={<CampanhaChat visao="lateral" />} />
           <Route path="/campanhas/:id/grid" element={<CampanhaChat visao="grid" />} />
+          <Route path="/personagens/:id" element={<FichaTeste />} />
         </Route>
       </Routes>
     </MemoryRouter>,
@@ -198,6 +205,16 @@ describe('CampanhaChat', () => {
     ).not.toBeInTheDocument();
   });
 
+  it('abre o lightbox somente ao clicar na imagem da mensagem do chat', async () => {
+    renderChat();
+
+    const imagem = await screen.findByAltText('Imagem enviada por Brina');
+    fireEvent.click(imagem);
+
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Imagem enviada por Brina' })).toBeInTheDocument();
+  });
+
   it('mostra a etiqueta NPC quando o mestre fala como um NPC da mesa', async () => {
     renderChat();
 
@@ -268,6 +285,32 @@ describe('CampanhaChat', () => {
     await screen.findByText('Bem-vindos à taverna.');
     expect(setChatMembro).toHaveBeenCalledWith('camp-1', 'uid-jogador', 'p-3');
     expect(screen.getByLabelText(/falando como/i)).toHaveTextContent('Wesley Chase');
+  });
+
+  it('volta diretamente para a ficha do personagem que originou o chat', async () => {
+    const setHeaderExtra = vi.fn();
+    const LayoutVoltarFake = () => <Outlet context={{ setHeaderExtra }} />;
+
+    render(
+      <MemoryRouter initialEntries={[{ pathname: '/campanhas/camp-1/chat', state: { personagemId: 'p-3' } }]}>
+        <Routes>
+          <Route element={<LayoutVoltarFake />}>
+            <Route path="/campanhas/:id/chat" element={<CampanhaChat />} />
+            <Route path="/personagens/:id" element={<FichaTeste />} />
+          </Route>
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    await screen.findByText('Bem-vindos à taverna.');
+    expect(setHeaderExtra).toHaveBeenCalled();
+
+    const callbackVoltar = setHeaderExtra.mock.calls.at(-1)[0].onVoltar;
+    act(() => {
+      callbackVoltar();
+    });
+
+    expect(await screen.findByText('Ficha do personagem p-3')).toBeInTheDocument();
   });
 
   it('nega acesso a quem não tem personagem na campanha', async () => {
@@ -893,6 +936,21 @@ describe('CampanhaChat', () => {
 
       fireEvent.click(screen.getByRole('button', { name: 'Ocultar chat' }));
       expect(screen.queryByText('Bem-vindos à taverna.')).not.toBeInTheDocument();
+    });
+
+    it('esconde o botão de painel lateral na visualização de chat em tela cheia', async () => {
+      renderChat();
+      expect(await screen.findByText('Bem-vindos à taverna.')).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /Painel lateral/ })).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Chat' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Grid' })).toBeInTheDocument();
+    });
+
+    it('abre o chat em painel lateral sem perder o histórico', async () => {
+      renderChat(null, '/campanhas/camp-1/lateral');
+      expect(await screen.findByText('Bem-vindos à taverna.')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Painel lateral/ })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Minimizar chat/ })).toBeInTheDocument();
     });
 
     describe('Fase 3C: ações', () => {

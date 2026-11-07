@@ -10,6 +10,8 @@ import {
   rotuloPersona,
 } from 'common/utils/chat';
 
+import ImageLightbox from 'components/ImageLightbox/ImageLightbox';
+
 import CombateMensagem from './CombateMensagem';
 import RolagemMensagem from './RolagemMensagem';
 import {
@@ -29,6 +31,7 @@ import {
 
 const ChatMensagem = ({ mensagem, minha, podeApagar, onApagar }) => {
   const [imagemFalhou, setImagemFalhou] = useState(false);
+  const [imagemAmpliadaAberta, setImagemAmpliadaAberta] = useState(false);
 
   if (mensagem.tipo === TIPOS_MENSAGEM.ROLAGEM && mensagem.rolagem) {
     return (
@@ -69,15 +72,31 @@ const ChatMensagem = ({ mensagem, minha, podeApagar, onApagar }) => {
         </MensagemCabecalho>
 
         {tipo === TIPOS_MENSAGEM.IMAGEM && !imagemFalhou && (
-          <a href={url} target="_blank" rel="noopener noreferrer">
+          <>
             <MensagemImagem
               src={url}
               alt={`Imagem enviada por ${autorNome}`}
               loading="lazy"
               referrerPolicy="no-referrer"
               onError={() => setImagemFalhou(true)}
+              onClick={() => setImagemAmpliadaAberta(true)}
+              onKeyDown={event => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  setImagemAmpliadaAberta(true);
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label={`Abrir imagem ampliada de ${autorNome}`}
             />
-          </a>
+            <ImageLightbox
+              open={imagemAmpliadaAberta}
+              imageUrl={url}
+              imageAlt={`Imagem enviada por ${autorNome}`}
+              onClose={() => setImagemAmpliadaAberta(false)}
+            />
+          </>
         )}
         {tipo === TIPOS_MENSAGEM.IMAGEM && imagemFalhou && (
           <MensagemLink href={url} target="_blank" rel="noopener noreferrer">

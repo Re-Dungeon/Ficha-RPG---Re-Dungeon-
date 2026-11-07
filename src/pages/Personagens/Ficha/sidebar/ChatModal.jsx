@@ -10,13 +10,17 @@ import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import CloseIcon from '@mui/icons-material/Close';
+import ChatOutlinedIcon from '@mui/icons-material/ChatOutlined';
 import GridOnIcon from '@mui/icons-material/GridOn';
 import OpenInFullIcon from '@mui/icons-material/OpenInFull';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 
 import { useAuth } from 'context/AuthContext';
 import { getRmCampanha } from 'service/storage';
 import { campanhaIdsDosPersonagens } from 'common/utils/chat';
 import useChatCampanha from 'hooks/useChatCampanha';
+import useOpcoesDeRolagem from 'hooks/useOpcoesDeRolagem';
 import ChatSala from 'components/Chat/ChatSala';
 import ErrorSnackbar from 'components/ErrorSnackbar/ErrorSnackbar';
 
@@ -26,7 +30,7 @@ const textoMutedSx = { color: 'var(--text-secondary)', textAlign: 'center', py: 
 
 // Conteúdo só é montado com o modal aberto (Dialog não renderiza os filhos
 // fechado) — a escuta em tempo real do chat vive só enquanto ele está visível.
-const ChatModalConteudo = ({ personagem }) => {
+export const ChatModalConteudo = ({ personagem, modo = 'modal', onAbrirPainelLateral, onClose = null, campanhaIdInicial = null }) => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   const campanhaIds = useMemo(
@@ -35,7 +39,13 @@ const ChatModalConteudo = ({ personagem }) => {
   );
 
   const [campanhas, setCampanhas] = useState(null);
-  const [campanhaId, setCampanhaId] = useState(campanhaIds[0] ?? '');
+  const [campanhaId, setCampanhaId] = useState(campanhaIdInicial ?? campanhaIds[0] ?? '');
+
+  useEffect(() => {
+    if (campanhaIdInicial && campanhaIds.includes(campanhaIdInicial)) {
+      setCampanhaId(campanhaIdInicial);
+    }
+  }, [campanhaIdInicial, campanhaIds]);
 
   useEffect(() => {
     let isMounted = true;
@@ -67,12 +77,19 @@ const ChatModalConteudo = ({ personagem }) => {
   const chat = useChatCampanha(campanha?.id ?? null, autor, {
     ehMestreDaCampanha: campanha?.mestreId === currentUser.uid,
   });
+  const opcoesCombate = useOpcoesDeRolagem(personagem?.id ?? null, {
+    ativo: Boolean(personagem?.id),
+  });
+  const gruposCombate = useMemo(
+    () => (opcoesCombate.grupos ?? []).filter(grupo => ['ataque', 'defesa'].includes(grupo.id)),
+    [opcoesCombate.grupos],
+  );
 
   if (campanhaIds.length === 0 && (personagem.campanhas ?? []).length > 0) {
     return (
       <Typography sx={textoMutedSx}>
-        Só personagens jogáveis participam do chat — NPCs, Criaturas e companheiros ficam
-        com o mestre.
+        Só personagens jogáveis e companheiros vinculados participam do chat — NPCs e
+        Criaturas ficam com o mestre.
       </Typography>
     );
   }
@@ -103,74 +120,178 @@ const ChatModalConteudo = ({ personagem }) => {
   }
 
   const cabecalho = (
-    <>
-      {campanhas.length > 1 ? (
-        <TextField
-          select
-          size="small"
-          label="Campanha"
-          value={campanhaId}
-          onChange={event => setCampanhaId(event.target.value)}
-          sx={{ minWidth: 200 }}
-        >
-          {campanhas.map(c => (
-            <MenuItem key={c.id} value={c.id}>
-              {c.nome}
-            </MenuItem>
-          ))}
-        </TextField>
-      ) : (
-        <Typography sx={{ color: 'var(--text-primary)', fontWeight: 700 }}>
-          {campanha.nome}
+    <Box sx={{ display: 'flex', width: '100%', alignItems: 'stretch', gap: 1.5, flexWrap: 'wrap' }}>
+      <Box
+        sx={{
+          flex: '1 1 170px',
+          minWidth: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          gap: 0.25,
+        }}
+      >
+        <Typography variant="caption" sx={{ color: 'var(--text-muted)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+          Campanha
         </Typography>
-      )}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        {campanhas.length > 1 ? (
+          <TextField
+            select
+            size="small"
+            label="Campanha"
+            value={campanhaId}
+            onChange={event => setCampanhaId(event.target.value)}
+            sx={{ minWidth: 180, maxWidth: 220 }}
+          >
+            {campanhas.map(c => (
+              <MenuItem key={c.id} value={c.id}>
+                {c.nome}
+              </MenuItem>
+            ))}
+          </TextField>
+        ) : (
+          <Typography sx={{ color: 'var(--text-primary)', fontWeight: 700, lineHeight: 1.3 }}>
+            {campanha.nome}
+          </Typography>
+        )}
+      </Box>
+
+      <Box
+        sx={{
+          flex: '1 1 180px',
+          minWidth: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          gap: 0.25,
+        }}
+      >
         <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
           Falando como <strong>{personagem.nome}</strong>
         </Typography>
+      </Box>
+
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+          gap: 1,
+          flexWrap: 'wrap',
+          ml: 'auto',
+        }}
+      >
         <Button
           size="small"
+          variant="contained"
           startIcon={<GridOnIcon fontSize="small" />}
           onClick={() =>
             navigate(`/campanhas/${campanha.id}/grid`, {
               state: { personagemId: personagem.id },
             })
           }
+          sx={{
+            background: 'linear-gradient(180deg, rgba(91, 124, 250, 0.2), rgba(91, 124, 250, 0.08))',
+            color: 'var(--text-primary)',
+            border: '1px solid rgba(91, 124, 250, 0.45)',
+            '&:hover': { background: 'rgba(91, 124, 250, 0.18)' },
+          }}
         >
-          Abrir grid
+          Abrir Grid
         </Button>
         <Button
           size="small"
+          variant="contained"
           startIcon={<OpenInFullIcon fontSize="small" />}
           onClick={() =>
             navigate(`/campanhas/${campanha.id}/chat`, {
               state: { personagemId: personagem.id },
             })
           }
+          sx={{
+            background: 'linear-gradient(180deg, rgba(91, 124, 250, 0.2), rgba(91, 124, 250, 0.08))',
+            color: 'var(--text-primary)',
+            border: '1px solid rgba(91, 124, 250, 0.45)',
+            '&:hover': { background: 'rgba(91, 124, 250, 0.18)' },
+          }}
         >
-          Tela cheia
+          Tela Cheia
         </Button>
+        {modo === 'modal' && (
+          <Button
+            size="small"
+            startIcon={<ChatOutlinedIcon fontSize="small" />}
+            onClick={() => {
+              onAbrirPainelLateral?.(campanha.id);
+              onClose?.();
+            }}
+            sx={{
+              color: 'var(--text-secondary)',
+              border: '1px solid var(--border-primary)',
+              background: 'rgba(255,255,255,0.02)',
+            }}
+          >
+            Painel lateral
+          </Button>
+        )}
+        {modo === 'painel' && (
+          <Tooltip title="Fechar painel">
+            <IconButton
+              size="small"
+              aria-label="Fechar painel"
+              onClick={onClose}
+              sx={{
+                color: 'rgba(248, 113, 113, 0.9)',
+                background: 'rgba(127, 29, 29, 0.16)',
+                border: '1px solid rgba(248,113,113,0.25)',
+                '&:hover': { background: 'rgba(127,29,29,0.28)' },
+              }}
+            >
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        )}
       </Box>
-    </>
+    </Box>
   );
 
   return (
     <Box
-      sx={{ display: 'flex', flexDirection: 'column', height: '70vh', minHeight: 360 }}
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        minHeight: 0,
+        flex: 1,
+        width: '100%',
+        overflow: 'hidden',
+      }}
     >
-      <ChatSala
-        mensagens={chat.mensagens}
-        carregando={chat.carregando}
-        currentUid={currentUser.uid}
-        podeApagarTodas={campanha.mestreId === currentUser.uid}
-        onEnviarTexto={chat.enviarTexto}
-        onEnviarImagem={chat.enviarImagem}
-        onRolar={chat.rolar}
-        macros={chat.macros}
-        audio={chat.audio}
-        onApagar={chat.apagar}
-        cabecalho={cabecalho}
-      />
+      <Box
+        sx={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          minHeight: { xs: 560, sm: 700 },
+        }}
+      >
+        <ChatSala
+          mensagens={chat.mensagens}
+          carregando={chat.carregando}
+          currentUid={currentUser.uid}
+          podeApagarTodas={campanha.mestreId === currentUser.uid}
+          onEnviarTexto={chat.enviarTexto}
+          onEnviarImagem={chat.enviarImagem}
+          onRolar={chat.rolar}
+          macros={chat.macros}
+          audio={chat.audio}
+          onApagar={chat.apagar}
+          cabecalho={cabecalho}
+          compactHeader={modo === 'painel'}
+          opcoesCombate={gruposCombate}
+        />
+      </Box>
       <ErrorSnackbar open={!!chat.erro} mensagem={chat.erro} onClose={chat.limparErro} />
     </Box>
   );
@@ -178,18 +299,38 @@ const ChatModalConteudo = ({ personagem }) => {
 
 ChatModalConteudo.propTypes = {
   personagem: PropTypes.object.isRequired,
+  modo: PropTypes.oneOf(['modal', 'painel']),
+  onAbrirPainelLateral: PropTypes.func,
+  onClose: PropTypes.func,
+  campanhaIdInicial: PropTypes.string,
 };
 
-const ChatModal = ({ open, onClose, personagem }) => (
-  <Dialog open={open} onClose={onClose} fullWidth maxWidth="md" keepMounted>
+const ChatModal = ({ open, onClose, personagem, onAbrirPainelLateral }) => (
+  <Dialog
+    open={open}
+    onClose={onClose}
+    fullWidth
+    maxWidth="md"
+    keepMounted
+    sx={{
+      '& .MuiDialog-paper': {
+        minHeight: { xs: 560, sm: 700 },
+        height: 'min(86vh, 1040px)',
+        maxHeight: 'min(86vh, 1040px)',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+      },
+    }}
+  >
     <DialogHeaderRow>
       <DialogHeaderTitle>💬 Chat da Campanha</DialogHeaderTitle>
       <DialogFecharButton type="button" aria-label="Fechar" onClick={onClose}>
         <CloseIcon fontSize="small" />
       </DialogFecharButton>
     </DialogHeaderRow>
-    <DialogContent>
-      <ChatModalConteudo personagem={personagem} />
+    <DialogContent sx={{ p: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+      <ChatModalConteudo personagem={personagem} onAbrirPainelLateral={onAbrirPainelLateral} onClose={onClose} />
     </DialogContent>
   </Dialog>
 );
@@ -198,6 +339,7 @@ ChatModal.propTypes = {
   open: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   personagem: PropTypes.object.isRequired,
+  onAbrirPainelLateral: PropTypes.func,
 };
 
 export default ChatModal;
