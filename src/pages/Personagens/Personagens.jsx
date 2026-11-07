@@ -19,10 +19,13 @@ import { TIPOS_PERSONAGEM } from './Ficha/constants';
 import { CardsGrid, EmptyState, PageHeader, PageTitle, PageWrapper, TabsHeader } from './styles';
 import { getNome } from 'common/utils/resolveNome';
 
+const TIPO_COMPANHEIROS = 'companheiros';
+
 const ABAS_TIPO = [
   { tipo: TIPOS_PERSONAGEM[0], label: 'Meus Personagens' },
   { tipo: TIPOS_PERSONAGEM[1], label: 'Meus NPCs' },
   { tipo: TIPOS_PERSONAGEM[2], label: 'Minhas Criaturas' },
+  { tipo: TIPO_COMPANHEIROS, label: 'Companheiros' },
 ];
 
 const MENSAGEM_VAZIO = {
@@ -38,6 +41,45 @@ const MENSAGEM_VAZIO = {
     texto: 'Você ainda não tem nenhuma criatura.',
     botao: 'Criar a primeira criatura',
   },
+  [TIPO_COMPANHEIROS]: {
+    texto: 'Você ainda não tem nenhum companheiro.',
+    botao: 'Criar o primeiro companheiro',
+  },
+};
+
+const ehCompanheiro = personagem => Boolean(personagem?.companheiroDe);
+
+const tipoNormalizado = personagem => personagem?.tipo ?? TIPOS_PERSONAGEM[0];
+
+const filtrarPersonagensDaAba = (personagens, aba, selectedUniverso) => {
+  return personagens.filter(personagem => {
+    const tipo = tipoNormalizado(personagem);
+    const naAba = (() => {
+      switch (aba) {
+        case TIPO_COMPANHEIROS:
+          return ehCompanheiro(personagem);
+        case TIPOS_PERSONAGEM[1]:
+          return !ehCompanheiro(personagem) && tipo === TIPOS_PERSONAGEM[1];
+        case TIPOS_PERSONAGEM[2]:
+          return !ehCompanheiro(personagem) && tipo === TIPOS_PERSONAGEM[2];
+        case TIPOS_PERSONAGEM[0]:
+        default:
+          return !ehCompanheiro(personagem) && tipo === TIPOS_PERSONAGEM[0];
+      }
+    })();
+
+    if (!naAba) {
+      return false;
+    }
+
+    if (!selectedUniverso || selectedUniverso === 'ALL') {
+      return true;
+    }
+    if (selectedUniverso === '__NO_UNIVERSE__') {
+      return !personagem.universo;
+    }
+    return personagem.universo === selectedUniverso;
+  });
 };
 
 const Personagens = () => {
@@ -116,15 +158,7 @@ const Personagens = () => {
   );
 
   const personagensDaAba = useMemo(
-    () => {
-      return personagens
-        .filter(personagem => (personagem.tipo ?? TIPOS_PERSONAGEM[0]) === aba)
-        .filter(personagem => {
-          if (!selectedUniverso || selectedUniverso === 'ALL') return true;
-          if (selectedUniverso === '__NO_UNIVERSE__') return !personagem.universo;
-          return personagem.universo === selectedUniverso;
-        });
-    },
+    () => filtrarPersonagensDaAba(personagens, aba, selectedUniverso),
     [personagens, aba, selectedUniverso],
   );
 
