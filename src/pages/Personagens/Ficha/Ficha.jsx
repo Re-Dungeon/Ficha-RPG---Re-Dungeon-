@@ -49,6 +49,16 @@ import ChatModal, { ChatModalConteudo } from './sidebar/ChatModal';
 import NotesModal from './notes/NotesModal';
 import { FichaChatPainel, FichaLayout, FichaMain } from './styles';
 
+const STORAGE_KEY_CHAT_LATERAL = 'reDungeonChatLateralCampanha';
+
+const lerChatLateralPersistido = () => {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  const valor = window.localStorage.getItem(STORAGE_KEY_CHAT_LATERAL);
+  return valor || null;
+};
 
 const Ficha = () => {
   const { id } = useParams();
@@ -65,7 +75,9 @@ const Ficha = () => {
   // Celular: a sidebar vira uma gaveta (Drawer), fechada por padrão.
   const [gavetaAberta, setGavetaAberta] = useState(false);
   const [modalAtivo, setModalAtivo] = useState(null);
-  const [chatLateralCampanhaId, setChatLateralCampanhaId] = useState(null);
+  const [chatLateralCampanhaId, setChatLateralCampanhaId] = useState(() =>
+    lerChatLateralPersistido(),
+  );
   const [erroExclusao, setErroExclusao] = useState(null);
   const [inventarioAtualizacoes, setInventarioAtualizacoes] = useState(0);
 
@@ -141,6 +153,19 @@ const Ficha = () => {
   const handleInventarioAtualizado = useCallback(() => {
     setInventarioAtualizacoes(current => current + 1);
   }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    if (chatLateralCampanhaId) {
+      window.localStorage.setItem(STORAGE_KEY_CHAT_LATERAL, chatLateralCampanhaId);
+      return;
+    }
+
+    window.localStorage.removeItem(STORAGE_KEY_CHAT_LATERAL);
+  }, [chatLateralCampanhaId]);
 
   // `labelCurto`: rótulo da aba no celular (Layout põe as abas numa 2ª linha,
   // com o ícone em cima).

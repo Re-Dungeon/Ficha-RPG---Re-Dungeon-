@@ -73,7 +73,15 @@ vi.mock('./sidebar/ChatModal', async () => {
   const actual = await vi.importActual('./sidebar/ChatModal');
   return {
     ...actual,
-    default: ({ open }) => (open ? <div>Modal chat</div> : null),
+    default: ({ open, onAbrirPainelLateral, onClose }) =>
+      open ? (
+        <div>
+          <button type="button" aria-label="Painel lateral" onClick={() => onAbrirPainelLateral?.('campanha-1')}>
+            Painel lateral
+          </button>
+          <button type="button" onClick={onClose}>Fechar</button>
+        </div>
+      ) : null,
   };
 });
 vi.mock('./notes/NotesModal', () => stubModal('notas'));
@@ -142,5 +150,26 @@ describe('Ficha — navegação no celular x desktop', () => {
 
     expect(await screen.findByText('Campanha')).toBeInTheDocument();
     expect(screen.getByText('Campanha Teste')).toBeInTheDocument();
+  });
+
+  it('mantém o último painel lateral do chat aberto após recarregar a página', async () => {
+    localStorage.clear();
+    useIsMobile.mockReturnValue(false);
+    const campanha = { id: 'campanha-1', nome: 'Campanha Teste', mestreId: 'mestre-1' };
+    const { getRmCampanha } = await import('service/storage');
+    getRmCampanha.mockResolvedValue(campanha);
+
+    const { unmount } = renderFicha();
+    await screen.findByText('Aba atributos');
+    fireEvent.click(screen.getByRole('button', { name: 'Chat' }));
+    const painelLateralButton = await screen.findByRole('button', { name: 'Painel lateral' });
+
+    fireEvent.click(painelLateralButton);
+    expect(localStorage.getItem('reDungeonChatLateralCampanha')).toBe('campanha-1');
+
+    unmount();
+    renderFicha();
+    await screen.findByText('Aba atributos');
+    expect(localStorage.getItem('reDungeonChatLateralCampanha')).toBe('campanha-1');
   });
 });

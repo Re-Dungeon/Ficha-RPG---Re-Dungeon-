@@ -7,12 +7,12 @@ import { EstrelaCentro, EstrelaCentroLabel, EstrelaCentroValor, EstrelaGemaSlot,
 // Posições das 6 pontas do hexagrama (estrela-atributos.png), em % do
 // wrapper quadrado, sentido horário a partir do topo.
 const POSICOES_PONTAS = [
-  { top: 16, left: 50 },
-  { top: 33, left: 78 },
-  { top: 67, left: 78 },
-  { top: 84, left: 50 },
-  { top: 67, left: 22 },
-  { top: 33, left: 22 },
+  { top: 18, left: 50 },
+  { top: 31.5, left: 77.4 },
+  { top: 64, left: 77.4 },
+  { top: 77.6, left: 50 },
+  { top: 64, left: 23 },
+  { top: 31.5, left: 23 },
 ];
 
 const AtributoEstrela = ({ labels, totais, baseTipo, extraTipo, bonusTipo, centroLabel, centroValor, bonusCultivo, personagem, onSave }) => (

@@ -53,6 +53,15 @@ import { ChatPageWrapper, MesaBarra, MesaChatPainel, MesaCorpo } from './styles'
 
 const FALAR_COMO_MESTRE = '__mestre__';
 const SEM_CONDICOES = [];
+const STORAGE_KEY_CHAT_ABERTO = 'reDungeonChatAberto';
+const STORAGE_KEY_PAINEL_LATERAL = 'reDungeonChatPainelLateral';
+
+const lerEstadoPersistido = (key, fallback) => {
+  if (typeof window === 'undefined') return fallback;
+  const valor = window.localStorage.getItem(key);
+  if (valor === null) return fallback;
+  return valor === 'true';
+};
 
 // Mesa da campanha: `visao` "chat" (/campanhas/:id/chat) ou "grid"
 // (/campanhas/:id/grid — mapa tático com o chat num painel lateral). As duas
@@ -73,8 +82,10 @@ const CampanhaChat = ({ visao = 'chat' }) => {
   const [carregandoInicial, setCarregandoInicial] = useState(true);
   const [falandoComo, setFalandoComo] = useState('');
   const [erro, setErro] = useState(null);
-  const [chatAberto, setChatAberto] = useState(true);
-  const [painelLateralMinimizado, setPainelLateralMinimizado] = useState(false);
+  const [chatAberto, setChatAberto] = useState(() => lerEstadoPersistido(STORAGE_KEY_CHAT_ABERTO, true));
+  const [painelLateralMinimizado, setPainelLateralMinimizado] = useState(() =>
+    lerEstadoPersistido(STORAGE_KEY_PAINEL_LATERAL, false),
+  );
   // Celular, visão grid: mapa OU chat em tela cheia (começa no mapa). O badge
   // do "Chat" conta o que chegou desde a última vez que se saiu do chat.
   const isMobile = useIsMobile();
@@ -160,6 +171,18 @@ const CampanhaChat = ({ visao = 'chat' }) => {
     }
     navigate('/campanhas');
   }, [navigate, personagemIdVoltar]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(STORAGE_KEY_CHAT_ABERTO, String(chatAberto));
+    }
+  }, [chatAberto]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(STORAGE_KEY_PAINEL_LATERAL, String(painelLateralMinimizado));
+    }
+  }, [painelLateralMinimizado]);
 
   useEffect(() => {
     setHeaderExtra({

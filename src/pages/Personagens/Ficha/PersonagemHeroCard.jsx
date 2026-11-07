@@ -1,4 +1,5 @@
 import React from 'react';
+import Tooltip from '@mui/material/Tooltip';
 import PropTypes from 'prop-types';
 
 import {
@@ -19,9 +20,8 @@ import {
   planetaRedungeonImg,
 } from './styles';
 
-// Placeholders — o usuário troca essas URLs pelas imagens finais dos botões depois.
-const SALVAR_BADGE_URL = 'https://placehold.co/112x112/1c1830/4ade80?text=Salvar';
-const EXCLUIR_BADGE_URL = 'https://i.imgur.com/GS68rHh.png';
+const SALVAR_BADGE_URL = 'https://i.imgur.com/WDQEQb8.png';
+const EXCLUIR_BADGE_URL = 'https://i.imgur.com/9JyaulF.png';
 
 const PersonagemHeroCard = ({
   personagem,
@@ -67,12 +67,17 @@ const PersonagemHeroCard = ({
       </HeroRetratoFrame>
 
       <HeroAcoesRow>
-        <HeroAcaoBadge type="submit" aria-label="Salvar" disabled={salvando}>
-          <img src={SALVAR_BADGE_URL} alt="" />
-        </HeroAcaoBadge>
-        <HeroAcaoBadge type="button" aria-label="Excluir Personagem" onClick={onExcluir}>
-          <img src={EXCLUIR_BADGE_URL} alt="" />
-        </HeroAcaoBadge>
+        <Tooltip title="Salvar personagem" arrow placement="top">
+          <HeroAcaoBadge type="submit" aria-label="Salvar personagem" disabled={salvando}>
+            <img src={SALVAR_BADGE_URL} alt="" />
+          </HeroAcaoBadge>
+        </Tooltip>
+
+        <Tooltip title="Remover personagem" arrow placement="top">
+          <HeroAcaoBadge type="button" aria-label="Remover personagem" onClick={onExcluir}>
+            <img src={EXCLUIR_BADGE_URL} alt="" />
+          </HeroAcaoBadge>
+        </Tooltip>
       </HeroAcoesRow>
     </HeroCardWrapper>
   );

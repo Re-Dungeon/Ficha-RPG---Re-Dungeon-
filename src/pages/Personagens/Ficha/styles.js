@@ -1,11 +1,12 @@
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 
 import { MOBILE } from 'common/styles/breakpoints';
 
-import estrelaAtributosImg from './assets/estrela-atributos.png';
-import gemaAtributoImg from './assets/gema-atributo.png';
 import planetaRedungeonImg from './assets/planeta-redungeon.png';
-import molduraRetratoImg from './assets/moldura-retrato.png';
+
+const molduraRetratoImg = 'https://i.imgur.com/oB6y33R.png';
+const estrelaAtributosPrincipalImg = 'https://i.imgur.com/Okze6pw.png';
+const gemaAtributoImg = 'https://i.imgur.com/z2nKD5d.png';
 
 export const FichaWrapper = styled.div`
   flex: 1;
@@ -272,7 +273,7 @@ export const EstrelaWrapper = styled.div`
   flex-shrink: 0;
   width: clamp(240px, 30vw, 600px);
   aspect-ratio: 1 / 1;
-  background: url(${estrelaAtributosImg}) center / contain no-repeat;
+  background: url(${estrelaAtributosPrincipalImg}) center / contain no-repeat;
 
   ${MOBILE} {
     width: min(100%, 340px);
@@ -293,26 +294,34 @@ export const EstrelaCentro = styled.div`
 `;
 
 export const EstrelaCentroValor = styled.span`
-  font-size: clamp(1.2rem, 3vw, 2rem);
-  font-weight: 700;
-  color: #fff;
-  text-shadow: 0 0 12px rgba(239, 68, 68, 0.65);
+  font-size: clamp(1.5rem, 3.4vw, 2.6rem);
+  font-weight: 800;
+  line-height: 1;
+  color: #fffdf8;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.82),
+    0 0 12px rgba(255, 255, 255, 0.2),
+    0 0 18px rgba(239, 68, 68, 0.45);
 
   ${MOBILE} {
-    font-size: 1.6rem;
+    font-size: 1.9rem;
   }
 `;
 
 export const EstrelaCentroLabel = styled.span`
+  display: block;
+  white-space: nowrap;
   font-family: 'Cinzel', Georgia, 'Times New Roman', serif;
-  font-size: clamp(0.55rem, 1.3vw, 1rem);
-  letter-spacing: 2px;
+  font-size: clamp(0.5rem, 1.15vw, 0.9rem);
+  letter-spacing: 2.0px;
   text-transform: uppercase;
-  color: #fff;
+  color: #f7efe0;
   font-weight: 700;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.82), 0 0 10px rgba(0, 0, 0, 0.35);
 
   ${MOBILE} {
-    font-size: 0.68rem;
+    font-size: 0.62rem;
+    letter-spacing: 1.5px;
   }
 `;
 
@@ -347,30 +356,120 @@ export const AtributoGemaButton = styled.button`
   }
 `;
 
+const cyanArcanePulse = keyframes`
+  0%,
+  100% {
+    -webkit-text-stroke: 1px rgba(46, 220, 255, 0.7);
+    -webkit-text-fill-color: currentColor;
+    text-shadow:
+      0 1px 0 rgba(0, 0, 0, 0.9),
+      0 0 3px rgba(46, 220, 255, 0.32),
+      0 0 8px rgba(46, 220, 255, 0.18),
+      0 0 12px rgba(46, 220, 255, 0.12);
+    filter: drop-shadow(0 0 0 rgba(46, 220, 255, 0));
+  }
+  50% {
+    -webkit-text-stroke: 1.2px rgba(24, 189, 255, 0.9);
+    -webkit-text-fill-color: currentColor;
+    text-shadow:
+      0 1px 0 rgba(0, 0, 0, 0.95),
+      0 0 5px rgba(46, 220, 255, 0.55),
+      0 0 9px rgba(46, 220, 255, 0.34),
+      0 0 15px rgba(46, 220, 255, 0.18);
+    filter: drop-shadow(0 0 5px rgba(46, 220, 255, 0.25));
+  }
+`;
+
+const cyanArcanePulseLabel = keyframes`
+  0%,
+  100% {
+    -webkit-text-stroke: 0.7px rgba(46, 220, 255, 0.65);
+    -webkit-text-fill-color: currentColor;
+    text-shadow:
+      0 2px 0 rgba(0, 0, 0, 0.75),
+      0 0 3px rgba(46, 220, 255, 0.2),
+      0 0 8px rgba(46, 220, 255, 0.1);
+    filter: drop-shadow(0 0 0 rgba(46, 220, 255, 0));
+  }
+  50% {
+    -webkit-text-stroke: 0.9px rgba(24, 189, 255, 0.82);
+    -webkit-text-fill-color: currentColor;
+    text-shadow:
+      0 2px 0 rgba(0, 0, 0, 0.8),
+      0 0 4px rgba(46, 220, 255, 0.35),
+      0 0 10px rgba(46, 220, 255, 0.18);
+    filter: drop-shadow(0 0 4px rgba(46, 220, 255, 0.18));
+  }
+`;
+
 export const AtributoGemaValor = styled.span`
-  font-size: clamp(0.8rem, 1.6vw, 1.1rem);
-  font-weight: 700;
-  color: #fff;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+  font-size: clamp(0.95rem, 1.9vw, 1.3rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  color: #fffdf8;
+  -webkit-text-stroke: 1px rgba(255, 56, 56, 0.94);
+  -webkit-text-fill-color: currentColor;
+  paint-order: stroke fill;
+  text-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.9),
+    0 0 5px rgba(255, 80, 80, 0.4),
+    0 0 12px rgba(255, 80, 80, 0.24);
+  animation: ${cyanArcanePulse} 1.8s ease-in-out infinite;
+  transition: filter 0.2s ease, transform 0.2s ease, text-shadow 0.2s ease;
+
+  &:hover,
+  &:focus-visible {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+    text-shadow:
+      0 1px 0 rgba(0, 0, 0, 0.95),
+      0 0 8px rgba(255, 80, 80, 0.9),
+      0 0 16px rgba(255, 80, 80, 0.65),
+      0 0 22px rgba(255, 80, 80, 0.4);
+  }
 
   ${MOBILE} {
-    font-size: 1rem;
+    font-size: 1.05rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
   }
 `;
 
 export const AtributoGemaLabel = styled.span`
   width: 100%;
-  font-size: clamp(0.4rem, 0.75vw, 1rem);
-  line-height: 1.1;
-  letter-spacing: 0.5px;
+  font-size: clamp(0.48rem, 0.82vw, 1.05rem);
+  line-height: 1.15;
+  letter-spacing: 0.7px;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.9);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+  color: #f3ebd7;
+  -webkit-text-stroke: 0.8px rgba(255, 56, 56, 0.9);
+  -webkit-text-fill-color: currentColor;
+  paint-order: stroke fill;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.75), 0 0 8px rgba(0, 0, 0, 0.35);
   overflow-wrap: break-word;
   font-weight: 700;
+  animation: ${cyanArcanePulseLabel} 1.8s ease-in-out infinite;
+  transition: filter 0.2s ease, text-shadow 0.2s ease;
+
+  &:hover,
+  &:focus-visible {
+    filter: drop-shadow(0 0 6px rgba(255, 70, 70, 0.3));
+    text-shadow:
+      0 2px 0 rgba(0, 0, 0, 0.8),
+      0 0 8px rgba(0, 0, 0, 0.45),
+      0 0 18px rgba(255, 86, 86, 0.28);
+  }
 
   ${MOBILE} {
-    font-size: 0.62rem;
+    font-size: 0.64rem;
+    letter-spacing: 0.45px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
   }
 `;
 
@@ -379,7 +478,7 @@ export const HeroCardWrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 4px;
   width: clamp(200px, 20vw, 350px);
 
   ${MOBILE} {
@@ -533,14 +632,16 @@ export const HeroRetratoFrame = styled.div`
   position: relative;
   width: 100%;
   aspect-ratio: 2 / 3;
+  transform: scale(1.05);
+  transform-origin: center center;
 `;
 
 export const HeroRetratoImg = styled.img`
   position: absolute;
   top: 50%;
   left: 50%;
-  width: ${({ $isPlaceholder }) => ($isPlaceholder ? '62%' : '81%')};
-  height: ${({ $isPlaceholder }) => ($isPlaceholder ? '62%' : '82%')};
+  width: ${({ $isPlaceholder }) => ($isPlaceholder ? '66%' : '85%')};
+  height: ${({ $isPlaceholder }) => ($isPlaceholder ? '66%' : '86%')};
   transform: translate(-50%, -50%);
   object-fit: cover;
   border-radius: 4px;
@@ -625,37 +726,76 @@ export const HeroAcoesRow = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  gap: 10px;
+  margin-top: -6px;
+  margin-bottom: -6px;
+  animation: heroActionsIn 260ms ease-out both;
+
+  @keyframes heroActionsIn {
+    from {
+      opacity: 0;
+      transform: translateY(8px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
 `;
 
 export const HeroAcaoBadge = styled.button`
   all: unset;
   box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  overflow: hidden;
-  border: 1px solid var(--status-gold-border);
+  width: clamp(112px, 9.8vw, 148px);
+  height: clamp(112px, 9.8vw, 148px);
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  overflow: visible;
   transition:
-    filter 0.15s ease,
-    border-color 0.15s ease;
+    transform 0.18s ease,
+    filter 0.18s ease,
+    box-shadow 0.18s ease;
+  will-change: transform;
 
   img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     display: block;
+    user-select: none;
+    pointer-events: none;
   }
 
-  &:hover,
+  &:active {
+    transform: scale(0.97);
+  }
+
   &:focus-visible {
-    filter: brightness(1.15);
-    border-color: var(--status-gold);
+    outline: none;
+    filter: drop-shadow(0 0 10px rgba(232, 203, 133, 0.55));
+  }
+
+  @media (hover: hover) {
+    &:hover {
+      transform: scale(1.04);
+      filter: brightness(1.08) saturate(1.06);
+    }
   }
 
   &:disabled {
     cursor: not-allowed;
-    filter: brightness(0.7);
+    filter: brightness(0.74) saturate(0.8);
+    transform: none;
+  }
+
+  ${MOBILE} {
+    width: clamp(98px, 25vw, 132px);
+    height: clamp(98px, 25vw, 132px);
   }
 `;
