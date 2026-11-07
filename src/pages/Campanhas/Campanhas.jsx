@@ -101,6 +101,13 @@ const Campanhas = () => {
                   </Button>
                   <Button
                     variant="outlined"
+                    startIcon={<ChatBubbleOutlineIcon />}
+                    onClick={() => navigate(`/campanhas/${campanha.id}/lateral`)}
+                  >
+                    Chat lateral
+                  </Button>
+                  <Button
+                    variant="outlined"
                     startIcon={<GridOnIcon />}
                     onClick={() => navigate(`/campanhas/${campanha.id}/grid`)}
                   >

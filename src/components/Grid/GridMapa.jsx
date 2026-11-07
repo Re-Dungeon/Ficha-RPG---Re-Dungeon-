@@ -478,6 +478,9 @@ const GridMapa = ({
     const elemento = viewportRef.current;
     if (!elemento) return undefined;
     const aoRolar = event => {
+      if (event.target instanceof Element && event.target.closest('[data-chat-scroll-area]')) {
+        return;
+      }
       event.preventDefault();
       const retangulo = elemento.getBoundingClientRect();
       const fator = event.deltaY < 0 ? ZOOM_PASSO : 1 / ZOOM_PASSO;

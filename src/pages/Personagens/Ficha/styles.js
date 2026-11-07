@@ -16,18 +16,30 @@ export const FichaWrapper = styled.div`
 `;
 
 export const FichaLayout = styled.div`
-  flex: 1;
+  flex: 1 1 auto;
   display: flex;
-  min-height: 100%;
+  min-height: 0;
+  height: calc(100vh - 64px);
+  height: calc(100dvh - 64px);
+  overflow: hidden;
+
+  ${MOBILE} {
+    height: calc(100vh - 56px);
+    height: calc(100dvh - 56px);
+  }
 `;
 
 export const FichaMain = styled.div`
-  flex: 1;
+  flex: 1 1 auto;
   min-width: 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 20px;
   padding: 20px 24px 32px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
   background-color: #090b14;
   background-image:
     linear-gradient(rgba(7, 5, 14, 0.78), rgba(7, 5, 14, 0.86)),
@@ -39,6 +51,27 @@ export const FichaMain = styled.div`
   ${MOBILE} {
     gap: 16px;
     padding: 12px 12px 24px;
+  }
+`;
+
+export const FichaChatPainel = styled.aside`
+  display: flex;
+  flex: 0 0 min(420px, 34vw);
+  width: min(420px, 34vw);
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  background: rgba(10, 9, 19, 0.82);
+  border-left: 1px solid var(--border-primary);
+  backdrop-filter: blur(12px);
+  box-sizing: border-box;
+
+  ${MOBILE} {
+    flex-basis: 100%;
+    width: 100%;
+    height: auto;
+    border-left: none;
+    border-top: 1px solid var(--border-primary);
   }
 `;
 

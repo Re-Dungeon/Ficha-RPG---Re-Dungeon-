@@ -11,7 +11,7 @@ import {
   subscribeAudioMesa,
   subscribeChatMensagens,
 } from 'service/storage';
-import ChatModal from './ChatModal';
+import ChatModal, { ChatModalConteudo } from './ChatModal';
 import { AudioMesaProvider, useAudioMesaGlobal } from 'context/AudioMesaContext';
 
 vi.mock('components/Chat/PlayerAudioMesa', () => ({
@@ -37,6 +37,9 @@ vi.mock('service/storage', () => ({
   addChatMacro: vi.fn(),
   updateChatMacro: vi.fn(),
   removeChatMacro: vi.fn(),
+  getCombosAtaque: vi.fn(() => Promise.resolve([])),
+  getCombosDefesa: vi.fn(() => Promise.resolve([])),
+  getArts: vi.fn(() => Promise.resolve([])),
   subscribeAudioMesa: vi.fn(() => vi.fn()),
   setAudioMesa: vi.fn(),
 }));
@@ -104,6 +107,47 @@ describe('ChatModal (menu Social da ficha)', () => {
 
     expect(await screen.findByText('No abismo.')).toBeInTheDocument();
     expect(setChatMembro).toHaveBeenCalledWith('abismo', 'uid-jogador', 'wesley');
+  });
+
+  it('envia o comando de painel lateral sem navegar, fechando o modal', async () => {
+    const onClose = vi.fn();
+    const onAbrirPainelLateral = vi.fn();
+
+    render(
+      <MemoryRouter>
+        <ChatModal
+          open
+          onClose={onClose}
+          personagem={{ id: 'wesley', nome: 'Wesley Chase', campanhas: ['torre'] }}
+          onAbrirPainelLateral={onAbrirPainelLateral}
+        />
+      </MemoryRouter>,
+    );
+
+    await screen.findByText('Na torre.');
+    fireEvent.click(screen.getByRole('button', { name: 'Painel lateral' }));
+
+    expect(onAbrirPainelLateral).toHaveBeenCalledWith('torre');
+    expect(onClose).toHaveBeenCalled();
+  });
+
+  it('remove o botão de minimizar quando o chat está em painel lateral', async () => {
+    const onClose = vi.fn();
+
+    render(
+      <MemoryRouter>
+        <ChatModalConteudo
+          personagem={{ id: 'wesley', nome: 'Wesley Chase', campanhas: ['torre'] }}
+          modo="painel"
+          onClose={onClose}
+        />
+      </MemoryRouter>,
+    );
+
+    await screen.findByText('Na torre.');
+    expect(screen.getByText('Campanha').closest('[data-compact="true"]')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /minimizar painel/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /fechar painel/i })).toBeInTheDocument();
   });
 
   it('mantém o player global montado quando o modal fecha', async () => {

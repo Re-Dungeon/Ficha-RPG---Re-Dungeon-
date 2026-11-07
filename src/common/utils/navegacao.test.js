@@ -36,12 +36,19 @@ describe('destinoCampanhas', () => {
     expect(destinoCampanhas({ personagem: wesley, campanhaId: 'c9' }).to).toBe('/campanhas/c1/chat');
   });
 
-  it('reabre a última visão usada (grid)', () => {
+  it('reabre a última visão usada (grid e lateral)', () => {
     expect(
       destinoCampanhas({ personagem: wesley, campanhaId: 'c2', visaoCampanha: 'grid' }).to,
     ).toBe('/campanhas/c2/grid');
+    expect(
+      destinoCampanhas({ personagem: wesley, campanhaId: 'c2', visaoCampanha: 'lateral' }).to,
+    ).toBe('/campanhas/c2/lateral');
     expect(destinoCampanhas({ personagem: null, campanhaId: 'c3', visaoCampanha: 'grid' })).toEqual({
       to: '/campanhas/c3/grid',
+      state: null,
+    });
+    expect(destinoCampanhas({ personagem: null, campanhaId: 'c3', visaoCampanha: 'lateral' })).toEqual({
+      to: '/campanhas/c3/lateral',
       state: null,
     });
   });

@@ -2,14 +2,18 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useLocation, useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import Badge from '@mui/material/Badge';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
+import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import ChatOutlinedIcon from '@mui/icons-material/ChatOutlined';
+import CloseIcon from '@mui/icons-material/Close';
 import GridOnIcon from '@mui/icons-material/GridOn';
 
 import { useAuth } from 'context/AuthContext';
@@ -58,9 +62,11 @@ const CampanhaChat = ({ visao = 'chat' }) => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   const { setHeaderExtra } = useOutletContext();
-  const { selecionarPersonagem, selecionarCampanha } = useSelecao();
+  const { selecao, selecionarPersonagem, selecionarCampanha } = useSelecao();
+  const location = useLocation();
   // Vindo do link "Campanhas" com uma ficha aberta: já fala como esse personagem.
-  const personagemIdPreferido = useLocation().state?.personagemId ?? null;
+  const personagemIdPreferido = location.state?.personagemId ?? null;
+  const personagemIdVoltar = personagemIdPreferido ?? selecao.personagem?.id ?? null;
 
   const [campanha, setCampanha] = useState(null);
   const [meusPersonagens, setMeusPersonagens] = useState([]);
@@ -68,6 +74,7 @@ const CampanhaChat = ({ visao = 'chat' }) => {
   const [falandoComo, setFalandoComo] = useState('');
   const [erro, setErro] = useState(null);
   const [chatAberto, setChatAberto] = useState(true);
+  const [painelLateralMinimizado, setPainelLateralMinimizado] = useState(false);
   // Celular, visão grid: mapa OU chat em tela cheia (começa no mapa). O badge
   // do "Chat" conta o que chegou desde a última vez que se saiu do chat.
   const isMobile = useIsMobile();
@@ -146,11 +153,19 @@ const CampanhaChat = ({ visao = 'chat' }) => {
     };
   }, [universoId, visao]);
 
-  const handleVoltar = useCallback(() => navigate('/campanhas'), [navigate]);
+  const handleVoltar = useCallback(() => {
+    if (personagemIdVoltar) {
+      navigate(`/personagens/${personagemIdVoltar}`);
+      return;
+    }
+    navigate('/campanhas');
+  }, [navigate, personagemIdVoltar]);
 
   useEffect(() => {
     setHeaderExtra({
-      nome: campanha?.nome ?? (visao === 'grid' ? 'Grid' : 'Chat'),
+      nome:
+        campanha?.nome ??
+        (visao === 'grid' ? 'Grid' : visao === 'lateral' ? 'Chat lateral' : 'Chat'),
       onVoltar: handleVoltar,
     });
     return () => setHeaderExtra(null);
@@ -175,7 +190,7 @@ const CampanhaChat = ({ visao = 'chat' }) => {
 
   const chat = useChatCampanha(campanhaId, autor, { ehMestreDaCampanha: isMestre });
   // Grid só escuta na visão "grid" (e depois que o "Falando como" existe).
-  const grid = useGridCampanha(visao === 'grid' && autor ? campanhaId : null, {
+  const grid = useGridCampanha((visao === 'grid' || visao === 'lateral') && autor ? campanhaId : null, {
     uid: currentUser.uid,
     personagemId: autor?.personagemId ?? null,
     isMestre: Boolean(autor?.isMestre),
@@ -231,6 +246,17 @@ const CampanhaChat = ({ visao = 'chat' }) => {
   const opcoesRolagem = useOpcoesDeRolagem(fichaDoTokenRolando?.id ?? null, {
     ativo: Boolean(fichaDoTokenRolando),
   });
+  const personagemEmChat = useMemo(
+    () => meusPersonagens.find(p => p.id === falandoComo) ?? null,
+    [falandoComo, meusPersonagens],
+  );
+  const opcoesCombate = useOpcoesDeRolagem(personagemEmChat?.id ?? null, {
+    ativo: Boolean(personagemEmChat),
+  });
+  const gruposCombate = useMemo(
+    () => (opcoesCombate.grupos ?? []).filter(grupo => ['ataque', 'defesa'].includes(grupo.id)),
+    [opcoesCombate.grupos],
+  );
   const rolarDoToken = useRolarDoToken(campanhaId, { onErro: setErro });
   const handleRolarDoToken = useCallback(
     (expressao, rotulo) =>
@@ -330,6 +356,11 @@ const CampanhaChat = ({ visao = 'chat' }) => {
       <ToggleButton value="grid" aria-label="Grid">
         <GridOnIcon fontSize="small" sx={{ mr: 0.5 }} /> Grid
       </ToggleButton>
+      {visao === 'lateral' && (
+        <ToggleButton value="lateral" aria-label="Painel lateral">
+          <ChatOutlinedIcon fontSize="small" sx={{ mr: 0.5 }} /> Painel lateral
+        </ToggleButton>
+      )}
     </ToggleButtonGroup>
   );
 
@@ -355,6 +386,129 @@ const CampanhaChat = ({ visao = 'chat' }) => {
       </Typography>
     );
 
+  const nomeFalandoComo =
+    opcoesFalarComo.find(opcao => opcao.value === falandoComo)?.label ??
+    opcoesFalarComo[0]?.label ??
+    'Mestre';
+
+  const cabecalhoChat = (
+    <Box sx={{ display: 'flex', width: '100%', alignItems: 'stretch', gap: 1.5, flexWrap: 'wrap' }}>
+      <Box
+        sx={{
+          flex: '1 1 180px',
+          minWidth: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          gap: 0.25,
+        }}
+      >
+        <Typography variant="caption" sx={{ color: 'var(--text-muted)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+          Campanha
+        </Typography>
+        <Typography sx={{ color: 'var(--text-primary)', fontWeight: 700, lineHeight: 1.3 }}>
+          {campanha.nome}
+        </Typography>
+      </Box>
+
+      <Box
+        sx={{
+          flex: '1 1 180px',
+          minWidth: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          gap: 0.25,
+        }}
+      >
+        <Typography variant="body2" sx={{ color: 'var(--text-primary)', fontWeight: 700 }}>
+          {nomeFalandoComo}
+        </Typography>
+      </Box>
+
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+          gap: 1,
+          flexWrap: 'wrap',
+          ml: 'auto',
+        }}
+      >
+        <Button
+          size="small"
+          variant="contained"
+          startIcon={<GridOnIcon fontSize="small" />}
+          onClick={() =>
+            navigate(`/campanhas/${campanha.id}/grid`, {
+              state: { personagemId: falandoComo !== FALAR_COMO_MESTRE ? falandoComo : null },
+            })
+          }
+          sx={{
+            background: 'linear-gradient(180deg, rgba(91, 124, 250, 0.2), rgba(91, 124, 250, 0.08))',
+            color: 'var(--text-primary)',
+            border: '1px solid rgba(91, 124, 250, 0.45)',
+            '&:hover': { background: 'rgba(91, 124, 250, 0.18)' },
+          }}
+        >
+          Abrir Grid
+        </Button>
+        <Button
+          size="small"
+          variant="contained"
+          startIcon={<ChatOutlinedIcon fontSize="small" />}
+          onClick={() =>
+            navigate(`/campanhas/${campanha.id}/chat`, {
+              state: { personagemId: falandoComo !== FALAR_COMO_MESTRE ? falandoComo : null },
+            })
+          }
+          sx={{
+            background: 'linear-gradient(180deg, rgba(91, 124, 250, 0.2), rgba(91, 124, 250, 0.08))',
+            color: 'var(--text-primary)',
+            border: '1px solid rgba(91, 124, 250, 0.45)',
+            '&:hover': { background: 'rgba(91, 124, 250, 0.18)' },
+          }}
+        >
+          Tela Cheia
+        </Button>
+        {(visao === 'lateral' || visao === 'grid') && (
+          <>
+            <Button
+              size="small"
+              variant="text"
+              onClick={() => {
+                if (visao === 'lateral') setPainelLateralMinimizado(value => !value);
+                else setChatAberto(value => !value);
+              }}
+              sx={{ minWidth: 0, color: 'var(--text-secondary)' }}
+            >
+              {visao === 'lateral' ? (painelLateralMinimizado ? 'Reabrir' : 'Minimizar') : chatAberto ? 'Ocultar' : 'Mostrar'}
+            </Button>
+            <Tooltip title="Fechar painel">
+              <IconButton
+                size="small"
+                aria-label="Fechar painel"
+                onClick={() => {
+                  if (visao === 'lateral') setPainelLateralMinimizado(true);
+                  else setChatAberto(false);
+                }}
+                sx={{
+                  color: 'rgba(248, 113, 113, 0.9)',
+                  background: 'rgba(127, 29, 29, 0.16)',
+                  border: '1px solid rgba(248,113,113,0.25)',
+                  '&:hover': { background: 'rgba(127,29,29,0.28)' },
+                }}
+              >
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </>
+        )}
+      </Box>
+    </Box>
+  );
+
   const chatSala = cabecalho => (
     <ChatSala
       mensagens={chat.mensagens}
@@ -368,33 +522,36 @@ const CampanhaChat = ({ visao = 'chat' }) => {
       audio={chat.audio}
       onApagar={chat.apagar}
       cabecalho={cabecalho}
+      opcoesCombate={gruposCombate}
     />
   );
 
-  if (visao === 'grid') {
+  // No celular o alternador Mapa | Chat substitui Chat|Grid e "Ocultar chat".
+  const alternadorMesa = (
+    <ToggleButtonGroup
+      size="small"
+      exclusive
+      value={abaMesa}
+      onChange={trocarAbaMesa}
+      aria-label="Mostrar mapa ou chat"
+    >
+      <ToggleButton value="mapa" aria-label="Mapa">
+        <GridOnIcon fontSize="small" sx={{ mr: 0.5 }} /> Mapa
+      </ToggleButton>
+      <ToggleButton value="chat" aria-label={naoLidas ? `Chat, ${naoLidas} novas` : 'Chat'}>
+        <Badge badgeContent={naoLidas} color="secondary" max={99} sx={{ mr: 0.5 }}>
+          <ChatOutlinedIcon fontSize="small" />
+        </Badge>{' '}
+        Chat
+      </ToggleButton>
+    </ToggleButtonGroup>
+  );
+
+  if (visao === 'grid' || visao === 'lateral') {
     let aviso = null;
     if (grid.carregando) aviso = 'Carregando o grid…';
     else if (grid.semCena) aviso = 'O mestre ainda não abriu uma cena.';
-    // No celular o alternador Mapa | Chat substitui Chat|Grid e "Ocultar chat".
-    const alternadorMesa = (
-      <ToggleButtonGroup
-        size="small"
-        exclusive
-        value={abaMesa}
-        onChange={trocarAbaMesa}
-        aria-label="Mostrar mapa ou chat"
-      >
-        <ToggleButton value="mapa" aria-label="Mapa">
-          <GridOnIcon fontSize="small" sx={{ mr: 0.5 }} /> Mapa
-        </ToggleButton>
-        <ToggleButton value="chat" aria-label={naoLidas ? `Chat, ${naoLidas} novas` : 'Chat'}>
-          <Badge badgeContent={naoLidas} color="secondary" max={99} sx={{ mr: 0.5 }}>
-            <ChatOutlinedIcon fontSize="small" />
-          </Badge>{' '}
-          Chat
-        </ToggleButton>
-      </ToggleButtonGroup>
-    );
+    const mostrarPainelChat = visao === 'lateral' ? !painelLateralMinimizado : chatAberto || isMobile;
     return (
       <ChatPageWrapper>
         <MesaBarra>
@@ -415,11 +572,24 @@ const CampanhaChat = ({ visao = 'chat' }) => {
             <Button
               size="small"
               startIcon={<ChatOutlinedIcon fontSize="small" />}
-              onClick={() => setChatAberto(aberto => !aberto)}
-              aria-pressed={chatAberto}
+              onClick={() => {
+                if (visao === 'lateral') {
+                  setPainelLateralMinimizado(value => !value);
+                  return;
+                }
+                setChatAberto(aberto => !aberto);
+              }}
+              aria-label={visao === 'lateral' ? (painelLateralMinimizado ? 'Reabrir chat' : 'Minimizar chat') : (chatAberto ? 'Ocultar chat' : 'Mostrar chat')}
+              aria-pressed={visao === 'lateral' ? !painelLateralMinimizado : chatAberto}
               sx={{ ml: 'auto' }}
             >
-              {chatAberto ? 'Ocultar chat' : 'Mostrar chat'}
+              {visao === 'lateral'
+                ? painelLateralMinimizado
+                  ? 'Reabrir chat'
+                  : 'Minimizar chat'
+                : chatAberto
+                  ? 'Ocultar chat'
+                  : 'Mostrar chat'}
             </Button>
           )}
         </MesaBarra>
@@ -466,13 +636,9 @@ const CampanhaChat = ({ visao = 'chat' }) => {
                 : {}),
             }}
           />
-          {(chatAberto || isMobile) && (
+          {mostrarPainelChat && (
             <MesaChatPainel>
-              {chatSala(
-                <Typography sx={{ color: 'var(--text-primary)', fontWeight: 700 }}>
-                  Chat
-                </Typography>,
-              )}
+              {chatSala(cabecalhoChat)}
             </MesaChatPainel>
           )}
         </MesaCorpo>
@@ -491,19 +657,43 @@ const CampanhaChat = ({ visao = 'chat' }) => {
 
   return (
     <ChatPageWrapper>
-      {chatSala(
-        <>
-          {seletorVisao}
-          {falandoComoCampo}
-        </>,
-      )}
+      <MesaBarra>
+        {isMobile ? alternadorMesa : seletorVisao}
+        {falandoComoCampo}
+        {grid.nomeCena && (
+          <Typography
+            variant="body2"
+            sx={{
+              color: 'var(--text-secondary)',
+              [MOBILE]: { width: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+            }}
+          >
+            Cena: <strong>{grid.nomeCena}</strong>
+          </Typography>
+        )}
+        {!isMobile && (
+          <Button
+            size="small"
+            startIcon={<ChatOutlinedIcon fontSize="small" />}
+            onClick={() => {
+              setChatAberto(aberto => !aberto);
+            }}
+            aria-label={chatAberto ? 'Ocultar chat' : 'Mostrar chat'}
+            aria-pressed={chatAberto}
+            sx={{ ml: 'auto' }}
+          >
+            {chatAberto ? 'Ocultar chat' : 'Mostrar chat'}
+          </Button>
+        )}
+      </MesaBarra>
+      {chatSala(cabecalhoChat)}
       <ErrorSnackbar open={!!erroExibido} mensagem={erroExibido} onClose={fecharErro} />
     </ChatPageWrapper>
   );
 };
 
 CampanhaChat.propTypes = {
-  visao: PropTypes.oneOf(['chat', 'grid']),
+  visao: PropTypes.oneOf(['chat', 'grid', 'lateral']),
 };
 
 export default CampanhaChat;

@@ -143,9 +143,14 @@ const useChatCampanha = (campanhaId, autor, { ehMestreDaCampanha = false } = {})
   const rolar = useCallback(
     async especificacao => {
       const rolagem = rolarEspecificacao(especificacao);
-      const mensagem = montarMensagemRolagem(autor, rolagem, especificacao.secreta);
+      const mensagem = montarMensagemRolagem(
+        autor,
+        rolagem,
+        Boolean(especificacao?.secreta),
+        especificacao?.rotulo ?? null,
+      );
       try {
-        await (especificacao.secreta
+        await (especificacao?.secreta
           ? addChatRolagemSecreta(campanhaId, uid, mensagem)
           : addChatMensagem(campanhaId, mensagem));
       } catch (error) {

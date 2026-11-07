@@ -105,7 +105,7 @@ export const MesaCorpo = styled.div`
 export const MesaChatPainel = styled.div`
   display: flex;
   flex-direction: column;
-  width: 380px;
+  width: min(420px, 38vw);
   flex-shrink: 0;
   min-height: 0;
 

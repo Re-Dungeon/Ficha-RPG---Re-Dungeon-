@@ -27,6 +27,7 @@ const router = createBrowserRouter(
             { path: '/personagens/:id', element: <Ficha /> },
             { path: '/campanhas', element: <Campanhas /> },
             { path: '/campanhas/:id/chat', element: <CampanhaChat /> },
+            { path: '/campanhas/:id/lateral', element: <CampanhaChat visao="lateral" /> },
             { path: '/campanhas/:id/grid', element: <CampanhaChat visao="grid" /> },
             { path: '/', element: <Navigate to="/personagens" replace /> },
             { path: '*', element: <Navigate to="/personagens" replace /> },
