@@ -109,9 +109,12 @@ describe('LojaTrapacaSection', () => {
       </SavingProvider>,
     );
 
-    fireEvent.click(await screen.findByRole('button', { name: /bênçãos únicas/i }));
-    expect(screen.getByText(/abençoado pelos céus/i)).toBeInTheDocument();
-    expect(screen.getAllByText(/desativado/i).length).toBeGreaterThan(0);
+    fireEvent.change(screen.getByLabelText(/categoria/i), { target: { value: 'Bênçãos Únicas' } });
+
+    await waitFor(() => {
+      expect(screen.getByText(/abençoado pelos céus/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/desativado/i).length).toBeGreaterThan(0);
+    });
   });
 
   it('remove o overlay quando o benefício reativa no próximo carregamento', async () => {
@@ -763,6 +766,116 @@ describe('LojaTrapacaSection', () => {
 
     expect(await screen.findByText('Benefício com Objeto')).toBeInTheDocument();
     expect(await screen.findByText('Reduz obstáculo em interação social.')).toBeInTheDocument();
+  });
+
+  it('filtra, ordena e combina busca por nome, custo e categoria da loja', async () => {
+    getBeneficiosPorUniverso.mockResolvedValue([
+      {
+        id: 'ben-1',
+        nome: 'Mão de Ferro',
+        categoria: 'Vantagens Táticas',
+        tag: 'Combate',
+        tipoBonus: 'Vantagem',
+        descricao: 'Ganha vantagem em ataques.',
+        bonus: '+1 em ataque',
+        custo: 14,
+        tokens: ['Combate'],
+        ativo: true,
+        acumulavel: false,
+        limiteAcumulo: 0,
+        limitePeriodo: 0,
+        periodo: 'Nenhum',
+        universos: ['universo-1'],
+        imagem: '',
+        tipoAtivacao: 'manual',
+      },
+      {
+        id: 'ben-2',
+        nome: 'Arco da Aurora',
+        categoria: 'Bênçãos Únicas',
+        tag: 'Divino',
+        tipoBonus: 'Bonus',
+        descricao: 'Impacto místico e brilho.',
+        bonus: '+2 em testes de foco',
+        custo: 7,
+        tokens: ['Divino'],
+        ativo: true,
+        acumulavel: false,
+        limiteAcumulo: 0,
+        limitePeriodo: 0,
+        periodo: 'Nenhum',
+        universos: ['universo-1'],
+        imagem: '',
+        tipoAtivacao: 'manual',
+      },
+      {
+        id: 'ben-3',
+        nome: 'Passo de Vento',
+        categoria: 'Vantagens Táticas',
+        tag: 'Combate',
+        tipoBonus: 'Vantagem',
+        descricao: 'Aumenta mobilidade.',
+        bonus: '+1 em deslocamento',
+        custo: 18,
+        tokens: ['Combate'],
+        ativo: true,
+        acumulavel: true,
+        limiteAcumulo: 2,
+        limitePeriodo: 0,
+        periodo: 'Nenhum',
+        universos: ['universo-1'],
+        imagem: '',
+        tipoAtivacao: 'manual',
+      },
+      {
+        id: 'ben-4',
+        nome: 'Manto do Silêncio',
+        categoria: 'Bênçãos Únicas',
+        tag: 'Divino',
+        tipoBonus: 'Habilidade',
+        descricao: 'Faz o mestre duvidar.',
+        bonus: '+1 em sigilo',
+        custo: 12,
+        tokens: ['Divino'],
+        ativo: true,
+        acumulavel: false,
+        limiteAcumulo: 0,
+        limitePeriodo: 0,
+        periodo: 'Nenhum',
+        universos: ['universo-1'],
+        imagem: '',
+        tipoAtivacao: 'manual',
+      },
+    ]);
+
+    render(
+      <SavingProvider>
+        <LojaTrapacaSection personagem={personagem} onSave={vi.fn().mockResolvedValue()} />
+      </SavingProvider>,
+    );
+
+    await screen.findByText('Mão de Ferro');
+
+    fireEvent.change(screen.getByLabelText(/pesquisar benefício/i), { target: { value: 'm' } });
+    fireEvent.change(screen.getByLabelText(/faixa de preço/i), { target: { value: '11-20' } });
+    fireEvent.change(screen.getByLabelText(/categoria/i), { target: { value: 'Vantagens Táticas' } });
+
+    await waitFor(() => {
+      expect(screen.getByText('Mão de Ferro')).toBeInTheDocument();
+      expect(screen.queryByText('Passo de Vento')).not.toBeInTheDocument();
+      expect(screen.queryByText('Arco da Aurora')).not.toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByLabelText(/pesquisar benefício/i), { target: { value: '' } });
+    fireEvent.change(screen.getByLabelText(/faixa de preço/i), { target: { value: 'todas' } });
+    fireEvent.change(screen.getByLabelText(/ordenação/i), { target: { value: 'za' } });
+
+    await waitFor(() => {
+      const visibleNames = screen.getAllByRole('button', { name: /abrir detalhes de/i })
+        .map(button => button.getAttribute('aria-label'))
+        .filter(Boolean);
+      expect(visibleNames[0]).toContain('Passo de Vento');
+    });
   });
 
   it('mostra nomes de universos e limita a visualização a 3 itens com contador para o restante', async () => {

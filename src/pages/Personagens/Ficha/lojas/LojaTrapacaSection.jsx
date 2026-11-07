@@ -28,6 +28,48 @@ import { SectionTitle } from '../styles';
 
 const normalizeText = value => String(value ?? '').trim();
 
+const FILTER_BANDS = [
+  {
+    value: 'todas',
+    label: 'Todas',
+    match: () => true,
+  },
+  {
+    value: '0-5',
+    label: 'Até 5',
+    match: custo => Number(custo) <= 5,
+  },
+  {
+    value: '6-10',
+    label: '6 a 10',
+    match: custo => {
+      const valor = Number(custo);
+      return valor >= 6 && valor <= 10;
+    },
+  },
+  {
+    value: '11-20',
+    label: '11 a 20',
+    match: custo => {
+      const valor = Number(custo);
+      return valor >= 11 && valor <= 20;
+    },
+  },
+  {
+    value: '21-50',
+    label: '21 a 50',
+    match: custo => {
+      const valor = Number(custo);
+      return valor >= 21 && valor <= 50;
+    },
+  },
+  {
+    value: '51+',
+    label: 'Acima de 50',
+    match: custo => Number(custo) > 50,
+  },
+];
+
 const resolveBenefitImage = benefit => {
   const candidates = [
     benefit?.imagem,
@@ -402,27 +444,123 @@ const LojaGrid = styled.div`
   }
 `;
 
-const CategoryTabs = styled.div`
+const FilterPanel = styled.div`
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin: 8px 0 20px;
+  flex-direction: column;
+  gap: 8px;
+  margin: 8px 0 18px;
 `;
 
-const CategoryTab = styled.button`
-  border: 1px solid rgba(232, 203, 133, 0.22);
-  background: ${({ $ativo }) => ($ativo ? 'linear-gradient(135deg, rgba(108,99,255,0.23), rgba(232,195,106,0.12))' : 'rgba(12, 17, 32, 0.7)')};
-  color: ${({ $ativo }) => ($ativo ? 'var(--status-gold-strong)' : 'var(--text-primary)')};
-  border-radius: 999px;
-  padding: 10px 16px;
+const FilterBar = styled.div`
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(0, 1.4fr) minmax(0, 1.1fr) minmax(0, 1.1fr) 52px;
+  gap: 12px;
+  align-items: end;
+
+  @media (max-width: 760px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (max-width: 520px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const FilterField = styled.label`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-size: 0.72rem;
   font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: ${({ $ativo }) => ($ativo ? '0 10px 22px rgba(108,99,255,0.14)' : 'none')};
+  letter-spacing: 0.02em;
+
+  span {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+`;
+
+const FilterInput = styled.input`
+  width: 100%;
+  min-height: 40px;
+  border-radius: 10px;
+  border: 1px solid rgba(232, 203, 133, 0.2);
+  background: rgba(9, 12, 26, 0.72);
+  color: var(--text-primary);
+  padding: 9px 12px;
+  font: inherit;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 
   &:hover {
+    border-color: rgba(232, 203, 133, 0.32);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: rgba(232, 203, 133, 0.5);
+    box-shadow: 0 0 0 2px rgba(232, 203, 133, 0.14);
+  }
+`;
+
+const FilterClearButton = styled(IconButton)`
+  width: 52px;
+  min-width: 52px;
+  height: 40px;
+  padding: 0;
+  border-radius: 10px;
+  border: 1px solid rgba(232, 203, 133, 0.2);
+  background: rgba(9, 12, 26, 0.72);
+  color: var(--status-gold);
+  align-self: end;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    background: rgba(232, 203, 133, 0.08);
+    border-color: rgba(232, 203, 133, 0.4);
+    box-shadow: 0 0 0 1px rgba(232, 203, 133, 0.12);
     transform: translateY(-1px);
-    border-color: rgba(232, 203, 133, 0.42);
+  }
+
+  &:focus-visible {
+    outline: none;
+    border-color: rgba(232, 203, 133, 0.5);
+    box-shadow: 0 0 0 2px rgba(232, 203, 133, 0.14);
+  }
+
+  .MuiIconButton-label {
+    font-size: 1.2rem;
+    line-height: 1;
+  }
+`;
+
+const FilterSelect = styled.select`
+  width: 100%;
+  min-height: 40px;
+  border-radius: 10px;
+  border: 1px solid rgba(232, 203, 133, 0.2);
+  background: rgba(9, 12, 26, 0.72);
+  color: var(--text-primary);
+  padding: 9px 34px 9px 12px;
+  font: inherit;
+  cursor: pointer;
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, rgba(232, 203, 133, 0.8) 50%),
+    linear-gradient(135deg, rgba(232, 203, 133, 0.8) 50%, transparent 50%);
+  background-position: calc(100% - 18px) calc(50% - 3px), calc(100% - 12px) calc(50% - 3px);
+  background-size: 6px 6px;
+  background-repeat: no-repeat;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    border-color: rgba(232, 203, 133, 0.32);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: rgba(232, 203, 133, 0.5);
+    box-shadow: 0 0 0 2px rgba(232, 203, 133, 0.14);
   }
 `;
 
@@ -430,6 +568,7 @@ const BenefitCard = styled.div`
   position: relative;
   display: flex;
   flex-direction: column;
+  height: 100%;
   border: 1px solid rgba(232, 203, 133, 0.2);
   border-radius: 18px;
   background: linear-gradient(180deg, rgba(8, 15, 30, 0.96), rgba(18, 23, 36, 0.9));
@@ -520,9 +659,23 @@ const CardPrice = styled.div`
 
 const CardBody = styled.div`
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 12px;
   padding: 14px 14px 16px;
+`;
+
+const CardContent = styled.div`
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+`;
+
+const CardFooter = styled.div`
+  margin-top: auto;
+  padding-top: 4px;
 `;
 
 const CardHeader = styled.div`
@@ -970,6 +1123,9 @@ const LojaTrapacaSection = ({ personagem, onSave, aba = 'trapaca' }) => {
   const fortunaAtual = personagem.sorte?.fortunaAtual ?? 0;
   const { executar } = useSaving();
   const [categoriaAtiva, setCategoriaAtiva] = useState('Todos');
+  const [pesquisa, setPesquisa] = useState('');
+  const [faixaPreco, setFaixaPreco] = useState('todas');
+  const [ordenacao, setOrdenacao] = useState('az');
   const [beneficios, setBeneficios] = useState([]);
   const [efeitosGuardados, setEfeitosGuardados] = useState([]);
   const [carregando, setCarregando] = useState(true);
@@ -1141,15 +1297,38 @@ const LojaTrapacaSection = ({ personagem, onSave, aba = 'trapaca' }) => {
     return ['Todos', ...Array.from(categorias.values())];
   }, [beneficios]);
 
-  const beneficiosFiltrados = useMemo(
-    () => {
-      if (categoriaAtiva === 'Todos') {
-        return beneficios;
+  const beneficiosFiltrados = useMemo(() => {
+    const termo = normalizeText(pesquisa).toLowerCase();
+    const faixaAtiva = FILTER_BANDS.find(item => item.value === faixaPreco) ?? FILTER_BANDS[0];
+
+    const lista = beneficios.filter(beneficio => {
+      const categoria = normalizeCategoria(beneficio.categoria ?? beneficio.tag ?? beneficio.tipo);
+      const nome = normalizeText(beneficio.nome ?? '').toLowerCase();
+      const custo = Number(beneficio.custo ?? 0);
+      const atendeCategoria = categoriaAtiva === 'Todos' || categoria === categoriaAtiva;
+      const atendeBusca = !termo || nome.includes(termo);
+      const atendeFaixaPreco = faixaAtiva.match(custo);
+
+      return atendeCategoria && atendeBusca && atendeFaixaPreco;
+    });
+
+    return [...lista].sort((a, b) => {
+      const nomeA = normalizeText(a.nome ?? '').toLocaleLowerCase('pt-BR');
+      const nomeB = normalizeText(b.nome ?? '').toLocaleLowerCase('pt-BR');
+
+      switch (ordenacao) {
+        case 'za':
+          return nomeB.localeCompare(nomeA, 'pt-BR', { sensitivity: 'base' }) || Number(b.custo ?? 0) - Number(a.custo ?? 0);
+        case 'custo-asc':
+          return Number(a.custo ?? 0) - Number(b.custo ?? 0) || nomeA.localeCompare(nomeB, 'pt-BR', { sensitivity: 'base' });
+        case 'custo-desc':
+          return Number(b.custo ?? 0) - Number(a.custo ?? 0) || nomeA.localeCompare(nomeB, 'pt-BR', { sensitivity: 'base' });
+        case 'az':
+        default:
+          return nomeA.localeCompare(nomeB, 'pt-BR', { sensitivity: 'base' }) || Number(a.custo ?? 0) - Number(b.custo ?? 0);
       }
-      return beneficios.filter(beneficio => normalizeCategoria(beneficio.categoria ?? beneficio.tag ?? beneficio.tipo) === categoriaAtiva);
-    },
-    [beneficios, categoriaAtiva],
-  );
+    });
+  }, [beneficios, categoriaAtiva, faixaPreco, ordenacao, pesquisa]);
 
   const efeitosAtivosGuardaveis = useMemo(() => {
     const catalogoPorId = new Map(beneficios.map(beneficio => [beneficio.id, beneficio]));
@@ -1437,25 +1616,87 @@ const LojaTrapacaSection = ({ personagem, onSave, aba = 'trapaca' }) => {
     <div>
       {aba === 'trapaca' && (
         <>
-          <CategoryTabs>
-            {categoriasDisponiveis.map(categoria => (
-              <CategoryTab
-                key={categoria}
-                type="button"
-                $ativo={categoriaAtiva === categoria}
-                onClick={() => setCategoriaAtiva(categoria)}
-              >
-                {categoria}
-              </CategoryTab>
-            ))}
-          </CategoryTabs>
+          <FilterPanel>
+            <FilterBar>
+              <FilterField>
+                <span>Pesquisa</span>
+                <FilterInput
+                  aria-label="Pesquisar benefício"
+                  type="search"
+                  value={pesquisa}
+                  onChange={event => setPesquisa(event.target.value)}
+                  placeholder="Nome do efeito"
+                />
+              </FilterField>
+
+              <FilterField>
+                <span>Categoria</span>
+                <FilterSelect
+                  aria-label="Categoria"
+                  value={categoriaAtiva}
+                  onChange={event => setCategoriaAtiva(event.target.value)}
+                >
+                  {categoriasDisponiveis.map(categoria => (
+                    <option key={categoria} value={categoria}>
+                      {categoria === 'Todos' ? 'Todas as categorias' : categoria}
+                    </option>
+                  ))}
+                </FilterSelect>
+              </FilterField>
+
+              <FilterField>
+                <span>Faixa de preço</span>
+                <FilterSelect
+                  aria-label="Faixa de preço"
+                  value={faixaPreco}
+                  onChange={event => setFaixaPreco(event.target.value)}
+                >
+                  {FILTER_BANDS.map(option => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </FilterSelect>
+              </FilterField>
+
+              <FilterField>
+                <span>Ordenação</span>
+                <FilterSelect
+                  aria-label="Ordenação"
+                  value={ordenacao}
+                  onChange={event => setOrdenacao(event.target.value)}
+                >
+                  <option value="az">Nome: A-Z</option>
+                  <option value="za">Nome: Z-A</option>
+                  <option value="custo-asc">Menor preço</option>
+                  <option value="custo-desc">Maior preço</option>
+                </FilterSelect>
+              </FilterField>
+
+              <Tooltip title="Limpar filtros" placement="top">
+                <span>
+                  <FilterClearButton
+                    type="button"
+                    size="small"
+                    aria-label="Limpar filtros"
+                    onClick={() => {
+                      setPesquisa('');
+                      setCategoriaAtiva('Todos');
+                      setFaixaPreco('todas');
+                      setOrdenacao('az');
+                    }}
+                  >
+                    🧹
+                  </FilterClearButton>
+                </span>
+              </Tooltip>
+            </FilterBar>
+          </FilterPanel>
 
           {carregando && <LoadingState>Carregando benefícios...</LoadingState>}
           {!carregando && erro && <ErrorState>{erro}</ErrorState>}
 
           {!carregando && !erro && beneficiosFiltrados.length === 0 && (
             <EmptyState>
-              Nenhum benefício disponível para este universo ou categoria no momento.
+              Nenhum benefício encontrado com os filtros atuais.
             </EmptyState>
           )}
 
@@ -1522,39 +1763,43 @@ const LojaTrapacaSection = ({ personagem, onSave, aba = 'trapaca' }) => {
                     </CardImage>
 
                     <CardBody>
-                      <CardHeader>
-                        <CardTitle>{beneficio.nome}</CardTitle>
-                      </CardHeader>
+                      <CardContent>
+                        <CardHeader>
+                          <CardTitle>{beneficio.nome}</CardTitle>
+                        </CardHeader>
 
-                      <MetaRow>
-                        <MetaPill>{beneficio.tag}</MetaPill>
-                        <MetaPill $danger={!beneficio.ativo}>{beneficio.ativo ? 'Ativo' : 'Inativo'}</MetaPill>
-                      </MetaRow>
+                        <MetaRow>
+                          <MetaPill>{beneficio.tag}</MetaPill>
+                          <MetaPill $danger={!beneficio.ativo}>{beneficio.ativo ? 'Ativo' : 'Inativo'}</MetaPill>
+                        </MetaRow>
 
-                      <CardDescription>{formatarTextoCurto(beneficio.descricao)}</CardDescription>
+                        <CardDescription>{formatarTextoCurto(beneficio.descricao)}</CardDescription>
 
-                      <BonusBox>
-                        <BoltIcon fontSize="inherit" />
-                        <span>{beneficio.bonus}</span>
-                      </BonusBox>
+                        <BonusBox>
+                          <BoltIcon fontSize="inherit" />
+                          <span>{beneficio.bonus}</span>
+                        </BonusBox>
 
-                      <TokenRow>
-                        {beneficio.tokens.slice(0, 3).map(token => (
-                          <TokenPill key={`${beneficio.id}-${token}`}>{token}</TokenPill>
-                        ))}
-                      </TokenRow>
+                        <TokenRow>
+                          {beneficio.tokens.slice(0, 3).map(token => (
+                            <TokenPill key={`${beneficio.id}-${token}`}>{token}</TokenPill>
+                          ))}
+                        </TokenRow>
+                      </CardContent>
 
-                      <Button
-                        fullWidth
-                        variant="contained"
-                        disabled={bloqueado || semSaldo || limiteAtingido || indisponivel}
-                        onClick={event => {
-                          event.stopPropagation();
-                          handleComprar(beneficio);
-                        }}
-                      >
-                        {textoBotao}
-                      </Button>
+                      <CardFooter>
+                        <Button
+                          fullWidth
+                          variant="contained"
+                          disabled={bloqueado || semSaldo || limiteAtingido || indisponivel}
+                          onClick={event => {
+                            event.stopPropagation();
+                            handleComprar(beneficio);
+                          }}
+                        >
+                          {textoBotao}
+                        </Button>
+                      </CardFooter>
                     </CardBody>
                   </BenefitCard>
                 );
