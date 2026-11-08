@@ -1058,6 +1058,16 @@ const gridCenaRef = (campanhaId, cenaId) =>
 const gridTokensRef = (campanhaId, cenaId) =>
   collection(db, 'rmCampanhas', campanhaId, 'gridCenas', cenaId, 'tokens');
 
+// Opção do mestre em `grid/atual` (só ele grava, no Re:Master): as ações da
+// Central de Ações feitas pelo Grid em combate aparecem no chat. Chama
+// `onChange(boolean)` — campo ausente = false.
+export const subscribeGridAvisarAcoesChat = (campanhaId, onChange, onError) =>
+  onSnapshot(
+    gridRef(campanhaId),
+    snapshot => onChange(snapshot.exists() && snapshot.data().avisarAcoesChat === true),
+    onError,
+  );
+
 // Chama `onChange(cenaAtivaId | null)`.
 export const subscribeGridCenaAtiva = (campanhaId, onChange, onError) =>
   onSnapshot(

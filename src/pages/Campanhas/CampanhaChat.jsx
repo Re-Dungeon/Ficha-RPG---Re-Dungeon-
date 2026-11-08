@@ -19,6 +19,7 @@ import GridOnIcon from '@mui/icons-material/GridOn';
 import { useAuth } from 'context/AuthContext';
 import { useSelecao } from 'context/selecaoContext';
 import {
+  addChatMensagem,
   atualizarRecursoAtualPersonagem,
   getCondicoesPorUniverso,
   getPersonagens,
@@ -26,12 +27,13 @@ import {
   normalizarPersonagemCarregado,
   updatePersonagem,
 } from 'service/storage';
-import { personagensNaCampanha } from 'common/utils/chat';
+import { montarMensagemTexto, personagensNaCampanha } from 'common/utils/chat';
 import { corDoPing } from 'common/utils/grid';
 import { podeEditarArea } from 'common/utils/gridAreas';
 import { autorDoToken } from 'common/utils/gridRolagem';
 import { contarNaoLidas, idDaUltimaMensagem } from 'common/utils/mesa';
 import { MOBILE } from 'common/styles/breakpoints';
+import useAvisarAcoesChat from 'hooks/useAvisarAcoesChat';
 import useIsMobile from 'hooks/useIsMobile';
 import useChatCampanha from 'hooks/useChatCampanha';
 import useGridCampanha from 'hooks/useGridCampanha';
@@ -48,6 +50,9 @@ import {
   normalizarEstadoCombate,
   prontidaoMaximaDaFicha,
 } from 'pages/Personagens/Ficha/prontidao/config';
+import { textoAvisoAcao } from 'pages/Personagens/Ficha/prontidao/avisoChat';
+import ProntidaoModal from 'pages/Personagens/Ficha/prontidao/ProntidaoModal';
+import { autorDaFicha, personagemDaCentral } from './centralNoGrid';
 
 import { ChatPageWrapper, MesaBarra, MesaChatPainel, MesaCorpo } from './styles';
 
@@ -103,6 +108,8 @@ const CampanhaChat = ({ visao = 'chat' }) => {
   const [ppRestauradoEm, setPpRestauradoEm] = useState(null);
   // Token em nome de quem se está rolando (diálogo "Rolar…" do grid).
   const [tokenRolando, setTokenRolando] = useState(null);
+  // Central de Ações aberta pela faixa de iniciativa (combate no grid).
+  const [centralAberta, setCentralAberta] = useState(false);
 
   const isMestre = campanha?.mestreId === currentUser.uid;
   const universoId = campanha?.universoId ?? null;
@@ -316,6 +323,57 @@ const CampanhaChat = ({ visao = 'chat' }) => {
       setErro('Não foi possível restaurar a Prontidão.');
     }
   }, [chaveTurno, fichaDaVez]);
+
+  // Central de Ações no grid: aparece durante todo o combate para quem tem
+  // personagem na iniciativa (centralNoGrid.js escolhe qual). Com a opção do
+  // mestre `avisarAcoesChat` ligada, cada ação vira mensagem no chat como o
+  // personagem.
+  const avisarAcoesChat = useAvisarAcoesChat(visao === 'grid' || visao === 'lateral' ? campanhaId : null);
+  const personagemCentralId = personagemDaCentral({
+    combate: combateGrid,
+    tokens: grid.tokens,
+    fichas: fichasGrid,
+    meusPersonagensIds: meusPersonagens.map(p => p.id),
+    tokenDaVezId: tokenDaVez?.id ?? null,
+    falandoComo,
+  });
+  const fichaBrutaCentral = personagemCentralId ? (fichasGrid?.[personagemCentralId] ?? null) : null;
+  const fichaCentral = useMemo(
+    () => (fichaBrutaCentral ? normalizarPersonagemCarregado(fichaBrutaCentral) : null),
+    [fichaBrutaCentral],
+  );
+  const salvarFichaCentral = useCallback(
+    async patch => {
+      if (!fichaCentral) return;
+      try {
+        await updatePersonagem(fichaCentral.id, patch);
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('Falha ao salvar a Central de Ações:', error);
+        setErro('Não foi possível salvar a ação.');
+        throw error;
+      }
+    },
+    [fichaCentral],
+  );
+  const avisarAcaoNoChat = useCallback(
+    async acao => {
+      if (!avisarAcoesChat || !fichaCentral) return;
+      try {
+        await addChatMensagem(
+          campanhaId,
+          montarMensagemTexto(autorDaFicha(currentUser.uid, fichaCentral), textoAvisoAcao(acao)),
+        );
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('Falha ao avisar a ação no chat:', error);
+        setErro('A ação foi salva, mas não foi possível avisar no chat.');
+      }
+    },
+    [avisarAcoesChat, campanhaId, currentUser.uid, fichaCentral],
+  );
+  // O combate acabou (ou meu token saiu dele): a Central fecha sozinha.
+  if (centralAberta && !fichaCentral) setCentralAberta(false);
   if (ultimaVistaId === undefined && !chat.carregando) {
     setUltimaVistaId(idDaUltimaMensagem(chat.mensagens));
   }
@@ -654,6 +712,7 @@ const CampanhaChat = ({ visao = 'chat' }) => {
             acoesCombate={{
               encerrarTurno: grid.meuTurno ? grid.encerrarTurno : undefined,
               restaurarPp: podeRestaurarPp ? handleRestaurarPp : undefined,
+              centralAcoes: fichaCentral ? () => setCentralAberta(true) : undefined,
               ...(grid.veTudo
                 ? { anterior: () => grid.mudarTurno(-1), proximo: () => grid.mudarTurno(1) }
                 : {}),
@@ -673,6 +732,18 @@ const CampanhaChat = ({ visao = 'chat' }) => {
           onRolar={handleRolarDoToken}
           onClose={fecharRolarDoToken}
         />
+        {fichaCentral && (
+          <ProntidaoModal
+            open={centralAberta}
+            onClose={() => setCentralAberta(false)}
+            personagem={fichaCentral}
+            onSave={salvarFichaCentral}
+            prontidaoValor={prontidaoMaximaDaFicha(fichaCentral)}
+            tipo="central"
+            origem="grid"
+            onAcaoRegistrada={avisarAcaoNoChat}
+          />
+        )}
         <ErrorSnackbar open={!!erroExibido} mensagem={erroExibido} onClose={fecharErro} />
       </ChatPageWrapper>
     );

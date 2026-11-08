@@ -27,6 +27,7 @@ import {
 } from './config';
 import { getItensInventario, removeItemInventario, updateItemInventario } from 'service/storage';
 import { QUALIDADE_META, obterEmojiTipo } from 'pages/Personagens/Ficha/inventario/constants';
+import { rotulosDosStatus } from './avisoChat';
 
 const categoriaPorId = new Map(CATEGORIAS_ACOES_PRONTIDAO.map(categoria => [categoria.id, categoria.label]));
 
@@ -291,8 +292,17 @@ const calcularRecuperacaoStatus = (personagem, percentual) => {
   };
 };
 
-const ProntidaoModal = ({ open, onClose, personagem, onSave, prontidaoValor, tipo = 'central' }) => {
+// `origem="grid"`: aberta pela faixa de iniciativa do Grid em combate — o turno
+// é controlado pelo combate ("Seu turno! Restaurar PP"), então "Iniciar novo
+// turno"/"Resetar turnos" somem. `onAcaoRegistrada({ nome, detalhe, ppAtual,
+// ppMaximo })` é chamada depois de cada ação salva (não em cancelar/resetar) —
+// o Grid usa para o aviso no chat.
+const ProntidaoModal = ({ open, onClose, personagem, onSave, prontidaoValor, tipo = 'central', origem = 'ficha', onAcaoRegistrada }) => {
   const ppMaximo = calcularPpMaximo(prontidaoValor);
+  const controlaTurnos = origem !== 'grid';
+  const avisarAcao = (nome, detalhe, ppAtual) => {
+    onAcaoRegistrada?.({ nome, detalhe, ppAtual, ppMaximo });
+  };
   const [categoriaAtiva, setCategoriaAtiva] = useState('todas');
   const [pesquisa, setPesquisa] = useState('');
   const [confirmarNovoTurno, setConfirmarNovoTurno] = useState(false);
@@ -476,6 +486,7 @@ const ProntidaoModal = ({ open, onClose, personagem, onSave, prontidaoValor, tip
       if (onSave) {
         await onSave({ estadoCombate: proximoEstado });
       }
+      avisarAcao(`${acao.nome} (grátis)`, 'Ação Extra', estadoCombate.ppAtual);
       return;
     }
 
@@ -556,6 +567,7 @@ const ProntidaoModal = ({ open, onClose, personagem, onSave, prontidaoValor, tip
       if (onSave) {
         await onSave({ estadoCombate: proximoEstado });
       }
+      avisarAcao('Recuperar-se', `+${recuperacao} PP`, proximoAtual);
       return;
     }
 
@@ -587,6 +599,7 @@ const ProntidaoModal = ({ open, onClose, personagem, onSave, prontidaoValor, tip
     if (onSave) {
       await onSave({ estadoCombate: proximoEstado });
     }
+    avisarAcao(acao.nome, `-${custo} PP`, proximoAtual);
   };
 
   const confirmarDescansoAgora = async () => {
@@ -646,10 +659,11 @@ const ProntidaoModal = ({ open, onClose, personagem, onSave, prontidaoValor, tip
       };
 
       const proximoAtual = ppMaximo;
+      const detalheDescanso = `Saúde ${saudeAtual}→${proximaSaude} • Energia ${energiaAtual}→${proximaEnergia} • Fadiga ${fadigaAtual}→${proximaFadiga} • PP ${estadoCombate.ppAtual}→${proximoAtual}`;
       const proximoHistorico = [
         registrarHistorico(
           'Descansar',
-          `Saúde ${saudeAtual}→${proximaSaude} • Energia ${energiaAtual}→${proximaEnergia} • Fadiga ${fadigaAtual}→${proximaFadiga} • PP ${estadoCombate.ppAtual}→${proximoAtual}`,
+          detalheDescanso,
           estadoCombate.turno,
           proximoAtual,
         ),
@@ -675,6 +689,7 @@ const ProntidaoModal = ({ open, onClose, personagem, onSave, prontidaoValor, tip
           statusMaximos: proximoStatusMaximos,
         });
       }
+      avisarAcao(`Descanso ${modo.id}`, detalheDescanso, null);
     } finally {
       setConfirmarDescansoEmAndamento(false);
     }
@@ -853,6 +868,12 @@ const ProntidaoModal = ({ open, onClose, personagem, onSave, prontidaoValor, tip
           statusMaximos: proximoStatusMaximos,
         });
       }
+      const recuperou = rotulosDosStatus(statusSelecionados);
+      avisarAcao(
+        `Usar item: ${itemUsado.nome || 'Item'}`,
+        `${valorRecuperacao > 0 ? '+' : ''}${valorRecuperacao}${recuperou ? ` em ${recuperou}` : ''}`,
+        proximoAtual,
+      );
     } finally {
       setConfirmandoUsoItem(false);
     }
@@ -888,6 +909,7 @@ const ProntidaoModal = ({ open, onClose, personagem, onSave, prontidaoValor, tip
     if (onSave) {
       await onSave({ estadoCombate: proximoEstado });
     }
+    avisarAcao('Ação Extra', `-${custoAcaoExtra} PP`, proximoAtual);
   };
 
   const cancelarSelecaoAcaoExtra = async () => {
@@ -940,6 +962,11 @@ const ProntidaoModal = ({ open, onClose, personagem, onSave, prontidaoValor, tip
     if (onSave) {
       await onSave({ estadoCombate: proximoEstado });
     }
+    avisarAcao(
+      'Auxiliar Aliado',
+      `-${custoAuxiliarAliado} PP · ajuda ${aliado} (${dadosAuxiliarAliado.tipoAjuda}): ${descricao}`,
+      proximoAtual,
+    );
   };
 
   const iniciarNovoTurno = async () => {
@@ -1279,6 +1306,7 @@ const ProntidaoModal = ({ open, onClose, personagem, onSave, prontidaoValor, tip
       </DialogContent>
 
       <DialogActions sx={{ p: 2, background: 'linear-gradient(180deg, rgba(16,15,24,0.98), rgba(11,11,18,0.98))', borderTop: '1px solid rgba(232,203,133,0.3)', justifyContent: 'space-between', gap: 1.5, flexWrap: 'wrap' }}>
+        {controlaTurnos ? (
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
           <Button onClick={() => setConfirmarNovoTurno(true)} variant="contained" sx={{ background: 'linear-gradient(180deg, rgba(232,203,133,0.9), rgba(166,121,64,0.92))', color: '#0f1116', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
             Iniciar novo turno
@@ -1287,6 +1315,11 @@ const ProntidaoModal = ({ open, onClose, personagem, onSave, prontidaoValor, tip
             Resetar turnos
           </Button>
         </Box>
+        ) : (
+          <Typography sx={{ color: '#b8bac8', fontSize: '0.8rem' }}>
+            O turno é controlado pelo combate do Grid.
+          </Typography>
+        )}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: '#b8bac8', fontSize: '0.8rem' }}>
           <BoltOutlinedIcon fontSize="small" sx={{ color: '#f4dda2' }} />
           <Typography sx={{ color: '#b8bac8' }}>PP atual: {estadoCombate.ppAtual} / {ppMaximo}</Typography>
@@ -2083,6 +2116,8 @@ ProntidaoModal.propTypes = {
   onSave: PropTypes.func,
   prontidaoValor: PropTypes.number,
   tipo: PropTypes.oneOf(['central', 'info']),
+  origem: PropTypes.oneOf(['ficha', 'grid']),
+  onAcaoRegistrada: PropTypes.func,
 };
 
 ProntidaoModal.defaultProps = {

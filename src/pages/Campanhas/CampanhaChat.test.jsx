@@ -20,6 +20,7 @@ import {
   setAudioMesa,
   subscribeAudioMesa,
   setChatMembro,
+  subscribeGridAvisarAcoesChat,
   subscribeGridCena,
   subscribeGridCenaAtiva,
   subscribeGridCombate,
@@ -61,6 +62,10 @@ vi.mock('service/storage', () => ({
   subscribeAudioMesa: vi.fn(),
   setAudioMesa: vi.fn(),
   subscribeGridCenaAtiva: vi.fn(),
+  subscribeGridAvisarAcoesChat: vi.fn(() => vi.fn()),
+  getItensInventario: vi.fn(() => Promise.resolve([])),
+  updateItemInventario: vi.fn(() => Promise.resolve()),
+  removeItemInventario: vi.fn(() => Promise.resolve()),
   subscribeGridCena: vi.fn(),
   subscribeGridTokens: vi.fn(),
   moverGridToken: vi.fn(),
@@ -1307,6 +1312,79 @@ describe('CampanhaChat', () => {
         expect(
           screen.queryByRole('button', { name: 'Próximo turno' }),
         ).not.toBeInTheDocument();
+        // A Central de Ações vale o combate todo, não só na minha vez.
+        expect(screen.getByRole('button', { name: 'Central de Ações' })).toBeInTheDocument();
+      });
+
+      describe('Central de Ações', () => {
+        const FICHA_CHEIA = {
+          ...FICHA_ALDRIC,
+          nome: 'Aldric',
+          estadoCombate: { ppAtual: 30, turno: 2, historicoAcoes: [] },
+        };
+
+        beforeEach(() => {
+          subscribePersonagem.mockImplementation((_id, onChange) => {
+            onChange(FICHA_CHEIA);
+            return vi.fn();
+          });
+          addChatMensagem.mockResolvedValue();
+        });
+
+        const abrirCentral = async () => {
+          renderChat(null, '/campanhas/camp-1/grid');
+          fireEvent.click(await screen.findByRole('button', { name: 'Central de Ações' }));
+          return screen.findByRole('dialog', { name: /Central de Ações/ });
+        };
+
+        it('abre pela faixa, sem os botões de turno da ficha', async () => {
+          const dialogo = await abrirCentral();
+          expect(
+            within(dialogo).queryByRole('button', { name: /Iniciar novo turno/i }),
+          ).not.toBeInTheDocument();
+          expect(
+            within(dialogo).queryByRole('button', { name: /Resetar turnos/i }),
+          ).not.toBeInTheDocument();
+          expect(
+            within(dialogo).getByText('O turno é controlado pelo combate do Grid.'),
+          ).toBeInTheDocument();
+        });
+
+        it('opção do mestre desligada: salva a ação sem avisar no chat', async () => {
+          const dialogo = await abrirCentral();
+          fireEvent.click(
+            within(dialogo).getByRole('button', { name: 'Executar ação: Movimentar-se' }),
+          );
+          await waitFor(() =>
+            expect(updatePersonagem).toHaveBeenCalledWith('p-1', {
+              estadoCombate: expect.objectContaining({ turno: 2 }),
+            }),
+          );
+          expect(addChatMensagem).not.toHaveBeenCalled();
+        });
+
+        it('opção do mestre ligada: a ação vira mensagem como o personagem', async () => {
+          subscribeGridAvisarAcoesChat.mockImplementation((_campanhaId, onChange) => {
+            onChange(true);
+            return vi.fn();
+          });
+          const dialogo = await abrirCentral();
+          fireEvent.click(
+            within(dialogo).getByRole('button', { name: 'Executar ação: Movimentar-se' }),
+          );
+          await waitFor(() =>
+            expect(addChatMensagem).toHaveBeenCalledWith(
+              'camp-1',
+              expect.objectContaining({
+                tipo: 'texto',
+                personagemId: 'p-1',
+                autorNome: 'Aldric',
+                isMestre: false,
+                texto: expect.stringMatching(/^⚡ Movimentar-se — -\d+ PP \(PP \d+\/30\)$/),
+              }),
+            ),
+          );
+        });
       });
 
       it('"só na sua vez": fora da vez o jogador não move e vê o aviso', async () => {
