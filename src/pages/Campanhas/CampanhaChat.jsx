@@ -323,9 +323,11 @@ const CampanhaChat = ({ visao = 'chat' }) => {
     try {
       const ficha = normalizarPersonagemCarregado(fichaDaVez);
       const ppMaximo = calcularPpMaximo(prontidaoMaximaDaFicha(ficha));
-      await updatePersonagem(ficha.id, {
-        estadoCombate: estadoDoNovoTurno(normalizarEstadoCombate(ficha, ppMaximo), ppMaximo),
-      });
+      await updatePersonagem(
+        ficha.id,
+        { estadoCombate: estadoDoNovoTurno(normalizarEstadoCombate(ficha, ppMaximo), ppMaximo) },
+        { base: ficha },
+      );
       setPpRestauradoEm(chaveTurno);
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -356,7 +358,9 @@ const CampanhaChat = ({ visao = 'chat' }) => {
     async patch => {
       if (!fichaCentral) return;
       try {
-        await updatePersonagem(fichaCentral.id, patch);
+        // base = a ficha que a Central mostrou: a mescla em três vias não
+        // desfaz o que mudou no documento enquanto isso.
+        await updatePersonagem(fichaCentral.id, patch, { base: fichaCentral });
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error('Falha ao salvar a Central de Ações:', error);

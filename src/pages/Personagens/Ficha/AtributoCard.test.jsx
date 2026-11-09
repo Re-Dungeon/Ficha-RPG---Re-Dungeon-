@@ -41,13 +41,13 @@ describe('AtributoCard — atalhos do menu de contexto', () => {
     await waitFor(() => expect(screen.queryByText('Configurar Defesa')).not.toBeInTheDocument());
   });
 
-  it('desktop: o diálogo da gema não mostra os atalhos (ficam no botão direito)', async () => {
+  it('desktop: o diálogo da gema também mostra os atalhos, e o botão direito continua', async () => {
     useIsMobile.mockReturnValue(false);
     renderCard('Ataque');
 
     fireEvent.click(screen.getByRole('button', { name: 'Ataque' }));
     expect(screen.getByText('Configurar Ataque')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Calculadora de Ataque' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Calculadora de Ataque' })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
     await waitFor(() => expect(screen.queryByText('Configurar Ataque')).not.toBeInTheDocument());

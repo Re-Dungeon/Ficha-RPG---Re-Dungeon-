@@ -18,6 +18,7 @@ import {
   writeBatch,
 } from 'firebase/firestore';
 import { db } from 'service/firebase';
+import { mesclarTresVias } from 'common/utils/mesclaTresVias';
 
 export const getFirestoreItems = async (collectionName, ...queryConstraints) => {
   const itemsQuery = query(collection(db, collectionName), ...queryConstraints);
@@ -165,7 +166,12 @@ export const addPersonagem = data => {
   return addFirestoreItem('personagens', payload);
 };
 
-export const updatePersonagem = async (id, data) => {
+// `base` (opcional): o personagem a partir do qual a tela montou o patch. Com
+// ele, o patch é mesclado em três vias sobre o documento mais novo
+// (common/utils/mesclaTresVias.js) — o que o usuário não mudou mantém o valor
+// do Firestore, então salvar o `status` inteiro não desfaz um PV alterado pelo
+// grid nem por outra aba/aparelho. Devolve o documento gravado.
+export const updatePersonagem = async (id, data, { base } = {}) => {
   if (!id || !data || typeof data !== 'object') {
     return null;
   }
@@ -174,7 +180,7 @@ export const updatePersonagem = async (id, data) => {
     const ref = doc(db, 'personagens', id);
     const snapshot = await transaction.get(ref);
     const atual = snapshot.exists() ? snapshot.data() : {};
-    const merged = { ...atual, ...data };
+    const merged = { ...atual, ...mesclarTresVias(base, data, atual) };
     const payload = normalizarPersistenciaCombate(atual, merged);
 
     transaction.update(ref, {

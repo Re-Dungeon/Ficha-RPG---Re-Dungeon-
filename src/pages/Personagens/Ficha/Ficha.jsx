@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -18,7 +18,12 @@ import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import HubIcon from '@mui/icons-material/Hub';
 import PetsIcon from '@mui/icons-material/Pets';
 
-import { getPersonagem, removePersonagem, updatePersonagem } from 'service/storage';
+import {
+  getPersonagem,
+  removePersonagem,
+  subscribePersonagem,
+  updatePersonagem,
+} from 'service/storage';
 import { useSelecao } from 'context/selecaoContext';
 import { SavingProvider } from 'context/SavingContext';
 
@@ -109,10 +114,34 @@ const Ficha = () => {
     };
   }, [id, navigate]);
 
+  // Ao vivo depois da primeira carga: o PV mudado pelo token no grid, outra
+  // aba ou outro aparelho aparecem aqui sem recarregar a página.
+  const carregado = Boolean(personagem);
+  useEffect(() => {
+    if (!carregado) return undefined;
+    return subscribePersonagem(
+      id,
+      dados => {
+        if (dados) setPersonagem(dados);
+      },
+      () => {},
+    );
+  }, [carregado, id]);
+
+  // `base` de cada save: o personagem que a aba tinha ao montar o patch
+  // (padrão: o atual da tela). updatePersonagem mescla em três vias, então o
+  // que o jogador não mudou não sobrescreve um valor mais novo do Firestore.
+  const personagemRef = useRef(personagem);
+  useEffect(() => {
+    personagemRef.current = personagem;
+  }, [personagem]);
+
   const handleSave = useCallback(
-    async patch => {
-      await updatePersonagem(id, patch);
-      setPersonagem(current => ({ ...current, ...patch }));
+    async (patch, { base } = {}) => {
+      const gravado = await updatePersonagem(id, patch, {
+        base: base ?? personagemRef.current,
+      });
+      setPersonagem(current => ({ ...current, ...(gravado ?? patch) }));
     },
     [id],
   );
