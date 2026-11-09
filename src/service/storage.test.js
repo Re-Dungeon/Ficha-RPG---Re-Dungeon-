@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { collection, doc, getDocs, runTransaction, where } from 'firebase/firestore';
 
 vi.mock('service/firebase', () => ({
@@ -31,7 +31,11 @@ import {
   atualizarRecursoAtualPersonagem,
   consumirRecursosPersonagem,
   getBeneficiosPorUniverso,
+  getClassesPorUniverso,
+  getDivindades,
   getOrigensPorUniverso,
+  getPersonagens,
+  limparCacheCatalogos,
   normalizarPersonagemCarregado,
   updatePersonagem,
 } from './storage';
@@ -39,6 +43,7 @@ import {
 describe('storage benefit catalog', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    limparCacheCatalogos();
     getDocs.mockResolvedValue({
       docs: [{ id: 'b1', data: () => ({ universo: 'u1', nome: 'Benefício do universo', universos: ['u1'] }) }],
     });
@@ -59,6 +64,7 @@ describe('storage benefit catalog', () => {
 describe('origin catalog compatibility', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    limparCacheCatalogos();
   });
 
   it('filtra origens por universo legado e por arrays multiuniverso sem duplicar registros', async () => {
@@ -270,5 +276,83 @@ describe('atualizarRecursoAtualPersonagem', () => {
     expect(r.update.mock.calls[0][1]['status.fadiga.atual']).toBe(6);
     await expect(atualizarRecursoAtualPersonagem('p1', 'ouro', 1)).rejects.toThrow();
     await expect(atualizarRecursoAtualPersonagem('p1', 'pv', 'x')).rejects.toThrow();
+  });
+});
+
+describe('cache dos catálogos de referência', () => {
+  const respostaClasses = [{ id: 'c1', data: () => ({ universo: 'u1', nome: 'Guerreiro' }) }];
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    limparCacheCatalogos();
+    getDocs.mockResolvedValue({ docs: respostaClasses });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('a segunda leitura do mesmo catálogo e universo não vai ao Firestore', async () => {
+    const primeira = await getClassesPorUniverso('u1');
+    const segunda = await getClassesPorUniverso('u1');
+
+    expect(getDocs).toHaveBeenCalledTimes(1);
+    expect(segunda).toEqual(primeira);
+  });
+
+  it('universos e catálogos diferentes têm entradas separadas', async () => {
+    await getClassesPorUniverso('u1');
+    await getClassesPorUniverso('u2');
+    await getDivindades();
+
+    expect(getDocs).toHaveBeenCalledTimes(3);
+  });
+
+  it('duas leituras simultâneas dividem a mesma consulta', async () => {
+    await Promise.all([getClassesPorUniverso('u1'), getClassesPorUniverso('u1')]);
+    expect(getDocs).toHaveBeenCalledTimes(1);
+  });
+
+  it('devolve cópia: alterar a lista recebida não suja o cache', async () => {
+    const primeira = await getClassesPorUniverso('u1');
+    primeira.push({ id: 'lixo' });
+    primeira.length = 0;
+
+    const segunda = await getClassesPorUniverso('u1');
+    expect(segunda).toHaveLength(1);
+  });
+
+  it('falha não fica guardada: a próxima chamada tenta de novo', async () => {
+    getDocs.mockRejectedValueOnce(new Error('offline'));
+
+    await expect(getClassesPorUniverso('u1')).rejects.toThrow('offline');
+    const lista = await getClassesPorUniverso('u1');
+
+    expect(lista).toHaveLength(1);
+    expect(getDocs).toHaveBeenCalledTimes(2);
+  });
+
+  it('expira depois de 10 minutos', async () => {
+    vi.useFakeTimers();
+    await getClassesPorUniverso('u1');
+    vi.advanceTimersByTime(10 * 60 * 1000 + 1);
+    await getClassesPorUniverso('u1');
+
+    expect(getDocs).toHaveBeenCalledTimes(2);
+  });
+
+  it('limparCacheCatalogos força uma nova leitura', async () => {
+    await getClassesPorUniverso('u1');
+    limparCacheCatalogos();
+    await getClassesPorUniverso('u1');
+
+    expect(getDocs).toHaveBeenCalledTimes(2);
+  });
+
+  it('personagens nunca passam pelo cache', async () => {
+    await getPersonagens('user-1');
+    await getPersonagens('user-1');
+
+    expect(getDocs).toHaveBeenCalledTimes(2);
   });
 });

@@ -739,12 +739,40 @@ export const duplicateComboDefesa = async (personagemId, comboId) => {
 // Compartilhadas no mesmo Firestore; nunca add*/update*/remove* a partir
 // deste site (ver MIGRACAO-REACT-FIREBASE.md §4).
 
-const getColecaoPorUniverso = (collectionName, universoId) =>
-  getFirestoreItems(collectionName, where('universo', '==', universoId));
+// Cache em memória dos catálogos: eles mudam raramente (só o admin os edita) e
+// cada aba/modal da ficha os relê ao abrir. Chave "coleção|universo" → promise
+// da consulta + validade. A promise (não o resultado) fica guardada para duas
+// aberturas simultâneas dividirem a mesma leitura; se ela falhar, a entrada sai
+// e a próxima chamada tenta de novo. Quem chama recebe uma cópia da lista, então
+// não consegue alterar o que está no cache. Só catálogos de referência passam
+// por aqui — personagens, rm* e subcoleções sempre vão ao Firestore.
+const CATALOGO_TTL_MS = 10 * 60 * 1000;
+const cacheCatalogos = new Map();
 
-export const getUniverso = () => getFirestoreItems('Universo');
-export const getOrigens = () => getFirestoreItems('origens');
-export const getDivindades = () => getFirestoreItems('divindades');
+export const limparCacheCatalogos = () => cacheCatalogos.clear();
+
+const comCacheCatalogo = async (chave, carregar) => {
+  const agora = Date.now();
+  let entrada = cacheCatalogos.get(chave);
+  if (!entrada || entrada.expiraEm <= agora) {
+    const promessa = carregar();
+    entrada = { promessa, expiraEm: agora + CATALOGO_TTL_MS };
+    cacheCatalogos.set(chave, entrada);
+    promessa.catch(() => {
+      if (cacheCatalogos.get(chave) === entrada) cacheCatalogos.delete(chave);
+    });
+  }
+  return [...(await entrada.promessa)];
+};
+
+const getColecaoPorUniverso = (collectionName, universoId) =>
+  comCacheCatalogo(`${collectionName}|${universoId}`, () =>
+    getFirestoreItems(collectionName, where('universo', '==', universoId)),
+  );
+
+export const getUniverso = () => comCacheCatalogo('Universo|', () => getFirestoreItems('Universo'));
+export const getOrigens = () => comCacheCatalogo('origens|', () => getFirestoreItems('origens'));
+export const getDivindades = () => comCacheCatalogo('divindades|', () => getFirestoreItems('divindades'));
 
 export const getRacasPorUniverso = universoId =>
   getColecaoPorUniverso('racas', universoId);
@@ -770,7 +798,7 @@ export const getCorposEspeciaisPorUniverso = universoId =>
 // mescla, removendo duplicatas por id (mesmo padrão validado em 2026-07-22 para
 // aptidoes, estendido em 2026-07-23 quando condicoes/regras ganharam o mesmo
 // campo `universos` no admin, commit dd0d038).
-const getColecaoMultiUniversoPorUniverso = async (collectionName, universoId) => {
+const carregarColecaoMultiUniverso = async (collectionName, universoId) => {
   const [porUniversos, porUniversoLegado] = await Promise.all([
     getFirestoreItems(collectionName, where('universos', 'array-contains', universoId)),
     getFirestoreItems(collectionName, where('universo', '==', universoId)),
@@ -794,6 +822,11 @@ const getColecaoMultiUniversoPorUniverso = async (collectionName, universoId) =>
     return true;
   });
 };
+
+const getColecaoMultiUniversoPorUniverso = (collectionName, universoId) =>
+  comCacheCatalogo(`${collectionName}|${universoId}|multi`, () =>
+    carregarColecaoMultiUniverso(collectionName, universoId),
+  );
 
 export const getCondicoesPorUniverso = universoId =>
   getColecaoMultiUniversoPorUniverso('condicoes', universoId);
