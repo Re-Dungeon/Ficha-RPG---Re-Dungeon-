@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import Avatar from '@mui/material/Avatar';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 
@@ -32,6 +38,12 @@ import {
 const ChatMensagem = ({ mensagem, minha, podeApagar, onApagar }) => {
   const [imagemFalhou, setImagemFalhou] = useState(false);
   const [imagemAmpliadaAberta, setImagemAmpliadaAberta] = useState(false);
+  const [confirmacaoExclusaoAberta, setConfirmacaoExclusaoAberta] = useState(false);
+
+  const confirmarExclusao = () => {
+    onApagar(mensagem);
+    setConfirmacaoExclusaoAberta(false);
+  };
 
   if (mensagem.tipo === TIPOS_MENSAGEM.ROLAGEM && mensagem.rolagem) {
     return (
@@ -118,7 +130,7 @@ const ChatMensagem = ({ mensagem, minha, podeApagar, onApagar }) => {
             <IconButton
               size="small"
               aria-label="Apagar mensagem"
-              onClick={() => onApagar(mensagem)}
+              onClick={() => setConfirmacaoExclusaoAberta(true)}
               sx={{ color: 'var(--text-muted)' }}
             >
               <DeleteOutlineIcon fontSize="inherit" />
@@ -126,6 +138,48 @@ const ChatMensagem = ({ mensagem, minha, podeApagar, onApagar }) => {
           </MensagemAcoes>
         )}
       </MensagemBalao>
+
+      <Dialog
+        open={confirmacaoExclusaoAberta}
+        onClose={() => setConfirmacaoExclusaoAberta(false)}
+        fullWidth
+        maxWidth="xs"
+        slotProps={{
+          paper: {
+            sx: {
+              borderRadius: 3,
+              border: '1px solid rgba(232, 203, 133, 0.4)',
+              background: 'linear-gradient(180deg, rgba(15, 13, 23, 0.98), rgba(10, 10, 18, 0.98))',
+              boxShadow: '0 24px 60px rgba(0, 0, 0, 0.55)',
+            },
+          },
+        }}
+      >
+        <DialogTitle sx={{ color: 'var(--color-primary)', fontWeight: 800, pb: 1.5 }}>
+          Excluir mensagem?
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ color: 'var(--text-secondary)', fontSize: '0.96rem' }}>
+            Essa ação remove a mensagem do chat e não pode ser desfeita.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2.5, pt: 1 }}>
+          <Button
+            onClick={() => setConfirmacaoExclusaoAberta(false)}
+            sx={{ color: 'var(--text-secondary)' }}
+          >
+            Cancelar
+          </Button>
+          <Button
+            onClick={confirmarExclusao}
+            variant="contained"
+            color="error"
+            sx={{ borderRadius: 999, px: 2.25, fontWeight: 700 }}
+          >
+            Excluir
+          </Button>
+        </DialogActions>
+      </Dialog>
     </MensagemLinha>
   );
 };
