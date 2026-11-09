@@ -89,6 +89,11 @@ export const MesaCorpo = styled.div`
   display: flex;
   gap: 12px;
 
+  /* Com a divisão arrastável, ela mesma ocupa o espaço do gap. */
+  &[data-divisor='true'] {
+    gap: 0;
+  }
+
   @media (max-width: 900px) {
     flex-direction: column;
   }
@@ -109,13 +114,57 @@ export const MesaChatPainel = styled.div`
   flex-shrink: 0;
   min-height: 0;
 
+  /* Tamanho escolhido na divisão (estilo inline): se a janela encolher, o
+     mapa nunca some (360px + a divisão). */
+  &[data-ajustado='true'] {
+    min-width: 280px;
+    max-width: calc(100% - 372px);
+  }
+
   @media (max-width: 900px) {
     width: 100%;
     height: 45%;
+
+    &[data-ajustado='true'] {
+      min-width: 0;
+      max-width: none;
+      min-height: 200px;
+      max-height: calc(100% - 252px);
+    }
   }
 
   ${MOBILE} {
     flex: 1;
     height: auto;
+  }
+`;
+
+// Divisão arrastável entre o mapa e o chat (DivisorMesa). Ocupa o gap de 12px;
+// a "alça" é uma linha fina no centro que acende no hover/foco/arraste.
+export const DivisorAlca = styled.div`
+  position: relative;
+  flex: none;
+  align-self: stretch;
+  touch-action: none;
+  outline: none;
+  ${({ $horizontal }) =>
+    $horizontal ? 'width: 12px; cursor: col-resize;' : 'height: 12px; cursor: row-resize;'}
+
+  &::after {
+    content: '';
+    position: absolute;
+    border-radius: 2px;
+    background: var(--border-primary);
+    transition: background 0.15s ease;
+    ${({ $horizontal }) =>
+      $horizontal
+        ? 'top: 0; bottom: 0; left: 50%; width: 2px; transform: translateX(-50%);'
+        : 'left: 0; right: 0; top: 50%; height: 2px; transform: translateY(-50%);'}
+  }
+
+  &:hover::after,
+  &:focus-visible::after,
+  &[data-arrastando='true']::after {
+    background: var(--border-hover);
   }
 `;

@@ -782,6 +782,41 @@ describe('CampanhaChat', () => {
       ).not.toBeInTheDocument();
     });
 
+    it('divisão mapa | chat: teclado muda a largura do chat, grava e duplo clique volta ao padrão', async () => {
+      window.localStorage.removeItem('reDungeonChatPainelLargura');
+      renderChat(null, '/campanhas/camp-1/grid');
+      await screen.findByRole('button', { name: /Aldric, coluna/ });
+
+      const divisor = screen.getByRole('separator', { name: 'Redimensionar chat' });
+      const painel = divisor.nextElementSibling;
+      expect(painel.style.width).toBe('');
+
+      // jsdom não mede: parte do padrão de 420px.
+      fireEvent.keyDown(divisor, { key: 'ArrowLeft' });
+      expect(painel.style.width).toBe('436px');
+      expect(window.localStorage.getItem('reDungeonChatPainelLargura')).toBe('436');
+      fireEvent.keyDown(divisor, { key: 'Home' });
+      expect(painel.style.width).toBe('280px');
+
+      fireEvent.doubleClick(divisor);
+      expect(painel.style.width).toBe('');
+      expect(window.localStorage.getItem('reDungeonChatPainelLargura')).toBeNull();
+    });
+
+    it('divisão mapa | chat: largura salva volta ao abrir e some com o chat oculto', async () => {
+      window.localStorage.setItem('reDungeonChatPainelLargura', '500');
+      renderChat(null, '/campanhas/camp-1/grid');
+      await screen.findByRole('button', { name: /Aldric, coluna/ });
+
+      const divisor = screen.getByRole('separator', { name: 'Redimensionar chat' });
+      expect(divisor.nextElementSibling.style.width).toBe('500px');
+
+      fireEvent.click(screen.getByRole('button', { name: 'Ocultar chat' }));
+      expect(screen.queryByRole('separator')).not.toBeInTheDocument();
+      window.localStorage.removeItem('reDungeonChatPainelLargura');
+      window.localStorage.removeItem('reDungeonChatAberto');
+    });
+
     it('rastro de um movimento ao vivo aparece com a distância e some em 10 s', async () => {
       renderChat(null, '/campanhas/camp-1/grid');
       await screen.findByRole('button', { name: /Aldric, coluna/ });
@@ -941,46 +976,6 @@ describe('CampanhaChat', () => {
 
       fireEvent.click(screen.getByRole('button', { name: 'Ocultar chat' }));
       expect(screen.queryByText('Bem-vindos à taverna.')).not.toBeInTheDocument();
-    });
-
-    it('arrasta para a esquerda aumenta o chat e para a direita diminui', async () => {
-      localStorage.clear();
-      localStorage.setItem('reDungeonChatAberto', 'true');
-      renderChat(null, '/campanhas/camp-1/grid');
-      await screen.findByRole('button', { name: /Ogro/ });
-
-      const handle = document.getElementById('rd-chat-resize-handle');
-      const painel = document.querySelector('[data-chat-panel="true"]');
-      const larguraAntes = Number(painel.style.width.replace('px', ''));
-
-      fireEvent.pointerDown(handle, { clientX: 700, button: 0 });
-      fireEvent.pointerMove(window, { clientX: 560 });
-      fireEvent.pointerUp(window);
-      const larguraDepoisDeArrastarParaEsquerda = Number(painel.style.width.replace('px', ''));
-      expect(larguraDepoisDeArrastarParaEsquerda).toBeGreaterThan(larguraAntes);
-
-      fireEvent.pointerDown(handle, { clientX: 700, button: 0 });
-      fireEvent.pointerMove(window, { clientX: 840 });
-      fireEvent.pointerUp(window);
-      const larguraDepoisDeArrastarParaDireita = Number(painel.style.width.replace('px', ''));
-      expect(larguraDepoisDeArrastarParaDireita).toBeLessThan(larguraDepoisDeArrastarParaEsquerda);
-    });
-
-    it('permite um teto de redimensionamento aproximadamente 2x maior que o limite anterior', async () => {
-      localStorage.clear();
-      localStorage.setItem('reDungeonChatAberto', 'true');
-      Object.defineProperty(window, 'innerWidth', { value: 1800, configurable: true });
-      renderChat(null, '/campanhas/camp-1/grid');
-      await screen.findByRole('button', { name: /Ogro/ });
-
-      const handle = document.getElementById('rd-chat-resize-handle');
-      fireEvent.pointerDown(handle, { clientX: 100, button: 0 });
-      fireEvent.pointerMove(window, { clientX: -500 });
-      fireEvent.pointerUp(window);
-
-      const larguraPersistida = Number(localStorage.getItem('reDungeonGridChatLargura'));
-      expect(larguraPersistida).toBeGreaterThan(560);
-      expect(larguraPersistida).toBeLessThanOrEqual(1120);
     });
 
     it('esconde o botão de painel lateral na visualização de chat em tela cheia', async () => {
@@ -1463,6 +1458,8 @@ describe('CampanhaChat', () => {
       const mapa = await screen.findByRole('button', { name: /Aldric, coluna/ });
       const corpo = mapa.closest('[data-aba]');
       expect(corpo).toHaveAttribute('data-aba', 'mapa');
+      // Sem divisão arrastável no celular.
+      expect(screen.queryByRole('separator')).not.toBeInTheDocument();
       // Mapa | Chat substitui Chat|Grid e "Ocultar chat".
       expect(screen.queryByRole('button', { name: 'Grid' })).not.toBeInTheDocument();
       expect(
