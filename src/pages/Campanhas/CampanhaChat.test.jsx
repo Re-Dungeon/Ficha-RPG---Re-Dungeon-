@@ -1348,7 +1348,10 @@ describe('CampanhaChat', () => {
           screen.queryByRole('button', { name: 'Próximo turno' }),
         ).not.toBeInTheDocument();
         // A Central de Ações vale o combate todo, não só na minha vez.
-        expect(screen.getByRole('button', { name: 'Central de Ações' })).toBeInTheDocument();
+        // A ficha do token chega num ciclo depois da faixa: espera o botão.
+        expect(
+          await screen.findByRole('button', { name: 'Central de Ações' }),
+        ).toBeInTheDocument();
       });
 
       describe('Central de Ações', () => {
