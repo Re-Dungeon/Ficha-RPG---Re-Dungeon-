@@ -60,6 +60,11 @@ describe('StatusFaixa', () => {
     expect(within(screen.getByTestId('faixa-energia')).getByText('3/5')).toBeInTheDocument();
   });
 
+  it('ficha sem máximos gravados e sem Prontidão não renderiza a faixa', () => {
+    render(<StatusFaixa personagem={{ id: 'p2', status: {}, statusMaximos: {} }} />);
+    expect(screen.queryByLabelText('Recursos do personagem')).not.toBeInTheDocument();
+  });
+
   it('sem Prontidão não mostra o PP', () => {
     render(<StatusFaixa personagem={{ ...personagem, secundariosTotais: {} }} />);
     expect(screen.queryByTestId('faixa-pp')).not.toBeInTheDocument();

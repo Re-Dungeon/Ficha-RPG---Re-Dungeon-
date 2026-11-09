@@ -166,6 +166,11 @@ const StatusFaixa = ({ personagem }) => {
     }
   };
 
+  // Ficha ainda sem máximos gravados (nunca salva) e sem Prontidão: nada a mostrar.
+  if (!recursos.pv && !recursos.energia && !recursos.fadiga && ppMaximo <= 0) {
+    return null;
+  }
+
   return (
     <Faixa aria-label="Recursos do personagem">
       {RECURSOS.map(({ id, rotulo }) => {
