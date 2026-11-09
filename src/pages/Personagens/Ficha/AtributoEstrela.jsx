@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import AtributoCard from './AtributoCard';
 import { EstrelaCentro, EstrelaCentroLabel, EstrelaCentroValor, EstrelaGemaSlot, EstrelaWrapper } from './styles';
 
-// Posições das 6 pontas do hexagrama (estrela-atributos.png), em % do
+// Posições das 6 pontas do hexagrama (estrela-atributos.webp), em % do
 // wrapper quadrado, sentido horário a partir do topo.
 const POSICOES_PONTAS = [
   { top: 18, left: 50 },

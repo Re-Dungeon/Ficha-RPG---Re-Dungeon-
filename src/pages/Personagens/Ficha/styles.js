@@ -2,11 +2,12 @@ import styled, { keyframes } from 'styled-components';
 
 import { MOBILE } from 'common/styles/breakpoints';
 
-import planetaRedungeonImg from './assets/planeta-redungeon.png';
-
-const molduraRetratoImg = 'https://i.imgur.com/oB6y33R.png';
-const estrelaAtributosPrincipalImg = 'https://i.imgur.com/Okze6pw.png';
-const gemaAtributoImg = 'https://i.imgur.com/z2nKD5d.png';
+// Imagens da ficha em WebP, já no tamanho de uso (~2x o exibido); antes eram
+// PNGs de 1 a 2 MB no imgur.
+import planetaRedungeonImg from './assets/planeta-redungeon.webp';
+import molduraRetratoImg from './assets/moldura-retrato.webp';
+import estrelaAtributosPrincipalImg from './assets/estrela-atributos.webp';
+import gemaAtributoImg from './assets/gema-atributo.webp';
 
 export const FichaWrapper = styled.div`
   flex: 1;
