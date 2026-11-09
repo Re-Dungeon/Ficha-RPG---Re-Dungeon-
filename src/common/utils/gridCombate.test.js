@@ -1,11 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-  calcularBonusCultivoTotal,
-  calcularPrimariosTotais,
-  calcularSecundarios,
-} from 'common/utils/formulas';
-import {
   ALCANCE_QUADRADOS_MAX,
   COMBATE_PARTICIPANTES_MAX,
   avancarTurno,
@@ -80,41 +75,6 @@ describe('reacaoDaFicha', () => {
       }),
     ).toBe(12);
   });
-
-  // Só no site dos jogadores (o Re:Master não tem formulas.js).
-  it('bate com calcularSecundarios da ficha', () => {
-    const ficha = {
-      atributosBase: {
-        forca: 10,
-        vitalidade: 20,
-        agilidade: 87,
-        inteligencia: 5,
-        percepcao: 61,
-        sorte: 33,
-      },
-      atributosExtra: { agilidade: 13, percepcao: 4 },
-      atributosBonus: { sorte: 7 },
-      secundariosBase: { reacao: 2 },
-      secundariosExtra: { reacao: 1 },
-      secundariosBonus: {},
-      cultivoBonus: { primarios: { percepcao: { r1: 9 } }, secundarios: { reacao: 3 } },
-    };
-    const cultivo = calcularBonusCultivoTotal(ficha.cultivoBonus);
-    const primarios = calcularPrimariosTotais(
-      ficha.atributosBase,
-      ficha.atributosExtra,
-      ficha.atributosBonus,
-      cultivo.primarios,
-    );
-    const esperado = calcularSecundarios(
-      primarios,
-      ficha.secundariosBase,
-      ficha.secundariosExtra,
-      ficha.secundariosBonus,
-      cultivo.secundarios,
-    ).reacao;
-    expect(reacaoDaFicha(ficha)).toBe(esperado);
-  });
 });
 
 describe('rolarIniciativa', () => {
@@ -146,10 +106,12 @@ describe('rolarIniciativa', () => {
   });
 
   it('compararIniciativa: maior total, depois maior Reação', () => {
-    expect(compararIniciativa(entrada('a', 10), entrada('b', 9))).toBeLessThan(0);
-    expect(compararIniciativa(entrada('a', 10, 1), entrada('b', 10, 3))).toBeGreaterThan(
+    expect(compararIniciativa(entrada('a', 10), entrada('b', 9))).toBeLessThan(
       0,
     );
+    expect(
+      compararIniciativa(entrada('a', 10, 1), entrada('b', 10, 3)),
+    ).toBeGreaterThan(0);
   });
 });
 
@@ -182,16 +144,21 @@ describe('normalizarCombate', () => {
     expect(normalizarCombate(null)).toBeNull();
     expect(normalizarCombate({ ordem: [{}] })).toBeNull();
     expect(
-      normalizarCombate({ ordem: [entrada('a', 1)], inicioTurno: { col: -1, lin: 0 } })
-        .inicioTurno,
+      normalizarCombate({
+        ordem: [entrada('a', 1)],
+        inicioTurno: { col: -1, lin: 0 },
+      }).inicioTurno,
     ).toBeNull();
   });
 
   it('limita o número de participantes', () => {
-    const ordem = Array.from({ length: COMBATE_PARTICIPANTES_MAX + 5 }, (_, i) =>
-      entrada(`t${i}`, i),
+    const ordem = Array.from(
+      { length: COMBATE_PARTICIPANTES_MAX + 5 },
+      (_, i) => entrada(`t${i}`, i),
     );
-    expect(normalizarCombate({ ordem }).ordem).toHaveLength(COMBATE_PARTICIPANTES_MAX);
+    expect(normalizarCombate({ ordem }).ordem).toHaveLength(
+      COMBATE_PARTICIPANTES_MAX,
+    );
   });
 });
 
@@ -281,16 +248,23 @@ describe('participantes', () => {
       },
       mudouTurno: false,
     });
-    expect(inserirNoCombate(combate(tres, 1), entrada('n', 30)).patch.indice).toBe(2);
     expect(
-      inserirNoCombate(combate(tres, 1), entrada('n', 1)).patch.ordem[3].tokenId,
+      inserirNoCombate(combate(tres, 1), entrada('n', 30)).patch.indice,
+    ).toBe(2);
+    expect(
+      inserirNoCombate(combate(tres, 1), entrada('n', 1)).patch.ordem[3]
+        .tokenId,
     ).toBe('n');
     expect(inserirNoCombate(combate(tres, 1), entrada('a', 1))).toBeNull();
   });
 
   it('remover antes do token da vez recua o índice', () => {
     expect(removerDoCombate(combate(tres, 2), 'a', TOKENS)).toEqual({
-      patch: { ordem: [entrada('b', 15), entrada('g', 10)], indice: 1, rodada: 1 },
+      patch: {
+        ordem: [entrada('b', 15), entrada('g', 10)],
+        indice: 1,
+        rodada: 1,
+      },
       mudouTurno: false,
     });
     expect(removerDoCombate(combate(tres, 2), 'x', TOKENS)).toBeNull();
@@ -325,7 +299,10 @@ describe('participantes', () => {
 
   it('subir/descer mantém o token da vez', () => {
     expect(moverNoCombate(combate(tres, 1), 'b', -1)).toEqual({
-      patch: { ordem: [entrada('b', 15), entrada('a', 20), entrada('g', 10)], indice: 0 },
+      patch: {
+        ordem: [entrada('b', 15), entrada('a', 20), entrada('g', 10)],
+        indice: 0,
+      },
       mudouTurno: false,
     });
     expect(moverNoCombate(combate(tres, 1), 'g', -1).patch.indice).toBe(2);
@@ -338,10 +315,14 @@ describe('faixaDoCombate', () => {
   const ordem = [entrada('a', 20), entrada('g', 15), entrada('b', 10)];
 
   it('mestre vê todos, com o atual marcado', () => {
-    const faixa = faixaDoCombate(combate(ordem, 1, 3), TOKENS, { veTudo: true });
+    const faixa = faixaDoCombate(combate(ordem, 1, 3), TOKENS, {
+      veTudo: true,
+    });
     expect(faixa.rodada).toBe(3);
     expect(faixa.vezDoMestre).toBe(false);
-    expect(faixa.itens.map(item => [item.tokenId, item.atual, item.oculto])).toEqual([
+    expect(
+      faixa.itens.map(item => [item.tokenId, item.atual, item.oculto]),
+    ).toEqual([
       ['a', false, false],
       ['g', true, true],
       ['b', false, false],
@@ -433,7 +414,10 @@ describe('alcance de movimento', () => {
       bloqueadas: new Set(['1,0', '0,1']),
     });
     expect(fechada.has('1,1')).toBe(false);
-    const umLado = distanciasDeMovimento({ ...base, bloqueadas: new Set(['1,0']) });
+    const umLado = distanciasDeMovimento({
+      ...base,
+      bloqueadas: new Set(['1,0']),
+    });
     expect(umLado.get('1,1')).toBe(1);
     expect(distanciasDeMovimento(base).get('1,1')).toBe(1);
   });
@@ -463,7 +447,9 @@ describe('alcance de movimento', () => {
       alcance: 1,
       limites: { colunas: 10, linhas: 10 },
     });
-    expect(faixasDoAlcance(distancias, { mover: 1, correr: 1, tamanho: 2 })).toEqual({
+    expect(
+      faixasDoAlcance(distancias, { mover: 1, correr: 1, tamanho: 2 }),
+    ).toEqual({
       mover: [
         { col: 0, lin: 0, colunas: 3 },
         { col: 0, lin: 1, colunas: 3 },

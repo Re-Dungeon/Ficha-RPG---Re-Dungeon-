@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "test": "vitest run"
+    "test": "vitest run",
+    "check:shared": "node scripts/check-shared.mjs"
   },
   "dependencies": {
     "@codemirror/language": "^6.13.1",

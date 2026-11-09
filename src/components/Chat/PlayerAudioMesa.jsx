@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import PropTypes from 'prop-types';
 import useMediaQuery from '@mui/material/useMediaQuery';
 
@@ -16,7 +22,7 @@ import { carregarApiYoutube } from 'common/utils/youtubeApi';
 // se afasta do ponto da mesa, aplica volume/mudo de quem está vendo e devolve
 // título/duração/bloqueio/erro por `onStatus`. A página o monta fora do
 // ChatSala, para seguir tocando com o painel de chat fechado. Cópia idêntica
-// no Re:Master.
+// (site dos jogadores ↔ Re:Master).
 
 // YT.PlayerState
 const ENCERRADO = 0;
@@ -122,7 +128,14 @@ const estiloMinimizar = {
   cursor: 'pointer',
 };
 
-const PlayerAudioMesa = ({ atual = null, volume, mudo, controleRef, onStatus }) => {
+const PlayerAudioMesa = ({
+  atual = null,
+  volume,
+  mudo,
+  controleRef,
+  onStatus,
+  playerRef: playerApiRef,
+}) => {
   const hospedeiroRef = useRef(null);
   const playerRef = useRef(null);
   const verificacaoRef = useRef(null);
@@ -169,9 +182,11 @@ const PlayerAudioMesa = ({ atual = null, volume, mudo, controleRef, onStatus }) 
         videoId: dados.video_id || atualRef.current?.videoId || null,
         titulo: dados.title || null,
         duracao: player.getDuration?.() || 0,
+        tempoAtual: player.getCurrentTime?.() || 0,
       };
       if (estado === TOCANDO) {
-        if (!silenciadoPeloNavegador(player, mudoRef.current)) setPedirToque(false);
+        if (!silenciadoPeloNavegador(player, mudoRef.current))
+          setPedirToque(false);
         onStatus({
           ...info,
           bloqueado: silenciadoPeloNavegador(player, mudoRef.current),
@@ -203,7 +218,13 @@ const PlayerAudioMesa = ({ atual = null, volume, mudo, controleRef, onStatus }) 
         playerRef.current = new YT.Player(alvo, {
           width: 200,
           height: 200,
-          playerVars: { autoplay: 0, controls: 1, disablekb: 1, playsinline: 1, rel: 0 },
+          playerVars: {
+            autoplay: 0,
+            controls: 1,
+            disablekb: 1,
+            playsinline: 1,
+            rel: 0,
+          },
           events: {
             onReady: () => setPronto(true),
             onStateChange: evento => aoMudarEstadoRef.current?.(evento.data),
@@ -214,15 +235,19 @@ const PlayerAudioMesa = ({ atual = null, volume, mudo, controleRef, onStatus }) 
               }),
           },
         });
+        if (playerApiRef) playerApiRef.current = playerRef.current;
       })
       .catch(error => {
         if (!cancelado)
-          onStatus({ videoId: atualRef.current?.videoId ?? null, erro: error.message });
+          onStatus({
+            videoId: atualRef.current?.videoId ?? null,
+            erro: error.message,
+          });
       });
     return () => {
       cancelado = true;
     };
-  }, [temFaixa, onStatus]);
+  }, [temFaixa, onStatus, playerApiRef]);
 
   // Desmontou (saiu da mesa): o áudio para para esta pessoa.
   useEffect(
@@ -230,24 +255,29 @@ const PlayerAudioMesa = ({ atual = null, volume, mudo, controleRef, onStatus }) 
       clearTimeout(verificacaoRef.current);
       playerRef.current?.destroy?.();
       playerRef.current = null;
+      if (playerApiRef) playerApiRef.current = null;
     },
-    [],
+    [playerApiRef],
   );
 
   // Liberar o som num clique (autoplay bloqueado pelo navegador).
   useEffect(() => {
     if (!pronto) return undefined;
-    controleRef.current = {
+    const controle = {
       tocar: () => {
         const player = playerRef.current;
-        if (!player || atualRef.current?.estado !== AUDIO_ESTADOS.TOCANDO) return;
+        if (!player || atualRef.current?.estado !== AUDIO_ESTADOS.TOCANDO)
+          return;
         if (!mudoRef.current) player.unMute();
         player.playVideo();
         verificarBloqueio(true);
       },
     };
+    controleRef.current = controle;
     return () => {
-      controleRef.current = null;
+      if (controleRef.current === controle) {
+        controleRef.current = null;
+      }
     };
   }, [pronto, controleRef, verificarBloqueio]);
 
@@ -262,10 +292,12 @@ const PlayerAudioMesa = ({ atual = null, volume, mudo, controleRef, onStatus }) 
     }
     const agora = Date.now();
     const carregado = player.getVideoData?.()?.video_id;
-    const duracao = carregado === atual.videoId ? player.getDuration?.() || 0 : 0;
+    const duracao =
+      carregado === atual.videoId ? player.getDuration?.() || 0 : 0;
     const posicao = posicaoAtual(atual, agora, duracao);
     const deveTocar =
-      atual.estado === AUDIO_ESTADOS.TOCANDO && !audioTerminou(atual, agora, duracao);
+      atual.estado === AUDIO_ESTADOS.TOCANDO &&
+      !audioTerminou(atual, agora, duracao);
 
     if (carregado !== atual.videoId) {
       if (deveTocar) {
@@ -302,13 +334,19 @@ const PlayerAudioMesa = ({ atual = null, volume, mudo, controleRef, onStatus }) 
       const dados = player.getVideoData?.() ?? {};
       if (dados.isLive || dados.video_id !== audio.videoId) return;
       if (player.getPlayerState() !== TOCANDO) return; // bloqueado/carregando
-      const posicao = posicaoAtual(audio, Date.now(), player.getDuration() || 0);
+      const duracaoAtual = player.getDuration() || 0;
+      const posicao = posicaoAtual(audio, Date.now(), duracaoAtual);
+      onStatus({
+        videoId: audio.videoId,
+        duracao: duracaoAtual,
+        tempoAtual: player.getCurrentTime?.() || 0,
+      });
       if (Math.abs(player.getCurrentTime() - posicao) > TOLERANCIA_S) {
         player.seekTo(posicao, true);
       }
     }, INTERVALO_CORRECAO_MS);
     return () => clearInterval(intervalo);
-  }, [pronto, estadoMesa]);
+  }, [pronto, estadoMesa, onStatus]);
 
   useEffect(() => {
     const player = playerRef.current;
@@ -318,11 +356,13 @@ const PlayerAudioMesa = ({ atual = null, volume, mudo, controleRef, onStatus }) 
     else player.unMute();
   }, [pronto, volume, mudo]);
 
-  const mostrarParaTocar = pedirToque && atual?.estado === AUDIO_ESTADOS.TOCANDO;
+  const mostrarParaTocar =
+    pedirToque && atual?.estado === AUDIO_ESTADOS.TOCANDO;
   const recolhido = mostrarParaTocar && celular && !expandidoCelular;
   let estilo = estiloEscondido;
   if (recolhido) estilo = estiloRecolhidoCelular;
-  else if (mostrarParaTocar) estilo = celular ? estiloParaTocarCelular : estiloParaTocar;
+  else if (mostrarParaTocar)
+    estilo = celular ? estiloParaTocarCelular : estiloParaTocar;
   return (
     <div
       style={estilo}
@@ -375,6 +415,9 @@ PlayerAudioMesa.propTypes = {
   mudo: PropTypes.bool.isRequired,
   controleRef: PropTypes.shape({ current: PropTypes.any }).isRequired,
   onStatus: PropTypes.func.isRequired,
+  playerRef: PropTypes.shape({
+    current: PropTypes.any,
+  }),
 };
 
 export default PlayerAudioMesa;

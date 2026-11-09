@@ -28,7 +28,7 @@ export const ChatHeader = styled.div`
   padding: ${props => (props.$compact ? '0 14px 12px' : '12px 14px')};
   border-bottom: 1px solid var(--border-primary);
   background: linear-gradient(180deg, rgba(17, 15, 27, 0.96), rgba(10, 9, 19, 0.92));
-  box-shadow: inset 0 -1px 0 rgba(232, 203, 133, 0.08);
+  box-shadow: inset 0 -1px 0 rgba(var(--chat-destaque-rgb, 232, 203, 133), 0.08);
 
   ${MOBILE} {
     gap: 8px;
@@ -75,10 +75,10 @@ export const MensagemBalao = styled.div`
   padding: 8px 12px;
   border-radius: 12px;
   border: 1px solid
-    ${props => (props.$mestre ? 'rgba(232, 203, 133, 0.45)' : 'var(--border-primary)')};
+    ${props => (props.$mestre ? 'rgba(var(--chat-destaque-rgb, 232, 203, 133), 0.45)' : 'var(--border-primary)')};
   background: ${props =>
     props.$mestre
-      ? 'rgba(232, 203, 133, 0.08)'
+      ? 'rgba(var(--chat-destaque-rgb, 232, 203, 133), 0.08)'
       : props.$minha
         ? 'rgba(91, 124, 250, 0.14)'
         : 'rgba(255, 255, 255, 0.04)'};
@@ -115,7 +115,7 @@ export const MensagemAutor = styled.span`
 export const MensagemPersona = styled.span`
   padding: 0 6px;
   border-radius: 999px;
-  border: 1px solid rgba(232, 203, 133, 0.45);
+  border: 1px solid rgba(var(--chat-destaque-rgb, 232, 203, 133), 0.45);
   color: var(--color-primary);
   font-size: 0.62rem;
   font-weight: 700;
@@ -394,7 +394,7 @@ export const CombateCartao = styled.div`
   padding: 8px 32px 6px;
   border-radius: 10px;
   border: 1px solid rgba(232, 203, 133, 0.6);
-  background: rgba(232, 203, 133, 0.08);
+  background: rgba(var(--chat-destaque-rgb, 232, 203, 133), 0.08);
   color: var(--text-secondary);
   font-size: 0.88rem;
   text-align: center;

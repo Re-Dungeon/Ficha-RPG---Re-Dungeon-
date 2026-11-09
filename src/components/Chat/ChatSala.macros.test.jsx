@@ -5,6 +5,19 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 
 import ChatSala from './ChatSala';
 
+// O AudioDialog do Re:Master (dentro do ChatSala) importa storage/auth: sem
+// estes mocks o teste inicializaria o Firebase de verdade (e quebra sem .env,
+// como no CI). No site dos jogadores são inofensivos.
+vi.mock('context/AuthContext', () => ({
+  useAuth: () => ({ currentUser: { uid: 'u1' } }),
+}));
+
+vi.mock('service/storage', () => ({
+  getRmMusicasBibliotecaPorMestre: vi.fn(() => Promise.resolve([])),
+  getRmMusicasPastasPorMestre: vi.fn(() => Promise.resolve([])),
+  getRmPlaylistsPorMestre: vi.fn(() => Promise.resolve([])),
+}));
+
 // O CodeMirror real não roda bem no jsdom — no teste o editor é um textarea.
 vi.mock('./LuaEditor', () => {
   const LuaEditorFake = ({ valorInicial, onChange }) => (

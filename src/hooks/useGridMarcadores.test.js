@@ -27,7 +27,16 @@ const DOCS = [
     titulo: 'B',
     createdAt: 20,
   },
-  { id: 'a', col: 1, lin: 1, icone: 'porta', cor: '#ffffff', titulo: 'A', createdAt: 10 },
+  {
+    id: 'a',
+    col: 1,
+    lin: 1,
+    tamanho: 1,
+    icone: 'porta',
+    cor: '#ffffff',
+    titulo: 'A',
+    createdAt: 10,
+  },
   { id: 'x', col: 'ruim', titulo: 'inválido' },
 ];
 const onErro = vi.fn();
@@ -35,17 +44,24 @@ let falhar;
 
 const renderMarcadores = (opcoes = {}) =>
   renderHook(() =>
-    useGridMarcadores('c1', 'cena-1', { ativo: true, veTudo: true, onErro, ...opcoes }),
+    useGridMarcadores('c1', 'cena-1', {
+      ativo: true,
+      veTudo: true,
+      onErro,
+      ...opcoes,
+    }),
   );
 
 describe('useGridMarcadores', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    subscribeGridMarcadores.mockImplementation((_c, _cena, _op, onChange, onError) => {
-      falhar = onError;
-      onChange(DOCS);
-      return vi.fn();
-    });
+    subscribeGridMarcadores.mockImplementation(
+      (_c, _cena, _op, onChange, onError) => {
+        falhar = onError;
+        onChange(DOCS);
+        return vi.fn();
+      },
+    );
     addGridMarcador.mockResolvedValue('novo');
     updateGridMarcador.mockResolvedValue();
     removeGridMarcador.mockResolvedValue();
@@ -120,7 +136,12 @@ describe('useGridMarcadores', () => {
     const { result } = renderMarcadores();
     let id;
     await act(async () => {
-      id = await result.current.criarMarcador({ col: 1, lin: 1, titulo: 'mais um' });
+      id = await result.current.criarMarcador({
+        col: 1,
+        lin: 1,
+        tamanho: 1,
+        titulo: 'mais um',
+      });
     });
     expect(id).toBeNull();
     expect(addGridMarcador).not.toHaveBeenCalled();
@@ -131,7 +152,10 @@ describe('useGridMarcadores', () => {
     const { result } = renderMarcadores();
     let ok;
     await act(async () => {
-      ok = await result.current.salvarMarcador('a', { titulo: 'Novo', secreto: true });
+      ok = await result.current.salvarMarcador('a', {
+        titulo: 'Novo',
+        secreto: true,
+      });
     });
     expect(ok).toBe(true);
     expect(updateGridMarcador).toHaveBeenCalledWith('c1', 'cena-1', 'a', {
@@ -155,7 +179,12 @@ describe('useGridMarcadores', () => {
     const jogador = renderMarcadores({ veTudo: false });
     let id;
     await act(async () => {
-      id = await jogador.result.current.criarMarcador({ col: 1, lin: 1, titulo: 'x' });
+      id = await jogador.result.current.criarMarcador({
+        col: 1,
+        lin: 1,
+        tamanho: 1,
+        titulo: 'x',
+      });
     });
     expect(id).toBeNull();
     expect(addGridMarcador).not.toHaveBeenCalled();

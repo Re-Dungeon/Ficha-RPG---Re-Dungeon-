@@ -7,7 +7,7 @@ import { isUrlImagemValida } from 'common/utils/chat';
 // veem. Posições e tamanhos dos tokens são guardados em CÉLULAS (não em px de
 // tela), então não dependem do zoom nem da resolução de quem está vendo. Os
 // limites espelham o bloco "Grid da campanha" do firestore.rules. Mantido em
-// sincronia com a cópia do Re:Master.
+// sincronia com a outra cópia (site dos jogadores ↔ Re:Master).
 
 export const TIPOS_TOKEN = {
   JOGADOR: 'jogador',

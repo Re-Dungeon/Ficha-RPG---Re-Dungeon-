@@ -4,6 +4,19 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 import ChatSala from './ChatSala';
 
+// O AudioDialog do Re:Master (dentro do ChatSala) importa storage/auth: sem
+// estes mocks o teste inicializaria o Firebase de verdade (e quebra sem .env,
+// como no CI). No site dos jogadores são inofensivos.
+vi.mock('context/AuthContext', () => ({
+  useAuth: () => ({ currentUser: { uid: 'u1' } }),
+}));
+
+vi.mock('service/storage', () => ({
+  getRmMusicasBibliotecaPorMestre: vi.fn(() => Promise.resolve([])),
+  getRmMusicasPastasPorMestre: vi.fn(() => Promise.resolve([])),
+  getRmPlaylistsPorMestre: vi.fn(() => Promise.resolve([])),
+}));
+
 const CHAVE = 'reDungeonChatHistorico_c1';
 
 const renderSala = (props = {}) => {

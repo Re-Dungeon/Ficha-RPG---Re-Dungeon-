@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { useAudioMesaGlobal } from 'context/AudioMesaContext';
+import { useAudioDoChat } from 'context/AudioMesaContext';
 import {
   addChatMensagem,
   addChatRolagemSecreta,
@@ -18,15 +18,17 @@ import {
   montarMensagemTexto,
 } from 'common/utils/chat';
 import { rolarEspecificacao } from 'common/utils/dados';
-import useAudioMesa from 'hooks/useAudioMesa';
 import useMacrosCampanha from 'hooks/useMacrosCampanha';
 import useMembroDoChat from 'hooks/useMembroDoChat';
 
 // Liga um componente ao chat de uma campanha (rmCampanhas/{id}/chatMensagens):
 // registra o ponteiro chatMembros/{uid} do jogador, ouve as mensagens em tempo
 // real (públicas + rolagens secretas visíveis a ele) e expõe
-// enviar/rolar/apagar. Usado pela página /campanhas/:id/chat e pelo modal
-// "Chat" da ficha. `autor` = campos de montarMensagem* (uid,
+// enviar/rolar/apagar. Cópia compartilhada (site dos jogadores ↔ Re:Master;
+// scripts/check-shared.mjs): no site dos jogadores é usado pela página
+// /campanhas/:id/chat e pelo modal "Chat" da ficha; no Re:Master, pela página
+// Chat e pelo painel de chat do Grid, sempre como mestre (sem ponteiro de
+// membro; vê as rolagens secretas de todos). `autor` = campos de montarMensagem* (uid,
 // personagemId, autorNome, autorAvatar, isMestre); `null` deixa o hook inativo
 // (ex.: enquanto a campanha ainda carrega). `ehMestreDaCampanha`: quem está
 // usando é o mestre (mesmo falando como personagem) — vê/gerencia todas as
@@ -82,18 +84,11 @@ const useChatCampanha = (campanhaId, autor, { ehMestreDaCampanha = false } = {})
     );
   }, [campanhaId, podeOuvir]);
 
-  const audio = useAudioMesa(campanhaId, {
-    ativo: podeOuvir,
+  // Cada app liga a música do seu jeito (context/AudioMesaContext.jsx).
+  const audio = useAudioDoChat(campanhaId, {
+    podeOuvir,
     podeControlar: ehMestreDaCampanha || isMestre,
   });
-  const { registrarAudio } = useAudioMesaGlobal();
-
-  useEffect(() => {
-    if (!campanhaId || !podeOuvir || !audio) return;
-    const atual = audio?.atual ?? audio?.player?.atual ?? null;
-    if (!atual && !audio.tocando && !audio.pausado) return;
-    registrarAudio(audio);
-  }, [audio, campanhaId, podeOuvir, registrarAudio]);
 
   const macrosApi = useMacrosCampanha(campanhaId, {
     ativo: podeOuvir,
