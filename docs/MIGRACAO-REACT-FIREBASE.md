@@ -26,6 +26,27 @@ Decisões que mudam como a ficha grava (valem para código novo):
 - `npm run check:shared` confere as cópias compartilhadas com o Re:Master.
 - `firestore.rules`: o mestre também apaga `chatMembros` (exclusão de campanha no Re:Master) — **precisa de deploy pelo Re:Master**.
 
+### QOL leva 2 (2026-11-09)
+
+Convenções novas (valem para código novo):
+- **Sem `defaultProps`**: o React 19 ignora `defaultProps` em componentes de função (o padrão sumia em silêncio). Padrões ficam no destructuring; array/objeto padrão usado em dependência de hook vira constante de módulo. ~35 arquivos migrados aqui e a varredura equivalente no Re:Master.
+- **Cache de catálogos** em `storage.js`: `Map` por `coleção|universo`, 10 min, descartado em caso de erro; só catálogos de referência (nunca `personagens`/`rm*`). `limparCacheCatalogos()` para os testes.
+- **Imagens da ficha** (`Ficha/assets`) em WebP no tamanho de uso, empacotadas — saíram ~3,5 MB de PNG e a busca no imgur.
+
+Ficha:
+- **Faixa de status** (`StatusFaixa.jsx`) no topo de todas as abas e no celular: PV/Energia/Fadiga/PP com −/+ que gravam na hora (`atualizarRecursoAtualPersonagem`, otimista com reversão); some sem máximos nem Prontidão.
+- **Aba na URL**: `?aba=` (`useSearchParams`, `replace`, valor validado).
+- **Gema**: Central/Calculadora perguntam "Salvar alterações antes?" (Salvar / Descartar / Cancelar) com Base/Extra/Bônus pendentes.
+- **Rolagem da ficha na campanha certa**: `campanhaDeRolagem(personagem, preferida)` (chat aberto → única campanha → perguntar), `RolagemFichaContext`, `ChatModal` com `onCampanhaChange`, `CalculadoraAtaqueModal` com "Postar em:" quando há 2+; botão "Rolar" (`BotaoRolar`, `useRolarDaFicha`) em `ArtCard`/`VarianteCard` posta no chat com `rotulo` ("Arte: …").
+- **Lista de fichas**: busca por nome (sem acento/caixa) e ordem Nome / Última edição / Nível (`common/utils/listaPersonagens.js`; `localStorage` `ordenacao_personagens`); controles cabem no celular.
+
+Chat/grid (cópias compartilhadas com o Re:Master — `npm run check:shared`):
+- **Pílula "Novas mensagens ↓"** no `ChatSala` quando chega mensagem com a lista rolada para cima.
+- **"Carregar anteriores"**: `getChatMensagensAntes` (cursor por `createdAt`, leitura pontual, nos dois `storage.js`) + `mesclarComAntigas`; a janela ao vivo continua em `CHAT_JANELA_MENSAGENS` (100), páginas de `CHAT_PAGINA_ANTERIORES` (50); `useChatCampanha` expõe `carregarAnteriores`/`temMaisAntigas`/`carregandoAntigas`. `useChatCampanha.test.jsx` agora é compartilhado.
+- **Rolagem secreta do token**: só no Re:Master (prop opcional `permitirSecreta` no `RolarDoTokenDialog`); aqui nada muda.
+- **`condicoesDuracao: {condicaoId: rodadaFim}`** no token (só o Re:Master grava; `grid.js`/`TokenDetalhe` mostram as rodadas restantes). `GridMapa` ganhou a prop opcional `focoToken` (só o painel do grupo do Re:Master usa).
+- `firestore.rules`: `gridTokenValido` aceita `condicoesDuracao` (mapa, ≤ 20) — **precisa de deploy pelo Re:Master**.
+
 ### Fase a fase
 
 | Fase | Status | Onde está |
