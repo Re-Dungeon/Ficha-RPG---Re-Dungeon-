@@ -52,6 +52,7 @@ import CondicoesModal from './sidebar/CondicoesModal';
 import CodexModal from './sidebar/CodexModal';
 import ChatModal, { ChatModalConteudo } from './sidebar/ChatModal';
 import NotesModal from './notes/NotesModal';
+import StatusFaixa from './StatusFaixa';
 import { FichaChatPainel, FichaLayout, FichaMain } from './styles';
 
 const STORAGE_KEY_CHAT_LATERAL = 'reDungeonChatLateralCampanha';
@@ -273,6 +274,8 @@ const Ficha = () => {
         )}
 
         <FichaMain>
+          <StatusFaixa personagem={personagem} />
+
           <ErrorBoundary key={aba} mensagem="Não foi possível exibir esta aba. Troque de aba ou recarregue a página.">
             {aba === 'atributos' && (
               <AtributosTab
