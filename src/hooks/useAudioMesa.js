@@ -26,6 +26,7 @@ const STATUS_VAZIO = {
   videoId: null,
   titulo: null,
   duracao: 0,
+  tempoAtual: 0,
   bloqueado: false,
   erro: null,
 };
@@ -51,10 +52,13 @@ const useAudioMesa = (campanhaId, { ativo, podeControlar }) => {
   const [recebido, setRecebido] = useState({ campanhaId: null, atual: null });
   const [status, setStatus] = useState(STATUS_VAZIO);
   const [erro, setErro] = useState(null);
+  const playerRef = useRef(null);
   const [volume, setVolumeEstado] = useState(() =>
     lerPreferencia(CHAVE_VOLUME, VOLUME_PADRAO, valor => {
       const numero = Number(valor);
-      return Number.isFinite(numero) ? Math.min(Math.max(numero, 0), 100) : VOLUME_PADRAO;
+      return Number.isFinite(numero)
+        ? Math.min(Math.max(numero, 0), 100)
+        : VOLUME_PADRAO;
     }),
   );
   const [mudo, setMudoEstado] = useState(() =>
@@ -77,7 +81,8 @@ const useAudioMesa = (campanhaId, { ativo, podeControlar }) => {
     );
   }, [ativo, campanhaId]);
 
-  const atual = ativo && recebido.campanhaId === campanhaId ? recebido.atual : null;
+  const atual =
+    ativo && recebido.campanhaId === campanhaId ? recebido.atual : null;
   const temFaixa = Boolean(atual?.videoId);
   const statusAtual =
     temFaixa && status.videoId === atual.videoId ? status : STATUS_VAZIO;
@@ -122,7 +127,22 @@ const useAudioMesa = (campanhaId, { ativo, podeControlar }) => {
     [campanhaId],
   );
 
-  const duracao = statusAtual.duracao;
+  const duracao = Number.isFinite(statusAtual.duracao) ? statusAtual.duracao : 0;
+  const tempoAtual = Number.isFinite(statusAtual.tempoAtual)
+    ? statusAtual.tempoAtual
+    : 0;
+
+  const seekTo = useCallback(
+    segundos => {
+      const valor = Number(segundos);
+      if (!Number.isFinite(valor)) return;
+      const alvo = Math.max(0, valor);
+      const player = playerRef.current;
+      if (!player || typeof player.seekTo !== 'function') return;
+      player.seekTo(alvo, true);
+    },
+    [],
+  );
 
   // Devolve a mensagem de erro do link (ou null se começou a tocar).
   const tocar = useCallback(
@@ -150,30 +170,37 @@ const useAudioMesa = (campanhaId, { ativo, podeControlar }) => {
   }, [atual, duracao, gravar]);
   const parar = useCallback(() => gravar(AUDIO_PARADO), [gravar]);
   const setRepetir = useCallback(
-    repetir => atual && gravar(montarAudioRepetir(atual, Date.now(), duracao, repetir)),
+    repetir =>
+      atual && gravar(montarAudioRepetir(atual, Date.now(), duracao, repetir)),
     [atual, duracao, gravar],
   );
 
   const limparErro = useCallback(() => setErro(null), []);
 
   const player = useMemo(
-    () => ({ atual, volume, mudo, controleRef, onStatus }),
+    () => ({ atual, volume, mudo, controleRef, onStatus, playerRef }),
     [atual, volume, mudo, onStatus],
   );
 
   return useMemo(
     () => ({
+      videoId: atual?.videoId ?? null,
       atual,
       tocando: temFaixa,
       pausado: atual?.estado === AUDIO_ESTADOS.PAUSADO,
       repetir: atual?.repetir ?? true,
       titulo: statusAtual.titulo,
       bloqueado:
-        temFaixa && atual.estado === AUDIO_ESTADOS.TOCANDO && statusAtual.bloqueado,
+        temFaixa &&
+        atual.estado === AUDIO_ESTADOS.TOCANDO &&
+        statusAtual.bloqueado,
       erroPlayer: statusAtual.erro,
       podeControlar: Boolean(podeControlar),
       volume,
       mudo,
+      tempoAtual,
+      duracao,
+      seekTo,
       setVolume,
       setMudo,
       liberarSom,
@@ -193,6 +220,9 @@ const useAudioMesa = (campanhaId, { ativo, podeControlar }) => {
       podeControlar,
       volume,
       mudo,
+      tempoAtual,
+      duracao,
+      seekTo,
       setVolume,
       setMudo,
       liberarSom,

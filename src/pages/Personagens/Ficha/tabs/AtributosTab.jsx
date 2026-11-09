@@ -43,14 +43,25 @@ const AtributosFormBody = ({
   racaLinkImagem,
   classesNomes,
   onSave,
+  onPersonagemSincronizado,
 }) => {
-  const { values, handleSubmit: submit, isSubmitting, dirty } = formik;
+  const { values, handleSubmit: submit, isSubmitting, dirty, resetForm } = formik;
 
   useEffect(() => {
     if (dirty) {
       salvarRascunho(values);
     }
   }, [values, dirty, salvarRascunho]);
+
+  // A ficha chega ao vivo (Ficha.jsx). Sem edição pendente, o formulário
+  // acompanha o documento; com edição pendente, nada é apagado — ao salvar, o
+  // que o jogador não mexeu mantém o valor mais novo (mescla em três vias).
+  useEffect(() => {
+    if (dirty || isSubmitting) return;
+    if (onPersonagemSincronizado(personagem)) {
+      resetForm({ values: buildInitialValues(personagem) });
+    }
+  }, [personagem, dirty, isSubmitting, resetForm, onPersonagemSincronizado]);
 
   const bonusCultivoTotal = calcularBonusCultivoTotal(personagem.cultivoBonus ?? {});
   const primariosTotais = calcularPrimariosTotais(
@@ -158,6 +169,7 @@ AtributosFormBody.propTypes = {
   onDescartar: PropTypes.func.isRequired,
   onExcluir: PropTypes.func.isRequired,
   onSave: PropTypes.func.isRequired,
+  onPersonagemSincronizado: PropTypes.func.isRequired,
   racaNome: PropTypes.string.isRequired,
   racaLinkImagem: PropTypes.string,
   classesNomes: PropTypes.array.isRequired,
@@ -175,6 +187,17 @@ const AtributosTab = ({ personagem, onSave, onExcluir }) => {
   const { executar } = useSaving();
   const [rascunhoDisponivel, setRascunhoDisponivel] = useState(null);
   const atualizadoEmRef = useRef(personagem.updatedAt);
+  // Personagem de onde vieram os valores do formulário: é a `base` da mescla
+  // em três vias ao salvar.
+  const baseRef = useRef(personagem);
+  const [valoresIniciais] = useState(() => buildInitialValues(personagem));
+
+  // true = o formulário deve ser reiniciado com este personagem (mudou).
+  const sincronizarBase = useCallback(proximo => {
+    if (proximo === baseRef.current) return false;
+    baseRef.current = proximo;
+    return true;
+  }, []);
 
   useEffect(() => {
     const draft = lerRascunho();
@@ -187,7 +210,7 @@ const AtributosTab = ({ personagem, onSave, onExcluir }) => {
   }, [lerRascunho]);
 
   const handleSubmit = useCallback(
-    async (values, { setSubmitting }) => {
+    async (values, { setSubmitting, resetForm }) => {
       try {
         const bonusCultivoTotal = calcularBonusCultivoTotal(personagem.cultivoBonus ?? {});
         const primariosTotais = calcularPrimariosTotais(
@@ -210,7 +233,10 @@ const AtributosTab = ({ personagem, onSave, onExcluir }) => {
           statusMaximos: calcularStatusMaximos(primariosTotais, values.status, bonusCultivoTotal.status),
           powerCombat: calcularPowerCombat(primariosTotais, secundariosTotais),
         };
-        await executar(() => onSave(payload));
+        await executar(() => onSave(payload, { base: baseRef.current }));
+        // Limpa o "sujo"; o próximo personagem que chegar (já com o que foi
+        // gravado) reinicia o formulário pelo efeito do FormBody.
+        resetForm({ values });
         limparRascunho();
         setRascunhoDisponivel(null);
       } catch {
@@ -223,7 +249,7 @@ const AtributosTab = ({ personagem, onSave, onExcluir }) => {
   );
 
   return (
-    <Formik enableReinitialize initialValues={buildInitialValues(personagem)} onSubmit={handleSubmit}>
+    <Formik initialValues={valoresIniciais} onSubmit={handleSubmit}>
       {formik => (
         <AtributosFormBody
           personagem={personagem}
@@ -232,6 +258,7 @@ const AtributosTab = ({ personagem, onSave, onExcluir }) => {
           rascunho={rascunhoDisponivel}
           onExcluir={onExcluir}
           onSave={onSave}
+          onPersonagemSincronizado={sincronizarBase}
           racaNome={racaNome}
           racaLinkImagem={racaLinkImagem}
           classesNomes={classesNomes}

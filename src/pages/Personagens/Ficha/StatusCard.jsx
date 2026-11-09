@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import { useField } from 'formik';
+import { useField, useFormikContext } from 'formik';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
@@ -16,6 +16,7 @@ import {
 } from 'components/NumberField/styles';
 
 import {
+  AjusteRapidoRow,
   DialogFecharButton,
   DialogHeaderRow,
   DialogHeaderTitle,
@@ -28,6 +29,8 @@ import {
   StatusTitulo,
 } from './styles';
 
+const AJUSTES_RAPIDOS = [-5, -1, 1, 5];
+
 const StatusCard = ({ label, variante, grande, maximo, atual, atualName, baseName, extraName, bonusName }) => {
   const tituloId = `dialog-titulo-${atualName}`;
   const [aberto, setAberto] = useState(false);
@@ -35,6 +38,7 @@ const StatusCard = ({ label, variante, grande, maximo, atual, atualName, baseNam
   const [baseField, , baseHelpers] = useField(baseName);
   const [extraField, , extraHelpers] = useField(extraName);
   const [bonusField, , bonusHelpers] = useField(bonusName);
+  const { submitForm } = useFormikContext();
   const snapshotRef = useRef(null);
 
   const percentual = maximo > 0 ? Math.min(100, Math.max(0, (atual / maximo) * 100)) : 0;
@@ -60,9 +64,21 @@ const StatusCard = ({ label, variante, grande, maximo, atual, atualName, baseNam
     setAberto(false);
   };
 
+  // "Salvar" grava a ficha (antes só fechava o diálogo).
   const salvar = event => {
     event.preventDefault();
+    event.stopPropagation();
     setAberto(false);
+    submitForm();
+  };
+
+  // Dano/cura rápidos: ajusta o atual (0..máximo) e grava na hora, sem fechar.
+  const ajustarRapido = delta => {
+    const atualNumero = Number(atualField.value) || 0;
+    const novo = Math.min(Math.max(atualNumero + delta, 0), Math.max(maximo, 0));
+    if (novo === atualNumero) return;
+    snapshotRef.current = { ...snapshotRef.current, atual: novo };
+    Promise.resolve(atualHelpers.setValue(novo)).then(() => submitForm());
   };
 
   return (
@@ -97,6 +113,19 @@ const StatusCard = ({ label, variante, grande, maximo, atual, atualName, baseNam
               </NumberFieldWrapper>
               <NumberField name={atualName} label="Atual" />
             </FieldsRow>
+            <AjusteRapidoRow role="group" aria-label={`Ajuste rápido de ${label}`}>
+              {AJUSTES_RAPIDOS.map(delta => (
+                <Button
+                  key={delta}
+                  size="small"
+                  variant="outlined"
+                  onClick={() => ajustarRapido(delta)}
+                  aria-label={`${delta > 0 ? 'Somar' : 'Tirar'} ${Math.abs(delta)} de ${label} e salvar`}
+                >
+                  {delta > 0 ? `+${delta}` : `−${Math.abs(delta)}`}
+                </Button>
+              ))}
+            </AjusteRapidoRow>
             <FieldsRow style={{ marginTop: 16 }}>
               <NumberField name={baseName} label="Base" />
               <NumberField name={extraName} label="Extra" />

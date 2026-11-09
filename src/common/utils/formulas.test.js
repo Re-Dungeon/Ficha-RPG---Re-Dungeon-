@@ -39,6 +39,7 @@ import {
   podeAdicionarPontoCultivo,
   resolverPermissaoCultivoPorAtributo,
   resolverLimiteCultivoPorAtributo,
+  avancarDuracaoCondicoes,
 } from './formulas';
 
 describe('regra de limite e permissão de cultivo', () => {
@@ -1206,5 +1207,28 @@ describe('removerBonusCultivoDosReinos', () => {
 
   it('bônus vazio/ausente devolve objeto vazio', () => {
     expect(removerBonusCultivoDosReinos(undefined, ['a1'])).toEqual({});
+  });
+});
+
+describe('avancarDuracaoCondicoes', () => {
+  it('desconta 1 turno, remove as que chegam a 0 e ignora as sem duração', () => {
+    const resultado = avancarDuracaoCondicoes([
+      { condicaoId: 'veneno', stack: 2, duracaoRestante: 3 },
+      { condicaoId: 'atordoado', stack: 1, duracaoRestante: 1 },
+      { condicaoId: 'maldito', stack: 1, duracaoRestante: null },
+      { condicaoId: 'velho', stack: 1, duracaoRestante: 0 },
+    ]);
+    expect(resultado.condicoesAtivas).toEqual([
+      { condicaoId: 'veneno', stack: 2, duracaoRestante: 2 },
+      { condicaoId: 'maldito', stack: 1, duracaoRestante: null },
+    ]);
+    expect(resultado.expiradas).toEqual(['atordoado', 'velho']);
+    expect(resultado.mudou).toBe(true);
+  });
+
+  it('sem condições com duração, não muda nada', () => {
+    const lista = [{ condicaoId: 'maldito', duracaoRestante: null }];
+    expect(avancarDuracaoCondicoes(lista)).toEqual({ condicoesAtivas: lista, expiradas: [], mudou: false });
+    expect(avancarDuracaoCondicoes(undefined)).toEqual({ condicoesAtivas: [], expiradas: [], mudou: false });
   });
 });

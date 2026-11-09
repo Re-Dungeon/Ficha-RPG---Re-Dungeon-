@@ -1315,9 +1315,11 @@ describe('CampanhaChat', () => {
           await screen.findByRole('button', { name: 'Seu turno! Restaurar PP' }),
         );
         await waitFor(() =>
-          expect(updatePersonagem).toHaveBeenCalledWith('p-1', {
-            estadoCombate: expect.objectContaining({ ppAtual: 30, turno: 3 }),
-          }),
+          expect(updatePersonagem).toHaveBeenCalledWith(
+            'p-1',
+            { estadoCombate: expect.objectContaining({ ppAtual: 30, turno: 3 }) },
+            { base: expect.objectContaining({ id: 'p-1' }) },
+          ),
         );
         await waitFor(() =>
           expect(
@@ -1394,9 +1396,11 @@ describe('CampanhaChat', () => {
             within(dialogo).getByRole('button', { name: 'Executar ação: Movimentar-se' }),
           );
           await waitFor(() =>
-            expect(updatePersonagem).toHaveBeenCalledWith('p-1', {
-              estadoCombate: expect.objectContaining({ turno: 2 }),
-            }),
+            expect(updatePersonagem).toHaveBeenCalledWith(
+              'p-1',
+              { estadoCombate: expect.objectContaining({ turno: 2 }) },
+              { base: expect.objectContaining({ id: 'p-1' }) },
+            ),
           );
           expect(addChatMensagem).not.toHaveBeenCalled();
         });

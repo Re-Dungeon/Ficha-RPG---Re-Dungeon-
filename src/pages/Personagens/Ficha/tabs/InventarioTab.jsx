@@ -27,6 +27,7 @@ import {
 } from 'common/utils/formulas';
 import { getNome } from 'common/utils/resolveNome';
 import { useSaving } from 'context/SavingContext';
+import useConfirmacao from 'components/ConfirmDialog/useConfirmacao';
 
 import ItemCard from '../inventario/ItemCard';
 import CriarItemDialog from '../inventario/CriarItemDialog';
@@ -73,6 +74,7 @@ const InventarioTab = ({ personagem, inventarioAtualizacoes }) => {
   const [receitaEmVisualizacao, setReceitaEmVisualizacao] = useState(null);
 
   const { executar } = useSaving();
+  const [confirmar, dialogoConfirmacao] = useConfirmacao();
 
   const carregarItens = useCallback(async () => {
     const itensCarregados = await getItensInventario(personagem.id);
@@ -147,12 +149,17 @@ const InventarioTab = ({ personagem, inventarioAtualizacoes }) => {
   );
 
   const handleRemover = useCallback(
-    item =>
-      executar(async () => {
-        await removeItemInventario(personagem.id, item.id);
-        await carregarItens();
-      }),
-    [personagem.id, carregarItens, executar],
+    async item => {
+      if (!(await confirmar({
+        titulo: `Excluir "${getNome(item)}"?`,
+        mensagem: 'O item sai do inventário deste personagem.',
+      }))) return undefined;
+      return executar(async () => {
+          await removeItemInventario(personagem.id, item.id);
+          await carregarItens();
+        });
+    },
+    [personagem.id, carregarItens, executar, confirmar],
   );
 
   const itensFiltrados = itens.filter(
@@ -182,12 +189,17 @@ const InventarioTab = ({ personagem, inventarioAtualizacoes }) => {
   );
 
   const handleRemoverMaterial = useCallback(
-    material =>
-      executar(async () => {
-        await removeMaterialInventario(personagem.id, material.id);
-        await carregarMateriais();
-      }),
-    [personagem.id, carregarMateriais, executar],
+    async material => {
+      if (!(await confirmar({
+        titulo: `Excluir "${getNome(material)}"?`,
+        mensagem: 'O material sai do inventário deste personagem.',
+      }))) return undefined;
+      return executar(async () => {
+          await removeMaterialInventario(personagem.id, material.id);
+          await carregarMateriais();
+        });
+    },
+    [personagem.id, carregarMateriais, executar, confirmar],
   );
 
   const handleCriarReceita = useCallback(
@@ -209,16 +221,22 @@ const InventarioTab = ({ personagem, inventarioAtualizacoes }) => {
   );
 
   const handleRemoverReceita = useCallback(
-    receita =>
-      executar(async () => {
-        await removeReceitaInventario(personagem.id, receita.id);
-        await carregarReceitas();
-      }),
-    [personagem.id, carregarReceitas, executar],
+    async receita => {
+      if (!(await confirmar({
+        titulo: `Excluir "${getNome(receita)}"?`,
+        mensagem: 'A receita sai do inventário deste personagem.',
+      }))) return undefined;
+      return executar(async () => {
+          await removeReceitaInventario(personagem.id, receita.id);
+          await carregarReceitas();
+        });
+    },
+    [personagem.id, carregarReceitas, executar, confirmar],
   );
 
   return (
     <div>
+      {dialogoConfirmacao}
       <SectionTitle>🧰 Inventário</SectionTitle>
 
       {!personagem.universo && (

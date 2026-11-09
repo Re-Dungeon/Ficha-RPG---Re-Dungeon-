@@ -992,3 +992,28 @@ export const removerBonusCultivoDosReinos = (cultivoBonus = {}, reinoIds = []) =
     return acc;
   }, {});
 };
+
+// Novo turno do personagem ("Iniciar novo turno" da ficha / "Seu turno!
+// Restaurar PP" do grid): cada condição com `duracaoRestante` numérica perde 1
+// turno; a que chega a 0 sai da ficha. `null` (sem duração) não muda.
+// Devolve `{ condicoesAtivas, expiradas, mudou }` — `expiradas` são os
+// `condicaoId` que saíram (para avisar o jogador).
+export const avancarDuracaoCondicoes = condicoesAtivas => {
+  const lista = Array.isArray(condicoesAtivas) ? condicoesAtivas : [];
+  const expiradas = [];
+  let mudou = false;
+  const proximas = lista.flatMap(condicao => {
+    const duracao = condicao?.duracaoRestante;
+    if (duracao === null || duracao === undefined || duracao === '' || !Number.isFinite(Number(duracao))) {
+      return [condicao];
+    }
+    mudou = true;
+    const restante = Number(duracao) - 1;
+    if (restante <= 0) {
+      expiradas.push(condicao.condicaoId);
+      return [];
+    }
+    return [{ ...condicao, duracaoRestante: restante }];
+  });
+  return { condicoesAtivas: proximas, expiradas, mudou };
+};

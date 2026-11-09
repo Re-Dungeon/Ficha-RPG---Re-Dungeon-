@@ -169,6 +169,7 @@ const formatarData = timestamp => {
 
 const SorteTab = ({ personagem, onSave }) => {
   const [historico, setHistorico] = useState([]);
+  const [erroHistorico, setErroHistorico] = useState(false);
   const [ultimoResultado, setUltimoResultado] = useState(null);
   const { executar } = useSaving();
 
@@ -182,7 +183,7 @@ const SorteTab = ({ personagem, onSave }) => {
         }
       })
       .catch(() => {
-        // ignore loading errors for history fetches and keep the empty state
+        if (isMounted) setErroHistorico(true);
       });
     return () => {
       isMounted = false;
@@ -285,9 +286,11 @@ const SorteTab = ({ personagem, onSave }) => {
       <SectionTitle style={{ marginTop: 28 }}>Histórico</SectionTitle>
       <HistoryGrid>
         {historico.length === 0 && (
-          <EmptyIllustration>
-            <div style={{ fontSize: 36, marginBottom: 8 }}>✨</div>
-            Nenhuma fortuna registrada ainda.
+          <EmptyIllustration role={erroHistorico ? 'alert' : undefined}>
+            <div style={{ fontSize: 36, marginBottom: 8 }}>{erroHistorico ? '⚠️' : '✨'}</div>
+            {erroHistorico
+              ? 'Não foi possível carregar o histórico. Recarregue a página para tentar de novo.'
+              : 'Nenhuma fortuna registrada ainda.'}
           </EmptyIllustration>
         )}
 

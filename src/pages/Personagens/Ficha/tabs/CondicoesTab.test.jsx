@@ -52,3 +52,61 @@ describe('CondicoesTab — duração da condição', () => {
     expect(onSave).not.toHaveBeenCalled();
   });
 });
+
+describe('CondicoesTab — acúmulos', () => {
+  beforeEach(() => {
+    getCondicoesPorUniverso.mockResolvedValue([{ id: 'envenenado', nome: 'Envenenado' }]);
+  });
+
+  it('−1 acúmulo tira só um, sem confirmação', async () => {
+    const onSave = vi.fn().mockResolvedValue();
+    const comAcumulo = {
+      ...personagem,
+      condicoesAtivas: [{ ...personagem.condicoesAtivas[0], stack: 3 }],
+    };
+    render(
+      <SavingProvider>
+        <CondicoesTab personagem={comAcumulo} onSave={onSave} />
+      </SavingProvider>,
+    );
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Tirar um acúmulo de Envenenado' }));
+    await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
+    expect(onSave.mock.calls[0][0].condicoesAtivas[0].stack).toBe(2);
+  });
+
+  it('com um acúmulo só, não mostra o −1', async () => {
+    render(
+      <SavingProvider>
+        <CondicoesTab personagem={personagem} onSave={vi.fn()} />
+      </SavingProvider>,
+    );
+    await screen.findByRole('button', { name: 'Remover Envenenado' });
+    expect(screen.queryByRole('button', { name: /tirar um acúmulo/i })).not.toBeInTheDocument();
+  });
+});
+
+describe('CondicoesTab — remover', () => {
+  beforeEach(() => {
+    getCondicoesPorUniverso.mockResolvedValue([{ id: 'envenenado', nome: 'Envenenado' }]);
+  });
+
+  it('pede confirmação antes de remover; Cancelar não grava', async () => {
+    const onSave = vi.fn().mockResolvedValue();
+    render(
+      <SavingProvider>
+        <CondicoesTab personagem={personagem} onSave={onSave} />
+      </SavingProvider>,
+    );
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Remover Envenenado' }));
+    expect(await screen.findByText('Remover Envenenado?')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
+    await waitFor(() => expect(screen.queryByText('Remover Envenenado?')).not.toBeInTheDocument());
+    expect(onSave).not.toHaveBeenCalled();
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Remover Envenenado' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Remover' }));
+    await waitFor(() => expect(onSave).toHaveBeenCalledWith({ condicoesAtivas: [] }));
+  });
+});

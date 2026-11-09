@@ -6,7 +6,7 @@ import { interpretarExpressaoRolagem, randomUint32, rolarEspecificacao, rolarFac
 // Puro e síncrono: roda passo a passo e para nos pedidos ao usuário
 // (`inputQuery`/`choose`), devolvendo o pedido para quem chamou responder.
 // Em produção roda dentro de um Web Worker (macroWorker.js); nos testes roda
-// direto. Mantido em sincronia com a cópia do Re:Master.
+// direto. Mantido em sincronia com a outra cópia (site dos jogadores ↔ Re:Master).
 //
 // Isolamento: só as bibliotecas `base` (sem load/dofile/loadfile/print/
 // collectgarbage), `math`, `string` e `table` são abertas — sem `os`, `io`,

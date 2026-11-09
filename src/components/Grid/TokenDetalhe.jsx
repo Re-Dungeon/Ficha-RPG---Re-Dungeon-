@@ -47,6 +47,7 @@ const RecursoEditavel = ({ id, recurso, onAlterar }) => {
         type="text"
         inputMode="numeric"
         aria-label={`${rotulo} atual`}
+        title="Digite o valor ou +N/-N para somar/tirar"
         value={rascunho ?? String(atual)}
         onChange={event => setRascunho(event.target.value)}
         onFocus={event => event.target.select()}

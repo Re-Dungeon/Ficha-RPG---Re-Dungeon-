@@ -6,6 +6,7 @@ import AddIcon from '@mui/icons-material/Add';
 import { getCondicoesPorUniverso } from 'service/storage';
 import { getNome } from 'common/utils/resolveNome';
 import { useSaving } from 'context/SavingContext';
+import useConfirmacao from 'components/ConfirmDialog/useConfirmacao';
 
 import { StatusValueRow } from '../styles';
 import CondicaoCard from '../condicoes/CondicaoCard';
@@ -21,6 +22,7 @@ const CondicoesTab = ({ personagem, onSave }) => {
   const [busca, setBusca] = useState('');
   const [condicaoVisualizadaId, setCondicaoVisualizadaId] = useState(null);
   const { executar } = useSaving();
+  const [confirmar, dialogoConfirmacao] = useConfirmacao();
 
   useEffect(() => {
     if (!personagem.universo) {
@@ -68,10 +70,38 @@ const CondicoesTab = ({ personagem, onSave }) => {
   );
 
   const handleRemover = useCallback(
+    async condicaoId => {
+      const ativa = condicoesAtivas.find(item => item.condicaoId === condicaoId);
+      const nome = getNome(catalogo.find(item => item.id === condicaoId) ?? {}) || 'esta condição';
+      const stack = ativa?.stack ?? 1;
+      const ok = await confirmar({
+        titulo: `Remover ${nome}?`,
+        mensagem:
+          stack > 1
+            ? `Remove os ${stack} acúmulos. Para tirar só um, use "−1 acúmulo".`
+            : 'A condição sai da ficha.',
+        confirmarTexto: 'Remover',
+      });
+      if (!ok) return undefined;
+      return executar(() =>
+        onSave({
+          condicoesAtivas: condicoesAtivas.filter(item => item.condicaoId !== condicaoId),
+        }),
+      );
+    },
+    [condicoesAtivas, catalogo, onSave, executar, confirmar],
+  );
+
+  // −1 acúmulo (sem confirmação: só aparece com 2 ou mais acúmulos).
+  const handleReduzirAcumulo = useCallback(
     condicaoId =>
       executar(() =>
         onSave({
-          condicoesAtivas: condicoesAtivas.filter(item => item.condicaoId !== condicaoId),
+          condicoesAtivas: condicoesAtivas.map(item =>
+            item.condicaoId === condicaoId && (item.stack ?? 1) > 1
+              ? { ...item, stack: item.stack - 1 }
+              : item,
+          ),
         }),
       ),
     [condicoesAtivas, onSave, executar],
@@ -98,6 +128,7 @@ const CondicoesTab = ({ personagem, onSave }) => {
 
   return (
     <div>
+      {dialogoConfirmacao}
       <CondicoesLista>
         {condicoesAtivas.length === 0 && (
           <StatusValueRow>Nenhuma condição ativa no momento.</StatusValueRow>
@@ -110,6 +141,7 @@ const CondicoesTab = ({ personagem, onSave }) => {
             onVer={() => setCondicaoVisualizadaId(ativo.condicaoId)}
             onAlterarDuracao={duracaoRestante => handleAlterarDuracao(ativo.condicaoId, duracaoRestante)}
             onRemover={() => handleRemover(ativo.condicaoId)}
+            onReduzirAcumulo={() => handleReduzirAcumulo(ativo.condicaoId)}
           />
         ))}
       </CondicoesLista>

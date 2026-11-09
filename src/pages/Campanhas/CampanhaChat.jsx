@@ -29,6 +29,7 @@ import {
   updatePersonagem,
 } from 'service/storage';
 import { montarMensagemTexto, personagensNaCampanha } from 'common/utils/chat';
+import { avancarDuracaoCondicoes } from 'common/utils/formulas';
 import { corDoPing } from 'common/utils/grid';
 import { podeEditarArea } from 'common/utils/gridAreas';
 import { autorDoToken } from 'common/utils/gridRolagem';
@@ -323,9 +324,16 @@ const CampanhaChat = ({ visao = 'chat' }) => {
     try {
       const ficha = normalizarPersonagemCarregado(fichaDaVez);
       const ppMaximo = calcularPpMaximo(prontidaoMaximaDaFicha(ficha));
-      await updatePersonagem(ficha.id, {
-        estadoCombate: estadoDoNovoTurno(normalizarEstadoCombate(ficha, ppMaximo), ppMaximo),
-      });
+      // Turno novo do personagem: as condições com duração perdem 1 turno.
+      const condicoes = avancarDuracaoCondicoes(ficha.condicoesAtivas);
+      await updatePersonagem(
+        ficha.id,
+        {
+          estadoCombate: estadoDoNovoTurno(normalizarEstadoCombate(ficha, ppMaximo), ppMaximo),
+          ...(condicoes.mudou ? { condicoesAtivas: condicoes.condicoesAtivas } : {}),
+        },
+        { base: ficha },
+      );
       setPpRestauradoEm(chaveTurno);
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -356,7 +364,9 @@ const CampanhaChat = ({ visao = 'chat' }) => {
     async patch => {
       if (!fichaCentral) return;
       try {
-        await updatePersonagem(fichaCentral.id, patch);
+        // base = a ficha que a Central mostrou: a mescla em três vias não
+        // desfaz o que mudou no documento enquanto isso.
+        await updatePersonagem(fichaCentral.id, patch, { base: fichaCentral });
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error('Falha ao salvar a Central de Ações:', error);

@@ -15,6 +15,7 @@ vi.mock('service/storage', () => ({
   getPersonagem: vi.fn(),
   removePersonagem: vi.fn(),
   updatePersonagem: vi.fn(),
+  subscribePersonagem: vi.fn(() => () => {}),
   getRmCampanha: vi.fn(),
 }));
 vi.mock('hooks/useIsMobile', () => ({ default: vi.fn() }));

@@ -61,6 +61,7 @@ const NucleoCard = ({ nucleo, artsCount, onVer, onEditar, onRemover }) => (
         variant="outlined"
         color="error"
         onClick={onRemover}
+        aria-label={`Remover o Núcleo ${nucleo.nome ?? ''}`.trim()}
         sx={{ flex: 1 }}
       >
         🗑️ Remover

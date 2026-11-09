@@ -1,6 +1,6 @@
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen, waitFor, waitForElementToBeRemoved } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 import {
   addNucleo,
@@ -150,7 +150,7 @@ describe('ClasseModal', () => {
     await waitFor(() => expect(removeArt).toHaveBeenCalledWith('p1', 'a1'));
     await waitFor(() => expect(removeNucleo).toHaveBeenCalledWith('p1', 'n1'));
     await waitFor(() => expect(onSave).toHaveBeenCalledWith({ classes: [] }));
-    await waitForElementToBeRemoved(() => screen.queryByLabelText(/Salvando/i), { timeout: 3000 });
+    await waitFor(() => expect(screen.queryByLabelText(/Salvando/i)).not.toBeInTheDocument());
 
     getNucleos.mockResolvedValueOnce([]);
     const personagemSemClasse = { ...personagem, classes: [] };

@@ -1,6 +1,15 @@
-import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import PlayerAudioMesa from 'components/Chat/PlayerAudioMesa';
+import useAudioMesa from 'hooks/useAudioMesa';
 
 const AudioMesaContext = createContext({
   audio: null,
@@ -79,5 +88,25 @@ export const AudioMesaProvider = ({ children }) => {
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const useAudioMesaGlobal = () => useContext(AudioMesaContext);
+
+// Música da mesa vista pelo chat (hooks/useChatCampanha.js, cópia
+// compartilhada com o Re:Master). Cada app liga o áudio do seu jeito — aqui
+// o chat ouve a campanha e registra a faixa no player global (que segue
+// tocando ao trocar de página); no Re:Master vem do provider da campanha
+// ativa. A assinatura é a mesma nos dois arquivos.
+// eslint-disable-next-line react-refresh/only-export-components
+export const useAudioDoChat = (campanhaId, { podeOuvir, podeControlar }) => {
+  const audio = useAudioMesa(campanhaId, { ativo: podeOuvir, podeControlar });
+  const { registrarAudio } = useAudioMesaGlobal();
+
+  useEffect(() => {
+    if (!campanhaId || !podeOuvir || !audio) return;
+    const atual = audio?.atual ?? audio?.player?.atual ?? null;
+    if (!atual && !audio.tocando && !audio.pausado) return;
+    registrarAudio(audio);
+  }, [audio, campanhaId, podeOuvir, registrarAudio]);
+
+  return audio;
+};
 
 export default AudioMesaContext;

@@ -799,3 +799,11 @@ export const HeroAcaoBadge = styled.button`
     height: clamp(98px, 25vw, 132px);
   }
 `;
+
+// Botões −5/−1/+1/+5 do diálogo de Saúde/Energia/Fadiga (gravam na hora).
+export const AjusteRapidoRow = styled.div`
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+`;

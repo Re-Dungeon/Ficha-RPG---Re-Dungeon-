@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import Dialog from '@mui/material/Dialog';
 import IconButton from '@mui/material/IconButton';
@@ -11,13 +12,11 @@ const ImageLightbox = ({ open = false, imageUrl = '', imageAlt = 'Imagem ampliad
   const [zoom, setZoom] = useState(1);
 
   useEffect(() => {
-    if (!open) {
-      setZoom(1);
-      return;
-    }
+    if (!open) return undefined;
 
     const handleKeyDown = event => {
       if (event.key === 'Escape') {
+        setZoom(1);
         onClose();
       }
     };
@@ -160,6 +159,13 @@ const ImageLightbox = ({ open = false, imageUrl = '', imageAlt = 'Imagem ampliad
       </Box>
     </Dialog>
   );
+};
+
+ImageLightbox.propTypes = {
+  open: PropTypes.bool,
+  imageUrl: PropTypes.string,
+  imageAlt: PropTypes.string,
+  onClose: PropTypes.func,
 };
 
 export default ImageLightbox;

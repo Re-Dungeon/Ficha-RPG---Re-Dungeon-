@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import { useField } from 'formik';
+import { useField, useFormikContext } from 'formik';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
@@ -11,7 +11,6 @@ import CloseIcon from '@mui/icons-material/Close';
 import LockIcon from '@mui/icons-material/Lock';
 
 import NumberField from 'components/NumberField/NumberField';
-import useIsMobile from 'hooks/useIsMobile';
 import {
   NumberFieldBox,
   NumberFieldLabel,
@@ -39,6 +38,7 @@ const AtributoCard = ({ label, total, baseName, extraName, bonusName, personagem
   const [baseField, , baseHelpers] = useField(baseName);
   const [extraField, , extraHelpers] = useField(extraName);
   const [bonusField, , bonusHelpers] = useField(bonusName);
+  const { submitForm } = useFormikContext();
   const snapshotRef = useRef(null);
 
   const tipoAtributo = label.toLowerCase();
@@ -49,9 +49,6 @@ const AtributoCard = ({ label, total, baseName, extraName, bonusName, personagem
   const nomeCalculadora = isDefesa ? 'Calculadora de Defesa' : 'Calculadora de Ataque';
   const [prontidaoAberta, setProntidaoAberta] = useState(false);
   const [prontidaoInfoAberta, setProntidaoInfoAberta] = useState(false);
-  // Celular: sem botão direito (e o toque longo não dispara `contextmenu` no
-  // iPhone) — as opções do menu de contexto viram botões no diálogo da gema.
-  const isMobile = useIsMobile();
 
   const abrir = () => {
     snapshotRef.current = {
@@ -72,9 +69,13 @@ const AtributoCard = ({ label, total, baseName, extraName, bonusName, personagem
     setAberto(false);
   };
 
+  // "Salvar" grava a ficha (antes só fechava o diálogo e o jogador precisava
+  // achar o ícone "Salvar personagem").
   const salvar = event => {
     event.preventDefault();
+    event.stopPropagation();
     setAberto(false);
+    submitForm();
   };
 
   const abrirMenuContexto = event => {
@@ -241,7 +242,10 @@ const AtributoCard = ({ label, total, baseName, extraName, bonusName, personagem
               </NumberFieldWrapper>
               <NumberField name={bonusName} label="Bônus" />
             </FieldsRow>
-            {isMobile && opcoesMenu.length > 0 && (
+            {/* As opções do menu de contexto (botão direito) também ficam aqui,
+                visíveis — no celular não há botão direito, e no desktop ninguém
+                adivinha que ele existe. */}
+            {opcoesMenu.length > 0 && (
               <div style={{ display: 'grid', gap: 8, marginTop: 20 }}>
                 {opcoesMenu.map(opcao => (
                   <Button

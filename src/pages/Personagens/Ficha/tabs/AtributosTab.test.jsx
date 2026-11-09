@@ -121,13 +121,47 @@ describe('AtributosTab — fluxo de edição', () => {
     // não encontraria a gema — reusa a referência já capturada e olha só o texto.
     await waitFor(() => expect(within(gemaForca).getByText('50')).toBeInTheDocument());
 
+    // O "Salvar" do diálogo grava a ficha (não precisa do "Salvar personagem").
     fireEvent.click(within(dialog).getByRole('button', { name: /salvar/i }));
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: /salvar personagem/i }));
-
     await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
     expect(onSave.mock.calls[0][0].atributosBase.forca).toBe(50);
+    // Manda a base (o personagem de onde o formulário partiu) para a mescla.
+    expect(onSave.mock.calls[0][1]).toEqual({ base: personagem });
+  });
+
+  it('ajuste rápido de Saúde grava na hora, limitado ao máximo', async () => {
+    const onSave = vi.fn().mockResolvedValue();
+    const comVida = {
+      ...personagem,
+      atributosBase: { ...personagem.atributosBase, vitalidade: 10 },
+      status: { hp: { base: 0, extra: 0, bonus: 0, atual: 3 } },
+    };
+    renderComProvider(<AtributosTab personagem={comVida} onSave={onSave} onExcluir={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole('button', { name: /saúde/i }));
+    const dialog = await screen.findByRole('dialog', { name: /configurar saúde/i });
+    fireEvent.click(within(dialog).getByRole('button', { name: /tirar 5 de saúde/i }));
+
+    await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
+    expect(onSave.mock.calls[0][0].status.hp.atual).toBe(0);
+    // O diálogo continua aberto para mais ajustes.
+    expect(screen.getByRole('dialog', { name: /configurar saúde/i })).toBeInTheDocument();
+  });
+
+  it('sem edição pendente, acompanha a ficha que chega ao vivo', async () => {
+    const { rerender } = renderComProvider(
+      <AtributosTab personagem={personagem} onSave={vi.fn()} onExcluir={vi.fn()} />,
+    );
+    const atualizado = { ...personagem, atributosBase: { ...personagem.atributosBase, forca: 7 } };
+    rerender(
+      <SavingProvider>
+        <AtributosTab personagem={atualizado} onSave={vi.fn()} onExcluir={vi.fn()} />
+      </SavingProvider>,
+    );
+    const gemaForca = screen.getByRole('button', { name: /força/i });
+    await waitFor(() => expect(within(gemaForca).getByText('7')).toBeInTheDocument());
   });
 
   it('descarta as edições da modal ao clicar em Cancelar', async () => {
@@ -511,6 +545,35 @@ describe('AtributosTab — fluxo de edição', () => {
     const modal = await screen.findByRole('dialog', { name: /central de ações/i });
     expect(within(modal).getAllByText(/única/i).length).toBeGreaterThan(0);
     expect(within(modal).getAllByText(/reativa/i).length).toBeGreaterThan(0);
+  });
+
+  it('se a gravação da ação falhar, o PP volta e o jogador é avisado', async () => {
+    const onSave = vi.fn().mockRejectedValue(new Error('offline'));
+    const personagemComProntidao = {
+      ...personagem,
+      secundariostotais: { prontidao: 315 },
+      estadoCombate: { ppAtual: 315, turno: 1, historicoAcoes: [] },
+      secundariosBase: { ...personagem.secundariosBase, prontidao: 315 },
+    };
+
+    renderComProvider(
+      <AtributosTab personagem={personagemComProntidao} onSave={onSave} onExcluir={vi.fn()} />,
+    );
+
+    fireEvent.contextMenu(screen.getByRole('button', { name: /prontidão/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /central de ações/i }));
+    const modal = await screen.findByRole('dialog', { name: /central de ações/i });
+
+    fireEvent.click(within(modal).getByRole('button', { name: /executar ação: atacar/i }));
+
+    expect(await screen.findByText(/não foi possível salvar a ação/i)).toBeInTheDocument();
+    expect(onSave.mock.calls[0][0].estadoCombate.ppAtual).toBe(240);
+
+    // O PP voltou a 315 na tela: tentar de novo cobra a partir de 315 (240), não de 240.
+    onSave.mockResolvedValue();
+    fireEvent.click(within(modal).getByRole('button', { name: /executar ação: atacar/i }));
+    await waitFor(() => expect(onSave).toHaveBeenCalledTimes(2));
+    expect(onSave.mock.calls[1][0].estadoCombate.ppAtual).toBe(240);
   });
 
   it('desconta PP corretamente ao executar Ataque na central de ações', async () => {
