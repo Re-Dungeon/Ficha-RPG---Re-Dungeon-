@@ -943,6 +943,46 @@ describe('CampanhaChat', () => {
       expect(screen.queryByText('Bem-vindos à taverna.')).not.toBeInTheDocument();
     });
 
+    it('arrasta para a esquerda aumenta o chat e para a direita diminui', async () => {
+      localStorage.clear();
+      localStorage.setItem('reDungeonChatAberto', 'true');
+      renderChat(null, '/campanhas/camp-1/grid');
+      await screen.findByRole('button', { name: /Ogro/ });
+
+      const handle = document.getElementById('rd-chat-resize-handle');
+      const painel = document.querySelector('[data-chat-panel="true"]');
+      const larguraAntes = Number(painel.style.width.replace('px', ''));
+
+      fireEvent.pointerDown(handle, { clientX: 700, button: 0 });
+      fireEvent.pointerMove(window, { clientX: 560 });
+      fireEvent.pointerUp(window);
+      const larguraDepoisDeArrastarParaEsquerda = Number(painel.style.width.replace('px', ''));
+      expect(larguraDepoisDeArrastarParaEsquerda).toBeGreaterThan(larguraAntes);
+
+      fireEvent.pointerDown(handle, { clientX: 700, button: 0 });
+      fireEvent.pointerMove(window, { clientX: 840 });
+      fireEvent.pointerUp(window);
+      const larguraDepoisDeArrastarParaDireita = Number(painel.style.width.replace('px', ''));
+      expect(larguraDepoisDeArrastarParaDireita).toBeLessThan(larguraDepoisDeArrastarParaEsquerda);
+    });
+
+    it('permite um teto de redimensionamento aproximadamente 2x maior que o limite anterior', async () => {
+      localStorage.clear();
+      localStorage.setItem('reDungeonChatAberto', 'true');
+      Object.defineProperty(window, 'innerWidth', { value: 1800, configurable: true });
+      renderChat(null, '/campanhas/camp-1/grid');
+      await screen.findByRole('button', { name: /Ogro/ });
+
+      const handle = document.getElementById('rd-chat-resize-handle');
+      fireEvent.pointerDown(handle, { clientX: 100, button: 0 });
+      fireEvent.pointerMove(window, { clientX: -500 });
+      fireEvent.pointerUp(window);
+
+      const larguraPersistida = Number(localStorage.getItem('reDungeonGridChatLargura'));
+      expect(larguraPersistida).toBeGreaterThan(560);
+      expect(larguraPersistida).toBeLessThanOrEqual(1120);
+    });
+
     it('esconde o botão de painel lateral na visualização de chat em tela cheia', async () => {
       renderChat();
       expect(await screen.findByText('Bem-vindos à taverna.')).toBeInTheDocument();

@@ -79,7 +79,7 @@ describe('ChatMensagem — combate', () => {
     expect(screen.getByTestId('chat-mensagem')).toHaveTextContent('Combate encerrado');
   });
 
-  it('apagar só com podeApagar', () => {
+  it('apagar só com podeApagar e confirma em popup estilizado', () => {
     const onApagar = vi.fn();
     const { unmount } = renderMensagem({ evento: 'fim', cenaId: 'c' });
     expect(
@@ -88,6 +88,8 @@ describe('ChatMensagem — combate', () => {
     unmount();
     renderMensagem({ evento: 'fim', cenaId: 'c' }, { podeApagar: true, onApagar });
     fireEvent.click(screen.getByRole('button', { name: 'Apagar mensagem' }));
+    expect(screen.getByText('Excluir mensagem?')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Excluir' }));
     expect(onApagar).toHaveBeenCalledWith(expect.objectContaining({ id: 'm1' }));
   });
 });

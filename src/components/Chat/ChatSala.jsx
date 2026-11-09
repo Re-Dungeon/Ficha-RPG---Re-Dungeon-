@@ -77,6 +77,7 @@ const ChatSala = ({
   const celular = useMediaQuery('(max-width: 599.95px)');
   const [texto, setTexto] = useState('');
   const [enviando, setEnviando] = useState(false);
+  void enviando;
   const [dialogImagemAberto, setDialogImagemAberto] = useState(false);
   const [dialogRolagemAberto, setDialogRolagemAberto] = useState(false);
   const [dialogMacrosAberto, setDialogMacrosAberto] = useState(false);
@@ -101,6 +102,44 @@ const ChatSala = ({
     () => filtrarMensagensHistorico(mensagens, mostrarHistorico),
     [mensagens, mostrarHistorico],
   );
+  const historicoRef = useRef([]);
+  const indiceHistoricoRef = useRef(-1);
+  const mensagemHistoricoRecuperadaRef = useRef(null);
+
+  const registrarMensagemNoHistorico = texto => {
+    const mensagem = String(texto ?? '').trim();
+    if (!mensagem) return;
+    const historico = historicoRef.current;
+    const ultimo = historico[historico.length - 1];
+    if (ultimo === mensagem) return;
+    historicoRef.current = [...historico, mensagem].slice(-50);
+    indiceHistoricoRef.current = historicoRef.current.length;
+  };
+
+  const recuperarMensagemNoHistorico = direcao => {
+    const historico = historicoRef.current;
+    const total = historico.length;
+    if (total === 0) return null;
+
+    const indiceAtual =
+      indiceHistoricoRef.current === -1 ? total : Math.min(indiceHistoricoRef.current, total);
+
+    if (direcao === 'up') {
+      if (indiceAtual === 0) return historico[0];
+      const proximoIndice = indiceAtual === total ? total - 1 : Math.max(0, indiceAtual - 1);
+      indiceHistoricoRef.current = proximoIndice;
+      return historico[proximoIndice];
+    }
+
+    if (indiceAtual >= total) {
+      indiceHistoricoRef.current = total;
+      return '';
+    }
+
+    const proximoIndice = Math.min(total, indiceAtual + 1);
+    indiceHistoricoRef.current = proximoIndice;
+    return proximoIndice >= total ? '' : historico[proximoIndice];
+  };
 
   useEffect(() => {
     const lista = listaRef.current;
@@ -127,6 +166,7 @@ const ChatSala = ({
       setErroComando(`Macro "${comandoMacro.nome}" não encontrada.`);
       return;
     }
+    registrarMensagemNoHistorico(comandoMacro.texto ?? texto);
     acompanhandoRef.current = true;
     setTexto('');
     macros.executar(macro);
@@ -135,7 +175,8 @@ const ChatSala = ({
   // "/r 1d20+5" (e /roll, /rs, /gr) vira rolagem em vez de mensagem; comando
   // inválido não é enviado — mostra o erro e mantém o texto para corrigir.
   const enviarTexto = async () => {
-    if (!isTextoMensagemValido(texto) || enviando) return;
+    if (!isTextoMensagemValido(texto)) return;
+    registrarMensagemNoHistorico(texto);
     const comandoMacro = interpretarComandoMacro(texto);
     if (comandoMacro) {
       executarComandoMacro(comandoMacro);
@@ -171,6 +212,58 @@ const ChatSala = ({
 
   // Enter envia, Shift+Enter quebra linha (padrão de chat).
   const handleKeyDown = event => {
+    const campo = event.currentTarget;
+    const valorAtual = campo.value ?? '';
+
+    if (event.key === 'Enter' && event.shiftKey && !event.nativeEvent.isComposing) {
+      event.preventDefault();
+      const baseTexto = valorAtual || mensagemHistoricoRecuperadaRef.current || '';
+      const cursorInicio = Number.isInteger(campo.selectionStart) ? campo.selectionStart : baseTexto.length;
+      const cursorFim = Number.isInteger(campo.selectionEnd) ? campo.selectionEnd : cursorInicio;
+      const proximoValor = `${baseTexto.slice(0, cursorInicio)}\n${baseTexto.slice(cursorFim)}`;
+      mensagemHistoricoRecuperadaRef.current = null;
+      setTexto(proximoValor);
+      indiceHistoricoRef.current = historicoRef.current.length;
+      requestAnimationFrame(() => {
+        if (campo) {
+          const novaPosicao = cursorInicio + 1;
+          campo.selectionStart = novaPosicao;
+          campo.selectionEnd = novaPosicao;
+        }
+      });
+      return;
+    }
+
+    if (event.key === 'ArrowUp' && !event.shiftKey && !event.nativeEvent.isComposing) {
+      const mensagem = recuperarMensagemNoHistorico('up');
+      if (mensagem === null) return;
+      mensagemHistoricoRecuperadaRef.current = mensagem;
+      event.preventDefault();
+      setTexto(mensagem);
+      requestAnimationFrame(() => {
+        if (campo) {
+          campo.selectionStart = mensagem.length;
+          campo.selectionEnd = mensagem.length;
+        }
+      });
+      return;
+    }
+
+    if (event.key === 'ArrowDown' && !event.shiftKey && !event.nativeEvent.isComposing) {
+      const mensagem = recuperarMensagemNoHistorico('down');
+      if (mensagem === null) return;
+      mensagemHistoricoRecuperadaRef.current = mensagem;
+      event.preventDefault();
+      setTexto(mensagem);
+      requestAnimationFrame(() => {
+        if (campo) {
+          campo.selectionStart = mensagem.length;
+          campo.selectionEnd = mensagem.length;
+        }
+      });
+      return;
+    }
+
     if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
       event.preventDefault();
       enviarTexto();
@@ -367,8 +460,10 @@ const ChatSala = ({
             placeholder={celular ? 'Mensagem, /r 1d20 ou /m…' : 'Escreva uma mensagem, /r 1d20+5 ou /m macro…'}
             value={texto}
             onChange={event => {
+              mensagemHistoricoRecuperadaRef.current = null;
               setTexto(event.target.value);
               setErroComando(null);
+              indiceHistoricoRef.current = historicoRef.current.length;
             }}
             onKeyDown={handleKeyDown}
             error={Boolean(erroComando)}
@@ -380,7 +475,7 @@ const ChatSala = ({
           <IconButton
             type="submit"
             aria-label="Enviar mensagem"
-            disabled={!isTextoMensagemValido(texto) || enviando}
+            disabled={!isTextoMensagemValido(texto)}
             sx={{ color: 'var(--color-primary)' }}
           >
             <SendIcon />

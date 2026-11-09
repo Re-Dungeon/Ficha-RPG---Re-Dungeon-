@@ -165,7 +165,6 @@ const useChatCampanha = (campanhaId, autor, { ehMestreDaCampanha = false } = {})
 
   const apagar = useCallback(
     async mensagem => {
-      if (!window.confirm('Apagar esta mensagem?')) return;
       try {
         await (mensagem.secreta
           ? removeChatRolagemSecreta(campanhaId, mensagem.donoUid, mensagem.id)
