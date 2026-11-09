@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useLocation, useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import Badge from '@mui/material/Badge';
@@ -12,6 +12,7 @@ import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import ChatOutlinedIcon from '@mui/icons-material/ChatOutlined';
 import CloseIcon from '@mui/icons-material/Close';
 import GridOnIcon from '@mui/icons-material/GridOn';
@@ -53,6 +54,8 @@ import {
 import { textoAvisoAcao } from 'pages/Personagens/Ficha/prontidao/avisoChat';
 import ProntidaoModal from 'pages/Personagens/Ficha/prontidao/ProntidaoModal';
 import { autorDaFicha, personagemDaCentral } from './centralNoGrid';
+import DivisorMesa from './DivisorMesa';
+import useDivisorMesa from './useDivisorMesa';
 
 import { ChatPageWrapper, MesaBarra, MesaChatPainel, MesaCorpo } from './styles';
 
@@ -60,41 +63,12 @@ const FALAR_COMO_MESTRE = '__mestre__';
 const SEM_CONDICOES = [];
 const STORAGE_KEY_CHAT_ABERTO = 'reDungeonChatAberto';
 const STORAGE_KEY_PAINEL_LATERAL = 'reDungeonChatPainelLateral';
-const STORAGE_KEY_CHAT_LARGURA = 'reDungeonGridChatLargura';
-const CHAT_LARGURA_PADRAO = 420;
-const CHAT_LARGURA_MIN = 260;
-const CHAT_LARGURA_MAX = 1120;
-const GRID_LARGURA_MIN = 320;
-
-const obterLarguraDisponivel = larguraDisponivel => {
-  const valorNumerico = Number(larguraDisponivel);
-  if (Number.isFinite(valorNumerico) && valorNumerico > 0) return valorNumerico;
-  if (typeof window !== 'undefined') return Math.max(0, window.innerWidth || 1280);
-  return 1280;
-};
 
 const lerEstadoPersistido = (key, fallback) => {
   if (typeof window === 'undefined') return fallback;
   const valor = window.localStorage.getItem(key);
   if (valor === null) return fallback;
   return valor === 'true';
-};
-
-const normalizarLarguraChat = (valor, larguraDisponivel) => {
-  const larguraUtil = obterLarguraDisponivel(larguraDisponivel);
-  const numero = Number.isFinite(Number(valor)) ? Number(valor) : CHAT_LARGURA_PADRAO;
-  const minimo = Math.min(CHAT_LARGURA_MIN, Math.max(0, larguraUtil - GRID_LARGURA_MIN));
-  const maximo = Math.min(
-    CHAT_LARGURA_MAX,
-    Math.max(CHAT_LARGURA_MIN, larguraUtil - GRID_LARGURA_MIN),
-  );
-  return Math.min(Math.max(numero, minimo), maximo);
-};
-
-const lerLarguraChatPersistida = () => {
-  if (typeof window === 'undefined') return CHAT_LARGURA_PADRAO;
-  const bruto = Number(window.localStorage.getItem(STORAGE_KEY_CHAT_LARGURA));
-  return normalizarLarguraChat(bruto, window.innerWidth || 1280);
 };
 
 // Mesa da campanha: `visao` "chat" (/campanhas/:id/chat) ou "grid"
@@ -120,12 +94,16 @@ const CampanhaChat = ({ visao = 'chat' }) => {
   const [painelLateralMinimizado, setPainelLateralMinimizado] = useState(() =>
     lerEstadoPersistido(STORAGE_KEY_PAINEL_LATERAL, false),
   );
-  const [chatLargura, setChatLargura] = useState(() => lerLarguraChatPersistida());
-  const painelBaseRef = useRef(null);
-  const dragInfoRef = useRef({ ativo: false, inicioX: 0, larguraInicial: CHAT_LARGURA_PADRAO });
   // Celular, visão grid: mapa OU chat em tela cheia (começa no mapa). O badge
   // do "Chat" conta o que chegou desde a última vez que se saiu do chat.
   const isMobile = useIsMobile();
+  // Divisão arrastável mapa | chat (fora do celular). Até 900px o chat fica
+  // abaixo do mapa (styles.js) e a divisão passa a mudar a altura.
+  const empilhado = useMediaQuery('(max-width: 900px)');
+  const divisorMesa = useDivisorMesa({
+    orientacao: empilhado ? 'vertical' : 'horizontal',
+    ativo: !isMobile,
+  });
   const [abaMesa, setAbaMesa] = useState('mapa');
   const [ultimaVistaId, setUltimaVistaId] = useState(undefined);
   // Catálogo de condições do universo (ícones/nomes das condições nos tokens
@@ -222,52 +200,6 @@ const CampanhaChat = ({ visao = 'chat' }) => {
       window.localStorage.setItem(STORAGE_KEY_PAINEL_LATERAL, String(painelLateralMinimizado));
     }
   }, [painelLateralMinimizado]);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem(STORAGE_KEY_CHAT_LARGURA, String(chatLargura));
-    }
-  }, [chatLargura]);
-
-  useEffect(() => {
-    const handlePointerMove = event => {
-      if (!dragInfoRef.current.ativo || !painelBaseRef.current) return;
-      const larguraDisponivel = obterLarguraDisponivel(painelBaseRef.current.clientWidth);
-      const diferenca = event.clientX - dragInfoRef.current.inicioX;
-      const proximaLargura = normalizarLarguraChat(
-        dragInfoRef.current.larguraInicial - diferenca,
-        larguraDisponivel,
-      );
-      setChatLargura(proximaLargura);
-    };
-    const handlePointerUp = () => {
-      dragInfoRef.current.ativo = false;
-      if (typeof document !== 'undefined') {
-        document.body.style.userSelect = '';
-      }
-    };
-
-    window.addEventListener('pointermove', handlePointerMove);
-    window.addEventListener('pointerup', handlePointerUp);
-    window.addEventListener('pointercancel', handlePointerUp);
-    return () => {
-      window.removeEventListener('pointermove', handlePointerMove);
-      window.removeEventListener('pointerup', handlePointerUp);
-      window.removeEventListener('pointercancel', handlePointerUp);
-      if (typeof document !== 'undefined') {
-        document.body.style.userSelect = '';
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!painelBaseRef.current) return;
-    const larguraDisponivel = painelBaseRef.current.clientWidth;
-    const proximaLargura = normalizarLarguraChat(chatLargura, larguraDisponivel);
-    if (proximaLargura !== chatLargura) {
-      setChatLargura(proximaLargura);
-    }
-  }, [chatLargura, visao]);
 
   useEffect(() => {
     setHeaderExtra({
@@ -468,20 +400,6 @@ const CampanhaChat = ({ visao = 'chat' }) => {
     setErro(null);
     chat.limparErro();
     grid.limparErro();
-  };
-
-  const iniciarRedimensionamento = event => {
-    if (event.button !== undefined && event.button !== 0) return;
-    event.preventDefault();
-    event.stopPropagation();
-    if (typeof document !== 'undefined') {
-      document.body.style.userSelect = 'none';
-    }
-    dragInfoRef.current = {
-      ativo: true,
-      inicioX: event.clientX,
-      larguraInicial: chatLargura,
-    };
   };
 
   const trocarVisao = (_event, novaVisao) => {
@@ -696,6 +614,7 @@ const CampanhaChat = ({ visao = 'chat' }) => {
       onApagar={chat.apagar}
       cabecalho={cabecalho}
       opcoesCombate={gruposCombate}
+      chaveHistorico={`reDungeonChatHistorico_${campanhaId}`}
     />
   );
 
@@ -725,6 +644,7 @@ const CampanhaChat = ({ visao = 'chat' }) => {
     if (grid.carregando) aviso = 'Carregando o grid…';
     else if (grid.semCena) aviso = 'O mestre ainda não abriu uma cena.';
     const mostrarPainelChat = visao === 'lateral' ? !painelLateralMinimizado : chatAberto || isMobile;
+    const mostrarDivisor = mostrarPainelChat && !isMobile;
     return (
       <ChatPageWrapper>
         <MesaBarra>
@@ -768,7 +688,11 @@ const CampanhaChat = ({ visao = 'chat' }) => {
         </MesaBarra>
         {/* data-aba: no celular, o CSS mostra só o mapa ou só o chat — os dois
             seguem montados (zoom do mapa e rolagem do chat não se perdem). */}
-        <MesaCorpo ref={painelBaseRef} data-aba={isMobile ? abaMesa : undefined}>
+        <MesaCorpo
+          ref={divisorMesa.refCorpo}
+          data-aba={isMobile ? abaMesa : undefined}
+          data-divisor={mostrarDivisor ? 'true' : undefined}
+        >
           {/* key: trocar de cena recomeça zoom/pan (mapa encaixado). */}
           <GridMapa
             key={grid.cenaId ?? 'sem-cena'}
@@ -810,35 +734,13 @@ const CampanhaChat = ({ visao = 'chat' }) => {
                 : {}),
             }}
           />
-          {!isMobile && mostrarPainelChat && (
-            <Box
-              id="rd-chat-resize-handle"
-              aria-label="Redimensionar chat"
-              onPointerDown={iniciarRedimensionamento}
-              sx={{
-                width: 10,
-                flexShrink: 0,
-                cursor: 'col-resize',
-                position: 'relative',
-                background: 'transparent',
-                userSelect: 'none',
-                touchAction: 'none',
-                transition: 'background-color 0.2s ease',
-                '&::before': {
-                  content: '""',
-                  position: 'absolute',
-                  inset: '8px 3px',
-                  borderRadius: 999,
-                  background: 'rgba(232, 203, 133, 0.24)',
-                  opacity: 0,
-                  transition: 'opacity 0.2s ease, background-color 0.2s ease',
-                },
-                '&:hover::before, &:active::before': { opacity: 1, background: 'rgba(232, 203, 133, 0.7)' },
-              }}
-            />
-          )}
+          {mostrarDivisor && <DivisorMesa {...divisorMesa.divisor} />}
           {mostrarPainelChat && (
-            <MesaChatPainel data-chat-panel="true" style={{ width: `${chatLargura}px`, flexBasis: `${chatLargura}px` }}>
+            <MesaChatPainel
+              ref={divisorMesa.refPainel}
+              style={divisorMesa.estiloPainel}
+              data-ajustado={divisorMesa.estiloPainel ? 'true' : undefined}
+            >
               {chatSala(cabecalhoChat)}
             </MesaChatPainel>
           )}

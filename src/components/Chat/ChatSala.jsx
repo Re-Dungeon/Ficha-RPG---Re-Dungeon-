@@ -29,6 +29,12 @@ import {
   filtrarMensagensHistorico,
   isTextoMensagemValido,
 } from 'common/utils/chat';
+import {
+  lerHistorico,
+  navegarHistorico,
+  registrarNoHistorico,
+  salvarHistorico,
+} from 'common/utils/chatHistorico';
 import { interpretarComandoRolagem } from 'common/utils/dados';
 import { preparar } from 'common/utils/gridRolagem';
 import { encontrarMacroPorNome, interpretarComandoMacro } from 'common/utils/macros';
@@ -72,12 +78,12 @@ const ChatSala = ({
   cabecalho = null,
   compactHeader = false,
   opcoesCombate = [],
+  chaveHistorico,
 }) => {
   // Celular (abaixo do `sm`): placeholder curto, que caiba no campo.
   const celular = useMediaQuery('(max-width: 599.95px)');
   const [texto, setTexto] = useState('');
   const [enviando, setEnviando] = useState(false);
-  void enviando;
   const [dialogImagemAberto, setDialogImagemAberto] = useState(false);
   const [dialogRolagemAberto, setDialogRolagemAberto] = useState(false);
   const [dialogMacrosAberto, setDialogMacrosAberto] = useState(false);
@@ -88,6 +94,18 @@ const ChatSala = ({
   const [erroComando, setErroComando] = useState(null);
   const listaRef = useRef(null);
   const acompanhandoRef = useRef(true);
+  // Histórico do campo (↑/↓): o texto bruto enviado, guardado por chave (a
+  // página passa uma por campanha). Trocou a chave, relê o da nova.
+  const [historicoEstado, setHistoricoEstado] = useState(() => ({
+    chave: chaveHistorico,
+    lista: lerHistorico(chaveHistorico),
+  }));
+  if (historicoEstado.chave !== chaveHistorico) {
+    setHistoricoEstado({ chave: chaveHistorico, lista: lerHistorico(chaveHistorico) });
+  }
+  const historico = historicoEstado.lista;
+  const [indiceHistorico, setIndiceHistorico] = useState(null);
+  const entradaRef = useRef(null);
   const gruposCombate = useMemo(
     () =>
       (Array.isArray(opcoesCombate) ? opcoesCombate : []).filter(
@@ -102,45 +120,6 @@ const ChatSala = ({
     () => filtrarMensagensHistorico(mensagens, mostrarHistorico),
     [mensagens, mostrarHistorico],
   );
-  const historicoRef = useRef([]);
-  const indiceHistoricoRef = useRef(-1);
-  const mensagemHistoricoRecuperadaRef = useRef(null);
-
-  const registrarMensagemNoHistorico = texto => {
-    const mensagem = String(texto ?? '').trim();
-    if (!mensagem) return;
-    const historico = historicoRef.current;
-    const ultimo = historico[historico.length - 1];
-    if (ultimo === mensagem) return;
-    historicoRef.current = [...historico, mensagem].slice(-50);
-    indiceHistoricoRef.current = historicoRef.current.length;
-  };
-
-  const recuperarMensagemNoHistorico = direcao => {
-    const historico = historicoRef.current;
-    const total = historico.length;
-    if (total === 0) return null;
-
-    const indiceAtual =
-      indiceHistoricoRef.current === -1 ? total : Math.min(indiceHistoricoRef.current, total);
-
-    if (direcao === 'up') {
-      if (indiceAtual === 0) return historico[0];
-      const proximoIndice = indiceAtual === total ? total - 1 : Math.max(0, indiceAtual - 1);
-      indiceHistoricoRef.current = proximoIndice;
-      return historico[proximoIndice];
-    }
-
-    if (indiceAtual >= total) {
-      indiceHistoricoRef.current = total;
-      return '';
-    }
-
-    const proximoIndice = Math.min(total, indiceAtual + 1);
-    indiceHistoricoRef.current = proximoIndice;
-    return proximoIndice >= total ? '' : historico[proximoIndice];
-  };
-
   useEffect(() => {
     const lista = listaRef.current;
     if (lista && acompanhandoRef.current) {
@@ -152,6 +131,15 @@ const ChatSala = ({
     const lista = listaRef.current;
     acompanhandoRef.current =
       lista.scrollHeight - lista.scrollTop - lista.clientHeight < MARGEM_AUTOSCROLL;
+  };
+
+  const registrarEnvio = enviado => {
+    const novo = registrarNoHistorico(historico, enviado);
+    if (novo !== historico) {
+      setHistoricoEstado({ chave: chaveHistorico, lista: novo });
+      salvarHistorico(chaveHistorico, novo);
+    }
+    setIndiceHistorico(null);
   };
 
   // "/m nome" roda uma macro da campanha (sem bloquear o campo: as perguntas
@@ -166,8 +154,8 @@ const ChatSala = ({
       setErroComando(`Macro "${comandoMacro.nome}" não encontrada.`);
       return;
     }
-    registrarMensagemNoHistorico(comandoMacro.texto ?? texto);
     acompanhandoRef.current = true;
+    registrarEnvio(texto);
     setTexto('');
     macros.executar(macro);
   };
@@ -175,8 +163,7 @@ const ChatSala = ({
   // "/r 1d20+5" (e /roll, /rs, /gr) vira rolagem em vez de mensagem; comando
   // inválido não é enviado — mostra o erro e mantém o texto para corrigir.
   const enviarTexto = async () => {
-    if (!isTextoMensagemValido(texto)) return;
-    registrarMensagemNoHistorico(texto);
+    if (!isTextoMensagemValido(texto) || enviando) return;
     const comandoMacro = interpretarComandoMacro(texto);
     if (comandoMacro) {
       executarComandoMacro(comandoMacro);
@@ -191,6 +178,7 @@ const ChatSala = ({
     acompanhandoRef.current = true;
     try {
       await (comando ? onRolar(comando) : onEnviarTexto(texto));
+      registrarEnvio(texto);
       setTexto('');
     } catch {
       // Quem envia já exibiu o erro; o texto fica no campo para tentar de novo.
@@ -210,64 +198,39 @@ const ChatSala = ({
     enviarTexto();
   };
 
+  // ↑/↓ percorrem o histórico só com o campo vazio ou ainda mostrando um item
+  // dele sem edição — no meio de um texto (várias linhas) movem o cursor.
+  const navegarComSetas = event => {
+    const direcao = { ArrowUp: 'cima', ArrowDown: 'baixo' }[event.key];
+    if (!direcao || event.shiftKey || event.altKey || event.ctrlKey || event.metaKey) return;
+    const mostrandoItem = indiceHistorico !== null && texto === historico[indiceHistorico];
+    if (texto !== '' && !mostrandoItem) return;
+    const destino = navegarHistorico({
+      historico,
+      indice: mostrandoItem ? indiceHistorico : null,
+      direcao,
+    });
+    if (destino.texto === null) return;
+    event.preventDefault();
+    setTexto(destino.texto);
+    setIndiceHistorico(destino.indice);
+    setErroComando(null);
+    // Cursor no fim (trocar o valor com ↑ deixaria o cursor no início).
+    requestAnimationFrame(() => {
+      const campo = entradaRef.current;
+      if (campo) campo.setSelectionRange(campo.value.length, campo.value.length);
+    });
+  };
+
   // Enter envia, Shift+Enter quebra linha (padrão de chat).
   const handleKeyDown = event => {
-    const campo = event.currentTarget;
-    const valorAtual = campo.value ?? '';
-
-    if (event.key === 'Enter' && event.shiftKey && !event.nativeEvent.isComposing) {
-      event.preventDefault();
-      const baseTexto = valorAtual || mensagemHistoricoRecuperadaRef.current || '';
-      const cursorInicio = Number.isInteger(campo.selectionStart) ? campo.selectionStart : baseTexto.length;
-      const cursorFim = Number.isInteger(campo.selectionEnd) ? campo.selectionEnd : cursorInicio;
-      const proximoValor = `${baseTexto.slice(0, cursorInicio)}\n${baseTexto.slice(cursorFim)}`;
-      mensagemHistoricoRecuperadaRef.current = null;
-      setTexto(proximoValor);
-      indiceHistoricoRef.current = historicoRef.current.length;
-      requestAnimationFrame(() => {
-        if (campo) {
-          const novaPosicao = cursorInicio + 1;
-          campo.selectionStart = novaPosicao;
-          campo.selectionEnd = novaPosicao;
-        }
-      });
-      return;
-    }
-
-    if (event.key === 'ArrowUp' && !event.shiftKey && !event.nativeEvent.isComposing) {
-      const mensagem = recuperarMensagemNoHistorico('up');
-      if (mensagem === null) return;
-      mensagemHistoricoRecuperadaRef.current = mensagem;
-      event.preventDefault();
-      setTexto(mensagem);
-      requestAnimationFrame(() => {
-        if (campo) {
-          campo.selectionStart = mensagem.length;
-          campo.selectionEnd = mensagem.length;
-        }
-      });
-      return;
-    }
-
-    if (event.key === 'ArrowDown' && !event.shiftKey && !event.nativeEvent.isComposing) {
-      const mensagem = recuperarMensagemNoHistorico('down');
-      if (mensagem === null) return;
-      mensagemHistoricoRecuperadaRef.current = mensagem;
-      event.preventDefault();
-      setTexto(mensagem);
-      requestAnimationFrame(() => {
-        if (campo) {
-          campo.selectionStart = mensagem.length;
-          campo.selectionEnd = mensagem.length;
-        }
-      });
-      return;
-    }
-
-    if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
+    if (event.nativeEvent.isComposing) return;
+    if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
       enviarTexto();
+      return;
     }
+    navegarComSetas(event);
   };
 
   const handleEnviarImagem = async url => {
@@ -460,12 +423,12 @@ const ChatSala = ({
             placeholder={celular ? 'Mensagem, /r 1d20 ou /m…' : 'Escreva uma mensagem, /r 1d20+5 ou /m macro…'}
             value={texto}
             onChange={event => {
-              mensagemHistoricoRecuperadaRef.current = null;
               setTexto(event.target.value);
+              setIndiceHistorico(null);
               setErroComando(null);
-              indiceHistoricoRef.current = historicoRef.current.length;
             }}
             onKeyDown={handleKeyDown}
+            inputRef={entradaRef}
             error={Boolean(erroComando)}
             helperText={erroComando}
             slotProps={{
@@ -475,7 +438,7 @@ const ChatSala = ({
           <IconButton
             type="submit"
             aria-label="Enviar mensagem"
-            disabled={!isTextoMensagemValido(texto)}
+            disabled={!isTextoMensagemValido(texto) || enviando}
             sx={{ color: 'var(--color-primary)' }}
           >
             <SendIcon />
@@ -901,6 +864,8 @@ ChatSala.propTypes = {
   audio: audioPropType,
   cabecalho: PropTypes.node,
   compactHeader: PropTypes.bool,
+  // Chave do sessionStorage do histórico do campo (↑/↓). Ausente = só memória.
+  chaveHistorico: PropTypes.string,
   opcoesCombate: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.string.isRequired,
