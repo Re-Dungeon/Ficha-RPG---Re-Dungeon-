@@ -5,6 +5,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import TextField from '@mui/material/TextField';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import CriarPersonagemModal from './CriarPersonagemModal';
@@ -18,6 +20,28 @@ import PersonagemCardItem from './PersonagemCardItem';
 import { TIPOS_PERSONAGEM } from './Ficha/constants';
 import { CardsGrid, EmptyState, PageHeader, PageTitle, PageWrapper, TabsHeader } from './styles';
 import { getNome } from 'common/utils/resolveNome';
+import {
+  ORDENACOES,
+  filtrarPorNome,
+  normalizarOrdenacao,
+  ordenarPersonagens,
+} from 'common/utils/listaPersonagens';
+
+const lerPreferencia = (chave, padrao) => {
+  try {
+    return localStorage.getItem(chave) || padrao;
+  } catch {
+    return padrao;
+  }
+};
+
+const gravarPreferencia = (chave, valor) => {
+  try {
+    localStorage.setItem(chave, valor);
+  } catch {
+    // Preferência só de interface: sem localStorage, vale só nesta visita.
+  }
+};
 
 const TIPO_COMPANHEIROS = 'companheiros';
 
@@ -101,6 +125,10 @@ const Personagens = () => {
   const [selectedUniverso, setSelectedUniverso] = useState(
     () => localStorage.getItem('filtro_universo') || 'ALL',
   );
+  const [busca, setBusca] = useState('');
+  const [ordenacao, setOrdenacao] = useState(() =>
+    normalizarOrdenacao(lerPreferencia('ordenacao_personagens', null)),
+  );
 
   useEffect(() => {
     let isMounted = true;
@@ -158,8 +186,12 @@ const Personagens = () => {
   );
 
   const personagensDaAba = useMemo(
-    () => filtrarPersonagensDaAba(personagens, aba, selectedUniverso),
-    [personagens, aba, selectedUniverso],
+    () =>
+      ordenarPersonagens(
+        filtrarPorNome(filtrarPersonagensDaAba(personagens, aba, selectedUniverso), busca),
+        ordenacao,
+      ),
+    [personagens, aba, selectedUniverso, busca, ordenacao],
   );
 
   const mensagemVazio = MENSAGEM_VAZIO[aba];
@@ -212,6 +244,40 @@ const Personagens = () => {
         </div>
 
         <div className="filter-wrapper">
+          <TextField
+            size="small"
+            type="search"
+            value={busca}
+            onChange={e => setBusca(e.target.value)}
+            placeholder="Buscar por nome"
+            slotProps={{ htmlInput: { 'aria-label': 'Buscar por nome', maxLength: 100 } }}
+            sx={{ minWidth: 180, '& .MuiInputBase-root': { background: 'rgba(255,255,255,0.02)', borderRadius: '8px' } }}
+          />
+
+          <FormControl size="small" sx={{ minWidth: 150 }}>
+            <InputLabel id="ordenacao-personagens-label">Ordenar por</InputLabel>
+            <Select
+              labelId="ordenacao-personagens-label"
+              label="Ordenar por"
+              value={ordenacao}
+              onChange={e => {
+                setOrdenacao(e.target.value);
+                gravarPreferencia('ordenacao_personagens', e.target.value);
+              }}
+              sx={{
+                background: 'rgba(255,255,255,0.02)',
+                color: 'var(--text-primary)',
+                borderRadius: '8px',
+              }}
+            >
+              {ORDENACOES.map(({ valor, rotulo }) => (
+                <MenuItem key={valor} value={valor}>
+                  {rotulo}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
           <FormControl size="small" sx={{ minWidth: 180 }}>
             <Select
               value={selectedUniverso}
@@ -252,7 +318,9 @@ const Personagens = () => {
 
       {!loading && personagensDaAba.length === 0 && (
         <EmptyState>
-          {selectedUniverso && selectedUniverso !== 'ALL' ? (
+          {busca.trim() ? (
+            <p>Nenhum resultado para “{busca.trim()}”.</p>
+          ) : selectedUniverso && selectedUniverso !== 'ALL' ? (
             <p>Nenhum registro encontrado neste universo.</p>
           ) : (
             <>

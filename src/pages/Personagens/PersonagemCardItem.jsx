@@ -62,7 +62,7 @@ const PersonagemCardItem = ({ personagem, onClick, isSelected = false }) => {
         <PersonagemMediaOverlay />
       </PersonagemMedia>
       <PersonagemInfo>
-        <PersonagemNome $isSelected={isSelected}>{personagem.nome}</PersonagemNome>
+        <PersonagemNome $isSelected={isSelected} data-testid="personagem-card-nome">{personagem.nome}</PersonagemNome>
         <PersonagemMeta>
           {classesNomes.length > 0 ? (
             classesNomes.map(classe => (

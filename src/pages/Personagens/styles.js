@@ -265,7 +265,17 @@ export const TabsHeader = styled.div`
     flex: 0 0 auto;
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 8px;
+
+    ${MOBILE} {
+      flex: 1 1 auto;
+
+      > * {
+        flex: 1 1 100%;
+        min-width: 0 !important;
+      }
+    }
   }
 
   @media (max-width: 720px) {
