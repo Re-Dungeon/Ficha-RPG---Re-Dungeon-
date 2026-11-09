@@ -89,9 +89,9 @@ vi.mock('./notes/NotesModal', () => stubModal('notas'));
 
 // Com o Layout de verdade: as abas da ficha (e o ☰ da gaveta, no celular)
 // ficam no cabeçalho, via headerExtra.
-const renderFicha = () =>
+const renderFicha = (entrada = '/personagens/p1') =>
   render(
-    <MemoryRouter initialEntries={['/personagens/p1']}>
+    <MemoryRouter initialEntries={[entrada]}>
       <Routes>
         <Route element={<Layout />}>
           <Route path="/personagens/:id" element={<Ficha />} />
@@ -172,5 +172,34 @@ describe('Ficha — navegação no celular x desktop', () => {
     renderFicha();
     await screen.findByText('Aba atributos');
     expect(localStorage.getItem('reDungeonChatLateralCampanha')).toBe('campanha-1');
+  });
+
+  it('abre a aba indicada em ?aba= na URL', async () => {
+    useIsMobile.mockReturnValue(false);
+    renderFicha('/personagens/p1?aba=inventario');
+
+    expect(await screen.findByText('Aba inventario')).toBeInTheDocument();
+    expect(screen.queryByText('Aba atributos')).not.toBeInTheDocument();
+    expect(await screen.findByRole('tab', { name: 'Inventário' })).toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('aba desconhecida na URL cai em Atributos', async () => {
+    useIsMobile.mockReturnValue(false);
+    renderFicha('/personagens/p1?aba=nao-existe');
+
+    expect(await screen.findByText('Aba atributos')).toBeInTheDocument();
+  });
+
+  it('trocar de aba atualiza a URL e mantém a escolha ao trocar de novo', async () => {
+    useIsMobile.mockReturnValue(false);
+    renderFicha();
+    await screen.findByText('Aba atributos');
+
+    fireEvent.click(await screen.findByRole('tab', { name: 'Artes' }));
+    expect(await screen.findByText('Aba arts')).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Artes' })).toHaveAttribute('aria-selected', 'true');
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Atributos' }));
+    expect(await screen.findByText('Aba atributos')).toBeInTheDocument();
   });
 });

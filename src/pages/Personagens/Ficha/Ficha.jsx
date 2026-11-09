@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate, useOutletContext, useParams } from 'react-router-dom';
+import { useNavigate, useOutletContext, useParams, useSearchParams } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Button from '@mui/material/Button';
@@ -55,6 +55,17 @@ import NotesModal from './notes/NotesModal';
 import StatusFaixa from './StatusFaixa';
 import { FichaChatPainel, FichaLayout, FichaMain } from './styles';
 
+const ABAS_VALIDAS = [
+  'atributos',
+  'aptidoes',
+  'arts',
+  'inventario',
+  'treinamento',
+  'veiasAstrais',
+  'companheiro',
+];
+const ABA_PADRAO = 'atributos';
+
 const STORAGE_KEY_CHAT_LATERAL = 'reDungeonChatLateralCampanha';
 
 const lerChatLateralPersistido = () => {
@@ -74,7 +85,14 @@ const Ficha = () => {
   const isMobile = useIsMobile();
   const [personagem, setPersonagem] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [aba, setAba] = useState('atributos');
+  // A aba aberta fica na URL (?aba=): F5 e links voltam para a mesma aba.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const abaDaUrl = searchParams.get('aba');
+  const aba = ABAS_VALIDAS.includes(abaDaUrl) ? abaDaUrl : ABA_PADRAO;
+  const setAba = useCallback(
+    novaAba => setSearchParams({ aba: novaAba }, { replace: true }),
+    [setSearchParams],
+  );
   const [dialogExcluir, setDialogExcluir] = useState(false);
   const [excluindo, setExcluindo] = useState(false);
   const [sidebarExpandida, setSidebarExpandida] = useState(true);
@@ -233,7 +251,7 @@ const Ficha = () => {
       },
     });
     return () => setHeaderExtra(null);
-  }, [aba, handleVoltar, isMobile, personagem, setHeaderExtra, tabsFicha]);
+  }, [aba, handleVoltar, isMobile, personagem, setAba, setHeaderExtra, tabsFicha]);
 
   // Lembra a ficha aberta para o link "Campanhas" do cabeçalho abrir o chat
   // da campanha deste personagem (e "Fichas" voltar para cá depois).
