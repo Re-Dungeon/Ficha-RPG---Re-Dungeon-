@@ -37,7 +37,15 @@ const Campanhas = () => {
       try {
         const personagens = await getPersonagens(currentUser.uid);
         const ids = campanhaIdsDosPersonagens(personagens);
-        const docs = await Promise.all(ids.map(id => getRmCampanha(id).catch(() => null)));
+        let falhas = 0;
+        const docs = await Promise.all(
+          ids.map(id =>
+            getRmCampanha(id).catch(() => {
+              falhas += 1;
+              return null;
+            }),
+          ),
+        );
         const itens = docs
           .filter(Boolean)
           .map(campanha => ({
@@ -46,6 +54,14 @@ const Campanhas = () => {
           }))
           .sort((a, b) => (a.nome ?? '').localeCompare(b.nome ?? ''));
         if (isMounted) setCampanhas(itens);
+        // Uma campanha que falhou some da lista — avisa em vez de calar.
+        if (isMounted && falhas > 0) {
+          setErro(
+            falhas === 1
+              ? 'Uma das suas campanhas não pôde ser carregada. Recarregue a página.'
+              : `${falhas} das suas campanhas não puderam ser carregadas. Recarregue a página.`,
+          );
+        }
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error('Falha ao carregar campanhas:', error);

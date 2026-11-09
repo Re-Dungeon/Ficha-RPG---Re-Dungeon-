@@ -7,7 +7,11 @@ import ErrorSnackbar from 'components/ErrorSnackbar/ErrorSnackbar';
 
 const SavingContext = createContext(null);
 
-const DURACAO_MINIMA_MS = 1000;
+// O overlay só aparece se a gravação demorar: as ações rápidas da ficha
+// (condição, item, PP) gravam em ~100ms e um véu de tela cheia piscando a cada
+// clique atrapalhava mais do que informava. Antes havia 1s mínimo de overlay,
+// que também descartava cliques seguidos nesse tempo.
+const ATRASO_OVERLAY_MS = 400;
 const MENSAGEM_ERRO_PADRAO = 'Não foi possível salvar. Verifique sua conexão e tente novamente.';
 
 export const SavingProvider = ({ children }) => {
@@ -22,8 +26,7 @@ export const SavingProvider = ({ children }) => {
       return undefined;
     }
     emAndamentoRef.current = true;
-    setSalvando(true);
-    const inicio = Date.now();
+    const timer = setTimeout(() => setSalvando(true), ATRASO_OVERLAY_MS);
     try {
       const resultado = await fn();
       return resultado;
@@ -33,11 +36,7 @@ export const SavingProvider = ({ children }) => {
       setErro(MENSAGEM_ERRO_PADRAO);
       throw error;
     } finally {
-      const decorrido = Date.now() - inicio;
-      const espera = DURACAO_MINIMA_MS - decorrido;
-      if (espera > 0) {
-        await new Promise(resolve => setTimeout(resolve, espera));
-      }
+      clearTimeout(timer);
       emAndamentoRef.current = false;
       setSalvando(false);
     }

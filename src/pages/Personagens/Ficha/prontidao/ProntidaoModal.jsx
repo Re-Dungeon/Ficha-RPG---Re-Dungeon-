@@ -26,6 +26,7 @@ import {
   normalizarEstadoCombate,
 } from './config';
 import { getItensInventario, removeItemInventario, updateItemInventario } from 'service/storage';
+import ErrorSnackbar from 'components/ErrorSnackbar/ErrorSnackbar';
 import { QUALIDADE_META, obterEmojiTipo } from 'pages/Personagens/Ficha/inventario/constants';
 import { rotulosDosStatus } from './avisoChat';
 
@@ -322,6 +323,25 @@ const ProntidaoModal = ({ open, onClose, personagem, onSave, prontidaoValor, tip
   const [confirmandoUsoItem, setConfirmandoUsoItem] = useState(false);
   const [itensInventario, setItensInventario] = useState([]);
   const [estadoCombate, setEstadoCombate] = useState(() => normalizarEstadoCombate(personagem, ppMaximo));
+  const [erroAcao, setErroAcao] = useState(null);
+
+  // Mostra o novo estado na hora e grava; se a gravação falhar, volta ao
+  // estado anterior (nada fica gasto só na tela) e avisa. true = gravou.
+  const aplicarEGravar = async (proximoEstado, patchExtra = {}) => {
+    const anterior = estadoCombate;
+    setEstadoCombate(proximoEstado);
+    if (!onSave) return true;
+    try {
+      await onSave({ ...patchExtra, estadoCombate: proximoEstado });
+      return true;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Falha ao salvar a ação:', error);
+      setEstadoCombate(anterior);
+      setErroAcao('Não foi possível salvar a ação — nada foi gasto. Confira a conexão e tente de novo.');
+      return false;
+    }
+  };
   const listaAcoesRef = useRef(null);
 
   const acaoExtraAtiva = Boolean(estadoCombate.acaoExtra?.status === 'pendente' && Number(estadoCombate.acaoExtra.turno ?? estadoCombate.turno) === Number(estadoCombate.turno));
@@ -339,9 +359,13 @@ const ProntidaoModal = ({ open, onClose, personagem, onSave, prontidaoValor, tip
 
     let ativo = true;
     const carregarItensInventario = async () => {
-      const itens = await getItensInventario(personagem.id);
-      if (ativo) {
-        setItensInventario(Array.isArray(itens) ? itens : []);
+      try {
+        const itens = await getItensInventario(personagem.id);
+        if (ativo) {
+          setItensInventario(Array.isArray(itens) ? itens : []);
+        }
+      } catch {
+        if (ativo) setErroAcao('Não foi possível carregar os itens do inventário.');
       }
     };
 
@@ -482,10 +506,7 @@ const ProntidaoModal = ({ open, onClose, personagem, onSave, prontidaoValor, tip
         historicoAcoes: proximoHistorico,
       };
 
-      setEstadoCombate(proximoEstado);
-      if (onSave) {
-        await onSave({ estadoCombate: proximoEstado });
-      }
+      if (!(await aplicarEGravar(proximoEstado))) return;
       avisarAcao(`${acao.nome} (grátis)`, 'Ação Extra', estadoCombate.ppAtual);
       return;
     }
@@ -563,10 +584,7 @@ const ProntidaoModal = ({ open, onClose, personagem, onSave, prontidaoValor, tip
         historicoAcoes: proximoHistorico,
       };
 
-      setEstadoCombate(proximoEstado);
-      if (onSave) {
-        await onSave({ estadoCombate: proximoEstado });
-      }
+      if (!(await aplicarEGravar(proximoEstado))) return;
       avisarAcao('Recuperar-se', `+${recuperacao} PP`, proximoAtual);
       return;
     }
@@ -595,10 +613,7 @@ const ProntidaoModal = ({ open, onClose, personagem, onSave, prontidaoValor, tip
       historicoAcoes: proximoHistorico,
     };
 
-    setEstadoCombate(proximoEstado);
-    if (onSave) {
-      await onSave({ estadoCombate: proximoEstado });
-    }
+    if (!(await aplicarEGravar(proximoEstado))) return;
     avisarAcao(acao.nome, `-${custo} PP`, proximoAtual);
   };
 
@@ -680,15 +695,11 @@ const ProntidaoModal = ({ open, onClose, personagem, onSave, prontidaoValor, tip
 
       setConfirmarDescanso(false);
       setModoDescansoSelecionado(null);
-      setEstadoCombate(proximoEstado);
-
-      if (onSave) {
-        await onSave({
-          estadoCombate: proximoEstado,
-          status: proximoStatus,
-          statusMaximos: proximoStatusMaximos,
-        });
-      }
+      const gravou = await aplicarEGravar(proximoEstado, {
+        status: proximoStatus,
+        statusMaximos: proximoStatusMaximos,
+      });
+      if (!gravou) return;
       avisarAcao(`Descanso ${modo.id}`, detalheDescanso, null);
     } finally {
       setConfirmarDescansoEmAndamento(false);
@@ -843,10 +854,21 @@ const ProntidaoModal = ({ open, onClose, personagem, onSave, prontidaoValor, tip
     setConfirmandoUsoItem(true);
 
     try {
-      if (proximaQuantidade <= 0) {
-        await removeItemInventario(personagem.id, itemUsado.id);
-      } else {
-        await updateItemInventario(personagem.id, itemUsado.id, { quantidade: proximaQuantidade });
+      // Primeiro a ficha (efeito do item), depois o inventário: se a ficha
+      // falhar, o item não some sem ter curado nada.
+      const gravou = await aplicarEGravar(proximoEstado, {
+        status: proximoStatus,
+        statusMaximos: proximoStatusMaximos,
+      });
+      if (!gravou) return;
+      try {
+        if (proximaQuantidade <= 0) {
+          await removeItemInventario(personagem.id, itemUsado.id);
+        } else {
+          await updateItemInventario(personagem.id, itemUsado.id, { quantidade: proximaQuantidade });
+        }
+      } catch {
+        setErroAcao('O efeito do item foi aplicado, mas não foi possível descontá-lo do inventário.');
       }
 
       setUsarItemDialogAberto(false);
@@ -854,20 +876,12 @@ const ProntidaoModal = ({ open, onClose, personagem, onSave, prontidaoValor, tip
       setItemUsoSelecionado(null);
       setStatusUsoItem([]);
       setItemUsoRolagem(null);
-      setEstadoCombate(proximoEstado);
       setItensInventario(itensInventario =>
         itensInventario
           .map(item => (item.id === itemUsado.id ? { ...item, quantidade: Math.max(0, Number(item.quantidade ?? 1) - 1) } : item))
           .filter(item => Number(item.quantidade ?? 0) > 0),
       );
 
-      if (onSave) {
-        await onSave({
-          estadoCombate: proximoEstado,
-          status: proximoStatus,
-          statusMaximos: proximoStatusMaximos,
-        });
-      }
       const recuperou = rotulosDosStatus(statusSelecionados);
       avisarAcao(
         `Usar item: ${itemUsado.nome || 'Item'}`,
@@ -905,10 +919,7 @@ const ProntidaoModal = ({ open, onClose, personagem, onSave, prontidaoValor, tip
     };
 
     setConfirmarAcaoExtra(false);
-    setEstadoCombate(proximoEstado);
-    if (onSave) {
-      await onSave({ estadoCombate: proximoEstado });
-    }
+    if (!(await aplicarEGravar(proximoEstado))) return;
     avisarAcao('Ação Extra', `-${custoAcaoExtra} PP`, proximoAtual);
   };
 
@@ -929,10 +940,7 @@ const ProntidaoModal = ({ open, onClose, personagem, onSave, prontidaoValor, tip
       ].slice(0, 12),
     };
 
-    setEstadoCombate(proximoEstado);
-    if (onSave) {
-      await onSave({ estadoCombate: proximoEstado });
-    }
+    if (!(await aplicarEGravar(proximoEstado))) return;
   };
 
   const confirmarAuxiliarAliadoAgora = async () => {
@@ -958,10 +966,7 @@ const ProntidaoModal = ({ open, onClose, personagem, onSave, prontidaoValor, tip
 
     setConfirmarAuxiliarAliado(false);
     setDadosAuxiliarAliado({ aliado: '', tipoAjuda: 'Ataque', descricao: '' });
-    setEstadoCombate(proximoEstado);
-    if (onSave) {
-      await onSave({ estadoCombate: proximoEstado });
-    }
+    if (!(await aplicarEGravar(proximoEstado))) return;
     avisarAcao(
       'Auxiliar Aliado',
       `-${custoAuxiliarAliado} PP · ajuda ${aliado} (${dadosAuxiliarAliado.tipoAjuda}): ${descricao}`,
@@ -973,10 +978,7 @@ const ProntidaoModal = ({ open, onClose, personagem, onSave, prontidaoValor, tip
     const proximoEstado = estadoDoNovoTurno(estadoCombate, ppMaximo);
 
     setConfirmarNovoTurno(false);
-    setEstadoCombate(proximoEstado);
-    if (onSave) {
-      await onSave({ estadoCombate: proximoEstado });
-    }
+    if (!(await aplicarEGravar(proximoEstado))) return;
   };
 
   const resetarTurnos = async () => {
@@ -991,10 +993,7 @@ const ProntidaoModal = ({ open, onClose, personagem, onSave, prontidaoValor, tip
     };
 
     setConfirmarResetTurnos(false);
-    setEstadoCombate(proximoEstado);
-    if (onSave) {
-      await onSave({ estadoCombate: proximoEstado });
-    }
+    if (!(await aplicarEGravar(proximoEstado))) return;
   };
 
   if (tipo === 'info') {
@@ -2105,6 +2104,7 @@ const ProntidaoModal = ({ open, onClose, personagem, onSave, prontidaoValor, tip
           </Button>
         </DialogActions>
       </Dialog>
+      <ErrorSnackbar open={Boolean(erroAcao)} mensagem={erroAcao} onClose={() => setErroAcao(null)} />
     </Dialog>
   );
 };

@@ -547,6 +547,35 @@ describe('AtributosTab — fluxo de edição', () => {
     expect(within(modal).getAllByText(/reativa/i).length).toBeGreaterThan(0);
   });
 
+  it('se a gravação da ação falhar, o PP volta e o jogador é avisado', async () => {
+    const onSave = vi.fn().mockRejectedValue(new Error('offline'));
+    const personagemComProntidao = {
+      ...personagem,
+      secundariostotais: { prontidao: 315 },
+      estadoCombate: { ppAtual: 315, turno: 1, historicoAcoes: [] },
+      secundariosBase: { ...personagem.secundariosBase, prontidao: 315 },
+    };
+
+    renderComProvider(
+      <AtributosTab personagem={personagemComProntidao} onSave={onSave} onExcluir={vi.fn()} />,
+    );
+
+    fireEvent.contextMenu(screen.getByRole('button', { name: /prontidão/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /central de ações/i }));
+    const modal = await screen.findByRole('dialog', { name: /central de ações/i });
+
+    fireEvent.click(within(modal).getByRole('button', { name: /executar ação: atacar/i }));
+
+    expect(await screen.findByText(/não foi possível salvar a ação/i)).toBeInTheDocument();
+    expect(onSave.mock.calls[0][0].estadoCombate.ppAtual).toBe(240);
+
+    // O PP voltou a 315 na tela: tentar de novo cobra a partir de 315 (240), não de 240.
+    onSave.mockResolvedValue();
+    fireEvent.click(within(modal).getByRole('button', { name: /executar ação: atacar/i }));
+    await waitFor(() => expect(onSave).toHaveBeenCalledTimes(2));
+    expect(onSave.mock.calls[1][0].estadoCombate.ppAtual).toBe(240);
+  });
+
   it('desconta PP corretamente ao executar Ataque na central de ações', async () => {
     const onSave = vi.fn().mockResolvedValue();
     const personagemComProntidao = {
