@@ -16,7 +16,7 @@ import {
   CondicaoNome,
 } from './styles';
 
-const CondicaoCard = ({ ativo, condicao, onVer, onAlterarDuracao, onRemover }) => {
+const CondicaoCard = ({ ativo, condicao, onVer, onAlterarDuracao, onRemover, onReduzirAcumulo }) => {
   const nome = getNome(condicao) || 'Condição';
   // Só grava no Firestore no blur (não a cada tecla) — evita disparar uma escrita por
   // dígito e duas gravações sobrepostas não-serializadas sobrescrevendo uma à outra.
@@ -66,6 +66,17 @@ const CondicaoCard = ({ ativo, condicao, onVer, onAlterarDuracao, onRemover }) =
         <CondicaoAcaoBtn type="button" $variante="ver" aria-label={`Ver detalhes de ${nome}`} onClick={onVer}>
           <VisibilityIcon fontSize="inherit" />
         </CondicaoAcaoBtn>
+        {ativo.stack > 1 && onReduzirAcumulo && (
+          <CondicaoAcaoBtn
+            type="button"
+            $variante="ver"
+            aria-label={`Tirar um acúmulo de ${nome}`}
+            title="−1 acúmulo"
+            onClick={onReduzirAcumulo}
+          >
+            −1
+          </CondicaoAcaoBtn>
+        )}
         <CondicaoAcaoBtn type="button" $variante="remover" aria-label={`Remover ${nome}`} onClick={onRemover}>
           <CloseIcon fontSize="inherit" />
         </CondicaoAcaoBtn>
@@ -80,10 +91,12 @@ CondicaoCard.propTypes = {
   onVer: PropTypes.func.isRequired,
   onAlterarDuracao: PropTypes.func.isRequired,
   onRemover: PropTypes.func.isRequired,
+  onReduzirAcumulo: PropTypes.func,
 };
 
 CondicaoCard.defaultProps = {
   condicao: null,
+  onReduzirAcumulo: null,
 };
 
 export default CondicaoCard;

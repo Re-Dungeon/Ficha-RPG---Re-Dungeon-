@@ -29,6 +29,7 @@ import {
   updatePersonagem,
 } from 'service/storage';
 import { montarMensagemTexto, personagensNaCampanha } from 'common/utils/chat';
+import { avancarDuracaoCondicoes } from 'common/utils/formulas';
 import { corDoPing } from 'common/utils/grid';
 import { podeEditarArea } from 'common/utils/gridAreas';
 import { autorDoToken } from 'common/utils/gridRolagem';
@@ -323,9 +324,14 @@ const CampanhaChat = ({ visao = 'chat' }) => {
     try {
       const ficha = normalizarPersonagemCarregado(fichaDaVez);
       const ppMaximo = calcularPpMaximo(prontidaoMaximaDaFicha(ficha));
+      // Turno novo do personagem: as condições com duração perdem 1 turno.
+      const condicoes = avancarDuracaoCondicoes(ficha.condicoesAtivas);
       await updatePersonagem(
         ficha.id,
-        { estadoCombate: estadoDoNovoTurno(normalizarEstadoCombate(ficha, ppMaximo), ppMaximo) },
+        {
+          estadoCombate: estadoDoNovoTurno(normalizarEstadoCombate(ficha, ppMaximo), ppMaximo),
+          ...(condicoes.mudou ? { condicoesAtivas: condicoes.condicoesAtivas } : {}),
+        },
         { base: ficha },
       );
       setPpRestauradoEm(chaveTurno);

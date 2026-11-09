@@ -92,6 +92,21 @@ const CondicoesTab = ({ personagem, onSave }) => {
     [condicoesAtivas, catalogo, onSave, executar, confirmar],
   );
 
+  // −1 acúmulo (sem confirmação: só aparece com 2 ou mais acúmulos).
+  const handleReduzirAcumulo = useCallback(
+    condicaoId =>
+      executar(() =>
+        onSave({
+          condicoesAtivas: condicoesAtivas.map(item =>
+            item.condicaoId === condicaoId && (item.stack ?? 1) > 1
+              ? { ...item, stack: item.stack - 1 }
+              : item,
+          ),
+        }),
+      ),
+    [condicoesAtivas, onSave, executar],
+  );
+
   const handleAlterarDuracao = useCallback(
     (condicaoId, duracaoRestante) =>
       executar(() =>
@@ -126,6 +141,7 @@ const CondicoesTab = ({ personagem, onSave }) => {
             onVer={() => setCondicaoVisualizadaId(ativo.condicaoId)}
             onAlterarDuracao={duracaoRestante => handleAlterarDuracao(ativo.condicaoId, duracaoRestante)}
             onRemover={() => handleRemover(ativo.condicaoId)}
+            onReduzirAcumulo={() => handleReduzirAcumulo(ativo.condicaoId)}
           />
         ))}
       </CondicoesLista>

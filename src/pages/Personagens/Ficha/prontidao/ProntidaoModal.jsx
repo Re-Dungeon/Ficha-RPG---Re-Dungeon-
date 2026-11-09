@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Dialog, DialogActions, DialogContent, DialogTitle, Button, Tabs, Tab, Box, Typography, Stack, Chip, TextField, InputAdornment, IconButton, Tooltip } from '@mui/material';
+import { Dialog, DialogActions, DialogContent, DialogTitle, Button, Tabs, Tab, Box, Typography, Stack, Chip, TextField, InputAdornment, IconButton, Tooltip, Snackbar, Alert } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import BoltOutlinedIcon from '@mui/icons-material/BoltOutlined';
 import SearchIcon from '@mui/icons-material/Search';
@@ -27,6 +27,7 @@ import {
 } from './config';
 import { getItensInventario, removeItemInventario, updateItemInventario } from 'service/storage';
 import ErrorSnackbar from 'components/ErrorSnackbar/ErrorSnackbar';
+import { avancarDuracaoCondicoes } from 'common/utils/formulas';
 import { QUALIDADE_META, obterEmojiTipo } from 'pages/Personagens/Ficha/inventario/constants';
 import { rotulosDosStatus } from './avisoChat';
 
@@ -324,6 +325,7 @@ const ProntidaoModal = ({ open, onClose, personagem, onSave, prontidaoValor, tip
   const [itensInventario, setItensInventario] = useState([]);
   const [estadoCombate, setEstadoCombate] = useState(() => normalizarEstadoCombate(personagem, ppMaximo));
   const [erroAcao, setErroAcao] = useState(null);
+  const [avisoTurno, setAvisoTurno] = useState(null);
 
   // Mostra o novo estado na hora e grava; se a gravação falhar, volta ao
   // estado anterior (nada fica gasto só na tela) e avisa. true = gravou.
@@ -976,9 +978,21 @@ const ProntidaoModal = ({ open, onClose, personagem, onSave, prontidaoValor, tip
 
   const iniciarNovoTurno = async () => {
     const proximoEstado = estadoDoNovoTurno(estadoCombate, ppMaximo);
+    // Turno novo do personagem: as condições com duração perdem 1 turno.
+    const condicoes = avancarDuracaoCondicoes(personagem?.condicoesAtivas);
 
     setConfirmarNovoTurno(false);
-    if (!(await aplicarEGravar(proximoEstado))) return;
+    const gravou = await aplicarEGravar(
+      proximoEstado,
+      condicoes.mudou ? { condicoesAtivas: condicoes.condicoesAtivas } : {},
+    );
+    if (gravou && condicoes.expiradas.length) {
+      setAvisoTurno(
+        condicoes.expiradas.length === 1
+          ? 'Uma condição chegou ao fim e saiu da ficha.'
+          : `${condicoes.expiradas.length} condições chegaram ao fim e saíram da ficha.`,
+      );
+    }
   };
 
   const resetarTurnos = async () => {
@@ -2105,6 +2119,16 @@ const ProntidaoModal = ({ open, onClose, personagem, onSave, prontidaoValor, tip
         </DialogActions>
       </Dialog>
       <ErrorSnackbar open={Boolean(erroAcao)} mensagem={erroAcao} onClose={() => setErroAcao(null)} />
+      <Snackbar
+        open={Boolean(avisoTurno)}
+        autoHideDuration={6000}
+        onClose={() => setAvisoTurno(null)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert severity="info" variant="filled" onClose={() => setAvisoTurno(null)}>
+          {avisoTurno}
+        </Alert>
+      </Snackbar>
     </Dialog>
   );
 };
