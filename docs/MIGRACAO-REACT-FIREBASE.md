@@ -12,6 +12,20 @@ Este documento descreve como migrar o site atual (HTML/CSS/JS vanilla, ~88 mil l
 
 **Desvio importante em relação à seção 0**: a migração **não** foi feita em um repositório novo separado — foi implementada neste mesmo repositório (`Ficha-RPG---Re-Dungeon-`), substituindo o site vanilla no lugar. Os arquivos antigos (`js/`, `css/`, `index.html`, `data/*.js`, `html-components/`) já foram removidos. Ver `CLAUDE.md` para as convenções de código deste projeto.
 
+### QOL leva 1 (2026-11-09)
+
+Decisões que mudam como a ficha grava (valem para código novo):
+- **Mescla em três vias ao salvar**: `updatePersonagem(id, patch, { base })` (`common/utils/mesclaTresVias.js`). `base` = o personagem de onde a tela montou o patch; o que o jogador não mudou mantém o valor mais novo do Firestore. Sem isso, salvar o `status` inteiro desfazia o PV alterado pelo token no grid. `Ficha.jsx` passa por padrão o personagem atual da tela; abas com Formik passam o personagem de onde o formulário partiu (`AtributosTab`).
+- **Ficha ao vivo**: depois da primeira carga, `Ficha.jsx` ouve `subscribePersonagem`. A `AtributosTab` só reinicia o formulário quando não há edição pendente (sem `enableReinitialize` cego).
+- "Salvar" dos diálogos de atributo/status grava a ficha; −5/−1/+1/+5 no diálogo de Saúde/Energia/Fadiga gravam na hora; os atalhos do menu de contexto das gemas aparecem também no desktop.
+- Central de Ações: `aplicarEGravar` desfaz o estado e avisa se a gravação falhar; usar item grava o efeito antes de descontar o item.
+- `SavingContext`: overlay só depois de 400 ms, sem 1 s mínimo.
+- Confirmação (`components/ConfirmDialog` + `useConfirmacao`, cópia compartilhada) antes de excluir item/material/receita, Arte/Variante/Núcleo (lista a cascata) e condição.
+- **`condicoesAtivas[].duracaoRestante`** passa a ser descontada automaticamente (`avancarDuracaoCondicoes`, `formulas.js`) no "Iniciar novo turno" da ficha e no "Seu turno! Restaurar PP" do grid; chega a 0 → sai da ficha. `null` = sem duração. Botão "−1 acúmulo" com 2+ acúmulos.
+- `+N`/`-N` nos campos de recurso do token é relativo ao atual (`valorDigitadoDoRecurso`, `grid.js`).
+- `npm run check:shared` confere as cópias compartilhadas com o Re:Master.
+- `firestore.rules`: o mestre também apaga `chatMembros` (exclusão de campanha no Re:Master) — **precisa de deploy pelo Re:Master**.
+
 ### Fase a fase
 
 | Fase | Status | Onde está |
