@@ -27,7 +27,7 @@ import {
 } from './styles';
 import { DialogFecharButton, DialogHeaderRow, DialogHeaderTitle } from '../styles';
 
-const ItemViewDialog = ({ open, onClose, item, onEditar }) => {
+const ItemViewDialog = ({ open, onClose, item = null, onEditar }) => {
   if (!item) {
     return null;
   }
@@ -131,10 +131,6 @@ ItemViewDialog.propTypes = {
   onClose: PropTypes.func.isRequired,
   item: PropTypes.object,
   onEditar: PropTypes.func.isRequired,
-};
-
-ItemViewDialog.defaultProps = {
-  item: null,
 };
 
 export default ItemViewDialog;

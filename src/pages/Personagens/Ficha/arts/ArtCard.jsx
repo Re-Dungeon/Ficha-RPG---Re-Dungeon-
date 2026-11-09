@@ -29,7 +29,9 @@ import {
   ConditionName,
 } from './styles';
 
-const ArtCard = ({ art, nucleo, condicoes, onVer, onEditar, onRemover, onToggleAtiva }) => {
+const CONDICOES_PADRAO = [];
+
+const ArtCard = ({ art, nucleo = null, condicoes = CONDICOES_PADRAO, onVer, onEditar, onRemover, onToggleAtiva }) => {
   const tipoMeta = TIPO_ART_META[art.tipo] ?? {};
   const acaoMeta = TIPO_ACAO_META[art.tipoAcao] ?? {};
 
@@ -263,11 +265,6 @@ ArtCard.propTypes = {
   onEditar: PropTypes.func.isRequired,
   onRemover: PropTypes.func.isRequired,
   onToggleAtiva: PropTypes.func.isRequired,
-};
-
-ArtCard.defaultProps = {
-  nucleo: null,
-  condicoes: [],
 };
 
 export default ArtCard;

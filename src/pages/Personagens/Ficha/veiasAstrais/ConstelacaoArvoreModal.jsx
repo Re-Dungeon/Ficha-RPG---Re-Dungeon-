@@ -15,10 +15,12 @@ import { ARVORE_FUNDO_OPACIDADE, ARVORE_FUNDO_SATURACAO, corDivindade } from './
 import { ArvoreCanvas, ArvoreFundoImagem, ArvoreScrollArea } from './styles';
 import { PowerCombatBadge, StatusValueRow } from '../styles';
 
+const VEIAS_PADRAO = [];
+
 const ConstelacaoArvoreModal = ({
   open,
-  veias,
-  divindade,
+  veias = VEIAS_PADRAO,
+  divindade = null,
   idsDesbloqueados,
   pcDisponivel,
   onClose,
@@ -320,11 +322,6 @@ ConstelacaoArvoreModal.propTypes = {
   onClose: PropTypes.func.isRequired,
   onDesbloquear: PropTypes.func.isRequired,
   onBloquear: PropTypes.func.isRequired,
-};
-
-ConstelacaoArvoreModal.defaultProps = {
-  veias: [],
-  divindade: null,
 };
 
 export default ConstelacaoArvoreModal;

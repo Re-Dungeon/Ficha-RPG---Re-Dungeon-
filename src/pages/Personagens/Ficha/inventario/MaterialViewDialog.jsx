@@ -23,7 +23,7 @@ import {
 } from './styles';
 import { DialogFecharButton, DialogHeaderRow, DialogHeaderTitle } from '../styles';
 
-const MaterialViewDialog = ({ open, onClose, material, onEditar }) => {
+const MaterialViewDialog = ({ open, onClose, material = null, onEditar }) => {
   if (!material) {
     return null;
   }
@@ -96,10 +96,6 @@ MaterialViewDialog.propTypes = {
   onClose: PropTypes.func.isRequired,
   material: PropTypes.object,
   onEditar: PropTypes.func.isRequired,
-};
-
-MaterialViewDialog.defaultProps = {
-  material: null,
 };
 
 export default MaterialViewDialog;

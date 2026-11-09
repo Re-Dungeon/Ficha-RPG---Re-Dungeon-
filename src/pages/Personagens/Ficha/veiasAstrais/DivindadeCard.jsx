@@ -11,7 +11,7 @@ import {
   DivindadeProgressoBadge,
 } from './styles';
 
-const DivindadeCard = ({ divindade, veias, totalDesbloqueados, onClick }) => {
+const DivindadeCard = ({ divindade = null, veias, totalDesbloqueados, onClick }) => {
 
   const total = veias.length || 0;
   const pct = total > 0 ? Math.round((totalDesbloqueados / total) * 100) : 0;
@@ -42,10 +42,6 @@ DivindadeCard.propTypes = {
   veias: PropTypes.array.isRequired,
   totalDesbloqueados: PropTypes.number.isRequired,
   onClick: PropTypes.func.isRequired,
-};
-
-DivindadeCard.defaultProps = {
-  divindade: null,
 };
 
 export default DivindadeCard;

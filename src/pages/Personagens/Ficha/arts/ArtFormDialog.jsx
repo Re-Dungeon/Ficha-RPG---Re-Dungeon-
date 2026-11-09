@@ -221,7 +221,7 @@ ArtFormBody.propTypes = {
   onClose: PropTypes.func.isRequired,
 };
 
-const ArtFormDialog = ({ open, onClose, art, nucleos, condicoes, onSubmit }) => {
+const ArtFormDialog = ({ open, onClose, art = null, nucleos, condicoes, onSubmit }) => {
   const [initialValues, setInitialValues] = useState(ART_AUTORAL_INICIAL);
 
   useEffect(() => {
@@ -270,10 +270,6 @@ ArtFormDialog.propTypes = {
   nucleos: PropTypes.array.isRequired,
   condicoes: PropTypes.array.isRequired,
   onSubmit: PropTypes.func.isRequired,
-};
-
-ArtFormDialog.defaultProps = {
-  art: null,
 };
 
 export default ArtFormDialog;

@@ -23,7 +23,7 @@ import {
 } from './styles';
 import { DialogFecharButton, DialogHeaderRow, DialogHeaderTitle } from '../styles';
 
-const ReceitaViewDialog = ({ open, onClose, receita, onEditar }) => {
+const ReceitaViewDialog = ({ open, onClose, receita = null, onEditar }) => {
   if (!receita) {
     return null;
   }
@@ -103,10 +103,6 @@ ReceitaViewDialog.propTypes = {
   onClose: PropTypes.func.isRequired,
   receita: PropTypes.object,
   onEditar: PropTypes.func.isRequired,
-};
-
-ReceitaViewDialog.defaultProps = {
-  receita: null,
 };
 
 export default ReceitaViewDialog;

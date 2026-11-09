@@ -29,7 +29,7 @@ import {
   FieldsRow,
 } from './styles';
 
-const AtributoCard = ({ label, total, baseName, extraName, bonusName, personagem, onSave }) => {
+const AtributoCard = ({ label, total, baseName, extraName, bonusName, personagem, onSave = null }) => {
   const tituloId = `dialog-titulo-${baseName}`;
   const [aberto, setAberto] = useState(false);
   const [menuAberto, setMenuAberto] = useState(false);
@@ -284,11 +284,6 @@ AtributoCard.propTypes = {
   bonusCultivo: PropTypes.number,
   personagem: PropTypes.object.isRequired,
   onSave: PropTypes.func,
-};
-
-AtributoCard.defaultProps = {
-  bonusCultivo: 0,
-  onSave: null,
 };
 
 export default AtributoCard;

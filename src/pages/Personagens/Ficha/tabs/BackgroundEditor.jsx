@@ -410,7 +410,7 @@ const insertTable = (editor, rows, cols, withHeaderRow) => {
   editor.chain().focus().insertTable({ rows, cols, withHeaderRow }).run();
 };
 
-const BackgroundEditor = ({ value, onChange }) => {
+const BackgroundEditor = ({ value = '', onChange }) => {
   const [expanded, setExpanded] = useState(false);
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
   const [linkText, setLinkText] = useState('');
@@ -925,10 +925,6 @@ const BackgroundEditor = ({ value, onChange }) => {
 BackgroundEditor.propTypes = {
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
   onChange: PropTypes.func.isRequired,
-};
-
-BackgroundEditor.defaultProps = {
-  value: '',
 };
 
 export default BackgroundEditor;

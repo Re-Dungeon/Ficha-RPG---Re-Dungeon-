@@ -59,8 +59,4 @@ NumberField.propTypes = {
   displayValue: PropTypes.number,
 };
 
-NumberField.defaultProps = {
-  displayValue: undefined,
-};
-
 export default NumberField;

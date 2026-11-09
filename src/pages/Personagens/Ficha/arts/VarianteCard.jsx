@@ -38,7 +38,9 @@ const CAMPOS_GRID = [
   ['Dados', 'dados'],
 ];
 
-const VarianteCard = ({ variante, art, nucleo, condicoes, onVer, onEditar, onRemover }) => {
+const CONDICOES_PADRAO = [];
+
+const VarianteCard = ({ variante, art = null, nucleo = null, condicoes = CONDICOES_PADRAO, onVer, onEditar, onRemover }) => {
   const tipoMeta = TIPO_ART_META[variante.tipo] ?? {};
   const acaoMeta = TIPO_ACAO_META[variante.tipoAcao] ?? {};
 
@@ -201,12 +203,6 @@ VarianteCard.propTypes = {
   onVer: PropTypes.func.isRequired,
   onEditar: PropTypes.func.isRequired,
   onRemover: PropTypes.func.isRequired,
-};
-
-VarianteCard.defaultProps = {
-  art: null,
-  nucleo: null,
-  condicoes: [],
 };
 
 export default VarianteCard;

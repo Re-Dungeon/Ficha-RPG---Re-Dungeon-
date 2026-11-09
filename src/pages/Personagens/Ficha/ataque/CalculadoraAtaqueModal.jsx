@@ -1445,7 +1445,7 @@ const resetAttackCombinationForm = ({ setForm, setSelectedComboId, setResourceSe
   setConfirmarNovaCombinacao(false);
 };
 
-const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave, contexto = 'ataque' }) => {
+const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave = null, contexto = 'ataque' }) => {
   const contextConfig = getContextConfig(contexto);
   const isDefesaContexto = contexto === 'defesa';
   const tiposDanoOptions = useMemo(
@@ -3567,10 +3567,6 @@ CalculadoraAtaqueModal.propTypes = {
   onClose: PropTypes.func.isRequired,
   personagem: PropTypes.object.isRequired,
   onSave: PropTypes.func,
-};
-
-CalculadoraAtaqueModal.defaultProps = {
-  onSave: null,
 };
 
 export default CalculadoraAtaqueModal;

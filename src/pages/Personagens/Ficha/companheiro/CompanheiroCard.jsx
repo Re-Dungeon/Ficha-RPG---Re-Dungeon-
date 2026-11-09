@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import { CompanheiroBadge, CompanheiroCardButton, CompanheiroImagem, CompanheiroNome } from './styles';
 
-const CompanheiroCard = ({ personagem, badge, onClick }) => (
+const CompanheiroCard = ({ personagem, badge = null, onClick }) => (
   <CompanheiroCardButton type="button" onClick={onClick}>
     <CompanheiroImagem>
       {personagem.linkImagem ? <img src={personagem.linkImagem} alt={personagem.nome} /> : 'Sem imagem'}
@@ -17,10 +17,6 @@ CompanheiroCard.propTypes = {
   personagem: PropTypes.object.isRequired,
   badge: PropTypes.string,
   onClick: PropTypes.func.isRequired,
-};
-
-CompanheiroCard.defaultProps = {
-  badge: null,
 };
 
 export default CompanheiroCard;

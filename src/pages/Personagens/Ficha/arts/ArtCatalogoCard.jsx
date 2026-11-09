@@ -14,7 +14,7 @@ import { ImageThumb } from './styles';
 
 // Card compacto de Art usado na aba "Catálogo" do CriarArtDialog, com a mesma
 // linguagem visual do card de habilidade de classe para ficar consistente.
-const ArtCatalogoCard = ({ art, disabled, onEscolher }) => {
+const ArtCatalogoCard = ({ art, disabled = false, onEscolher }) => {
   const chips = [
     art.alcance ? { icon: <PlaceIcon fontSize="inherit" />, label: art.alcance } : null,
     art.alvos ? { icon: <GpsFixedIcon fontSize="inherit" />, label: art.alvos } : null,
@@ -69,10 +69,6 @@ ArtCatalogoCard.propTypes = {
   art: PropTypes.object.isRequired,
   disabled: PropTypes.bool,
   onEscolher: PropTypes.func.isRequired,
-};
-
-ArtCatalogoCard.defaultProps = {
-  disabled: false,
 };
 
 export default ArtCatalogoCard;

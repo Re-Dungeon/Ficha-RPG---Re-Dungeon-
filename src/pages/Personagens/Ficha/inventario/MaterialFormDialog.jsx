@@ -165,7 +165,7 @@ MaterialFormBody.propTypes = {
   onClose: PropTypes.func.isRequired,
 };
 
-const MaterialFormDialog = ({ open, onClose, material, onSubmit }) => {
+const MaterialFormDialog = ({ open, onClose, material = null, onSubmit }) => {
   const [initialValues, setInitialValues] = useState(MATERIAL_AUTORAL_INICIAL);
 
   useEffect(() => {
@@ -199,10 +199,6 @@ MaterialFormDialog.propTypes = {
   onClose: PropTypes.func.isRequired,
   material: PropTypes.object,
   onSubmit: PropTypes.func.isRequired,
-};
-
-MaterialFormDialog.defaultProps = {
-  material: null,
 };
 
 export default MaterialFormDialog;

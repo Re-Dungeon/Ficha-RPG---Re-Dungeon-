@@ -192,7 +192,7 @@ NucleoFormBody.propTypes = {
   onClose: PropTypes.func.isRequired,
 };
 
-const NucleoFormDialog = ({ open, onClose, nucleo, onSubmit }) => {
+const NucleoFormDialog = ({ open, onClose, nucleo = null, onSubmit }) => {
   const [initialValues, setInitialValues] = useState(NUCLEO_INICIAL);
 
   useEffect(() => {
@@ -235,10 +235,6 @@ NucleoFormDialog.propTypes = {
   onClose: PropTypes.func.isRequired,
   nucleo: PropTypes.object,
   onSubmit: PropTypes.func.isRequired,
-};
-
-NucleoFormDialog.defaultProps = {
-  nucleo: null,
 };
 
 export default NucleoFormDialog;

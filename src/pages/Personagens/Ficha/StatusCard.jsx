@@ -31,7 +31,7 @@ import {
 
 const AJUSTES_RAPIDOS = [-5, -1, 1, 5];
 
-const StatusCard = ({ label, variante, grande, maximo, atual, atualName, baseName, extraName, bonusName }) => {
+const StatusCard = ({ label, variante, grande = false, maximo, atual, atualName, baseName, extraName, bonusName }) => {
   const tituloId = `dialog-titulo-${atualName}`;
   const [aberto, setAberto] = useState(false);
   const [atualField, , atualHelpers] = useField(atualName);
@@ -157,11 +157,6 @@ StatusCard.propTypes = {
   extraName: PropTypes.string.isRequired,
   bonusName: PropTypes.string.isRequired,
   bonusCultivo: PropTypes.number,
-};
-
-StatusCard.defaultProps = {
-  grande: false,
-  bonusCultivo: 0,
 };
 
 export default StatusCard;
