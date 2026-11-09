@@ -7,6 +7,7 @@ import { useAuth } from 'context/AuthContext';
 import {
   addChatMensagem,
   getRmCampanha,
+  getChatMensagensAntes,
   setChatMembro,
   subscribeAudioMesa,
   subscribeChatMensagens,
@@ -29,6 +30,7 @@ vi.mock('service/storage', () => ({
   removeChatMensagem: vi.fn(),
   setChatMembro: vi.fn(),
   subscribeChatMensagens: vi.fn(),
+  getChatMensagensAntes: vi.fn(() => Promise.resolve([])),
   addChatRolagemSecreta: vi.fn(),
   removeChatRolagemSecreta: vi.fn(),
   subscribeChatSecretasDoMestre: vi.fn(() => vi.fn()),
@@ -107,6 +109,36 @@ describe('ChatModal (menu Social da ficha)', () => {
 
     expect(await screen.findByText('No abismo.')).toBeInTheDocument();
     expect(setChatMembro).toHaveBeenCalledWith('abismo', 'uid-jogador', 'wesley');
+  });
+
+  it('oferece "Carregar anteriores" quando a janela ao vivo está cheia e busca a página antiga', async () => {
+    const createdAt = minuto => ({ toMillis: () => minuto * 60000, toDate: () => new Date() });
+    subscribeChatMensagens.mockImplementation((_id, onChange) => {
+      onChange(
+        Array.from({ length: 100 }, (_, i) => ({
+          id: `m${i}`,
+          uid: 'uid-mestre',
+          autorNome: 'Mestre',
+          isMestre: true,
+          tipo: 'texto',
+          texto: `recente ${i}`,
+          createdAt: createdAt(100 + i),
+        })),
+      );
+      return vi.fn();
+    });
+    getChatMensagensAntes.mockResolvedValue([]);
+    renderModal({ id: 'wesley', nome: 'Wesley Chase', campanhas: ['torre'] });
+
+    fireEvent.click(await screen.findByRole('button', { name: /carregar anteriores/i }));
+
+    await waitFor(() => expect(getChatMensagensAntes).toHaveBeenCalledTimes(1));
+    expect(getChatMensagensAntes.mock.calls[0][0]).toBe('torre');
+    expect(getChatMensagensAntes.mock.calls[0][1].toMillis()).toBe(100 * 60000);
+    // veio vazio: não há mais o que carregar
+    await waitFor(() =>
+      expect(screen.queryByRole('button', { name: /carregar anteriores/i })).not.toBeInTheDocument(),
+    );
   });
 
   it('avisa a troca de campanha pelo onCampanhaChange', async () => {

@@ -318,6 +318,9 @@ export const ChatModalConteudo = ({ personagem, modo = 'modal', onAbrirPainelLat
           cabecalho={cabecalho}
           compactHeader={modo === 'painel'}
           opcoesCombate={gruposCombate}
+          onCarregarAnteriores={chat.carregarAnteriores}
+          temMaisAnteriores={chat.temMaisAntigas}
+          carregandoAnteriores={chat.carregandoAntigas}
         />
       </Box>
       <ErrorSnackbar open={!!chat.erro} mensagem={chat.erro} onClose={chat.limparErro} />
