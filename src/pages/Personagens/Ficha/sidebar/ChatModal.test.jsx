@@ -109,6 +109,27 @@ describe('ChatModal (menu Social da ficha)', () => {
     expect(setChatMembro).toHaveBeenCalledWith('abismo', 'uid-jogador', 'wesley');
   });
 
+  it('avisa a troca de campanha pelo onCampanhaChange', async () => {
+    const onCampanhaChange = vi.fn();
+    render(
+      <MemoryRouter>
+        <ChatModal
+          open
+          onClose={vi.fn()}
+          personagem={{ id: 'wesley', nome: 'Wesley Chase', campanhas: ['torre', 'abismo'] }}
+          onCampanhaChange={onCampanhaChange}
+        />
+      </MemoryRouter>,
+    );
+    await screen.findByText('Na torre.');
+    expect(onCampanhaChange).not.toHaveBeenCalled();
+
+    fireEvent.mouseDown(screen.getByLabelText(/^campanha$/i));
+    fireEvent.click(within(screen.getByRole('listbox')).getByText('O Abismo'));
+
+    expect(onCampanhaChange).toHaveBeenCalledWith('abismo');
+  });
+
   it('envia o comando de painel lateral sem navegar, fechando o modal', async () => {
     const onClose = vi.fn();
     const onAbrirPainelLateral = vi.fn();

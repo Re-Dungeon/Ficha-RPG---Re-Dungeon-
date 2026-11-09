@@ -31,7 +31,7 @@ const textoMutedSx = { color: 'var(--text-secondary)', textAlign: 'center', py: 
 
 // Conteúdo só é montado com o modal aberto (Dialog não renderiza os filhos
 // fechado) — a escuta em tempo real do chat vive só enquanto ele está visível.
-export const ChatModalConteudo = ({ personagem, modo = 'modal', onAbrirPainelLateral, onClose = null, campanhaIdInicial = null }) => {
+export const ChatModalConteudo = ({ personagem, modo = 'modal', onAbrirPainelLateral, onClose = null, campanhaIdInicial = null, onCampanhaChange = null }) => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   const isMobile = useMediaQuery('(max-width: 599.95px)');
@@ -150,7 +150,10 @@ export const ChatModalConteudo = ({ personagem, modo = 'modal', onAbrirPainelLat
             size="small"
             label="Campanha"
             value={campanhaId}
-            onChange={event => setCampanhaId(event.target.value)}
+            onChange={event => {
+              setCampanhaId(event.target.value);
+              onCampanhaChange?.(event.target.value);
+            }}
             sx={{ minWidth: 180, maxWidth: 220 }}
           >
             {campanhas.map(c => (
@@ -328,9 +331,10 @@ ChatModalConteudo.propTypes = {
   onAbrirPainelLateral: PropTypes.func,
   onClose: PropTypes.func,
   campanhaIdInicial: PropTypes.string,
+  onCampanhaChange: PropTypes.func,
 };
 
-const ChatModal = ({ open, onClose, personagem, onAbrirPainelLateral }) => {
+const ChatModal = ({ open, onClose, personagem, onAbrirPainelLateral, onCampanhaChange = null }) => {
   const isMobile = useMediaQuery('(max-width: 599.95px)');
 
   return (
@@ -364,7 +368,7 @@ const ChatModal = ({ open, onClose, personagem, onAbrirPainelLateral }) => {
       </DialogFecharButton>
     </DialogHeaderRow>
     <DialogContent sx={{ p: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-      <ChatModalConteudo personagem={personagem} onAbrirPainelLateral={onAbrirPainelLateral} onClose={onClose} />
+      <ChatModalConteudo personagem={personagem} onAbrirPainelLateral={onAbrirPainelLateral} onClose={onClose} onCampanhaChange={onCampanhaChange} />
     </DialogContent>
     </Dialog>
   );
@@ -375,6 +379,7 @@ ChatModal.propTypes = {
   onClose: PropTypes.func.isRequired,
   personagem: PropTypes.object.isRequired,
   onAbrirPainelLateral: PropTypes.func,
+  onCampanhaChange: PropTypes.func,
 };
 
 export default ChatModal;

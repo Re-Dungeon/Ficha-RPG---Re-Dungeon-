@@ -52,6 +52,7 @@ import CondicoesModal from './sidebar/CondicoesModal';
 import CodexModal from './sidebar/CodexModal';
 import ChatModal, { ChatModalConteudo } from './sidebar/ChatModal';
 import NotesModal from './notes/NotesModal';
+import { RolagemFichaContext } from 'context/RolagemFichaContext';
 import { FichaChatPainel, FichaLayout, FichaMain } from './styles';
 
 const STORAGE_KEY_CHAT_LATERAL = 'reDungeonChatLateralCampanha';
@@ -83,6 +84,9 @@ const Ficha = () => {
   const [chatLateralCampanhaId, setChatLateralCampanhaId] = useState(() =>
     lerChatLateralPersistido(),
   );
+  // Campanha deixada aberta no chat (modal ou painel): é para onde vão as rolagens
+  // da ficha (Calculador de Ataque, "Rolar" das Artes) — ver campanhaDeRolagem.
+  const [campanhaEscolhidaNoChat, setCampanhaEscolhidaNoChat] = useState(null);
   const [erroExclusao, setErroExclusao] = useState(null);
   const [inventarioAtualizacoes, setInventarioAtualizacoes] = useState(0);
 
@@ -172,6 +176,7 @@ const Ficha = () => {
 
   const abrirChatLateral = useCallback(campanhaId => {
     setChatLateralCampanhaId(campanhaId);
+    setCampanhaEscolhidaNoChat(campanhaId);
     setModalAtivo(null);
   }, []);
 
@@ -240,6 +245,12 @@ const Ficha = () => {
     if (personagem) selecionarPersonagem(personagem);
   }, [personagem, selecionarPersonagem]);
 
+  const campanhaPreferida = campanhaEscolhidaNoChat ?? chatLateralCampanhaId;
+  const rolagemFicha = useMemo(
+    () => ({ personagem, campanhaPreferida }),
+    [personagem, campanhaPreferida],
+  );
+
   if (loading || !personagem) {
     return (
       <FichaMain>
@@ -250,6 +261,7 @@ const Ficha = () => {
 
   return (
     <SavingProvider>
+      <RolagemFichaContext.Provider value={rolagemFicha}>
       <FichaLayout>
         {isMobile ? (
           <Drawer
@@ -346,6 +358,7 @@ const Ficha = () => {
             onClose={fecharModal}
             personagem={personagem}
             onAbrirPainelLateral={abrirChatLateral}
+            onCampanhaChange={setCampanhaEscolhidaNoChat}
           />
           <NotesModal open={modalAtivo === 'notas'} onClose={fecharModal} personagem={personagem} />
 
@@ -386,6 +399,7 @@ const Ficha = () => {
                   modo="painel"
                   onClose={fecharChatLateral}
                   campanhaIdInicial={chatLateralCampanhaId}
+                  onCampanhaChange={setCampanhaEscolhidaNoChat}
                 />
               </Box>
             </Drawer>
@@ -396,10 +410,12 @@ const Ficha = () => {
                 modo="painel"
                 onClose={fecharChatLateral}
                 campanhaIdInicial={chatLateralCampanhaId}
+                  onCampanhaChange={setCampanhaEscolhidaNoChat}
               />
             </FichaChatPainel>
           ))}
       </FichaLayout>
+      </RolagemFichaContext.Provider>
     </SavingProvider>
   );
 };
