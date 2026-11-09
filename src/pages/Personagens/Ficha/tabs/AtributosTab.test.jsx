@@ -5,6 +5,7 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import { SavingProvider } from 'context/SavingContext';
 import {
   addChatMensagem,
+  getRmCampanha,
   addComboAtaque,
   addComboDefesa,
   consumirRecursosPersonagem,
@@ -21,6 +22,8 @@ import {
   updateItemInventario,
 } from 'service/storage';
 
+import { RolagemFichaContext } from 'context/RolagemFichaContext';
+
 import AtributosTab from './AtributosTab';
 import { calcularCustoPpAcao, getTokensAcao } from '../prontidao/config';
 
@@ -31,6 +34,7 @@ vi.mock('context/AuthContext', () => ({ useAuth: () => ({ currentUser: null }) }
 
 vi.mock('service/storage', () => ({
   addChatMensagem: vi.fn().mockResolvedValue(null),
+  getRmCampanha: vi.fn(),
   getFirestoreItem: vi.fn().mockResolvedValue(null),
   getArts: vi.fn().mockResolvedValue([]),
   getItensInventario: vi.fn().mockResolvedValue([]),
@@ -2142,5 +2146,79 @@ describe('AtributosTab — fluxo de edição', () => {
     await screen.findByText(/não foi possível salvar/i);
     // SavingContext.executar impõe uma duração mínima de overlay (2s) mesmo em erro.
     await waitFor(() => expect(botaoSalvar).not.toBeDisabled(), { timeout: 3000 });
+  });
+});
+
+describe('AtributosTab — campanha da rolagem do combo', () => {
+  const comboAtaque = {
+    id: 'combo-ataque-1',
+    nome: 'Corte Flamejante',
+    perfilDano: '1d20+4',
+    tipoDano: 'Contundente',
+    potencializacao: 10,
+    costResourceType: 'energia',
+    custoEnergia: 6,
+    updatedAt: { seconds: 1700000000 },
+  };
+  const emDuasCampanhas = {
+    ...personagem,
+    campanhas: ['camp-1', 'camp-2'],
+    status: {
+      energia: { base: 0, extra: 0, bonus: 0, atual: 26, maximo: 50 },
+      fadiga: { base: 0, extra: 0, bonus: 0, atual: 8, maximo: 10 },
+    },
+    statusMaximos: { energia: 50, fadiga: 10 },
+    secundariosBase: { ...personagem.secundariosBase, ataque: 20 },
+  };
+
+  const usarCombo = async campanhaPreferida => {
+    vi.mocked(getCombosAtaque).mockResolvedValue([comboAtaque]);
+    vi.mocked(getRmCampanha).mockImplementation(id => Promise.resolve({ id, nome: `Campanha ${id}` }));
+    vi.mocked(consumirRecursosPersonagem).mockResolvedValue({
+      energia: { atual: 20, maximo: 50 },
+      fadiga: { atual: 8, maximo: 10 },
+      gastoEnergia: 6,
+      gastoFadiga: 0,
+      gastoSaude: 0,
+    });
+
+    renderComProvider(
+      <RolagemFichaContext.Provider value={{ personagem: emDuasCampanhas, campanhaPreferida }}>
+        <AtributosTab personagem={emDuasCampanhas} onSave={vi.fn().mockResolvedValue()} onExcluir={vi.fn()} />
+      </RolagemFichaContext.Provider>,
+    );
+
+    fireEvent.contextMenu(screen.getByRole('button', { name: /ataque/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /calculadora de ataque/i }));
+    const dialog = await screen.findByRole('dialog', { name: /calculadora de ataque/i });
+    fireEvent.click(within(dialog).getByRole('button', { name: /^usar$/i }));
+    return screen.findByRole('dialog', { name: /utilizar combinação/i });
+  };
+
+  it('posta na campanha aberta no chat da ficha, não na primeira', async () => {
+    const confirmDialog = await usarCombo('camp-2');
+    expect(within(confirmDialog).queryByLabelText('Postar em:')).not.toBeInTheDocument();
+    fireEvent.click(within(confirmDialog).getByRole('button', { name: /confirmar uso/i }));
+
+    await waitFor(() => expect(addChatMensagem).toHaveBeenCalledTimes(1));
+    expect(addChatMensagem).toHaveBeenCalledWith('camp-2', expect.objectContaining({ tipo: 'rolagem' }));
+  });
+
+  it('com 2 campanhas e nenhuma aberta, pergunta "Postar em:" e usa a escolhida', async () => {
+    const confirmDialog = await usarCombo(null);
+    fireEvent.mouseDown(await within(confirmDialog).findByLabelText('Postar em:'));
+    fireEvent.click(await screen.findByRole('option', { name: 'Campanha camp-2' }));
+    fireEvent.click(within(confirmDialog).getByRole('button', { name: /confirmar uso/i }));
+
+    await waitFor(() => expect(addChatMensagem).toHaveBeenCalledTimes(1));
+    expect(addChatMensagem).toHaveBeenCalledWith('camp-2', expect.objectContaining({ tipo: 'rolagem' }));
+  });
+
+  it('com 2 campanhas e nenhuma escolhida, usa o combo sem postar no chat', async () => {
+    const confirmDialog = await usarCombo(null);
+    fireEvent.click(within(confirmDialog).getByRole('button', { name: /confirmar uso/i }));
+
+    await waitFor(() => expect(consumirRecursosPersonagem).toHaveBeenCalled());
+    expect(addChatMensagem).not.toHaveBeenCalled();
   });
 });

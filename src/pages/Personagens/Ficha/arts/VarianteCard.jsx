@@ -6,6 +6,7 @@ import { getNome } from 'common/utils/resolveNome';
 
 import { DOMINIO_LABELS, TIPO_ACAO_META, TIPO_ART_META } from './constants';
 import CondicaoViewDialog from '../condicoes/CondicaoViewDialog';
+import BotaoRolar from './BotaoRolar';
 import {
   ArtCardBody,
   ArtCardFooter,
@@ -181,6 +182,7 @@ const VarianteCard = ({ variante, art = null, nucleo = null, condicoes = CONDICO
       />
 
       <ArtCardFooter>
+        <BotaoRolar dados={variante.dados} nome={variante.nome} />
         <Button size="small" variant="outlined" onClick={onVer}>
           🔍 Ver
         </Button>

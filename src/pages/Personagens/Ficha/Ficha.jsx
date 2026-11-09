@@ -1,5 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate, useOutletContext, useParams, useSearchParams } from 'react-router-dom';
+import {
+  useNavigate,
+  useOutletContext,
+  useParams,
+  useSearchParams,
+} from 'react-router-dom';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Button from '@mui/material/Button';
@@ -53,6 +58,7 @@ import CodexModal from './sidebar/CodexModal';
 import ChatModal, { ChatModalConteudo } from './sidebar/ChatModal';
 import NotesModal from './notes/NotesModal';
 import StatusFaixa from './StatusFaixa';
+import { RolagemFichaContext } from 'context/RolagemFichaContext';
 import { FichaChatPainel, FichaLayout, FichaMain } from './styles';
 
 const ABAS_VALIDAS = [
@@ -102,6 +108,9 @@ const Ficha = () => {
   const [chatLateralCampanhaId, setChatLateralCampanhaId] = useState(() =>
     lerChatLateralPersistido(),
   );
+  // Campanha deixada aberta no chat (modal ou painel): é para onde vão as rolagens
+  // da ficha (Calculador de Ataque, "Rolar" das Artes) — ver campanhaDeRolagem.
+  const [campanhaEscolhidaNoChat, setCampanhaEscolhidaNoChat] = useState(null);
   const [erroExclusao, setErroExclusao] = useState(null);
   const [inventarioAtualizacoes, setInventarioAtualizacoes] = useState(0);
 
@@ -177,7 +186,9 @@ const Ficha = () => {
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Falha ao excluir personagem:', error);
-      setErroExclusao('Não foi possível excluir o personagem. Verifique sua conexão e tente novamente.');
+      setErroExclusao(
+        'Não foi possível excluir o personagem. Verifique sua conexão e tente novamente.',
+      );
       setExcluindo(false);
     }
   }, [id, navigate]);
@@ -191,6 +202,7 @@ const Ficha = () => {
 
   const abrirChatLateral = useCallback(campanhaId => {
     setChatLateralCampanhaId(campanhaId);
+    setCampanhaEscolhidaNoChat(campanhaId);
     setModalAtivo(null);
   }, []);
 
@@ -219,18 +231,40 @@ const Ficha = () => {
   // com o ícone em cima).
   const tabsFicha = useMemo(
     () => [
-      { value: 'atributos', label: 'Atributos', icon: <EqualizerIcon fontSize="small" /> },
-      { value: 'aptidoes', label: 'Aptidões', icon: <AutoAwesomeIcon fontSize="small" /> },
+      {
+        value: 'atributos',
+        label: 'Atributos',
+        icon: <EqualizerIcon fontSize="small" />,
+      },
+      {
+        value: 'aptidoes',
+        label: 'Aptidões',
+        icon: <AutoAwesomeIcon fontSize="small" />,
+      },
       { value: 'arts', label: 'Artes', icon: <AutoFixHighIcon fontSize="small" /> },
-      { value: 'inventario', label: 'Inventário', icon: <Inventory2Icon fontSize="small" /> },
+      {
+        value: 'inventario',
+        label: 'Inventário',
+        icon: <Inventory2Icon fontSize="small" />,
+      },
       {
         value: 'treinamento',
         label: 'Treinamento',
         labelCurto: 'Treino',
         icon: <FitnessCenterIcon fontSize="small" />,
       },
-      { value: 'veiasAstrais', label: 'Veias Astrais', labelCurto: 'Veias', icon: <HubIcon fontSize="small" /> },
-      { value: 'companheiro', label: 'Companheiro', labelCurto: 'Comp.', icon: <PetsIcon fontSize="small" /> },
+      {
+        value: 'veiasAstrais',
+        label: 'Veias Astrais',
+        labelCurto: 'Veias',
+        icon: <HubIcon fontSize="small" />,
+      },
+      {
+        value: 'companheiro',
+        label: 'Companheiro',
+        labelCurto: 'Comp.',
+        icon: <PetsIcon fontSize="small" />,
+      },
     ],
     [],
   );
@@ -259,6 +293,12 @@ const Ficha = () => {
     if (personagem) selecionarPersonagem(personagem);
   }, [personagem, selecionarPersonagem]);
 
+  const campanhaPreferida = campanhaEscolhidaNoChat ?? chatLateralCampanhaId;
+  const rolagemFicha = useMemo(
+    () => ({ personagem, campanhaPreferida }),
+    [personagem, campanhaPreferida],
+  );
+
   if (loading || !personagem) {
     return (
       <FichaMain>
@@ -269,158 +309,224 @@ const Ficha = () => {
 
   return (
     <SavingProvider>
-      <FichaLayout>
-        {isMobile ? (
-          <Drawer
-            open={gavetaAberta}
-            onClose={() => setGavetaAberta(false)}
-            slotProps={{ paper: { sx: { background: 'var(--bg-secondary)' } } }}
-          >
-            <FichaSidebar
-              expandida
-              naGaveta
-              onAlternar={() => setGavetaAberta(false)}
-              onAbrirModal={abrirModalDaGaveta}
-            />
-          </Drawer>
-        ) : (
-          <FichaSidebar
-            expandida={sidebarExpandida}
-            onAlternar={() => setSidebarExpandida(current => !current)}
-            onAbrirModal={setModalAtivo}
-          />
-        )}
-
-        <FichaMain>
-          <StatusFaixa personagem={personagem} />
-
-          <ErrorBoundary key={aba} mensagem="Não foi possível exibir esta aba. Troque de aba ou recarregue a página.">
-            {aba === 'atributos' && (
-              <AtributosTab
-                personagem={personagem}
-                onSave={handleSave}
-                onExcluir={() => setDialogExcluir(true)}
-              />
-            )}
-            {aba === 'aptidoes' && <AptidoesTab personagem={personagem} onSave={handleSave} />}
-            {aba === 'arts' && <ArtsTab personagem={personagem} onSave={handleSave} />}
-            {aba === 'inventario' && (
-              <InventarioTab personagem={personagem} inventarioAtualizacoes={inventarioAtualizacoes} />
-            )}
-            {aba === 'treinamento' && <TreinamentoTab personagem={personagem} onSave={handleSave} />}
-            {aba === 'veiasAstrais' && <VeiasAstraisTab personagem={personagem} onSave={handleSave} />}
-            {aba === 'companheiro' && <CompanheiroTab personagem={personagem} />}
-          </ErrorBoundary>
-
-          <Dialog open={dialogExcluir} onClose={() => setDialogExcluir(false)}>
-            <DialogTitle>Excluir Personagem</DialogTitle>
-            <DialogContent>
-              <DialogContentText>
-                Tem certeza que deseja excluir <strong>{personagem.nome}</strong>? Essa ação não pode ser
-                desfeita.
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setDialogExcluir(false)} disabled={excluindo}>
-                Cancelar
-              </Button>
-              <Button color="error" variant="contained" onClick={handleExcluir} disabled={excluindo}>
-                Excluir
-              </Button>
-            </DialogActions>
-          </Dialog>
-
-          <InfoModal open={modalAtivo === 'info'} onClose={fecharModal} personagem={personagem} onSave={handleSave} />
-          <AptidaoConsultaModal open={modalAtivo === 'aptidao'} onClose={fecharModal} personagem={personagem} />
-          <RacaModal open={modalAtivo === 'raca'} onClose={fecharModal} personagem={personagem} onSave={handleSave} />
-          <ClasseModal open={modalAtivo === 'classe'} onClose={fecharModal} personagem={personagem} onSave={handleSave} />
-          <ReputacaoModal
-            open={modalAtivo === 'reputacao'}
-            onClose={fecharModal}
-            personagem={personagem}
-            onSave={handleSave}
-          />
-          <NivelModal open={modalAtivo === 'nivel'} onClose={fecharModal} personagem={personagem} onSave={handleSave} />
-          <CultivoModal
-            open={modalAtivo === 'cultivo'}
-            onClose={fecharModal}
-            personagem={personagem}
-            onSave={handleSave}
-          />
-          <SorteModal open={modalAtivo === 'sorte'} onClose={fecharModal} personagem={personagem} onSave={handleSave} />
-          <LojaModal
-            open={modalAtivo === 'loja'}
-            onClose={fecharModal}
-            personagem={personagem}
-            onSave={handleSave}
-            onInventarioAtualizado={handleInventarioAtualizado}
-          />
-          <CondicoesModal
-            open={modalAtivo === 'condicoes'}
-            onClose={fecharModal}
-            personagem={personagem}
-            onSave={handleSave}
-          />
-          <CodexModal open={modalAtivo === 'codex'} onClose={fecharModal} personagem={personagem} />
-          <ChatModal
-            open={modalAtivo === 'chat'}
-            onClose={fecharModal}
-            personagem={personagem}
-            onAbrirPainelLateral={abrirChatLateral}
-          />
-          <NotesModal open={modalAtivo === 'notas'} onClose={fecharModal} personagem={personagem} />
-
-          <ErrorSnackbar
-            open={!!erroExclusao}
-            mensagem={erroExclusao}
-            onClose={() => setErroExclusao(null)}
-          />
-        </FichaMain>
-
-        {chatLateralCampanhaId &&
-          (isMobile ? (
+      <RolagemFichaContext.Provider value={rolagemFicha}>
+        <FichaLayout>
+          {isMobile ? (
             <Drawer
-              open={Boolean(chatLateralCampanhaId)}
-              onClose={fecharChatLateral}
-              anchor="right"
-              slotProps={{
-                paper: {
-                  sx: {
-                    width: '100vw',
-                    maxWidth: '100vw',
+              open={gavetaAberta}
+              onClose={() => setGavetaAberta(false)}
+              slotProps={{ paper: { sx: { background: 'var(--bg-secondary)' } } }}
+            >
+              <FichaSidebar
+                expandida
+                naGaveta
+                onAlternar={() => setGavetaAberta(false)}
+                onAbrirModal={abrirModalDaGaveta}
+              />
+            </Drawer>
+          ) : (
+            <FichaSidebar
+              expandida={sidebarExpandida}
+              onAlternar={() => setSidebarExpandida(current => !current)}
+              onAbrirModal={setModalAtivo}
+            />
+          )}
+
+          <FichaMain>
+            <StatusFaixa personagem={personagem} />
+
+            <ErrorBoundary
+              key={aba}
+              mensagem="Não foi possível exibir esta aba. Troque de aba ou recarregue a página."
+            >
+              {aba === 'atributos' && (
+                <AtributosTab
+                  personagem={personagem}
+                  onSave={handleSave}
+                  onExcluir={() => setDialogExcluir(true)}
+                />
+              )}
+              {aba === 'aptidoes' && (
+                <AptidoesTab personagem={personagem} onSave={handleSave} />
+              )}
+              {aba === 'arts' && <ArtsTab personagem={personagem} onSave={handleSave} />}
+              {aba === 'inventario' && (
+                <InventarioTab
+                  personagem={personagem}
+                  inventarioAtualizacoes={inventarioAtualizacoes}
+                />
+              )}
+              {aba === 'treinamento' && (
+                <TreinamentoTab personagem={personagem} onSave={handleSave} />
+              )}
+              {aba === 'veiasAstrais' && (
+                <VeiasAstraisTab personagem={personagem} onSave={handleSave} />
+              )}
+              {aba === 'companheiro' && <CompanheiroTab personagem={personagem} />}
+            </ErrorBoundary>
+
+            <Dialog open={dialogExcluir} onClose={() => setDialogExcluir(false)}>
+              <DialogTitle>Excluir Personagem</DialogTitle>
+              <DialogContent>
+                <DialogContentText>
+                  Tem certeza que deseja excluir <strong>{personagem.nome}</strong>? Essa
+                  ação não pode ser desfeita.
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={() => setDialogExcluir(false)} disabled={excluindo}>
+                  Cancelar
+                </Button>
+                <Button
+                  color="error"
+                  variant="contained"
+                  onClick={handleExcluir}
+                  disabled={excluindo}
+                >
+                  Excluir
+                </Button>
+              </DialogActions>
+            </Dialog>
+
+            <InfoModal
+              open={modalAtivo === 'info'}
+              onClose={fecharModal}
+              personagem={personagem}
+              onSave={handleSave}
+            />
+            <AptidaoConsultaModal
+              open={modalAtivo === 'aptidao'}
+              onClose={fecharModal}
+              personagem={personagem}
+            />
+            <RacaModal
+              open={modalAtivo === 'raca'}
+              onClose={fecharModal}
+              personagem={personagem}
+              onSave={handleSave}
+            />
+            <ClasseModal
+              open={modalAtivo === 'classe'}
+              onClose={fecharModal}
+              personagem={personagem}
+              onSave={handleSave}
+            />
+            <ReputacaoModal
+              open={modalAtivo === 'reputacao'}
+              onClose={fecharModal}
+              personagem={personagem}
+              onSave={handleSave}
+            />
+            <NivelModal
+              open={modalAtivo === 'nivel'}
+              onClose={fecharModal}
+              personagem={personagem}
+              onSave={handleSave}
+            />
+            <CultivoModal
+              open={modalAtivo === 'cultivo'}
+              onClose={fecharModal}
+              personagem={personagem}
+              onSave={handleSave}
+            />
+            <SorteModal
+              open={modalAtivo === 'sorte'}
+              onClose={fecharModal}
+              personagem={personagem}
+              onSave={handleSave}
+            />
+            <LojaModal
+              open={modalAtivo === 'loja'}
+              onClose={fecharModal}
+              personagem={personagem}
+              onSave={handleSave}
+              onInventarioAtualizado={handleInventarioAtualizado}
+            />
+            <CondicoesModal
+              open={modalAtivo === 'condicoes'}
+              onClose={fecharModal}
+              personagem={personagem}
+              onSave={handleSave}
+            />
+            <CodexModal
+              open={modalAtivo === 'codex'}
+              onClose={fecharModal}
+              personagem={personagem}
+            />
+            <ChatModal
+              open={modalAtivo === 'chat'}
+              onClose={fecharModal}
+              personagem={personagem}
+              onAbrirPainelLateral={abrirChatLateral}
+              onCampanhaChange={setCampanhaEscolhidaNoChat}
+            />
+            <NotesModal
+              open={modalAtivo === 'notas'}
+              onClose={fecharModal}
+              personagem={personagem}
+            />
+
+            <ErrorSnackbar
+              open={!!erroExclusao}
+              mensagem={erroExclusao}
+              onClose={() => setErroExclusao(null)}
+            />
+          </FichaMain>
+
+          {chatLateralCampanhaId &&
+            (isMobile ? (
+              <Drawer
+                open={Boolean(chatLateralCampanhaId)}
+                onClose={fecharChatLateral}
+                anchor="right"
+                slotProps={{
+                  paper: {
+                    sx: {
+                      width: '100vw',
+                      maxWidth: '100vw',
+                      height: '100dvh',
+                      maxHeight: '100dvh',
+                      borderRadius: 0,
+                      background: 'var(--bg-secondary)',
+                      borderLeft: '1px solid var(--border-primary)',
+                      boxShadow: '0 0 0 1px rgba(0,0,0,0.15)',
+                      overflow: 'hidden',
+                      pt: 'env(safe-area-inset-top)',
+                      pb: 'env(safe-area-inset-bottom)',
+                    },
+                  },
+                }}
+              >
+                <Box
+                  sx={{
+                    width: '100%',
                     height: '100dvh',
                     maxHeight: '100dvh',
-                    borderRadius: 0,
-                    background: 'var(--bg-secondary)',
-                    borderLeft: '1px solid var(--border-primary)',
-                    boxShadow: '0 0 0 1px rgba(0,0,0,0.15)',
                     overflow: 'hidden',
-                    pt: 'env(safe-area-inset-top)',
-                    pb: 'env(safe-area-inset-bottom)',
-                  },
-                },
-              }}
-            >
-              <Box sx={{ width: '100%', height: '100dvh', maxHeight: '100dvh', overflow: 'hidden' }}>
+                  }}
+                >
+                  <ChatModalConteudo
+                    personagem={personagem}
+                    modo="painel"
+                    onClose={fecharChatLateral}
+                    campanhaIdInicial={chatLateralCampanhaId}
+                    onCampanhaChange={setCampanhaEscolhidaNoChat}
+                  />
+                </Box>
+              </Drawer>
+            ) : (
+              <FichaChatPainel>
                 <ChatModalConteudo
                   personagem={personagem}
                   modo="painel"
                   onClose={fecharChatLateral}
                   campanhaIdInicial={chatLateralCampanhaId}
+                  onCampanhaChange={setCampanhaEscolhidaNoChat}
                 />
-              </Box>
-            </Drawer>
-          ) : (
-            <FichaChatPainel>
-              <ChatModalConteudo
-                personagem={personagem}
-                modo="painel"
-                onClose={fecharChatLateral}
-                campanhaIdInicial={chatLateralCampanhaId}
-              />
-            </FichaChatPainel>
-          ))}
-      </FichaLayout>
+              </FichaChatPainel>
+            ))}
+        </FichaLayout>
+      </RolagemFichaContext.Provider>
     </SavingProvider>
   );
 };

@@ -51,6 +51,7 @@ vi.mock('service/storage', () => ({
   removeChatMensagem: vi.fn(),
   setChatMembro: vi.fn(),
   subscribeChatMensagens: vi.fn(),
+  getChatMensagensAntes: vi.fn(() => Promise.resolve([])),
   addChatRolagemSecreta: vi.fn(),
   removeChatRolagemSecreta: vi.fn(),
   subscribeChatSecretasDoMestre: vi.fn(() => vi.fn()),

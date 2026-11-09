@@ -19,6 +19,7 @@ import {
 } from 'firebase/firestore';
 import { db } from 'service/firebase';
 import { mesclarTresVias } from 'common/utils/mesclaTresVias';
+import { CHAT_JANELA_MENSAGENS, CHAT_PAGINA_ANTERIORES } from 'common/utils/chat';
 
 export const getFirestoreItems = async (collectionName, ...queryConstraints) => {
   const itemsQuery = query(collection(db, collectionName), ...queryConstraints);
@@ -915,7 +916,7 @@ export const getReinosCultivo = (universoId, subUniverso = '') => {
 // do usuário e ainda tem a campanha em `campanhas` (o mestre acessa via
 // `mestreId`). `chatMembros/{uid}` é só um ponteiro `{uid, personagemId}`
 // usado pela regra de leitura — criado ao abrir o chat, sem migração.
-export const CHAT_LIMITE_MENSAGENS = 100;
+export const CHAT_LIMITE_MENSAGENS = CHAT_JANELA_MENSAGENS;
 
 export const getRmCampanha = id => getFirestoreItem('rmCampanhas', id);
 
@@ -946,6 +947,33 @@ export const subscribeChatMensagens = (campanhaId, onChange, onError) => {
     },
     onError,
   );
+};
+
+// Página de mensagens ANTERIORES à janela ao vivo ("Carregar anteriores"):
+// leitura única (getDocs) das até `limite` mensagens com `createdAt` anterior a
+// `antesDe` (o `createdAt` da mensagem mais antiga que a tela já tem), devolvidas
+// em ordem cronológica (mais antiga primeiro). A regra de leitura é por
+// documento, então a consulta não precisa de regra nova. Mensagens com o mesmo
+// `createdAt` exato da referência ficam de fora (empate raro; a tela deduplica
+// por id).
+export const getChatMensagensAntes = async (
+  campanhaId,
+  antesDe,
+  limite = CHAT_PAGINA_ANTERIORES,
+) => {
+  const anterioresQuery = query(
+    collection(db, 'rmCampanhas', campanhaId, 'chatMensagens'),
+    where('createdAt', '<', antesDe),
+    orderBy('createdAt', 'desc'),
+    limit(limite),
+  );
+  const snapshot = await getDocs(anterioresQuery);
+  return snapshot.docs
+    .map(docSnapshot => ({
+      id: docSnapshot.id,
+      ...docSnapshot.data({ serverTimestamps: 'estimate' }),
+    }))
+    .reverse();
 };
 
 export const addChatMensagem = (campanhaId, mensagem) =>

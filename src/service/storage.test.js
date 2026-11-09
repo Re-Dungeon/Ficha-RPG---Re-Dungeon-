@@ -29,6 +29,7 @@ vi.mock('firebase/firestore', async () => {
 
 import {
   atualizarRecursoAtualPersonagem,
+  getChatMensagensAntes,
   consumirRecursosPersonagem,
   getBeneficiosPorUniverso,
   getClassesPorUniverso,
@@ -354,5 +355,35 @@ describe('cache dos catálogos de referência', () => {
     await getPersonagens('user-1');
 
     expect(getDocs).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('getChatMensagensAntes', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('lê a página anterior à referência e devolve em ordem cronológica', async () => {
+    const referencia = { seconds: 1700000000 };
+    getDocs.mockResolvedValue({
+      // a consulta vem do mais novo para o mais antigo (desc)
+      docs: [
+        { id: 'm3', data: () => ({ texto: 'terceira' }) },
+        { id: 'm2', data: () => ({ texto: 'segunda' }) },
+        { id: 'm1', data: () => ({ texto: 'primeira' }) },
+      ],
+    });
+
+    const mensagens = await getChatMensagensAntes('camp-1', referencia, 3);
+
+    expect(collection).toHaveBeenCalledWith(expect.anything(), 'rmCampanhas', 'camp-1', 'chatMensagens');
+    expect(where).toHaveBeenCalledWith('createdAt', '<', referencia);
+    expect(mensagens.map(m => m.id)).toEqual(['m1', 'm2', 'm3']);
+    expect(mensagens[0]).toMatchObject({ id: 'm1', texto: 'primeira' });
+  });
+
+  it('devolve lista vazia quando não há mensagens anteriores', async () => {
+    getDocs.mockResolvedValue({ docs: [] });
+    expect(await getChatMensagensAntes('camp-1', { seconds: 1 })).toEqual([]);
   });
 });

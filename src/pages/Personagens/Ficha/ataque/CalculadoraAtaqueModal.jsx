@@ -68,6 +68,10 @@ import { campanhaIdsDosPersonagens, montarMensagemRolagem } from 'common/utils/c
 import { rolarEspecificacao } from 'common/utils/dados';
 import { preparar, rotuloDeRolagem } from 'common/utils/gridRolagem';
 import { expressaoDoCombo } from 'hooks/useOpcoesDeRolagem';
+import { campanhaDeRolagem } from 'common/utils/campanhaDeRolagem';
+import { useRolagemFicha } from 'context/RolagemFichaContext';
+
+import PostarEmSelect from '../PostarEmSelect';
 
 const StyledDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialog-paper': {
@@ -1571,6 +1575,16 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave = null, cont
   const [comboEmUso, setComboEmUso] = useState(null);
   const [processandoUsoComboId, setProcessandoUsoComboId] = useState('');
   const [notificacaoUso, setNotificacaoUso] = useState('');
+  // Campanha que recebe a rolagem: a aberta no chat da ficha, a única do
+  // personagem ou, com 2+ e nenhuma aberta, a escolhida em "Postar em:".
+  const { campanhaPreferida } = useRolagemFicha();
+  const campanhaIdsPersonagem = useMemo(
+    () => campanhaIdsDosPersonagens([personagem]),
+    [personagem],
+  );
+  const campanhaResolvida = campanhaDeRolagem(personagem, campanhaPreferida);
+  const precisaEscolherCampanha = !campanhaResolvida && campanhaIdsPersonagem.length >= 2;
+  const [campanhaEscolhida, setCampanhaEscolhida] = useState('');
   const conteudoPrincipalRef = useRef(null);
 
   const valorBaseAtual = useMemo(() => {
@@ -2491,7 +2505,7 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave = null, cont
 
       await onSave?.({ status: proximaStatus, statusMaximos: proximoStatusMaximos });
 
-      const campanhaId = campanhaIdsDosPersonagens([personagem])[0] ?? null;
+      const campanhaId = campanhaResolvida ?? (campanhaEscolhida || null);
       const expressaoCombo = expressaoDoCombo(combo, isDefesaContexto ? 'defesa' : 'ataque');
       const preparacao = expressaoCombo ? preparar(expressaoCombo) : null;
       let mensagemPublicada = null;
@@ -3447,6 +3461,17 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave = null, cont
                 </ConfirmCompactRow>
               ))}
             </ConfirmCompactSummary>
+
+            {precisaEscolherCampanha && (
+              <PostarEmSelect
+                campanhaIds={campanhaIdsPersonagem}
+                value={campanhaEscolhida}
+                onChange={setCampanhaEscolhida}
+                vazioLabel="Não postar no chat"
+                helperText="Escolha a campanha para publicar a rolagem."
+                sx={{ mt: 1.5 }}
+              />
+            )}
 
             <ConfirmNote>
               Esta ação consumirá recursos do personagem de acordo com o valor calculado pela combinação selecionada.
