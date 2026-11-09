@@ -28,6 +28,7 @@ const COMPARTILHADOS = [
   'components/Chat',
   'components/Grid',
   'common/lua',
+  'components/ConfirmDialog',
   'components/ImageLightbox',
   'common/utils/chat.js',
   'common/utils/chat.test.js',

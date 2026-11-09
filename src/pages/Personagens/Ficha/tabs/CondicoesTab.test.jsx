@@ -52,3 +52,28 @@ describe('CondicoesTab — duração da condição', () => {
     expect(onSave).not.toHaveBeenCalled();
   });
 });
+
+describe('CondicoesTab — remover', () => {
+  beforeEach(() => {
+    getCondicoesPorUniverso.mockResolvedValue([{ id: 'envenenado', nome: 'Envenenado' }]);
+  });
+
+  it('pede confirmação antes de remover; Cancelar não grava', async () => {
+    const onSave = vi.fn().mockResolvedValue();
+    render(
+      <SavingProvider>
+        <CondicoesTab personagem={personagem} onSave={onSave} />
+      </SavingProvider>,
+    );
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Remover Envenenado' }));
+    expect(await screen.findByText('Remover Envenenado?')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
+    await waitFor(() => expect(screen.queryByText('Remover Envenenado?')).not.toBeInTheDocument());
+    expect(onSave).not.toHaveBeenCalled();
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Remover Envenenado' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Remover' }));
+    await waitFor(() => expect(onSave).toHaveBeenCalledWith({ condicoesAtivas: [] }));
+  });
+});

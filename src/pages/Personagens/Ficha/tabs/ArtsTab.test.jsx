@@ -8,6 +8,9 @@ import {
   getCondicoesPorUniverso,
   getNucleos,
   getVariantes,
+  removeArt,
+  removeNucleo,
+  removeVariante,
   updateArt,
 } from 'service/storage';
 import { SavingProvider } from 'context/SavingContext';
@@ -110,5 +113,28 @@ describe('ArtsTab', () => {
     await waitFor(() =>
       expect(addNucleo).toHaveBeenCalledWith('p1', expect.objectContaining({ nome: 'Chama Interior', tipo: 'Ofensiva' })),
     );
+  });
+
+  it('remover um Núcleo pede confirmação listando o que vai junto', async () => {
+    getVariantes.mockResolvedValue([{ id: 'v1', artId: 'a1', nome: 'Golpe Duplo' }]);
+    removeNucleo.mockResolvedValue();
+    removeArt.mockResolvedValue();
+    removeVariante.mockResolvedValue();
+    render(
+      <SavingProvider>
+        <ArtsTab personagem={personagem} />
+      </SavingProvider>,
+    );
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Remover o Núcleo Punhos de Ferro' }));
+    expect(await screen.findByText('Excluir o Núcleo "Punhos de Ferro"?')).toBeInTheDocument();
+    expect(screen.getByText('1 Art deste Núcleo')).toBeInTheDocument();
+    expect(screen.getByText('1 Variante dessas Arts')).toBeInTheDocument();
+    expect(removeNucleo).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Excluir' }));
+    await waitFor(() => expect(removeNucleo).toHaveBeenCalledWith('p1', 'n1'));
+    expect(removeArt).toHaveBeenCalledWith('p1', 'a1');
+    expect(removeVariante).toHaveBeenCalledWith('p1', 'v1');
   });
 });

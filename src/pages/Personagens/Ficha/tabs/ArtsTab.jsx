@@ -23,6 +23,8 @@ import {
   reorganizarArts,
 } from 'common/utils/formulas';
 import { useSaving } from 'context/SavingContext';
+import { getNome } from 'common/utils/resolveNome';
+import useConfirmacao from 'components/ConfirmDialog/useConfirmacao';
 
 import ArtsSection from '../arts/ArtsSection';
 import ArtFormDialog from '../arts/ArtFormDialog';
@@ -44,6 +46,24 @@ import {
   StatValue,
 } from '../arts/styles';
 
+const plural = (quantidade, um, varios) => `${quantidade} ${quantidade === 1 ? um : varios}`;
+
+// O que some junto ao excluir (aparece no diálogo de confirmação).
+const consequenciasDaArt = (art, variantes) => {
+  const total = variantes.filter(variante => variante.artId === art.id).length;
+  return total ? [plural(total, 'Variante desta Art', 'Variantes desta Art')] : [];
+};
+
+const consequenciasDoNucleo = (nucleo, arts, variantes) => {
+  const artsDoNucleo = arts.filter(art => art.nucleoId === nucleo.id);
+  const ids = new Set(artsDoNucleo.map(art => art.id));
+  const totalVariantes = variantes.filter(variante => ids.has(variante.artId)).length;
+  return [
+    artsDoNucleo.length ? plural(artsDoNucleo.length, 'Art deste Núcleo', 'Arts deste Núcleo') : null,
+    totalVariantes ? plural(totalVariantes, 'Variante dessas Arts', 'Variantes dessas Arts') : null,
+  ].filter(Boolean);
+};
+
 const ArtsTab = ({ personagem, onSave }) => {
   const [nucleos, setNucleos] = useState([]);
   const [arts, setArts] = useState([]);
@@ -51,6 +71,7 @@ const ArtsTab = ({ personagem, onSave }) => {
   const [condicoes, setCondicoes] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const { executar } = useSaving();
+  const [confirmar, dialogoConfirmacao] = useConfirmacao();
 
   const [nucleoFormAberto, setNucleoFormAberto] = useState(false);
   const [nucleoEmEdicao, setNucleoEmEdicao] = useState(null);
@@ -184,18 +205,23 @@ const ArtsTab = ({ personagem, onSave }) => {
   );
 
   const handleRemoverNucleo = useCallback(
-    nucleo =>
-      executar(async () => {
-        const artsDoNucleo = arts.filter(art => art.nucleoId === nucleo.id);
-        const idsArtsDoNucleo = new Set(artsDoNucleo.map(art => art.id));
-        const variantesAfetadas = variantes.filter(variante => idsArtsDoNucleo.has(variante.artId));
-
-        await Promise.all(variantesAfetadas.map(variante => removeVariante(personagem.id, variante.id)));
-        await Promise.all(artsDoNucleo.map(art => removeArt(personagem.id, art.id)));
-        await removeNucleo(personagem.id, nucleo.id);
-        await carregarTudo();
-      }),
-    [personagem.id, arts, variantes, carregarTudo, executar],
+    async nucleo => {
+      if (!(await confirmar({
+        titulo: `Excluir o Núcleo "${getNome(nucleo)}"?`,
+        consequencias: consequenciasDoNucleo(nucleo, arts, variantes),
+      }))) return undefined;
+      return executar(async () => {
+          const artsDoNucleo = arts.filter(art => art.nucleoId === nucleo.id);
+          const idsArtsDoNucleo = new Set(artsDoNucleo.map(art => art.id));
+          const variantesAfetadas = variantes.filter(variante => idsArtsDoNucleo.has(variante.artId));
+  
+          await Promise.all(variantesAfetadas.map(variante => removeVariante(personagem.id, variante.id)));
+          await Promise.all(artsDoNucleo.map(art => removeArt(personagem.id, art.id)));
+          await removeNucleo(personagem.id, nucleo.id);
+          await carregarTudo();
+        });
+    },
+    [personagem.id, arts, variantes, carregarTudo, executar, confirmar],
   );
 
   // ── Arts ────────────────────────────────────────────────────────────────
@@ -228,14 +254,19 @@ const ArtsTab = ({ personagem, onSave }) => {
   );
 
   const handleRemoverArt = useCallback(
-    art =>
-      executar(async () => {
-        const variantesDaArt = variantes.filter(variante => variante.artId === art.id);
-        await Promise.all(variantesDaArt.map(variante => removeVariante(personagem.id, variante.id)));
-        await removeArt(personagem.id, art.id);
-        await carregarTudo();
-      }),
-    [personagem.id, variantes, carregarTudo, executar],
+    async art => {
+      if (!(await confirmar({
+        titulo: `Excluir a Art "${getNome(art)}"?`,
+        consequencias: consequenciasDaArt(art, variantes),
+      }))) return undefined;
+      return executar(async () => {
+          const variantesDaArt = variantes.filter(variante => variante.artId === art.id);
+          await Promise.all(variantesDaArt.map(variante => removeVariante(personagem.id, variante.id)));
+          await removeArt(personagem.id, art.id);
+          await carregarTudo();
+        });
+    },
+    [personagem.id, variantes, carregarTudo, executar, confirmar],
   );
 
   const handleReorganizar = useCallback(
@@ -297,16 +328,19 @@ const ArtsTab = ({ personagem, onSave }) => {
   );
 
   const handleRemoverVariante = useCallback(
-    variante =>
-      executar(async () => {
-        await removeVariante(personagem.id, variante.id);
-        await carregarTudo();
-      }),
-    [personagem.id, carregarTudo, executar],
+    async variante => {
+      if (!(await confirmar({ titulo: `Excluir a Variante "${getNome(variante)}"?` }))) return undefined;
+      return executar(async () => {
+          await removeVariante(personagem.id, variante.id);
+          await carregarTudo();
+        });
+    },
+    [personagem.id, carregarTudo, executar, confirmar],
   );
 
   return (
     <div>
+      {dialogoConfirmacao}
       <ArtsHeader>⚔️ Habilidades & Arts</ArtsHeader>
 
       <StatsGrid>
