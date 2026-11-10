@@ -4,6 +4,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import CloseIcon from '@mui/icons-material/Close';
 
+import { miniaturaImagem } from 'common/utils/grid';
 import { getNome } from 'common/utils/resolveNome';
 import { corRaridade, RaridadeBadge } from '../progressao/styles';
 import { DialogFecharButton, DialogHeaderRow } from '../styles';
@@ -43,7 +44,7 @@ const CondicaoViewDialog = ({ open, onClose, condicao = null, ativo = null }) =>
       <DialogContent>
         <DetalheCondicaoTopo>
           <DetalheCondicaoIcone>
-            {condicao.linkImagem ? <img src={condicao.linkImagem} alt="" /> : '⚠️'}
+            {condicao.linkImagem ? <img src={miniaturaImagem(condicao.linkImagem, 'm')} alt="" loading="lazy" decoding="async" /> : '⚠️'}
           </DetalheCondicaoIcone>
           <DetalheCondicaoNome>{getNome(condicao)}</DetalheCondicaoNome>
           {condicao.raridade && (

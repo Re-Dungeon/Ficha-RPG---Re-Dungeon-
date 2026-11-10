@@ -6,6 +6,7 @@ import TextField from '@mui/material/TextField';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 
+import { miniaturaImagem } from 'common/utils/grid';
 import { getNome } from 'common/utils/resolveNome';
 import { corRaridade, RaridadeBadge } from '../progressao/styles';
 import { DialogFecharButton, DialogHeaderRow, DialogHeaderTitle, StatusValueRow } from '../styles';
@@ -53,7 +54,7 @@ const CondicoesCatalogoDialog = ({ open, onClose, catalogo, busca, onBuscaChange
         {catalogo.map(item => (
           <CatalogoCondicaoItem key={item.id}>
             <CatalogoCondicaoIcone>
-              {item.linkImagem ? <img src={item.linkImagem} alt="" /> : '⚠️'}
+              {item.linkImagem ? <img src={miniaturaImagem(item.linkImagem)} alt="" loading="lazy" decoding="async" /> : '⚠️'}
             </CatalogoCondicaoIcone>
             <CatalogoCondicaoInfo>
               <CatalogoCondicaoNome>{getNome(item)}</CatalogoCondicaoNome>

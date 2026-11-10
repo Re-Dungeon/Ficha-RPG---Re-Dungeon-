@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import Button from '@mui/material/Button';
 
+import { miniaturaImagem } from 'common/utils/grid';
 import { getNome } from 'common/utils/resolveNome';
 
 import { DOMINIO_LABELS, TIPO_ACAO_META, TIPO_ART_META } from './constants';
@@ -165,7 +166,7 @@ const VarianteCard = ({ variante, art = null, nucleo = null, condicoes = CONDICO
                   onClick={() => setCondicaoVisualizadaId(condicao.id)}
                 >
                   <ConditionIcon>
-                    {condicao.linkImagem ? <img src={condicao.linkImagem} alt={getNome(condicao)} /> : '⚠️'}
+                    {condicao.linkImagem ? <img src={miniaturaImagem(condicao.linkImagem)} alt={getNome(condicao)} loading="lazy" decoding="async" /> : '⚠️'}
                   </ConditionIcon>
                   <ConditionName>{getNome(condicao)}</ConditionName>
                 </ConditionItem>
