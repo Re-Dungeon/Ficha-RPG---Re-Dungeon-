@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 import { ICONES_MARCADOR } from 'common/utils/gridMarcadores';
 import MarcadorPino from './MarcadorPino';
@@ -99,7 +99,7 @@ describe('MarcadorCartao', () => {
 });
 
 describe('PaletaDesenho', () => {
-  it('escolhe cor e apaga os meus; "Apagar todos" só com onApagarTodos e confirma', () => {
+  it('escolhe cor e apaga os meus; "Apagar todos" só com onApagarTodos e confirma', async () => {
     const onCor = vi.fn();
     const onApagarMeus = vi.fn();
     const { rerender } = render(
@@ -124,11 +124,14 @@ describe('PaletaDesenho', () => {
       />,
     );
     const confirmar = vi.spyOn(window, 'confirm');
-    confirmar.mockReturnValueOnce(false).mockReturnValueOnce(true);
     fireEvent.click(screen.getByText('Apagar todos'));
+    fireEvent.click(await screen.findByRole('button', { name: 'Cancelar' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     expect(onApagarTodos).not.toHaveBeenCalled();
     fireEvent.click(screen.getByText('Apagar todos'));
-    expect(onApagarTodos).toHaveBeenCalledTimes(1);
+    fireEvent.click(await screen.findByRole('button', { name: 'Apagar' }));
+    await waitFor(() => expect(onApagarTodos).toHaveBeenCalledTimes(1));
+    expect(confirmar).not.toHaveBeenCalled();
     confirmar.mockRestore();
   });
 });
