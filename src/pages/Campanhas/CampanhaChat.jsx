@@ -41,6 +41,7 @@ import useChatCampanha from 'hooks/useChatCampanha';
 import useGridCampanha from 'hooks/useGridCampanha';
 import useOpcoesDeRolagem from 'hooks/useOpcoesDeRolagem';
 import useRolarDoToken from 'hooks/useRolarDoToken';
+import useTituloDaAba from 'hooks/useTituloDaAba';
 import ChatSala from 'components/Chat/ChatSala';
 import GridMapa from 'components/Grid/GridMapa';
 import RolarDoTokenDialog from 'components/Grid/RolarDoTokenDialog';
@@ -399,6 +400,9 @@ const CampanhaChat = ({ visao = 'chat' }) => {
   }
   const naoLidas =
     isMobile && abaMesa === 'mapa' ? contarNaoLidas(chat.mensagens, ultimaVistaId) : 0;
+  // Título da aba do navegador: "(N) …" com mensagens novas e "⚔ Seu turno! — …"
+  // quando a vez chega com a aba em segundo plano.
+  useTituloDaAba({ mensagens: chat.mensagens, naoLidas, meuTurno });
   const trocarAbaMesa = (_event, novaAba) => {
     if (!novaAba || novaAba === abaMesa) return;
     if (novaAba === 'mapa') setUltimaVistaId(idDaUltimaMensagem(chat.mensagens));
