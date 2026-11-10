@@ -312,6 +312,7 @@ export const ChatModalConteudo = ({ personagem, modo = 'modal', onAbrirPainelLat
           onEnviarTexto={chat.enviarTexto}
           onEnviarImagem={chat.enviarImagem}
           onRolar={chat.rolar}
+          onSussurrar={chat.sussurrar}
           macros={chat.macros}
           audio={chat.audio}
           onApagar={chat.apagar}
