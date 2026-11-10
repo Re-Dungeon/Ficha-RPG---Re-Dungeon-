@@ -6,7 +6,7 @@ import { getNome } from 'common/utils/resolveNome';
 
 import { ART_STAT_CAMPOS, DOMINIO_LABELS, TIPO_ACAO_META, TIPO_ART_META } from './constants';
 import CondicaoViewDialog from '../condicoes/CondicaoViewDialog';
-import BotaoRolar from './BotaoRolar';
+import BotaoRolar from '../BotaoRolar';
 import {
   ArtCardBody,
   ArtCardFooter,
@@ -172,7 +172,7 @@ const ArtCard = ({ art, nucleo = null, condicoes = CONDICOES_PADRAO, onVer, onEd
       />
 
       <ArtCardFooter>
-        <BotaoRolar dados={art.dados} nome={art.nome} />
+        <BotaoRolar dados={art.dados} nome={art.nome} tipo="arte" />
         <Button
           size="small"
           variant="outlined"

@@ -9,14 +9,14 @@ import Tooltip from '@mui/material/Tooltip';
 import useRolarDaFicha from 'hooks/useRolarDaFicha';
 import { extrairExpressaoDeDados, preparar, rotuloDeRolagem } from 'common/utils/gridRolagem';
 
-import PostarEmSelect from '../PostarEmSelect';
+import PostarEmSelect from './PostarEmSelect';
 
-// "🎲 Rolar" das Artes e Variantes que têm dados (campo `dados`, ex. "2d6+3 de
+// "🎲 Rolar" das Artes, Variantes e Itens que têm dados (campo `dados`, ex. "2d6+3 de
 // fogo"): posta a rolagem pública no chat da campanha, falando como o
 // personagem. Sem dados válidos no texto não renderiza nada; sem campanha fica
 // desabilitado com a dica; com 2+ campanhas e nenhuma aberta no chat da ficha
 // pergunta "Postar em:" antes de rolar.
-const BotaoRolar = ({ dados, nome }) => {
+const BotaoRolar = ({ dados, nome, tipo = 'arte' }) => {
   const [aviso, setAviso] = useState(null);
   const [ancora, setAncora] = useState(null);
   const [rolando, setRolando] = useState(false);
@@ -31,7 +31,7 @@ const BotaoRolar = ({ dados, nome }) => {
     setRolando(true);
     const resultado = await rolar({
       expressao,
-      rotulo: rotuloDeRolagem('arte', nome),
+      rotulo: rotuloDeRolagem(tipo === 'item' ? 'item' : 'arte', nome),
       campanhaId: escolhida,
     });
     setRolando(false);
@@ -107,6 +107,7 @@ const BotaoRolar = ({ dados, nome }) => {
 BotaoRolar.propTypes = {
   dados: PropTypes.string,
   nome: PropTypes.string,
+  tipo: PropTypes.oneOf(['arte', 'variante', 'item']),
 };
 
 export default BotaoRolar;

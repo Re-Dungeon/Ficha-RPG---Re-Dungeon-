@@ -373,3 +373,8 @@ export const ItemBtn = styled.button`
     filter: brightness(1.3);
   }
 `;
+
+export const ItemRolarLinha = styled.div`
+  display: flex;
+  justify-content: center;
+`;
