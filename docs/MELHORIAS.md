@@ -27,9 +27,9 @@ Leia também [MIGRACAO-REACT-FIREBASE.md](./MIGRACAO-REACT-FIREBASE.md) (seção
 | 16  | `InventarioTab`/`ArtsTab` exigem `onSave` via PropTypes mas nunca chamam — ✅ feito | Baixo | Baixo |
 | 17  | `Personagens.jsx`: leituras de `getPersonagens` sem `.catch` — ✅ feito ([detalhe](#17-personagensjsx-leituras-sem-catch--loading-permanente-em-erro--feito-em-2026-08-09)) | Alto | Baixo |
 | 18  | `NovoPersonagem.jsx`/rota órfã duplicando `CriarPersonagemModal.jsx` — 🟡 parcial ([detalhe](#18-novopersonagemjsx-órfã-e-duplicando-criarpersonagemmodaljsx--parcial-em-2026-08-09)) | Médio | Baixo |
-| 19  | Assets PNG não otimizados (~3,5 MB) — 🔴 pendente ([detalhe](#19-assets-png-não-otimizados)) | Médio | Baixo |
+| 19  | Assets PNG não otimizados (~3,5 MB) — ✅ feito ([detalhe](#19-assets-png-não-otimizados)) | Médio | Baixo |
 | 20  | Bundle inicial sem `manualChunks` (~1,3 MB) — ✅ feito ([detalhe](#20-bundle-inicial-ainda-grande--manualchunks-feito-em-2026-08-09)) | Médio | Médio |
-| 21  | `defaultProps` depreciado no React 19 (28 arquivos) — 🔴 pendente ([detalhe](#21-defaultprops-em-componente-de-função--depreciado-no-react-19)) | Baixo | Médio |
+| 21  | `defaultProps` depreciado no React 19 (28 arquivos) — ✅ feito ([detalhe](#21-defaultprops-em-componente-de-função--depreciado-no-react-19)) | Baixo | Médio |
 | 22  | Styled-components inline fora do `styles.js` da pasta — 🔴 pendente ([detalhe](#22-styled-components-inline-fora-do-stylesjs-da-pasta)) | Baixo | Médio |
 | 23  | Typo `handeEscolherDoCatalogo` — ✅ feito ([detalhe](#23-typo-handeescolherdocatalogo--feito-em-2026-08-09)) | Baixo | Baixo |
 | 24  | `CorpoEspecialGrid.jsx`: heurística de campo de bônus — 🔴 pendente, depende do outro projeto ([detalhe](#24-corpoespecialgridjsx-heurística-de-nome-de-campo-para-bônusdesvantagem--pendente-depende-do-projeto-administrativo)) | Baixo | Baixo* |
@@ -196,9 +196,9 @@ Entre 2026-07-22 (última varredura) e hoje o projeto ganhou várias features no
 | --- | ------------------------------------------------------------------------- | ------- | ------- | ------ |
 | 17  | `Personagens.jsx`: leituras de `getPersonagens` sem `.catch` (loading trava para sempre em erro) | Alto    | Baixo   | ✅ feito |
 | 18  | `NovoPersonagem.jsx`/rota `/personagens/novo` órfã e duplicando `CriarPersonagemModal.jsx` já divergente | Médio   | Baixo   | 🟡 parcial |
-| 19  | Assets PNG não otimizados (~3,5 MB, maior arquivo 1,5 MB) inflando o bundle | Médio   | Baixo   | 🔴 pendente |
+| 19  | Assets PNG não otimizados (~3,5 MB, maior arquivo 1,5 MB) inflando o bundle | Médio   | Baixo   | ✅ feito |
 | 20  | Bundle inicial (`index-*.js`) ainda ~1,3 MB minificado — sem `manualChunks` para MUI/Firebase | Médio   | Médio   | ✅ feito |
-| 21  | `defaultProps` em componente de função — depreciado no React 19 (28 arquivos) | Baixo   | Médio   | 🔴 pendente |
+| 21  | `defaultProps` em componente de função — depreciado no React 19 (28 arquivos) | Baixo   | Médio   | ✅ feito |
 | 22  | `arts/CriarArtDialog.jsx` e `sidebar/NivelModal.jsx`: styled-components inline em vez do `styles.js` da pasta; sem teste | Baixo   | Médio   | 🔴 pendente |
 | 23  | Typo `handeEscolherDoCatalogo` em `CriarArtDialog.jsx:263`               | Baixo   | Baixo   | ✅ feito |
 | 24  | `CorpoEspecialGrid.jsx`: heurística de nome de campo para classificar bônus/desvantagem indica schema não fechado no catálogo administrativo | Baixo   | Baixo (mas depende do outro projeto) | 🔴 pendente |
@@ -223,11 +223,13 @@ Entre 2026-07-22 (última varredura) e hoje o projeto ganhou várias features no
 
 ---
 
-### 19. Assets PNG não otimizados
+### 19. Assets PNG não otimizados — ✅ feito (leva 2 e leva 3)
 
 **Achado**: `src/pages/Personagens/Ficha/assets/` tem 4 PNGs somando ~3,5 MB (`estrela-atributos.png` 1,5 MB, `moldura-retrato.png` 976 KB, `gema-atributo.png` 920 KB, `planeta-redungeon.png` 212 KB — usados em `Ficha/styles.js`/`AtributoEstrela.jsx`, não são código morto). O `npm run build` copia todos sem compressão adicional para `dist/assets/`, então mesmo com o code splitting por rota do item 6, qualquer usuário que abra uma ficha baixa esses ~3,5 MB de imagem.
 
 **Passo a passo**: converter para WebP (ou AVIF) com um otimizador (`squoosh`/`sharp`/`vite-plugin-image-optimizer`) mantendo fallback PNG só se precisar de compatibilidade; para `estrela-atributos.png`/`gema-atributo.png` (usados em tamanho pequeno na tela, a julgar pelo nome), considerar também redimensionar a imagem de origem em vez de só recomprimir — 1,5 MB é grande demais para um elemento decorativo de UI.
+
+**O que foi feito**: na leva 2, os 4 PNGs de `Ficha/assets/` viraram WebP no tamanho de uso, empacotados pelo Vite. Na leva 3, as imagens que ainda vinham de URLs fixas do imgur (selos Salvar/Excluir, imagens padrão do card, fundos de Login/Lista/Ficha e imagens do Cultivo) também viraram WebP junto de cada página (`Login/assets`, `Personagens/assets`, `Ficha/assets`), `estrela-atributos.webp` foi encolhida de 463 KB para 264 KB e o GIF de carregamento de 33 MB deu lugar a um spinner CSS/SVG. `grep -r "i.imgur.com" src` só acha o que vem de dados do catálogo.
 
 ---
 
@@ -241,11 +243,13 @@ Entre 2026-07-22 (última varredura) e hoje o projeto ganhou várias features no
 
 ---
 
-### 21. `defaultProps` em componente de função — depreciado no React 19
+### 21. `defaultProps` em componente de função — depreciado no React 19 — ✅ feito (leva 2)
 
 **Achado**: o projeto está em React `^19.2.7`. Desde o React 18.3, `defaultProps` em componentes de função gera aviso de depreciação no console e será removido numa versão futura — 28 arquivos ainda usam esse padrão (`grep -rn "defaultProps" src`), incluindo componentes tocados nesta última leva de features (`PerfilTab.jsx`, `ConstelacaoArvoreModal.jsx`, `DesbloquearNoDialog.jsx`, `PersonagemCardItem.jsx`) — ou seja, o padrão antigo continua sendo copiado em código novo em vez de migrar.
 
 **Passo a passo**: trocar `Componente.defaultProps = { prop: valor }` por parâmetro default na desestruturação (`const Componente = ({ prop = valor }) => ...`), um arquivo por vez (mudança mecânica, sem risco funcional); vale rodar `npm run lint` + `npm run test` depois de cada lote para garantir que nenhum teste dependia do comportamento de `defaultProps` com `undefined` explícito (que se comporta diferente de default de parâmetro em um detalhe: `defaultProps` também cobre `null`, default de parâmetro não).
+
+**O que foi feito**: na leva 2, os componentes de função migraram para parâmetros default no destructuring (constantes de módulo para arrays/objetos que entram em dependências de hook), e o `CLAUDE.md` passou a proibir `defaultProps`. Só resta `ErrorBoundary.defaultProps`, que é componente de **classe** (onde `defaultProps` continua válido).
 
 ---
 
