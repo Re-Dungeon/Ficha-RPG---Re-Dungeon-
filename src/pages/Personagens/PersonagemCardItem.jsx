@@ -15,11 +15,10 @@ import {
   PersonagemMedia,
   PersonagemMediaOverlay,
 } from './styles';
+import personagemPadrao1Img from './assets/personagem-padrao-1.webp';
+import personagemPadrao2Img from './assets/personagem-padrao-2.webp';
 
-const FALLBACK_IMAGES = [
-  'https://i.imgur.com/NSDQWT3.png',
-  'https://i.imgur.com/G088HoT.png'
-];
+const FALLBACK_IMAGES = [personagemPadrao1Img, personagemPadrao2Img];
 
 const PersonagemCardItem = ({ personagem, onClick, isSelected = false }) => {
   const [racaNome, setRacaNome] = useState('');

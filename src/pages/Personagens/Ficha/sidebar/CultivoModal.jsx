@@ -43,6 +43,9 @@ import {
 } from 'common/utils/formulas';
 import { getNome } from 'common/utils/resolveNome';
 import { PAPER_TELA_CHEIA } from 'common/styles/breakpoints';
+import cultivoModalImg from 'pages/Personagens/Ficha/assets/cultivo-modal.webp';
+import cultivoFundoImg from 'pages/Personagens/Ficha/assets/cultivo-fundo.webp';
+import cultivoReinoImg from 'pages/Personagens/Ficha/assets/cultivo-reino.webp';
 import { useSaving } from 'context/SavingContext';
 import { PRIMARIOS_LABELS, SECUNDARIOS_LABELS, STATUS_LABELS } from '../constants';
 
@@ -887,7 +890,7 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
           width: 'min(100%, 920px)',
           maxHeight: 'min(100vh, 94vh)',
           borderRadius: '22px',
-          backgroundImage: "linear-gradient(rgba(10, 9, 19, 0.88), rgba(10, 9, 19, 0.88)), url('https://i.imgur.com/6ewUzUs.jpeg')",
+          backgroundImage: `linear-gradient(rgba(10, 9, 19, 0.88), rgba(10, 9, 19, 0.88)), url(${cultivoModalImg})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
@@ -1005,7 +1008,7 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
                       ),
                     )}
                   </EstrelasRow>
-                  <ReinoBanner src="https://i.imgur.com/ZD2QY5R.png" alt="Reino do Cultivo" />
+                  <ReinoBanner src={cultivoReinoImg} alt="Reino do Cultivo" />
                 </div>
 
                 <div>
@@ -1228,7 +1231,7 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
           <div
             style={{
               backgroundImage:
-                "linear-gradient(180deg, rgba(8, 10, 18, 0.7), rgba(12, 8, 18, 0.88)), url('https://i.imgur.com/fr1bk5b.png')",
+                `linear-gradient(180deg, rgba(8, 10, 18, 0.7), rgba(12, 8, 18, 0.88)), url(${cultivoFundoImg})`,
               backgroundSize: 'cover',
               backgroundPosition: 'center center',
               backgroundRepeat: 'no-repeat',

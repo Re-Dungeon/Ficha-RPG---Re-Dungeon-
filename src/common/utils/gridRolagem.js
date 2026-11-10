@@ -24,9 +24,9 @@ export const preparar = expressao => {
   return interpretarExpressaoRolagem(texto);
 };
 
-const PREFIXOS_ROTULO = { ataque: 'Ataque', defesa: 'Defesa', arte: 'Arte' };
+const PREFIXOS_ROTULO = { ataque: 'Ataque', defesa: 'Defesa', arte: 'Arte', item: 'Item' };
 
-// 'Ataque: X' | 'Defesa: X' | 'Arte: X'
+// 'Ataque: X' | 'Defesa: X' | 'Arte: X' | 'Item: X'
 export const rotuloDeRolagem = (tipo, nome) => {
   const prefixo = PREFIXOS_ROTULO[tipo];
   const nomeLimpo = String(nome ?? '').trim();

@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import cultivoCardImg from 'pages/Personagens/Ficha/assets/cultivo-card.webp';
 
 // Layout de duas colunas: painel principal (Reino atual + progresso) e a trilha
 // "Caminho do Cultivo" à direita. Empilha em telas estreitas.
@@ -55,7 +56,7 @@ export const ReinoBanner = styled.img`
 `;
 
 export const CultivoCard = styled.div`
-  background-image: linear-gradient(rgba(16, 12, 24, 0.88), rgba(16, 12, 24, 0.88)), url('https://i.imgur.com/mb3T1zB.png');
+  background-image: linear-gradient(rgba(16, 12, 24, 0.88), rgba(16, 12, 24, 0.88)), url(${cultivoCardImg});
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

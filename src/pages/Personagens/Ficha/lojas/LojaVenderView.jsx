@@ -24,13 +24,24 @@ const LojaVenderView = ({ itensInventario, catalogoPorId, onVender, receitasInve
   };
 
   const handleConfirmarVenda = async quantidade => {
-    await onVender(selecionado, quantidade);
-    setSelecionado(null);
+    try {
+      await onVender(selecionado, quantidade);
+    } catch {
+      // Falha já avisada pelo `executar` do SavingContext (snackbar); fecha o
+      // diálogo (a gravação pode ter ficado pela metade).
+    } finally {
+      setSelecionado(null);
+    }
   };
 
   const handleConfirmarVendaReceita = async quantidade => {
-    await onVenderReceita(receitaSelecionada, quantidade);
-    setReceitaSelecionada(null);
+    try {
+      await onVenderReceita(receitaSelecionada, quantidade);
+    } catch {
+      // Idem: já avisada pelo `executar`.
+    } finally {
+      setReceitaSelecionada(null);
+    }
   };
 
   return (

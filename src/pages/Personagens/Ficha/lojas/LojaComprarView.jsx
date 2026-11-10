@@ -57,8 +57,15 @@ const LojaComprarView = ({ personagem, catalogo, saldoRokmas, espacoLivre, posse
   };
 
   const handleConfirmarCompra = async quantidade => {
-    await onComprar(selecionado, quantidade);
-    setSelecionado(null);
+    try {
+      await onComprar(selecionado, quantidade);
+    } catch {
+      // Falha já avisada pelo `executar` do SavingContext (snackbar). A gravação
+      // pode ter ficado pela metade, então fecha o diálogo para reabrir com o
+      // inventário/saldo atualizados em vez de repetir a compra às cegas.
+    } finally {
+      setSelecionado(null);
+    }
   };
 
   return (

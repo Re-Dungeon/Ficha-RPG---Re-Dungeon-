@@ -1107,6 +1107,81 @@ export const removeChatRolagemSecreta = (campanhaId, donoUid, rolagemId) =>
     doc(db, 'rmCampanhas', campanhaId, 'chatSecretas', donoUid, 'rolagens', rolagemId),
   );
 
+// ── Sussurros (/w) — rmCampanhas/{id}/chatSecretas/{jogadorUid}/sussurros ──
+// Mensagem privada entre o mestre e UM jogador, na pasta do jogador (como as
+// rolagens secretas: só o dono e o mestre leem). São `tipo: 'texto'` com
+// `sussurro: true` (common/utils/chat.js — montarMensagemSussurro). O jogador
+// escreve só na própria pasta; o mestre, em qualquer uma.
+export const CHAT_LIMITE_SUSSURROS = 50;
+
+const sussurrosRef = (campanhaId, jogadorUid) =>
+  collection(db, 'rmCampanhas', campanhaId, 'chatSecretas', jogadorUid, 'sussurros');
+
+// As mensagens chegam com `donoUid` (a pasta — necessário para apagar). Ordem:
+// mais recente primeiro (quem consome mescla com `mesclarMensagens`).
+export const subscribeChatSussurros = (campanhaId, jogadorUid, onChange, onError) =>
+  onSnapshot(
+    query(
+      sussurrosRef(campanhaId, jogadorUid),
+      orderBy('createdAt', 'desc'),
+      limit(CHAT_LIMITE_SUSSURROS),
+    ),
+    snapshot =>
+      onChange(
+        snapshot.docs.map(docSnapshot => ({
+          id: docSnapshot.id,
+          ...docSnapshot.data({ serverTimestamps: 'estimate' }),
+          donoUid: jogadorUid,
+        })),
+      ),
+    onError,
+  );
+
+// Mestre: ouve a pasta de cada jogador em `chatMembros` (acompanha membros
+// novos em tempo real). Devolve um único `unsubscribe`.
+export const subscribeChatSussurrosDoMestre = (campanhaId, onChange, onError) => {
+  const porJogador = new Map();
+  const emitir = () =>
+    onChange([...porJogador.values()].flatMap(entrada => entrada.mensagens));
+  const ouvir = jogadorUid => {
+    if (porJogador.has(jogadorUid)) return;
+    const entrada = { mensagens: [], unsubscribe: () => {} };
+    porJogador.set(jogadorUid, entrada);
+    entrada.unsubscribe = subscribeChatSussurros(
+      campanhaId,
+      jogadorUid,
+      mensagens => {
+        entrada.mensagens = mensagens;
+        emitir();
+      },
+      onError,
+    );
+  };
+
+  const pararMembros = onSnapshot(
+    collection(db, 'rmCampanhas', campanhaId, 'chatMembros'),
+    snapshot => snapshot.docs.forEach(docSnapshot => ouvir(docSnapshot.id)),
+    onError,
+  );
+
+  return () => {
+    pararMembros();
+    porJogador.forEach(entrada => entrada.unsubscribe());
+    porJogador.clear();
+  };
+};
+
+export const addChatSussurro = (campanhaId, jogadorUid, mensagem) =>
+  addDoc(sussurrosRef(campanhaId, jogadorUid), {
+    ...mensagem,
+    createdAt: serverTimestamp(),
+  });
+
+export const removeChatSussurro = (campanhaId, jogadorUid, sussurroId) =>
+  deleteDoc(
+    doc(db, 'rmCampanhas', campanhaId, 'chatSecretas', jogadorUid, 'sussurros', sussurroId),
+  );
+
 // ── Macros Lua — rmCampanhas/{id}/macros ───────────────────────────────────
 // Só o mestre da campanha cria/edita/apaga (as regras garantem); membros leem
 // as que não são `somenteMestre`. O jogador PRECISA filtrar por

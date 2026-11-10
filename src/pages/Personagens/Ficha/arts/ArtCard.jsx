@@ -2,11 +2,12 @@ import React, { useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import Button from '@mui/material/Button';
 
+import { miniaturaImagem } from 'common/utils/grid';
 import { getNome } from 'common/utils/resolveNome';
 
 import { ART_STAT_CAMPOS, DOMINIO_LABELS, TIPO_ACAO_META, TIPO_ART_META } from './constants';
 import CondicaoViewDialog from '../condicoes/CondicaoViewDialog';
-import BotaoRolar from './BotaoRolar';
+import BotaoRolar from '../BotaoRolar';
 import {
   ArtCardBody,
   ArtCardFooter,
@@ -155,7 +156,7 @@ const ArtCard = ({ art, nucleo = null, condicoes = CONDICOES_PADRAO, onVer, onEd
                   onClick={() => setCondicaoVisualizadaId(condicao.id)}
                 >
                   <ConditionIcon>
-                    {condicao.linkImagem ? <img src={condicao.linkImagem} alt={getNome(condicao)} /> : '⚠️'}
+                    {condicao.linkImagem ? <img src={miniaturaImagem(condicao.linkImagem)} alt={getNome(condicao)} loading="lazy" decoding="async" /> : '⚠️'}
                   </ConditionIcon>
                   <ConditionName>{getNome(condicao)}</ConditionName>
                 </ConditionItem>
@@ -172,7 +173,7 @@ const ArtCard = ({ art, nucleo = null, condicoes = CONDICOES_PADRAO, onVer, onEd
       />
 
       <ArtCardFooter>
-        <BotaoRolar dados={art.dados} nome={art.nome} />
+        <BotaoRolar dados={art.dados} nome={art.nome} tipo="arte" />
         <Button
           size="small"
           variant="outlined"

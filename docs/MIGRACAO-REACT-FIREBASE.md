@@ -45,7 +45,28 @@ Chat/grid (cópias compartilhadas com o Re:Master — `npm run check:shared`):
 - **"Carregar anteriores"**: `getChatMensagensAntes` (cursor por `createdAt`, leitura pontual, nos dois `storage.js`) + `mesclarComAntigas`; a janela ao vivo continua em `CHAT_JANELA_MENSAGENS` (100), páginas de `CHAT_PAGINA_ANTERIORES` (50); `useChatCampanha` expõe `carregarAnteriores`/`temMaisAntigas`/`carregandoAntigas`. `useChatCampanha.test.jsx` agora é compartilhado.
 - **Rolagem secreta do token**: só no Re:Master (prop opcional `permitirSecreta` no `RolarDoTokenDialog`); aqui nada muda.
 - **`condicoesDuracao: {condicaoId: rodadaFim}`** no token (só o Re:Master grava; `grid.js`/`TokenDetalhe` mostram as rodadas restantes). `GridMapa` ganhou a prop opcional `focoToken` (só o painel do grupo do Re:Master usa).
-- `firestore.rules`: `gridTokenValido` aceita `condicoesDuracao` (mapa, ≤ 20) — **precisa de deploy pelo Re:Master**.
+- `firestore.rules`: `gridTokenValido` aceita `condicoesDuracao` (mapa, ≤ 20) — publicado.
+
+### QOL leva 3 (2026-11-09)
+
+Desempenho:
+- **Sem GIF de 33 MB no carregamento**: o fallback do `ProtectedRoute` é um anel SVG dourado ("Re:Dungeon"), sem download; respeita `prefers-reduced-motion`.
+- **Sem imagem fixa no imgur**: selos da ficha, imagens padrão dos cards, fundos de lista/ficha/login e as imagens do Cultivo viraram WebP no build (`Login/assets`, `Personagens/assets`, `Ficha/assets`). `grep "i.imgur.com" src` só acha o que vem do catálogo.
+- **Ícones de condição leves**: `miniaturaImagem(url, 't'|'m')` em `grid.js` (cópia) pede a miniatura do imgur (160/320 px) em vez do PNG original; `<img loading="lazy" decoding="async">`. O catálogo continua somente leitura.
+
+Ficha e mesa:
+- **🎲 Rolar do item**: `BotaoRolar` saiu de `arts/` para `Ficha/BotaoRolar.jsx` com prop `tipo` (`arte`/`variante`/`item`); o `ItemCard` mostra o botão quando o item tem dados; rótulo "Item: nome" (`PREFIXOS_ROTULO` em `gridRolagem.js`, cópia).
+- **Título da aba** (`hooks/useTituloDaAba.js`, só aqui, usado em `CampanhaChat`): `(N) …` com mensagens não lidas e "⚔ Seu turno! — …" quando a vez chega com a aba em segundo plano.
+- **Erros que ficavam soltos** em Veias Astrais (`ConstelacaoArvoreModal`) e nas Lojas (`LojaComprarView`/`LojaVenderView`) agora são tratados (o aviso vem do `SavingContext`).
+
+Chat/grid (cópias compartilhadas):
+- **Sussurro `/w`** (mestre ↔ jogador): `rmCampanhas/{id}/chatSecretas/{jogadorUid}/sussurros` (`tipo: 'texto'`, `sussurro: true`, `paraNome`); só o dono da pasta e o mestre leem. Jogador: `/w mestre texto` ou `/w texto`; mestre: `/w Nome texto`. `interpretarComandoSussurro`/`montarMensagemSussurro` (`chat.js`), `addChatSussurro`/`subscribeChatSussurros`… nos dois `storage.js`, regra `chatSussurroValido` — ⚠️ **precisa de deploy pelo Re:Master**.
+- **Chat no celular**: botões de 44 px e menu "⋯" quando a fileira não cabe; retrato da `FaixaIniciativa` mostra o nome ao tocar.
+- **Iniciativa**: o passe de turno pula NPC/Criatura com PV 0 (jogador caído mantém a vez); derrotado aparece apagado na faixa.
+- **Pincel "Sala"** na névoa (só o Re:Master usa): `celulasDaSala` em `gridCamadas.js`.
+- **Sem `window.confirm`** em `AreaPopover`, `PaletaDesenho` e `MacrosDialog` (`useConfirmacao`).
+
+Re:Master: painel do token minimiza/troca de lado/não cobre o token, "Ver ficha" no token, página Luta aposentada, NPCs lidos por universo com cache, sidebar vira gaveta no celular (detalhes no CLAUDE.md de lá).
 
 ### Fase a fase
 

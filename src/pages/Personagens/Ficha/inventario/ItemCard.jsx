@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 
 import { getNome } from 'common/utils/resolveNome';
 
+import BotaoRolar from '../BotaoRolar';
 import { ITEM_STAT_CAMPOS, QUALIDADE_META, obterEmojiTipo, obterValorStatItem } from './constants';
 import {
   EquipadoBadge,
@@ -21,6 +22,7 @@ import {
   ItemNome,
   ItemQuantidade,
   ItemRodape,
+  ItemRolarLinha,
   QualidadeBadge,
 } from './styles';
 
@@ -66,6 +68,12 @@ const ItemCard = ({ item, onVer, onEditar, onEquipar, onRemover }) => {
               <ItemEspacoValor>{espacoTotal.toFixed(2)}</ItemEspacoValor>
             </span>
           </ItemEspacoInfo>
+
+          {item.dados ? (
+            <ItemRolarLinha>
+              <BotaoRolar dados={item.dados} nome={getNome(item)} tipo="item" />
+            </ItemRolarLinha>
+          ) : null}
 
           <ItemBotoesGrid>
             <ItemBtn $variante="editar" onClick={onEditar}>

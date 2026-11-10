@@ -28,7 +28,11 @@ import {
   normalizarPersonagemCarregado,
   updatePersonagem,
 } from 'service/storage';
-import { montarMensagemTexto, personagensNaCampanha } from 'common/utils/chat';
+import {
+  destinatariosDasMensagens,
+  montarMensagemTexto,
+  personagensNaCampanha,
+} from 'common/utils/chat';
 import { avancarDuracaoCondicoes } from 'common/utils/formulas';
 import { corDoPing } from 'common/utils/grid';
 import { podeEditarArea } from 'common/utils/gridAreas';
@@ -41,6 +45,7 @@ import useChatCampanha from 'hooks/useChatCampanha';
 import useGridCampanha from 'hooks/useGridCampanha';
 import useOpcoesDeRolagem from 'hooks/useOpcoesDeRolagem';
 import useRolarDoToken from 'hooks/useRolarDoToken';
+import useTituloDaAba from 'hooks/useTituloDaAba';
 import ChatSala from 'components/Chat/ChatSala';
 import GridMapa from 'components/Grid/GridMapa';
 import RolarDoTokenDialog from 'components/Grid/RolarDoTokenDialog';
@@ -230,6 +235,12 @@ const CampanhaChat = ({ visao = 'chat' }) => {
   }, [falandoComo, meusPersonagens, currentUser.uid]);
 
   const chat = useChatCampanha(campanhaId, autor, { ehMestreDaCampanha: isMestre });
+  // /w do mestre neste site: sem a lista de jogadores da campanha (isso é do
+  // Re:Master), chama pelo nome quem já falou no chat. Jogador: null.
+  const destinatariosSussurro = useMemo(
+    () => (autor?.isMestre ? destinatariosDasMensagens(chat.mensagens) : null),
+    [autor?.isMestre, chat.mensagens],
+  );
   // Grid só escuta na visão "grid" (e depois que o "Falando como" existe).
   const grid = useGridCampanha((visao === 'grid' || visao === 'lateral') && autor ? campanhaId : null, {
     uid: currentUser.uid,
@@ -399,6 +410,9 @@ const CampanhaChat = ({ visao = 'chat' }) => {
   }
   const naoLidas =
     isMobile && abaMesa === 'mapa' ? contarNaoLidas(chat.mensagens, ultimaVistaId) : 0;
+  // Título da aba do navegador: "(N) …" com mensagens novas e "⚔ Seu turno! — …"
+  // quando a vez chega com a aba em segundo plano.
+  useTituloDaAba({ mensagens: chat.mensagens, naoLidas, meuTurno });
   const trocarAbaMesa = (_event, novaAba) => {
     if (!novaAba || novaAba === abaMesa) return;
     if (novaAba === 'mapa') setUltimaVistaId(idDaUltimaMensagem(chat.mensagens));
@@ -619,6 +633,8 @@ const CampanhaChat = ({ visao = 'chat' }) => {
       onEnviarTexto={chat.enviarTexto}
       onEnviarImagem={chat.enviarImagem}
       onRolar={chat.rolar}
+      onSussurrar={chat.sussurrar}
+      destinatariosSussurro={destinatariosSussurro}
       macros={chat.macros}
       audio={chat.audio}
       onApagar={chat.apagar}

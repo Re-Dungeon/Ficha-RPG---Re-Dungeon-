@@ -3,11 +3,12 @@ import styled, { keyframes } from 'styled-components';
 import { MOBILE } from 'common/styles/breakpoints';
 
 // Imagens da ficha em WebP, já no tamanho de uso (~2x o exibido); antes eram
-// PNGs de 1 a 2 MB no imgur.
+// PNGs de 1 a 2 MB no imgur. O fundo e os selos Salvar/Excluir também são WebP.
 import planetaRedungeonImg from './assets/planeta-redungeon.webp';
 import molduraRetratoImg from './assets/moldura-retrato.webp';
 import estrelaAtributosPrincipalImg from './assets/estrela-atributos.webp';
 import gemaAtributoImg from './assets/gema-atributo.webp';
+import fundoFichaImg from './assets/fundo-ficha.webp';
 
 export const FichaWrapper = styled.div`
   flex: 1;
@@ -45,7 +46,7 @@ export const FichaMain = styled.div`
   background-color: #090b14;
   background-image:
     linear-gradient(rgba(7, 5, 14, 0.78), rgba(7, 5, 14, 0.86)),
-    url('https://i.imgur.com/EkhmWLL.jpeg');
+    url(${fundoFichaImg});
   background-position: center center;
   background-size: cover;
   background-repeat: no-repeat;

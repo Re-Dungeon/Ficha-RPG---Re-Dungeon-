@@ -38,4 +38,15 @@ describe('ProtectedRoute', () => {
 
     expect(screen.getByText('Meus Personagens')).toBeInTheDocument();
   });
+
+  it('mostra o spinner do tema (sem imagem remota) enquanto carrega', () => {
+    useAuth.mockReturnValue({ currentUser: null, loading: true });
+
+    const { container } = renderWithRoute();
+
+    expect(screen.getByRole('status', { name: 'Carregando aplicação' })).toBeInTheDocument();
+    expect(screen.getByText('Re:Dungeon')).toBeInTheDocument();
+    expect(container.querySelector('img')).toBeNull();
+    expect(screen.queryByText('Login')).not.toBeInTheDocument();
+  });
 });

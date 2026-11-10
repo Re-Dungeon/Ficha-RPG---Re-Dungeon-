@@ -63,4 +63,18 @@ describe('BotaoRolar', () => {
     await waitFor(() => expect(addChatMensagem).toHaveBeenCalledTimes(1));
     expect(addChatMensagem.mock.calls[0][0]).toBe('c2');
   });
+
+  it('com tipo item, o rótulo da rolagem leva o prefixo "Item"', async () => {
+    renderBotao(['c1'], null, { dados: '1d8+2', nome: 'Espada Longa', tipo: 'item' });
+    fireEvent.click(screen.getByRole('button', { name: /Rolar 1d8\+2/ }));
+    await waitFor(() => expect(addChatMensagem).toHaveBeenCalledTimes(1));
+    expect(addChatMensagem.mock.calls[0][1].rotulo).toBe('Item: Espada Longa');
+  });
+
+  it('com tipo variante, o rótulo continua "Arte"', async () => {
+    renderBotao(['c1'], null, { tipo: 'variante' });
+    fireEvent.click(screen.getByRole('button', { name: /Rolar 2d6\+3/ }));
+    await waitFor(() => expect(addChatMensagem).toHaveBeenCalledTimes(1));
+    expect(addChatMensagem.mock.calls[0][1].rotulo).toBe('Arte: Bola de Fogo');
+  });
 });
