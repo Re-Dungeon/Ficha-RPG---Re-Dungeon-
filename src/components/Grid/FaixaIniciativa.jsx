@@ -68,7 +68,10 @@ const FaixaIniciativa = ({ faixa, acoes, onCentralizar }) => {
   const botoes = ORDEM_BOTOES.filter(id => typeof acoes[id] === 'function');
 
   return (
-    <FaixaCaixa data-faixa-iniciativa="" onPointerDown={event => event.stopPropagation()}>
+    <FaixaCaixa
+      data-faixa-iniciativa=""
+      onPointerDown={event => event.stopPropagation()}
+    >
       <FaixaRodada>Rodada {faixa.rodada}</FaixaRodada>
       <FaixaLista aria-label="Ordem de iniciativa">
         {faixa.itens.map(item => {
@@ -81,6 +84,7 @@ const FaixaIniciativa = ({ faixa, acoes, onCentralizar }) => {
               data-retrato={item.tokenId}
               $atual={item.atual}
               $oculto={item.oculto}
+              $derrotado={item.derrotado}
               $cor={COR_TIPO_TOKEN[item.tipo] ?? COR_TIPO_TOKEN.avulso}
               onClick={() => {
                 if (telaPequena) setNomeAberto(item.tokenId);
@@ -157,6 +161,7 @@ FaixaIniciativa.propTypes = {
         imagemUrl: PropTypes.string,
         tipo: PropTypes.string,
         oculto: PropTypes.bool,
+        derrotado: PropTypes.bool,
         atual: PropTypes.bool,
         iniciativa: PropTypes.number,
       }),

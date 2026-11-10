@@ -1,4 +1,8 @@
-import { GRID_POSICAO_MAX, linhaChebyshev, posicaoEmPx } from 'common/utils/grid';
+import {
+  GRID_POSICAO_MAX,
+  linhaChebyshev,
+  posicaoEmPx,
+} from 'common/utils/grid';
 
 // Camadas do mapa (Fase 3B), funções puras — cópia nos dois sites (mudou um,
 // mude o outro). Paredes e névoa vivem em
@@ -17,6 +21,13 @@ export const PINCEL_TAMANHOS = [1, 2, 3];
 const LIMITES_PADRAO = { colunas: GRID_POSICAO_MAX, linhas: GRID_POSICAO_MAX };
 
 export const chaveDaCelula = (col, lin) => `${col},${lin}`;
+
+const VIZINHOS_ORTOGONAIS = [
+  [1, 0],
+  [-1, 0],
+  [0, 1],
+  [0, -1],
+];
 
 const celulaDaChave = chave => {
   const [col, lin] = chave.split(',').map(Number);
@@ -42,7 +53,9 @@ export const trechosDasCelulas = (celulas, limites = null) => {
   const dentro = chave => {
     if (!limites) return true;
     const { col, lin } = celulaDaChave(chave);
-    return col >= 0 && lin >= 0 && col < limites.colunas && lin < limites.linhas;
+    return (
+      col >= 0 && lin >= 0 && col < limites.colunas && lin < limites.linhas
+    );
   };
   const filtradas = [...(celulas ?? [])].filter(dentro);
   const porLinha = colunasPorLinha(filtradas);
@@ -83,8 +96,14 @@ const INTEIRO = /^\d{1,6}$/;
 export const decodificarTrechos = (texto, limites = LIMITES_PADRAO) => {
   const celulas = new Set();
   if (typeof texto !== 'string' || !texto) return celulas;
-  const maxCol = Math.min(limites?.colunas ?? GRID_POSICAO_MAX, GRID_POSICAO_MAX);
-  const maxLin = Math.min(limites?.linhas ?? GRID_POSICAO_MAX, GRID_POSICAO_MAX);
+  const maxCol = Math.min(
+    limites?.colunas ?? GRID_POSICAO_MAX,
+    GRID_POSICAO_MAX,
+  );
+  const maxLin = Math.min(
+    limites?.linhas ?? GRID_POSICAO_MAX,
+    GRID_POSICAO_MAX,
+  );
   texto.split(';').forEach(bloco => {
     const separador = bloco.indexOf(':');
     if (separador < 0) return;
@@ -205,6 +224,48 @@ export const caminhoBloqueado = (caminho, tamanho, bloqueadas) => {
   return false;
 };
 
+// Quantas células uma "sala" pode ter antes de ser considerada aberta demais.
+export const SALA_LIMITE_PADRAO = 2000;
+
+// Sala a partir de uma célula: preenchimento por largura (4 direções) que não
+// atravessa parede — `paredes` é o Set<'col,lin'> das camadas (a mesma
+// representação de passoBloqueado, aqui para um token de 1 célula). Respeita
+// as bordas do mapa (`cols` × `lins`). Passou de `limite` células (porta
+// aberta, sala sem fechamento) → { celulas: [], estourou: true }, para não
+// cobrir/revelar o mapa inteiro. Célula inicial fora do mapa ou sobre parede →
+// sem células. Devolve { celulas: [{ col, lin }], estourou }.
+export const celulasDaSala = (
+  celulaInicial,
+  paredes,
+  {
+    cols = LIMITES_PADRAO.colunas,
+    lins = LIMITES_PADRAO.linhas,
+    limite = SALA_LIMITE_PADRAO,
+  } = {},
+) => {
+  const dentro = ({ col, lin }) => col >= 0 && lin >= 0 && col < cols && lin < lins;
+  if (!celulaInicial || !dentro(celulaInicial)) return { celulas: [], estourou: false };
+  if (areaBloqueada(paredes, celulaInicial.col, celulaInicial.lin, 1)) {
+    return { celulas: [], estourou: false };
+  }
+  const inicio = { col: celulaInicial.col, lin: celulaInicial.lin };
+  const vistas = new Set([chaveDaCelula(inicio.col, inicio.lin)]);
+  const fila = [inicio];
+  for (let i = 0; i < fila.length; i += 1) {
+    const de = fila[i];
+    for (const [dc, dl] of VIZINHOS_ORTOGONAIS) {
+      const para = { col: de.col + dc, lin: de.lin + dl };
+      const chave = chaveDaCelula(para.col, para.lin);
+      if (!dentro(para) || vistas.has(chave)) continue;
+      if (passoBloqueado(de, para, 1, paredes)) continue;
+      vistas.add(chave);
+      if (vistas.size > limite) return { celulas: [], estourou: true };
+      fila.push(para);
+    }
+  }
+  return { celulas: fila, estourou: false };
+};
+
 // ── Névoa ──────────────────────────────────────────────────────────────────
 
 // Coberto = névoa ativa e NENHUMA célula da área do token está revelada.
@@ -224,7 +285,9 @@ export const tokenCobertoPelaNevoa = (token, nevoa) => {
 // (`ehMeu(token)`).
 export const filtrarTokensPelaNevoa = (tokens, nevoa, ehMeu) => {
   if (!nevoa?.ativa) return tokens;
-  return tokens.filter(token => ehMeu?.(token) || !tokenCobertoPelaNevoa(token, nevoa));
+  return tokens.filter(
+    token => ehMeu?.(token) || !tokenCobertoPelaNevoa(token, nevoa),
+  );
 };
 
 // ── Desenho ────────────────────────────────────────────────────────────────
