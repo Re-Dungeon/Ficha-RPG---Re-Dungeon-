@@ -15,9 +15,11 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import AssignmentIndOutlinedIcon from '@mui/icons-material/AssignmentIndOutlined';
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
+import HeadsetMicOutlinedIcon from '@mui/icons-material/HeadsetMicOutlined';
 import KeyboardArrowDownOutlinedIcon from '@mui/icons-material/KeyboardArrowDownOutlined';
 import MenuIcon from '@mui/icons-material/Menu';
 import { useAuth } from 'context/AuthContext';
+import SupportTicketsDialog from 'components/SupportTickets/SupportTicketsDialog';
 import { MOBILE } from 'common/styles/breakpoints';
 import useIsMobile from 'hooks/useIsMobile';
 import { SelecaoContext } from 'context/selecaoContext';
@@ -33,6 +35,7 @@ const Layout = () => {
   const { currentUser, logout } = useAuth();
   const [headerExtra, setHeaderExtra] = useState(null);
   const [selecao, setSelecao] = useState(SELECAO_VAZIA);
+  const [suporteAberto, setSuporteAberto] = useState(false);
   // Celular: cabeçalho de 56px (título + ícones + menu da conta) e, na ficha,
   // as abas numa 2ª linha com o ☰ da gaveta (headerExtra.onAbrirMenu).
   const isMobile = useIsMobile();
@@ -83,6 +86,11 @@ const Layout = () => {
   const handleSairDoMenu = () => {
     setMenuContaAncora(null);
     logout();
+  };
+
+  const handleSuporte = () => {
+    setMenuContaAncora(null);
+    setSuporteAberto(true);
   };
 
   const usuarioDisplayName = currentUser?.displayName?.trim() || '';
@@ -454,6 +462,10 @@ const Layout = () => {
                   <MenuItem disabled sx={{ fontSize: '0.78rem', py: 1.2, '&.Mui-disabled': { opacity: 1, color: '#e9efff' } }}>
                     {usuarioSecondaryText ? `${usuarioPrimaryText} — ${usuarioSecondaryText}` : usuarioPrimaryText}
                   </MenuItem>
+                  <MenuItem onClick={handleSuporte} sx={{ gap: 1, display: 'flex', alignItems: 'center' }}>
+                    <HeadsetMicOutlinedIcon fontSize="small" />
+                    Suporte e Ajuda
+                  </MenuItem>
                   <MenuItem onClick={handleSairDoMenu}>Sair</MenuItem>
                 </Menu>
               </Box>
@@ -536,6 +548,7 @@ const Layout = () => {
           <Outlet context={{ setHeaderExtra }} />
         </Box>
       </Box>
+      {currentUser && <SupportTicketsDialog open={suporteAberto} onClose={() => setSuporteAberto(false)} />}
     </SelecaoContext.Provider>
   );
 };
