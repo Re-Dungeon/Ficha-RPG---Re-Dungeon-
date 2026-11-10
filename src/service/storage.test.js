@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { collection, doc, getDocs, runTransaction, where } from 'firebase/firestore';
+import { addDoc, collection, doc, getDocs, runTransaction, where } from 'firebase/firestore';
 
 vi.mock('service/firebase', () => ({
   auth: { currentUser: { uid: 'user-1', email: 'user@example.com' } },
@@ -11,9 +11,11 @@ vi.mock('firebase/firestore', async () => {
 
   return {
     ...actual,
+    addDoc: vi.fn(),
     collection: vi.fn((dbRef, name) => ({ dbRef, name })),
     doc: vi.fn((dbRef, name, id) => ({ dbRef, name, id })),
     query: vi.fn((...args) => args),
+    serverTimestamp: vi.fn(() => 'server-ts'),
     where: vi.fn((field, op, value) => ({ field, op, value })),
     getDocs: vi.fn(),
     runTransaction: vi.fn(async (_db, callback) => {
@@ -28,6 +30,7 @@ vi.mock('firebase/firestore', async () => {
 });
 
 import {
+  addSupportTicket,
   atualizarRecursoAtualPersonagem,
   getChatMensagensAntes,
   consumirRecursosPersonagem,
@@ -40,6 +43,45 @@ import {
   normalizarPersonagemCarregado,
   updatePersonagem,
 } from './storage';
+
+describe('support ticket write contract', () => {
+  it('não repassa timestamps do cliente e usa o serverTimestamp do Firestore', async () => {
+    vi.mocked(addDoc).mockResolvedValue({ id: 'ticket-1' });
+
+    await addSupportTicket({
+      userId: 'u1',
+      userEmail: 'aline@example.com',
+      userDisplayName: 'Aline',
+      sourceApp: 'player-sheet',
+      sourceAppName: 'Ficha de Jogador',
+      sourceUrl: 'https://ficha.test',
+      category: 'Bug',
+      title: 'Erro ao salvar',
+      description: 'Não salva',
+      attachments: ['https://example.com/anexo'],
+      status: 'open',
+      adminResponse: '',
+      respondedAt: null,
+      createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      updatedAt: new Date('2024-01-01T00:00:00.000Z'),
+    });
+
+    expect(addDoc).toHaveBeenCalledTimes(1);
+
+    const payloadEnviado = vi.mocked(addDoc).mock.calls[0][1];
+    expect(payloadEnviado).toMatchObject({
+      userId: 'u1',
+      category: 'Bug',
+      status: 'open',
+      adminResponse: '',
+      respondedAt: null,
+      createdAt: 'server-ts',
+      updatedAt: 'server-ts',
+    });
+    expect(payloadEnviado.createdAt).not.toEqual(new Date('2024-01-01T00:00:00.000Z'));
+    expect(payloadEnviado.updatedAt).not.toEqual(new Date('2024-01-01T00:00:00.000Z'));
+  });
+});
 
 describe('storage benefit catalog', () => {
   beforeEach(() => {

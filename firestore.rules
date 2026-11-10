@@ -685,12 +685,15 @@ service cloud.firestore {
         request.resource.data.status == 'open' &&
         request.resource.data.adminResponse == '' &&
         request.resource.data.respondedAt == null &&
-        request.resource.data.createdAt == request.time &&
-        request.resource.data.updatedAt == request.time;
+        request.resource.data.createdAt is timestamp &&
+        request.resource.data.updatedAt is timestamp &&
+        request.resource.data.createdAt <= request.time &&
+        request.resource.data.updatedAt <= request.time;
       allow update: if isAdmin() &&
         request.resource.data.userId == resource.data.userId &&
         request.resource.data.status in ['open', 'in_progress', 'in-progress', 'answered', 'resolved'] &&
-        request.resource.data.updatedAt == request.time;
+        request.resource.data.updatedAt is timestamp &&
+        request.resource.data.updatedAt <= request.time;
       allow delete: if isAdmin();
     }
 

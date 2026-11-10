@@ -196,9 +196,9 @@ export const updatePersonagem = async (id, data, { base } = {}) => {
 export const removePersonagem = id => removeFirestoreItem('personagens', id);
 
 export const getSupportAppContext = () => {
-  const sourceApp = import.meta.env.VITE_SUPPORT_APP_ID || 'player-sheet';
+  const sourceApp = String(import.meta.env.VITE_SUPPORT_APP_ID || 'player-sheet');
   const sourceAppName = 'Ficha de Jogador';
-  const sourceUrl = import.meta.env.VITE_SUPPORT_PLAYER_SHEET_URL || window.location.origin;
+  const sourceUrl = String(import.meta.env.VITE_SUPPORT_PLAYER_SHEET_URL || window.location.origin || 'https://ficha.re-dungeon.com');
 
   return {
     sourceApp,
@@ -221,12 +221,18 @@ export const getSupportTicketsByUser = async userId => {
 };
 
 export const addSupportTicket = async payload => {
+  const payloadSemTimestamps = payload ? { ...payload } : {};
+  delete payloadSemTimestamps.createdAt;
+  delete payloadSemTimestamps.updatedAt;
+
   const sanitized = {
-    ...payload,
-    attachments: Array.isArray(payload.attachments) ? payload.attachments.filter(Boolean) : [],
-    status: payload.status || 'open',
-    adminResponse: payload.adminResponse || '',
-    respondedAt: payload.respondedAt ?? null,
+    ...payloadSemTimestamps,
+    attachments: Array.isArray(payloadSemTimestamps.attachments)
+      ? payloadSemTimestamps.attachments.filter(item => typeof item === 'string' ? item.trim() : Boolean(item))
+      : [],
+    status: payloadSemTimestamps.status || 'open',
+    adminResponse: payloadSemTimestamps.adminResponse || '',
+    respondedAt: payloadSemTimestamps.respondedAt ?? null,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   };
