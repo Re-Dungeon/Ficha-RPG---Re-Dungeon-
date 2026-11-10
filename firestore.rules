@@ -697,6 +697,29 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    function supportTicketMensagemValida(data) {
+      return data.keys().hasOnly(['userId', 'userEmail', 'userDisplayName', 'message', 'createdAt']) &&
+        data.userId is string && data.userId.size() > 0 &&
+        data.userEmail is string && data.userEmail.size() > 0 &&
+        data.userDisplayName is string && data.userDisplayName.size() > 0 &&
+        data.message is string && data.message.size() > 0 && data.message.size() <= 5000 &&
+        data.createdAt is timestamp && data.createdAt <= request.time;
+    }
+
+    match /supportTickets/{ticketId}/messages/{messageId} {
+      allow read: if isAuth() && (
+        get(/databases/$(database)/documents/supportTickets/$(ticketId)).data.userId == request.auth.uid ||
+        isAdmin()
+      );
+      allow create: if isAuth() && (
+        (request.resource.data.userId == request.auth.uid &&
+         get(/databases/$(database)/documents/supportTickets/$(ticketId)).data.userId == request.auth.uid) ||
+        isAdmin()
+      ) && supportTicketMensagemValida(request.resource.data);
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
     // Sussurros (/w): mensagem privada entre o mestre e UM jogador, na pasta
     // do jogador (como as rolagens secretas). Só o dono da pasta e o mestre da
     // campanha leem; os outros jogadores não ficam sabendo. O jogador escreve
