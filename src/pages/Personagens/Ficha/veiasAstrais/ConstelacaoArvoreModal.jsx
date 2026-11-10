@@ -45,19 +45,28 @@ const ConstelacaoArvoreModal = ({
     if (!desbloqueioInfo || desbloqueioInfo.cadeia.length === 0) {
       return;
     }
-    await onDesbloquear(desbloqueioInfo.cadeia, desbloqueioInfo.custoTotal);
-    setNoSelecionadoId(null);
+    try {
+      await onDesbloquear(desbloqueioInfo.cadeia, desbloqueioInfo.custoTotal);
+      setNoSelecionadoId(null);
+    } catch {
+      // Falha já avisada pelo `executar` do SavingContext (snackbar); o nó segue
+      // selecionado para tentar de novo.
+    }
   };
 
   const handleBloquear = async () => {
     if (!bloqueioInfo || bloqueioInfo.cadeia.length === 0) {
       return;
     }
-    await onBloquear(
-      bloqueioInfo.cadeia.map(no => no.id),
-      bloqueioInfo.custoRecuperado,
-    );
-    setNoSelecionadoId(null);
+    try {
+      await onBloquear(
+        bloqueioInfo.cadeia.map(no => no.id),
+        bloqueioInfo.custoRecuperado,
+      );
+      setNoSelecionadoId(null);
+    } catch {
+      // Idem: já avisada pelo `executar`; o nó segue selecionado.
+    }
   };
 
   return (
