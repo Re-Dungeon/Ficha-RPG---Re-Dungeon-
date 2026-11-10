@@ -26,7 +26,7 @@ Toda a persistência é feita via **Firebase/Firestore** através de `src/servic
 - CRUD das subcoleções de um personagem: `aptidoesAdquiridas` (doc id = id da aptidão no catálogo), `arts`, `historicoSorte` (rolagens de Fortuna **e** compras na Loja da Trapaça).
 - Leitura das coleções de referência do projeto administrativo, **sempre somente-leitura**: `getUniverso`/`getOrigens`/`getDivindades` (sem filtro) e `get{Racas,Classes,Condicoes,Aptidoes,VeiasAstrais,Itens,Artes,Regras}PorUniverso(universoId)` (filtradas por `where('universo', '==', universoId)`). **Nunca** adicione `add*`/`update*`/`remove*` para essas coleções — não é este site que as gerencia.
 
-`localStorage` só é usado para o **rascunho** de formulários com salvar explícito (`src/hooks/useDraftLocalStorage.js`, chave `rascunho_personagem_<id>_<aba>`) — nunca como fonte de verdade de dados de personagem, que é sempre o Firestore.
+`localStorage` só é usado para o **rascunho** de formulários com salvar explícito (`src/hooks/useDraftLocalStorage.js`, chave `rascunho_personagem_<id>_<aba>`) e para preferências de interface do próprio navegador (ex.: a ordenação da lista de fichas, `ordenacao_personagens`) — nunca como fonte de verdade de dados de personagem, que é sempre o Firestore.
 
 ---
 
@@ -108,7 +108,7 @@ import { PageWrapper } from './styles';
 
 ### Estrutura de Componentes React
 
-Hooks → handlers → render, sempre com `PropTypes` (componentes de aba recebem no mínimo `personagem: PropTypes.object.isRequired`, e `onSave: PropTypes.func.isRequired` quando escrevem dados).
+Hooks → handlers → render, sempre com `PropTypes` e **padrões no destructuring** (o React 19 ignora `defaultProps` em componentes de função — nunca use `Componente.defaultProps`) (componentes de aba recebem no mínimo `personagem: PropTypes.object.isRequired`, e `onSave: PropTypes.func.isRequired` quando escrevem dados).
 
 ```jsx
 const NomeComponente = ({ personagem, onSave }) => {
@@ -128,6 +128,8 @@ NomeComponente.propTypes = {
 
 export default NomeComponente;
 ```
+
+**Valores padrão de props**: `({ prop2 = 0, itens = ITENS_VAZIOS }) =>` no destructuring, nunca `defaultProps`. Padrão de array/objeto que entra em dependência de hook vira **constante de módulo** (`const ITENS_VAZIOS = []`).
 
 `react-hooks/exhaustive-deps` é **erro** no ESLint — nunca omita uma dependência real de `useCallback`/`useEffect`/`useMemo`. Se um valor derivado de `personagem.algumCampo ?? []` (array/objeto novo a cada render) for usado dentro de um `useCallback`, envolva-o em `useMemo` primeiro em vez de silenciar o lint.
 

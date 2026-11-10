@@ -141,7 +141,7 @@ ReceitaFormBody.propTypes = {
   onClose: PropTypes.func.isRequired,
 };
 
-const ReceitaFormDialog = ({ open, onClose, receita, onSubmit }) => {
+const ReceitaFormDialog = ({ open, onClose, receita = null, onSubmit }) => {
   const [initialValues, setInitialValues] = useState(RECEITA_AUTORAL_INICIAL);
 
   useEffect(() => {
@@ -175,10 +175,6 @@ ReceitaFormDialog.propTypes = {
   onClose: PropTypes.func.isRequired,
   receita: PropTypes.object,
   onSubmit: PropTypes.func.isRequired,
-};
-
-ReceitaFormDialog.defaultProps = {
-  receita: null,
 };
 
 export default ReceitaFormDialog;

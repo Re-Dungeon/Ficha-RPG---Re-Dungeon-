@@ -19,6 +19,7 @@ import {
 } from 'firebase/firestore';
 import { db } from 'service/firebase';
 import { mesclarTresVias } from 'common/utils/mesclaTresVias';
+import { CHAT_JANELA_MENSAGENS, CHAT_PAGINA_ANTERIORES } from 'common/utils/chat';
 
 export const getFirestoreItems = async (collectionName, ...queryConstraints) => {
   const itemsQuery = query(collection(db, collectionName), ...queryConstraints);
@@ -739,12 +740,40 @@ export const duplicateComboDefesa = async (personagemId, comboId) => {
 // Compartilhadas no mesmo Firestore; nunca add*/update*/remove* a partir
 // deste site (ver MIGRACAO-REACT-FIREBASE.md §4).
 
-const getColecaoPorUniverso = (collectionName, universoId) =>
-  getFirestoreItems(collectionName, where('universo', '==', universoId));
+// Cache em memória dos catálogos: eles mudam raramente (só o admin os edita) e
+// cada aba/modal da ficha os relê ao abrir. Chave "coleção|universo" → promise
+// da consulta + validade. A promise (não o resultado) fica guardada para duas
+// aberturas simultâneas dividirem a mesma leitura; se ela falhar, a entrada sai
+// e a próxima chamada tenta de novo. Quem chama recebe uma cópia da lista, então
+// não consegue alterar o que está no cache. Só catálogos de referência passam
+// por aqui — personagens, rm* e subcoleções sempre vão ao Firestore.
+const CATALOGO_TTL_MS = 10 * 60 * 1000;
+const cacheCatalogos = new Map();
 
-export const getUniverso = () => getFirestoreItems('Universo');
-export const getOrigens = () => getFirestoreItems('origens');
-export const getDivindades = () => getFirestoreItems('divindades');
+export const limparCacheCatalogos = () => cacheCatalogos.clear();
+
+const comCacheCatalogo = async (chave, carregar) => {
+  const agora = Date.now();
+  let entrada = cacheCatalogos.get(chave);
+  if (!entrada || entrada.expiraEm <= agora) {
+    const promessa = carregar();
+    entrada = { promessa, expiraEm: agora + CATALOGO_TTL_MS };
+    cacheCatalogos.set(chave, entrada);
+    promessa.catch(() => {
+      if (cacheCatalogos.get(chave) === entrada) cacheCatalogos.delete(chave);
+    });
+  }
+  return [...(await entrada.promessa)];
+};
+
+const getColecaoPorUniverso = (collectionName, universoId) =>
+  comCacheCatalogo(`${collectionName}|${universoId}`, () =>
+    getFirestoreItems(collectionName, where('universo', '==', universoId)),
+  );
+
+export const getUniverso = () => comCacheCatalogo('Universo|', () => getFirestoreItems('Universo'));
+export const getOrigens = () => comCacheCatalogo('origens|', () => getFirestoreItems('origens'));
+export const getDivindades = () => comCacheCatalogo('divindades|', () => getFirestoreItems('divindades'));
 
 export const getRacasPorUniverso = universoId =>
   getColecaoPorUniverso('racas', universoId);
@@ -770,7 +799,7 @@ export const getCorposEspeciaisPorUniverso = universoId =>
 // mescla, removendo duplicatas por id (mesmo padrão validado em 2026-07-22 para
 // aptidoes, estendido em 2026-07-23 quando condicoes/regras ganharam o mesmo
 // campo `universos` no admin, commit dd0d038).
-const getColecaoMultiUniversoPorUniverso = async (collectionName, universoId) => {
+const carregarColecaoMultiUniverso = async (collectionName, universoId) => {
   const [porUniversos, porUniversoLegado] = await Promise.all([
     getFirestoreItems(collectionName, where('universos', 'array-contains', universoId)),
     getFirestoreItems(collectionName, where('universo', '==', universoId)),
@@ -794,6 +823,11 @@ const getColecaoMultiUniversoPorUniverso = async (collectionName, universoId) =>
     return true;
   });
 };
+
+const getColecaoMultiUniversoPorUniverso = (collectionName, universoId) =>
+  comCacheCatalogo(`${collectionName}|${universoId}|multi`, () =>
+    carregarColecaoMultiUniverso(collectionName, universoId),
+  );
 
 export const getCondicoesPorUniverso = universoId =>
   getColecaoMultiUniversoPorUniverso('condicoes', universoId);
@@ -882,7 +916,7 @@ export const getReinosCultivo = (universoId, subUniverso = '') => {
 // do usuário e ainda tem a campanha em `campanhas` (o mestre acessa via
 // `mestreId`). `chatMembros/{uid}` é só um ponteiro `{uid, personagemId}`
 // usado pela regra de leitura — criado ao abrir o chat, sem migração.
-export const CHAT_LIMITE_MENSAGENS = 100;
+export const CHAT_LIMITE_MENSAGENS = CHAT_JANELA_MENSAGENS;
 
 export const getRmCampanha = id => getFirestoreItem('rmCampanhas', id);
 
@@ -913,6 +947,33 @@ export const subscribeChatMensagens = (campanhaId, onChange, onError) => {
     },
     onError,
   );
+};
+
+// Página de mensagens ANTERIORES à janela ao vivo ("Carregar anteriores"):
+// leitura única (getDocs) das até `limite` mensagens com `createdAt` anterior a
+// `antesDe` (o `createdAt` da mensagem mais antiga que a tela já tem), devolvidas
+// em ordem cronológica (mais antiga primeiro). A regra de leitura é por
+// documento, então a consulta não precisa de regra nova. Mensagens com o mesmo
+// `createdAt` exato da referência ficam de fora (empate raro; a tela deduplica
+// por id).
+export const getChatMensagensAntes = async (
+  campanhaId,
+  antesDe,
+  limite = CHAT_PAGINA_ANTERIORES,
+) => {
+  const anterioresQuery = query(
+    collection(db, 'rmCampanhas', campanhaId, 'chatMensagens'),
+    where('createdAt', '<', antesDe),
+    orderBy('createdAt', 'desc'),
+    limit(limite),
+  );
+  const snapshot = await getDocs(anterioresQuery);
+  return snapshot.docs
+    .map(docSnapshot => ({
+      id: docSnapshot.id,
+      ...docSnapshot.data({ serverTimestamps: 'estimate' }),
+    }))
+    .reverse();
 };
 
 export const addChatMensagem = (campanhaId, mensagem) =>

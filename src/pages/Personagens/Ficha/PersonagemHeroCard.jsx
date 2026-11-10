@@ -26,10 +26,10 @@ const EXCLUIR_BADGE_URL = 'https://i.imgur.com/9JyaulF.png';
 const PersonagemHeroCard = ({
   personagem,
   racaNome,
-  racaLinkImagem,
+  racaLinkImagem = '',
   classesNomes,
   onExcluir,
-  salvando,
+  salvando = false,
 }) => {
   const classTokens = classesNomes.filter(Boolean);
 
@@ -90,11 +90,6 @@ PersonagemHeroCard.propTypes = {
   classesNomes: PropTypes.array.isRequired,
   onExcluir: PropTypes.func.isRequired,
   salvando: PropTypes.bool,
-};
-
-PersonagemHeroCard.defaultProps = {
-  racaLinkImagem: '',
-  salvando: false,
 };
 
 export default PersonagemHeroCard;

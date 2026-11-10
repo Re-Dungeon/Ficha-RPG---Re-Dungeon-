@@ -353,7 +353,7 @@ VarianteFormBody.propTypes = {
   onClose: PropTypes.func.isRequired,
 };
 
-const VarianteFormDialog = ({ open, onClose, variante, arts, condicoes, onSubmit, personagem }) => {
+const VarianteFormDialog = ({ open, onClose, variante = null, arts, condicoes, onSubmit, personagem }) => {
   const [initialValues, setInitialValues] = useState(VARIANTE_INICIAL);
   const [origem, setOrigem] = useState('autoral');
   const [classesDetalhes, setClassesDetalhes] = useState([]);
@@ -693,10 +693,6 @@ VarianteFormDialog.propTypes = {
   condicoes: PropTypes.array.isRequired,
   onSubmit: PropTypes.func.isRequired,
   personagem: PropTypes.object.isRequired,
-};
-
-VarianteFormDialog.defaultProps = {
-  variante: null,
 };
 
 export default VarianteFormDialog;

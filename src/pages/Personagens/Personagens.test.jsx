@@ -89,4 +89,65 @@ describe('Personagens', () => {
     await waitFor(() => expect(screen.getByText('Legado')).toBeInTheDocument());
     expect(screen.queryByText('Companheiro antigo')).not.toBeInTheDocument();
   });
+
+  describe('busca e ordenação', () => {
+    const renderLista = () =>
+      render(
+        <MemoryRouter initialEntries={['/personagens']}>
+          <Routes>
+            <Route path="/personagens" element={<Personagens />} />
+          </Routes>
+        </MemoryRouter>,
+      );
+
+    const nomesNaTela = () =>
+      screen
+        .getAllByTestId('personagem-card-nome')
+        .map(elemento => elemento.textContent);
+
+    beforeEach(() => {
+      localStorage.clear();
+      getPersonagens.mockResolvedValue([
+        { id: 'a', uid: 'uid-1', nome: 'Zélia', nivel: { atual: 9 }, updatedAt: { seconds: 200 } },
+        { id: 'b', uid: 'uid-1', nome: 'Álvaro', nivel: { atual: 5 }, updatedAt: { seconds: 100 } },
+        { id: 'c', uid: 'uid-1', nome: 'Bruna', nivel: { atual: 2 }, updatedAt: { seconds: 300 } },
+      ]);
+    });
+
+    it('busca pelo nome sem diferenciar acento e caixa', async () => {
+      renderLista();
+      await waitFor(() => expect(screen.getByText('Zélia')).toBeInTheDocument());
+
+      fireEvent.change(screen.getByRole('searchbox', { name: 'Buscar por nome' }), {
+        target: { value: 'ALVARO' },
+      });
+
+      await waitFor(() => expect(screen.queryByText('Zélia')).not.toBeInTheDocument());
+      expect(screen.getByText('Álvaro')).toBeInTheDocument();
+      expect(screen.queryByText('Bruna')).not.toBeInTheDocument();
+
+      fireEvent.change(screen.getByRole('searchbox', { name: 'Buscar por nome' }), {
+        target: { value: 'xyz' },
+      });
+      expect(await screen.findByText(/Nenhum resultado para/)).toBeInTheDocument();
+    });
+
+    it('ordena por nome (padrão), última edição e nível, e lembra a escolha', async () => {
+      renderLista();
+      await waitFor(() => expect(screen.getByText('Zélia')).toBeInTheDocument());
+      expect(nomesNaTela()).toEqual(['Álvaro', 'Bruna', 'Zélia']);
+
+      const escolher = async nome => {
+        fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Ordenar por' }));
+        fireEvent.click(await screen.findByRole('option', { name: nome }));
+      };
+
+      await escolher('Última edição');
+      await waitFor(() => expect(nomesNaTela()).toEqual(['Bruna', 'Zélia', 'Álvaro']));
+      expect(localStorage.getItem('ordenacao_personagens')).toBe('recente');
+
+      await escolher('Nível');
+      await waitFor(() => expect(nomesNaTela()).toEqual(['Zélia', 'Álvaro', 'Bruna']));
+    });
+  });
 });

@@ -35,7 +35,9 @@ const CAMPOS_GRID = [
   ['Dados', 'dados'],
 ];
 
-const VarianteViewDialog = ({ open, onClose, variante, art, nucleo, condicoes, onEditar }) => {
+const CONDICOES_PADRAO = [];
+
+const VarianteViewDialog = ({ open, onClose, variante = null, art = null, nucleo = null, condicoes = CONDICOES_PADRAO, onEditar }) => {
   if (!variante) {
     return null;
   }
@@ -152,13 +154,6 @@ VarianteViewDialog.propTypes = {
   nucleo: PropTypes.object,
   condicoes: PropTypes.array,
   onEditar: PropTypes.func.isRequired,
-};
-
-VarianteViewDialog.defaultProps = {
-  variante: null,
-  art: null,
-  nucleo: null,
-  condicoes: [],
 };
 
 export default VarianteViewDialog;

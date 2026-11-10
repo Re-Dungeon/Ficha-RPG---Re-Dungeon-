@@ -26,7 +26,7 @@ import {
 
 const DesbloquearNoDialog = ({
   open,
-  no,
+  no = null,
   cor,
   jaDesbloqueado,
   cadeia,
@@ -148,10 +148,6 @@ DesbloquearNoDialog.propTypes = {
   onClose: PropTypes.func.isRequired,
   onDesbloquear: PropTypes.func.isRequired,
   onBloquear: PropTypes.func.isRequired,
-};
-
-DesbloquearNoDialog.defaultProps = {
-  no: null,
 };
 
 export default DesbloquearNoDialog;

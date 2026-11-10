@@ -335,14 +335,14 @@ const perfilSchema = yup.object({
 const PerfilFormBody = ({
   formik,
   aba,
-  personagemNome,
+  personagemNome = '',
   personagem,
   racaNome,
   classesNomes,
   origens,
   campanhas,
   salvarRascunho,
-  rascunho,
+  rascunho = null,
   onRestaurar,
   onDescartar,
   onSave,
@@ -707,11 +707,6 @@ PerfilFormBody.propTypes = {
   onRestaurar: PropTypes.func.isRequired,
   onDescartar: PropTypes.func.isRequired,
   onSave: PropTypes.func.isRequired,
-};
-
-PerfilFormBody.defaultProps = {
-  personagemNome: '',
-  rascunho: null,
 };
 
 const PerfilTab = ({ personagem, onSave, aba }) => {

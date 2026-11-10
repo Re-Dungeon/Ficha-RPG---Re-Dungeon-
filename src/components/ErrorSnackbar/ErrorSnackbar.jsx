@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 
-const ErrorSnackbar = ({ open, mensagem, onClose }) => (
+const ErrorSnackbar = ({ open, mensagem = '', onClose }) => (
   <Snackbar
     open={open}
     autoHideDuration={6000}
@@ -29,10 +29,6 @@ ErrorSnackbar.propTypes = {
   open: PropTypes.bool.isRequired,
   mensagem: PropTypes.string,
   onClose: PropTypes.func.isRequired,
-};
-
-ErrorSnackbar.defaultProps = {
-  mensagem: '',
 };
 
 export default ErrorSnackbar;

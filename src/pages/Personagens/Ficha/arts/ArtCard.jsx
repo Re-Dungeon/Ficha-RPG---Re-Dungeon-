@@ -6,6 +6,7 @@ import { getNome } from 'common/utils/resolveNome';
 
 import { ART_STAT_CAMPOS, DOMINIO_LABELS, TIPO_ACAO_META, TIPO_ART_META } from './constants';
 import CondicaoViewDialog from '../condicoes/CondicaoViewDialog';
+import BotaoRolar from './BotaoRolar';
 import {
   ArtCardBody,
   ArtCardFooter,
@@ -29,7 +30,9 @@ import {
   ConditionName,
 } from './styles';
 
-const ArtCard = ({ art, nucleo, condicoes, onVer, onEditar, onRemover, onToggleAtiva }) => {
+const CONDICOES_PADRAO = [];
+
+const ArtCard = ({ art, nucleo = null, condicoes = CONDICOES_PADRAO, onVer, onEditar, onRemover, onToggleAtiva }) => {
   const tipoMeta = TIPO_ART_META[art.tipo] ?? {};
   const acaoMeta = TIPO_ACAO_META[art.tipoAcao] ?? {};
 
@@ -169,6 +172,7 @@ const ArtCard = ({ art, nucleo, condicoes, onVer, onEditar, onRemover, onToggleA
       />
 
       <ArtCardFooter>
+        <BotaoRolar dados={art.dados} nome={art.nome} />
         <Button
           size="small"
           variant="outlined"
@@ -263,11 +267,6 @@ ArtCard.propTypes = {
   onEditar: PropTypes.func.isRequired,
   onRemover: PropTypes.func.isRequired,
   onToggleAtiva: PropTypes.func.isRequired,
-};
-
-ArtCard.defaultProps = {
-  nucleo: null,
-  condicoes: [],
 };
 
 export default ArtCard;

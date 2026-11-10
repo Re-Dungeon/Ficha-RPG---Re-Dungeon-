@@ -29,7 +29,7 @@ import {
   FieldsRow,
 } from './styles';
 
-const AtributoCard = ({ label, total, baseName, extraName, bonusName, personagem, onSave }) => {
+const AtributoCard = ({ label, total, baseName, extraName, bonusName, personagem, onSave = null }) => {
   const tituloId = `dialog-titulo-${baseName}`;
   const [aberto, setAberto] = useState(false);
   const [menuAberto, setMenuAberto] = useState(false);
@@ -49,6 +49,9 @@ const AtributoCard = ({ label, total, baseName, extraName, bonusName, personagem
   const nomeCalculadora = isDefesa ? 'Calculadora de Defesa' : 'Calculadora de Ataque';
   const [prontidaoAberta, setProntidaoAberta] = useState(false);
   const [prontidaoInfoAberta, setProntidaoInfoAberta] = useState(false);
+  // Atalho escolhido no diálogo da gema com Base/Extra/Bônus ainda não salvos:
+  // guarda a opção até o jogador decidir (Salvar / Descartar / Cancelar).
+  const [atalhoPendente, setAtalhoPendente] = useState(null);
 
   const abrir = () => {
     snapshotRef.current = {
@@ -67,6 +70,40 @@ const AtributoCard = ({ label, total, baseName, extraName, bonusName, personagem
       bonusHelpers.setValue(snapshot.bonus);
     }
     setAberto(false);
+  };
+
+  const temEdicaoPendente = () => {
+    const snapshot = snapshotRef.current;
+    if (!snapshot) return false;
+    return (
+      snapshot.base !== baseField.value ||
+      snapshot.extra !== extraField.value ||
+      snapshot.bonus !== bonusField.value
+    );
+  };
+
+  const abrirAtalho = opcao => {
+    if (temEdicaoPendente()) {
+      setAtalhoPendente(opcao);
+      return;
+    }
+    setAberto(false);
+    opcao.onClick();
+  };
+
+  const salvarEAbrirAtalho = () => {
+    const opcao = atalhoPendente;
+    setAtalhoPendente(null);
+    setAberto(false);
+    submitForm();
+    opcao?.onClick();
+  };
+
+  const descartarEAbrirAtalho = () => {
+    const opcao = atalhoPendente;
+    setAtalhoPendente(null);
+    cancelar();
+    opcao?.onClick();
   };
 
   // "Salvar" grava a ficha (antes só fechava o diálogo e o jogador precisava
@@ -252,10 +289,7 @@ const AtributoCard = ({ label, total, baseName, extraName, bonusName, personagem
                     key={opcao.label}
                     variant="outlined"
                     fullWidth
-                    onClick={() => {
-                      setAberto(false);
-                      opcao.onClick();
-                    }}
+                    onClick={() => abrirAtalho(opcao)}
                   >
                     {opcao.label}
                   </Button>
@@ -271,6 +305,30 @@ const AtributoCard = ({ label, total, baseName, extraName, bonusName, personagem
           </DialogActions>
         </form>
       </Dialog>
+
+      <Dialog
+        open={Boolean(atalhoPendente)}
+        onClose={() => setAtalhoPendente(null)}
+        maxWidth="xs"
+        fullWidth
+        aria-labelledby={`${tituloId}-pendente`}
+      >
+        <DialogHeaderRow>
+          <DialogHeaderTitle id={`${tituloId}-pendente`}>Salvar alterações antes?</DialogHeaderTitle>
+        </DialogHeaderRow>
+        <DialogContent style={{ paddingTop: 8 }}>
+          Você mudou Base, Extra ou Bônus de {label} e ainda não salvou.
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAtalhoPendente(null)}>Cancelar</Button>
+          <Button color="warning" onClick={descartarEAbrirAtalho}>
+            Descartar
+          </Button>
+          <Button variant="contained" onClick={salvarEAbrirAtalho}>
+            Salvar
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };
@@ -284,11 +342,6 @@ AtributoCard.propTypes = {
   bonusCultivo: PropTypes.number,
   personagem: PropTypes.object.isRequired,
   onSave: PropTypes.func,
-};
-
-AtributoCard.defaultProps = {
-  bonusCultivo: 0,
-  onSave: null,
 };
 
 export default AtributoCard;

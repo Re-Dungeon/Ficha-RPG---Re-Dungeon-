@@ -55,7 +55,9 @@ const Toolbar = styled.div`
   margin-bottom:8px;
 `;
 
-const NoteEditor = ({ open, onClose, onSave, initial }) => {
+const INITIAL_PADRAO = {};
+
+const NoteEditor = ({ open, onClose, onSave, initial = INITIAL_PADRAO }) => {
   const { executar } = useSaving();
   const [title, setTitle] = useState(initial.title ?? 'Nova Nota');
   const [coverImage, setCoverImage] = useState(initial.coverImage ?? '');
@@ -131,7 +133,5 @@ NoteEditor.propTypes = {
   onSave: PropTypes.func.isRequired,
   initial: PropTypes.object,
 };
-
-NoteEditor.defaultProps = { initial: {} };
 
 export default NoteEditor;

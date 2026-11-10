@@ -313,7 +313,7 @@ ItemFormBody.propTypes = {
   onClose: PropTypes.func.isRequired,
 };
 
-const ItemFormDialog = ({ open, onClose, item, onSubmit }) => {
+const ItemFormDialog = ({ open, onClose, item = null, onSubmit }) => {
   const [initialValues, setInitialValues] = useState(ITEM_AUTORAL_INICIAL);
 
   useEffect(() => {
@@ -347,10 +347,6 @@ ItemFormDialog.propTypes = {
   onClose: PropTypes.func.isRequired,
   item: PropTypes.object,
   onSubmit: PropTypes.func.isRequired,
-};
-
-ItemFormDialog.defaultProps = {
-  item: null,
 };
 
 export default ItemFormDialog;

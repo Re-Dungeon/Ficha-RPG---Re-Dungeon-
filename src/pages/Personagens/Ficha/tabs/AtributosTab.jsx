@@ -35,7 +35,7 @@ const AtributosFormBody = ({
   personagem,
   formik,
   salvarRascunho,
-  rascunho,
+  rascunho = null,
   onRestaurar,
   onDescartar,
   onExcluir,
@@ -173,10 +173,6 @@ AtributosFormBody.propTypes = {
   racaNome: PropTypes.string.isRequired,
   racaLinkImagem: PropTypes.string,
   classesNomes: PropTypes.array.isRequired,
-};
-
-AtributosFormBody.defaultProps = {
-  rascunho: null,
 };
 
 const AtributosTab = ({ personagem, onSave, onExcluir }) => {

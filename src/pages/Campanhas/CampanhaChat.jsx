@@ -625,6 +625,9 @@ const CampanhaChat = ({ visao = 'chat' }) => {
       cabecalho={cabecalho}
       opcoesCombate={gruposCombate}
       chaveHistorico={`reDungeonChatHistorico_${campanhaId}`}
+      onCarregarAnteriores={chat.carregarAnteriores}
+      temMaisAnteriores={chat.temMaisAntigas}
+      carregandoAnteriores={chat.carregandoAntigas}
     />
   );
 

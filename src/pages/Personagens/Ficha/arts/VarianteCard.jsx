@@ -6,6 +6,7 @@ import { getNome } from 'common/utils/resolveNome';
 
 import { DOMINIO_LABELS, TIPO_ACAO_META, TIPO_ART_META } from './constants';
 import CondicaoViewDialog from '../condicoes/CondicaoViewDialog';
+import BotaoRolar from './BotaoRolar';
 import {
   ArtCardBody,
   ArtCardFooter,
@@ -38,7 +39,9 @@ const CAMPOS_GRID = [
   ['Dados', 'dados'],
 ];
 
-const VarianteCard = ({ variante, art, nucleo, condicoes, onVer, onEditar, onRemover }) => {
+const CONDICOES_PADRAO = [];
+
+const VarianteCard = ({ variante, art = null, nucleo = null, condicoes = CONDICOES_PADRAO, onVer, onEditar, onRemover }) => {
   const tipoMeta = TIPO_ART_META[variante.tipo] ?? {};
   const acaoMeta = TIPO_ACAO_META[variante.tipoAcao] ?? {};
 
@@ -179,6 +182,7 @@ const VarianteCard = ({ variante, art, nucleo, condicoes, onVer, onEditar, onRem
       />
 
       <ArtCardFooter>
+        <BotaoRolar dados={variante.dados} nome={variante.nome} />
         <Button size="small" variant="outlined" onClick={onVer}>
           🔍 Ver
         </Button>
@@ -201,12 +205,6 @@ VarianteCard.propTypes = {
   onVer: PropTypes.func.isRequired,
   onEditar: PropTypes.func.isRequired,
   onRemover: PropTypes.func.isRequired,
-};
-
-VarianteCard.defaultProps = {
-  art: null,
-  nucleo: null,
-  condicoes: [],
 };
 
 export default VarianteCard;

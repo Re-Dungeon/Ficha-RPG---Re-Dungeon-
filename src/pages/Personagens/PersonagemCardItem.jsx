@@ -21,7 +21,7 @@ const FALLBACK_IMAGES = [
   'https://i.imgur.com/G088HoT.png'
 ];
 
-const PersonagemCardItem = ({ personagem, onClick, isSelected }) => {
+const PersonagemCardItem = ({ personagem, onClick, isSelected = false }) => {
   const [racaNome, setRacaNome] = useState('');
   const [classesNomes, setClassesNomes] = useState([]);
   const [universoNome, setUniversoNome] = useState('');
@@ -62,7 +62,7 @@ const PersonagemCardItem = ({ personagem, onClick, isSelected }) => {
         <PersonagemMediaOverlay />
       </PersonagemMedia>
       <PersonagemInfo>
-        <PersonagemNome $isSelected={isSelected}>{personagem.nome}</PersonagemNome>
+        <PersonagemNome $isSelected={isSelected} data-testid="personagem-card-nome">{personagem.nome}</PersonagemNome>
         <PersonagemMeta>
           {classesNomes.length > 0 ? (
             classesNomes.map(classe => (
@@ -89,10 +89,6 @@ PersonagemCardItem.propTypes = {
   personagem: PropTypes.object.isRequired,
   onClick: PropTypes.func.isRequired,
   isSelected: PropTypes.bool,
-};
-
-PersonagemCardItem.defaultProps = {
-  isSelected: false,
 };
 
 export default PersonagemCardItem;

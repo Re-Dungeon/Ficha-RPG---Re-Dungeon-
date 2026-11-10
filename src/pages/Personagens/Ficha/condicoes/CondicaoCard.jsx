@@ -16,7 +16,7 @@ import {
   CondicaoNome,
 } from './styles';
 
-const CondicaoCard = ({ ativo, condicao, onVer, onAlterarDuracao, onRemover, onReduzirAcumulo }) => {
+const CondicaoCard = ({ ativo, condicao = null, onVer, onAlterarDuracao, onRemover, onReduzirAcumulo = null }) => {
   const nome = getNome(condicao) || 'Condição';
   // Só grava no Firestore no blur (não a cada tecla) — evita disparar uma escrita por
   // dígito e duas gravações sobrepostas não-serializadas sobrescrevendo uma à outra.
@@ -92,11 +92,6 @@ CondicaoCard.propTypes = {
   onAlterarDuracao: PropTypes.func.isRequired,
   onRemover: PropTypes.func.isRequired,
   onReduzirAcumulo: PropTypes.func,
-};
-
-CondicaoCard.defaultProps = {
-  condicao: null,
-  onReduzirAcumulo: null,
 };
 
 export default CondicaoCard;

@@ -35,7 +35,9 @@ const CAMPOS_GRID = [
   ['Dados', 'dados'],
 ];
 
-const ArtViewDialog = ({ open, onClose, art, nucleo, condicoes, onEditar }) => {
+const CONDICOES_PADRAO = [];
+
+const ArtViewDialog = ({ open, onClose, art = null, nucleo = null, condicoes = CONDICOES_PADRAO, onEditar }) => {
   if (!art) {
     return null;
   }
@@ -148,12 +150,6 @@ ArtViewDialog.propTypes = {
   nucleo: PropTypes.object,
   condicoes: PropTypes.array,
   onEditar: PropTypes.func.isRequired,
-};
-
-ArtViewDialog.defaultProps = {
-  art: null,
-  nucleo: null,
-  condicoes: [],
 };
 
 export default ArtViewDialog;

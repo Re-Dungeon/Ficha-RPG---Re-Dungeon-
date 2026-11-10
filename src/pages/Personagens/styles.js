@@ -16,6 +16,7 @@ export const PageWrapper = styled.div`
   ${MOBILE} {
     padding: 16px 12px;
     gap: 16px;
+    min-width: 0;
   }
   position: relative;
 `;
@@ -265,7 +266,28 @@ export const TabsHeader = styled.div`
     flex: 0 0 auto;
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 8px;
+
+    ${MOBILE} {
+      flex: 1 1 auto;
+      min-width: 0;
+
+      > * {
+        flex: 1 1 100%;
+        min-width: 0 !important;
+      }
+    }
+  }
+
+  ${MOBILE} {
+    /* sem wrap: com wrap a "linha" da coluna tomava a largura das abas
+       (nowrap) e empurrava tudo para fora da tela */
+    flex-wrap: nowrap;
+
+    > .tabs-wrapper {
+      min-width: 0;
+    }
   }
 
   @media (max-width: 720px) {

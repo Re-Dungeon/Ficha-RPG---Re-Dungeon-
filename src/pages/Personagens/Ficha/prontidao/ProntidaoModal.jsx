@@ -299,7 +299,7 @@ const calcularRecuperacaoStatus = (personagem, percentual) => {
 // turno"/"Resetar turnos" somem. `onAcaoRegistrada({ nome, detalhe, ppAtual,
 // ppMaximo })` é chamada depois de cada ação salva (não em cancelar/resetar) —
 // o Grid usa para o aviso no chat.
-const ProntidaoModal = ({ open, onClose, personagem, onSave, prontidaoValor, tipo = 'central', origem = 'ficha', onAcaoRegistrada }) => {
+const ProntidaoModal = ({ open, onClose, personagem, onSave = null, prontidaoValor = 0, tipo = 'central', origem = 'ficha', onAcaoRegistrada }) => {
   const ppMaximo = calcularPpMaximo(prontidaoValor);
   const controlaTurnos = origem !== 'grid';
   const avisarAcao = (nome, detalhe, ppAtual) => {
@@ -2142,12 +2142,6 @@ ProntidaoModal.propTypes = {
   tipo: PropTypes.oneOf(['central', 'info']),
   origem: PropTypes.oneOf(['ficha', 'grid']),
   onAcaoRegistrada: PropTypes.func,
-};
-
-ProntidaoModal.defaultProps = {
-  onSave: null,
-  prontidaoValor: 0,
-  tipo: 'central',
 };
 
 export default ProntidaoModal;

@@ -24,7 +24,7 @@ import {
   SecaoCondicaoTitulo,
 } from './styles';
 
-const CondicaoViewDialog = ({ open, onClose, condicao, ativo }) => {
+const CondicaoViewDialog = ({ open, onClose, condicao = null, ativo = null }) => {
   if (!condicao) {
     return null;
   }
@@ -108,11 +108,6 @@ CondicaoViewDialog.propTypes = {
   onClose: PropTypes.func.isRequired,
   condicao: PropTypes.object,
   ativo: PropTypes.object,
-};
-
-CondicaoViewDialog.defaultProps = {
-  condicao: null,
-  ativo: null,
 };
 
 export default CondicaoViewDialog;

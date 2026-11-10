@@ -27,7 +27,7 @@ import {
   ViewTitleSub,
 } from './styles';
 
-const NucleoViewDialog = ({ open, onClose, nucleo, onEditar }) => {
+const NucleoViewDialog = ({ open, onClose, nucleo = null, onEditar }) => {
   if (!nucleo) {
     return null;
   }
@@ -106,10 +106,6 @@ NucleoViewDialog.propTypes = {
   onClose: PropTypes.func.isRequired,
   nucleo: PropTypes.object,
   onEditar: PropTypes.func.isRequired,
-};
-
-NucleoViewDialog.defaultProps = {
-  nucleo: null,
 };
 
 export default NucleoViewDialog;
