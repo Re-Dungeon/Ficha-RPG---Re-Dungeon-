@@ -2,6 +2,9 @@ import styled from 'styled-components';
 
 import { MOBILE } from 'common/styles/breakpoints';
 
+// Fundo em WebP empacotado pelo Vite (antes: JPEG de 1 MB no imgur).
+import fundoLoginImg from './assets/fundo-login.webp';
+
 export const LoginWrapper = styled.div`
   position: relative;
   flex: 1;
@@ -13,7 +16,7 @@ export const LoginWrapper = styled.div`
   background-color: #050d19;
   background-image:
     linear-gradient(180deg, rgba(5, 12, 26, 0.58) 0%, rgba(3, 8, 18, 0.7) 100%),
-    url('https://i.imgur.com/v1EdhCV.jpeg');
+    url(${fundoLoginImg});
   background-position: center center;
   background-size: cover;
   background-repeat: no-repeat;

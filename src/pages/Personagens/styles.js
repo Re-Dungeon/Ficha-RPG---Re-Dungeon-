@@ -2,13 +2,16 @@ import styled from 'styled-components';
 
 import { MOBILE } from 'common/styles/breakpoints';
 
+// Fundo em WebP empacotado pelo Vite (antes: PNG no imgur).
+import fundoPersonagensImg from './assets/fundo-personagens.webp';
+
 export const PageWrapper = styled.div`
   flex: 1;
   padding: 32px;
   display: flex;
   flex-direction: column;
   gap: 24px;
-  background-image: url('https://i.imgur.com/REkKA1N.png');
+  background-image: url(${fundoPersonagensImg});
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

@@ -19,7 +19,7 @@ describe('PersonagemHeroCard', () => {
     const removerBtn = screen.getByRole('button', { name: /remover personagem/i });
 
     expect(salvarBtn).toHaveAttribute('type', 'submit');
-    expect(salvarBtn.querySelector('img')).toHaveAttribute('src', 'https://i.imgur.com/WDQEQb8.png');
-    expect(removerBtn.querySelector('img')).toHaveAttribute('src', 'https://i.imgur.com/9JyaulF.png');
+    expect(salvarBtn.querySelector('img')).toHaveAttribute('src', expect.stringContaining('badge-salvar'));
+    expect(removerBtn.querySelector('img')).toHaveAttribute('src', expect.stringContaining('badge-excluir'));
   });
 });

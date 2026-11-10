@@ -20,8 +20,8 @@ import {
   planetaRedungeonImg,
 } from './styles';
 
-const SALVAR_BADGE_URL = 'https://i.imgur.com/WDQEQb8.png';
-const EXCLUIR_BADGE_URL = 'https://i.imgur.com/9JyaulF.png';
+import salvarBadgeImg from './assets/badge-salvar.webp';
+import excluirBadgeImg from './assets/badge-excluir.webp';
 
 const PersonagemHeroCard = ({
   personagem,
@@ -69,13 +69,13 @@ const PersonagemHeroCard = ({
       <HeroAcoesRow>
         <Tooltip title="Salvar personagem" arrow placement="top">
           <HeroAcaoBadge type="submit" aria-label="Salvar personagem" disabled={salvando}>
-            <img src={SALVAR_BADGE_URL} alt="" />
+            <img src={salvarBadgeImg} alt="" />
           </HeroAcaoBadge>
         </Tooltip>
 
         <Tooltip title="Remover personagem" arrow placement="top">
           <HeroAcaoBadge type="button" aria-label="Remover personagem" onClick={onExcluir}>
-            <img src={EXCLUIR_BADGE_URL} alt="" />
+            <img src={excluirBadgeImg} alt="" />
           </HeroAcaoBadge>
         </Tooltip>
       </HeroAcoesRow>
