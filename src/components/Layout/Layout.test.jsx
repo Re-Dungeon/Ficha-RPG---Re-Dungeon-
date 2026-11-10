@@ -8,9 +8,19 @@ import { useSelecao } from 'context/selecaoContext';
 import Login from 'pages/Login/Login';
 import Layout from './Layout';
 import useIsMobile from 'hooks/useIsMobile';
+import { addSupportTicket, getSupportAppContext } from 'service/storage';
 
 vi.mock('context/AuthContext', () => ({ useAuth: vi.fn() }));
 vi.mock('hooks/useIsMobile', () => ({ default: vi.fn() }));
+vi.mock('service/storage', () => ({
+  addSupportTicket: vi.fn(() => Promise.resolve('ticket-1')),
+  getSupportAppContext: vi.fn(() => ({
+    sourceApp: 'player-sheet',
+    sourceAppName: 'Ficha de Jogador',
+    sourceUrl: 'https://ficha.test',
+  })),
+  getSupportTicketsByUser: vi.fn(() => Promise.resolve([])),
+}));
 
 const PERSONAGENS = {
   wesley: { id: 'wesley', nome: 'Wesley Chase', campanhas: ['torre'] },
@@ -197,6 +207,59 @@ describe('Layout — alternar entre Fichas e Campanhas', () => {
     expect(await screen.findByRole('menuitem', { name: /Aline Borges.*aline\.borges@re\.com/i })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('menuitem', { name: 'Sair' }));
     expect(logout).toHaveBeenCalledTimes(1);
+  });
+
+  it('mostra Suporte e Ajuda acima de Sair e abre o diálogo de suporte', async () => {
+    const logout = vi.fn();
+    useAuth.mockReturnValue({
+      currentUser: { uid: 'u1', email: 'aline.borges@re.com', displayName: 'Aline Borges' },
+      logout,
+    });
+
+    renderApp('/personagens');
+    await screen.findByText('Lista de fichas');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Aline Borges' }));
+    const menuItems = await screen.findAllByRole('menuitem');
+    expect(menuItems[menuItems.length - 2]).toHaveTextContent('Suporte e Ajuda');
+    expect(menuItems[menuItems.length - 1]).toHaveTextContent('Sair');
+
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Suporte e Ajuda' }));
+    expect(await screen.findByRole('dialog', { name: /Abrir Ticket de Suporte/i })).toBeInTheDocument();
+  });
+
+  it('envia um ticket com a origem correta da ficha de jogador', async () => {
+    const logout = vi.fn();
+    useAuth.mockReturnValue({
+      currentUser: { uid: 'u1', email: 'aline.borges@re.com', displayName: 'Aline Borges' },
+      logout,
+    });
+
+    renderApp('/personagens');
+    await screen.findByText('Lista de fichas');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Aline Borges' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Suporte e Ajuda' }));
+
+    fireEvent.change(screen.getByLabelText('Título'), { target: { value: 'Erro ao salvar fichas' } });
+    fireEvent.change(screen.getByLabelText('Descrição'), { target: { value: 'A ficha não está salvando corretamente.' } });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Enviar Ticket' }));
+
+    await waitFor(() => {
+      expect(getSupportAppContext).toHaveBeenCalledTimes(1);
+      expect(addSupportTicket).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: 'u1',
+          userEmail: 'aline.borges@re.com',
+          userDisplayName: 'Aline Borges',
+          sourceApp: 'player-sheet',
+          sourceAppName: 'Ficha de Jogador',
+          sourceUrl: 'https://ficha.test',
+          status: 'open',
+        }),
+      );
+    });
   });
 
   it('não renderiza o header na rota pública de login', () => {

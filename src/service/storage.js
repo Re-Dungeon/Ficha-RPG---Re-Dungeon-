@@ -195,6 +195,46 @@ export const updatePersonagem = async (id, data, { base } = {}) => {
 
 export const removePersonagem = id => removeFirestoreItem('personagens', id);
 
+export const getSupportAppContext = () => {
+  const sourceApp = import.meta.env.VITE_SUPPORT_APP_ID || 'player-sheet';
+  const sourceAppName = 'Ficha de Jogador';
+  const sourceUrl = import.meta.env.VITE_SUPPORT_PLAYER_SHEET_URL || window.location.origin;
+
+  return {
+    sourceApp,
+    sourceAppName,
+    sourceUrl,
+  };
+};
+
+export const getSupportTicketsByUser = async userId => {
+  if (!userId) {
+    return [];
+  }
+
+  const items = await getFirestoreItems('supportTickets', where('userId', '==', userId));
+  return items.sort((a, b) => {
+    const aValue = a.createdAt?.seconds ?? a.createdAt ?? 0;
+    const bValue = b.createdAt?.seconds ?? b.createdAt ?? 0;
+    return Number(bValue) - Number(aValue);
+  });
+};
+
+export const addSupportTicket = async payload => {
+  const sanitized = {
+    ...payload,
+    attachments: Array.isArray(payload.attachments) ? payload.attachments.filter(Boolean) : [],
+    status: payload.status || 'open',
+    adminResponse: payload.adminResponse || '',
+    respondedAt: payload.respondedAt ?? null,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  };
+
+  const id = await addFirestoreItem('supportTickets', sanitized);
+  return id;
+};
+
 // Grava SÓ o valor atual de PV/Energia/Fadiga (edição pelo token do grid),
 // por caminho pontilhado (`status.hp.atual`): base/extra/bônus e o resto da
 // ficha ficam intactos. Respeita o legado (`saude` = nome antigo de `hp`; se a
