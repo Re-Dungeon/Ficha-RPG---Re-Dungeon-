@@ -13,6 +13,7 @@ import {
   normalizarMetrosDaArea,
   quadradosDaArea,
 } from 'common/utils/gridAreas';
+import useConfirmacao from 'components/ConfirmDialog/useConfirmacao';
 
 import { CorBotao, CoresLinha, PopoverCorpo } from './stylesAcoes';
 
@@ -31,6 +32,7 @@ const AreaPopover = ({
   corPadrao,
   onRemoverTodas,
 }) => {
+  const [confirmar, dialogo] = useConfirmacao();
   const [forma, setForma] = useState(AREA_FORMAS.CONE);
   const [texto, setTexto] = useState('');
   const [cor, setCor] = useState(null);
@@ -49,72 +51,78 @@ const AreaPopover = ({
   };
 
   return (
-    <Popover
-      open={open}
-      anchorEl={anchorEl}
-      onClose={onClose}
-      anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-    >
-      <PopoverCorpo onPointerDown={evento => evento.stopPropagation()}>
-        <ToggleButtonGroup
-          exclusive
-          fullWidth
-          size="small"
-          value={forma}
-          aria-label="Forma da área"
-          onChange={(_evento, valor) => valor && setForma(valor)}
-        >
-          {FORMAS.map(f => (
-            <ToggleButton key={f} value={f} sx={{ minHeight: 44 }}>
-              {ROTULOS_AREA[f]}
-            </ToggleButton>
-          ))}
-        </ToggleButtonGroup>
-        <TextField
-          label="Tamanho (m)"
-          size="small"
-          value={texto}
-          error={invalido}
-          helperText={ajuda}
-          onChange={evento => setTexto(evento.target.value)}
-          onKeyDown={evento => {
-            if (evento.key === 'Enter') {
-              evento.preventDefault();
-              posicionar();
-            }
-          }}
-          slotProps={{ htmlInput: { inputMode: 'decimal' } }}
-        />
-        <CoresLinha role="group" aria-label="Cor da área">
-          {CORES_AREA.map(c => (
-            <CorBotao
-              key={c}
-              type="button"
-              aria-label={`Cor ${c}`}
-              aria-pressed={c === corAtual}
-              style={{ '--cor': c }}
-              onClick={() => setCor(c)}
-            />
-          ))}
-        </CoresLinha>
-        <Button variant="contained" disabled={metros == null} onClick={posicionar}>
-          Posicionar no mapa
-        </Button>
-        {onRemoverTodas && (
-          <Button
-            color="error"
-            onClick={() => {
-              if (window.confirm('Remover todas as áreas desta cena?')) {
-                onRemoverTodas();
-                onClose();
+    <>
+      <Popover
+        open={open}
+        anchorEl={anchorEl}
+        onClose={onClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+      >
+        <PopoverCorpo onPointerDown={evento => evento.stopPropagation()}>
+          <ToggleButtonGroup
+            exclusive
+            fullWidth
+            size="small"
+            value={forma}
+            aria-label="Forma da área"
+            onChange={(_evento, valor) => valor && setForma(valor)}
+          >
+            {FORMAS.map(f => (
+              <ToggleButton key={f} value={f} sx={{ minHeight: 44 }}>
+                {ROTULOS_AREA[f]}
+              </ToggleButton>
+            ))}
+          </ToggleButtonGroup>
+          <TextField
+            label="Tamanho (m)"
+            size="small"
+            value={texto}
+            error={invalido}
+            helperText={ajuda}
+            onChange={evento => setTexto(evento.target.value)}
+            onKeyDown={evento => {
+              if (evento.key === 'Enter') {
+                evento.preventDefault();
+                posicionar();
               }
             }}
-          >
-            Remover todos
+            slotProps={{ htmlInput: { inputMode: 'decimal' } }}
+          />
+          <CoresLinha role="group" aria-label="Cor da área">
+            {CORES_AREA.map(c => (
+              <CorBotao
+                key={c}
+                type="button"
+                aria-label={`Cor ${c}`}
+                aria-pressed={c === corAtual}
+                style={{ '--cor': c }}
+                onClick={() => setCor(c)}
+              />
+            ))}
+          </CoresLinha>
+          <Button variant="contained" disabled={metros == null} onClick={posicionar}>
+            Posicionar no mapa
           </Button>
-        )}
-      </PopoverCorpo>
-    </Popover>
+          {onRemoverTodas && (
+            <Button
+              color="error"
+              onClick={async () => {
+                const confirmado = await confirmar({
+                  titulo: 'Remover todas as áreas desta cena?',
+                  confirmarTexto: 'Remover',
+                });
+                if (!confirmado) return;
+                onRemoverTodas();
+                onClose();
+              }}
+            >
+              Remover todos
+            </Button>
+          )}
+        </PopoverCorpo>
+      </Popover>
+      {dialogo}
+    </>
   );
 };
 

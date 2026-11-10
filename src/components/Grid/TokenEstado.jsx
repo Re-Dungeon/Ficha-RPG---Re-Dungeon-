@@ -50,7 +50,13 @@ const TokenEstado = ({ recursos = null, condicoes = null, lado }) => {
               style={{ width: icone, height: icone, fontSize: icone * 0.6 }}
             >
               {condicao.icone ? (
-                <img src={condicao.icone} alt="" draggable={false} />
+                <img
+                  src={condicao.icone}
+                  alt=""
+                  draggable={false}
+                  loading="lazy"
+                  decoding="async"
+                />
               ) : (
                 (condicao.nome?.[0]?.toUpperCase() ?? '?')
               )}

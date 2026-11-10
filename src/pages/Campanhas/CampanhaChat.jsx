@@ -28,7 +28,11 @@ import {
   normalizarPersonagemCarregado,
   updatePersonagem,
 } from 'service/storage';
-import { montarMensagemTexto, personagensNaCampanha } from 'common/utils/chat';
+import {
+  destinatariosDasMensagens,
+  montarMensagemTexto,
+  personagensNaCampanha,
+} from 'common/utils/chat';
 import { avancarDuracaoCondicoes } from 'common/utils/formulas';
 import { corDoPing } from 'common/utils/grid';
 import { podeEditarArea } from 'common/utils/gridAreas';
@@ -231,6 +235,12 @@ const CampanhaChat = ({ visao = 'chat' }) => {
   }, [falandoComo, meusPersonagens, currentUser.uid]);
 
   const chat = useChatCampanha(campanhaId, autor, { ehMestreDaCampanha: isMestre });
+  // /w do mestre neste site: sem a lista de jogadores da campanha (isso é do
+  // Re:Master), chama pelo nome quem já falou no chat. Jogador: null.
+  const destinatariosSussurro = useMemo(
+    () => (autor?.isMestre ? destinatariosDasMensagens(chat.mensagens) : null),
+    [autor?.isMestre, chat.mensagens],
+  );
   // Grid só escuta na visão "grid" (e depois que o "Falando como" existe).
   const grid = useGridCampanha((visao === 'grid' || visao === 'lateral') && autor ? campanhaId : null, {
     uid: currentUser.uid,
@@ -623,6 +633,8 @@ const CampanhaChat = ({ visao = 'chat' }) => {
       onEnviarTexto={chat.enviarTexto}
       onEnviarImagem={chat.enviarImagem}
       onRolar={chat.rolar}
+      onSussurrar={chat.sussurrar}
+      destinatariosSussurro={destinatariosSussurro}
       macros={chat.macros}
       audio={chat.audio}
       onApagar={chat.apagar}

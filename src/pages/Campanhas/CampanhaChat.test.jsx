@@ -28,6 +28,8 @@ import {
   subscribeGridTokens,
   subscribeChatMensagens,
   subscribeChatSecretasDoUsuario,
+  addChatSussurro,
+  subscribeChatSussurros,
   subscribePersonagem,
   atualizarRecursoAtualPersonagem,
   updatePersonagem,
@@ -56,6 +58,10 @@ vi.mock('service/storage', () => ({
   removeChatRolagemSecreta: vi.fn(),
   subscribeChatSecretasDoMestre: vi.fn(() => vi.fn()),
   subscribeChatSecretasDoUsuario: vi.fn(() => vi.fn()),
+  addChatSussurro: vi.fn(),
+  removeChatSussurro: vi.fn(),
+  subscribeChatSussurros: vi.fn(() => vi.fn()),
+  subscribeChatSussurrosDoMestre: vi.fn(() => vi.fn()),
   getChatMacros: vi.fn(() => Promise.resolve([])),
   addChatMacro: vi.fn(),
   updateChatMacro: vi.fn(),
@@ -380,6 +386,60 @@ describe('CampanhaChat', () => {
       expect(
         addChatRolagemSecreta.mock.calls[0][2].rolagem.grupos.map(g => g.faces),
       ).toEqual([20, 4]);
+    });
+
+    it('/w mestre grava o sussurro na pasta do próprio jogador, não no chat público', async () => {
+      renderChat();
+      await screen.findByText('Bem-vindos à taverna.');
+
+      enviarComando('/w mestre posso tentar de novo?');
+
+      await waitFor(() =>
+        expect(addChatSussurro).toHaveBeenCalledWith(
+          'camp-1',
+          'uid-jogador',
+          expect.objectContaining({
+            tipo: 'texto',
+            texto: 'posso tentar de novo?',
+            sussurro: true,
+            paraNome: 'Mestre',
+            autorNome: 'Aldric',
+          }),
+        ),
+      );
+      expect(addChatMensagem).not.toHaveBeenCalled();
+      await waitFor(() => expect(screen.getByLabelText('Mensagem')).toHaveValue(''));
+    });
+
+    it('mostra o sussurro recebido do mestre, com a etiqueta', async () => {
+      subscribeChatSussurros.mockImplementation((_id, _uid, onChange) => {
+        onChange([
+          {
+            id: 'w1',
+            uid: 'uid-mestre',
+            autorNome: 'Mestre',
+            isMestre: true,
+            persona: 'mestre',
+            tipo: 'texto',
+            texto: 'Você ouve passos atrás da porta.',
+            sussurro: true,
+            paraNome: 'Aldric',
+            donoUid: 'uid-jogador',
+            createdAt: new Date(),
+          },
+        ]);
+        return vi.fn();
+      });
+      renderChat();
+
+      expect(await screen.findByText('Você ouve passos atrás da porta.')).toBeInTheDocument();
+      expect(screen.getByText('🤫 Mestre sussurrou')).toBeInTheDocument();
+      expect(subscribeChatSussurros).toHaveBeenCalledWith(
+        'camp-1',
+        'uid-jogador',
+        expect.any(Function),
+        expect.any(Function),
+      );
     });
 
     it('comando inválido não é enviado e mostra o erro', async () => {

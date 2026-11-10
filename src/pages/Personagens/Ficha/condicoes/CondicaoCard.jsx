@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import CloseIcon from '@mui/icons-material/Close';
 
+import { miniaturaImagem } from 'common/utils/grid';
 import { getNome } from 'common/utils/resolveNome';
 
 import {
@@ -36,7 +37,7 @@ const CondicaoCard = ({ ativo, condicao = null, onVer, onAlterarDuracao, onRemov
   return (
     <CondicaoCardWrapper>
       <CondicaoIcone>
-        {condicao?.linkImagem ? <img src={condicao.linkImagem} alt="" /> : '⚠️'}
+        {condicao?.linkImagem ? <img src={miniaturaImagem(condicao.linkImagem)} alt="" loading="lazy" decoding="async" /> : '⚠️'}
       </CondicaoIcone>
 
       <CondicaoInfo>
