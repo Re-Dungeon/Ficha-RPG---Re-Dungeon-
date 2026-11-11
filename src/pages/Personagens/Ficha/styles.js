@@ -8,7 +8,8 @@ import planetaRedungeonImg from './assets/planeta-redungeon.webp';
 import molduraRetratoImg from './assets/moldura-retrato.webp';
 import estrelaAtributosPrincipalImg from './assets/estrela-atributos.webp';
 import gemaAtributoImg from './assets/gema-atributo.webp';
-import fundoFichaImg from './assets/fundo-ficha.webp';
+
+const FUNDO_FICHA_IMG = 'https://i.imgur.com/Fs3D2wd.png';
 
 export const FichaWrapper = styled.div`
   flex: 1;
@@ -46,7 +47,7 @@ export const FichaMain = styled.div`
   background-color: #090b14;
   background-image:
     linear-gradient(rgba(7, 5, 14, 0.78), rgba(7, 5, 14, 0.86)),
-    url(${fundoFichaImg});
+    url(${FUNDO_FICHA_IMG});
   background-position: center center;
   background-size: cover;
   background-repeat: no-repeat;
