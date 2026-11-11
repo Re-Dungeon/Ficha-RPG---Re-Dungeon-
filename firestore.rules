@@ -657,21 +657,83 @@ service cloud.firestore {
         (donoUid == request.auth.uid || isMestreDaCampanha(campanhaId));
     }
 
+    function isFichaPlayerTicketSource(data) {
+      return data.sourceApp == 'player-sheet' &&
+        data.sourceAppName == 'Ficha de Jogador';
+    }
+
+    function isLegacyFichaTicket(data) {
+      return isAuth() &&
+        data is map &&
+        data.userId == request.auth.uid &&
+        !('sourceApp' in data) &&
+        !('sourceAppName' in data);
+    }
+
+    function canAccessFichaTickets(ticketData) {
+      return isAuth() &&
+        ((isFichaPlayerTicketSource(ticketData) &&
+          (ticketData.userId == request.auth.uid || isAdmin())) ||
+         (isLegacyFichaTicket(ticketData) &&
+          (ticketData.userId == request.auth.uid || isAdmin())));
+    }
+
+    function canUpdateOwnFichaTicket(antes, depois) {
+      return isAuth() &&
+        ((isFichaPlayerTicketSource(antes) &&
+          isFichaPlayerTicketSource(depois) &&
+          antes.userId == request.auth.uid &&
+          depois.userId == request.auth.uid &&
+          antes.userId == depois.userId &&
+          antes.createdAt == depois.createdAt &&
+          antes.status == depois.status &&
+          antes.adminResponse == depois.adminResponse &&
+          antes.respondedAt == depois.respondedAt &&
+          depois.title is string &&
+          depois.title.size() > 0 &&
+          depois.title.size() <= 120 &&
+          depois.description is string &&
+          depois.description.size() > 0 &&
+          depois.description.size() <= 5000 &&
+          depois.attachments is list &&
+          depois.attachments.size() <= 10 &&
+          depois.category in ['Bug', 'Sugestão', 'Dúvida', 'Problema', 'Outro'] &&
+          depois.updatedAt is timestamp &&
+          depois.updatedAt <= request.time)
+        ||
+        (isLegacyFichaTicket(antes) &&
+          isLegacyFichaTicket(depois) &&
+          antes.userId == request.auth.uid &&
+          depois.userId == request.auth.uid &&
+          antes.userId == depois.userId &&
+          antes.createdAt == depois.createdAt &&
+          antes.status == depois.status &&
+          antes.adminResponse == depois.adminResponse &&
+          antes.respondedAt == depois.respondedAt &&
+          depois.title is string &&
+          depois.title.size() > 0 &&
+          depois.title.size() <= 120 &&
+          depois.description is string &&
+          depois.description.size() > 0 &&
+          depois.description.size() <= 5000 &&
+          depois.attachments is list &&
+          depois.attachments.size() <= 10 &&
+          depois.category in ['Bug', 'Sugestão', 'Dúvida', 'Problema', 'Outro'] &&
+          depois.updatedAt is timestamp &&
+          depois.updatedAt <= request.time));
+    }
+
     // ── supportTickets ───────────────────────────────────────────────────────
-    // Cada usuário só lê e cria os próprios tickets. O status/finalização é
-    // controlado pela equipe administrativa (admin), que também pode responder
-    // o ticket em nome do suporte.
+    // Cada usuário só lê, cria e atualiza os próprios tickets da Ficha de
+    // Jogador. O status/finalização e o gerenciamento administrativo ficam sob
+    // a regra do admin, sem misturar o fluxo do Banco de Dados com o da ficha.
     match /supportTickets/{ticketId} {
-      allow read: if isAuth() && (
-        resource.data.userId == request.auth.uid ||
-        isAdmin()
-      );
+      allow read: if canAccessFichaTickets(resource.data);
       allow create: if isAuth() &&
         request.resource.data.userId == request.auth.uid &&
+        isFichaPlayerTicketSource(request.resource.data) &&
         request.resource.data.userEmail is string &&
         request.resource.data.userDisplayName is string &&
-        request.resource.data.sourceApp is string &&
-        request.resource.data.sourceAppName is string &&
         request.resource.data.sourceUrl is string &&
         request.resource.data.category in ['Bug', 'Sugestão', 'Dúvida', 'Problema', 'Outro'] &&
         request.resource.data.title is string &&
@@ -693,8 +755,26 @@ service cloud.firestore {
         request.resource.data.userId == resource.data.userId &&
         request.resource.data.status in ['open', 'in_progress', 'in-progress', 'answered', 'resolved'] &&
         request.resource.data.updatedAt is timestamp &&
-        request.resource.data.updatedAt <= request.time;
-      allow delete: if isAdmin();
+        request.resource.data.updatedAt <= request.time ||
+        canUpdateOwnFichaTicket(resource.data, request.resource.data) ||
+        (isAuth() && isLegacyFichaTicket(resource.data) &&
+         isLegacyFichaTicket(request.resource.data) &&
+         resource.data.userId == request.auth.uid &&
+         request.resource.data.userId == request.auth.uid &&
+         request.resource.data.title is string &&
+         request.resource.data.title.size() > 0 &&
+         request.resource.data.title.size() <= 120 &&
+         request.resource.data.description is string &&
+         request.resource.data.description.size() > 0 &&
+         request.resource.data.description.size() <= 5000 &&
+         request.resource.data.attachments is list &&
+         request.resource.data.attachments.size() <= 10 &&
+         request.resource.data.category in ['Bug', 'Sugestão', 'Dúvida', 'Problema', 'Outro'] &&
+         request.resource.data.updatedAt is timestamp &&
+         request.resource.data.updatedAt <= request.time);
+      allow delete: if isAdmin() ||
+        (isAuth() && resource.data.userId == request.auth.uid &&
+          (isFichaPlayerTicketSource(resource.data) || isLegacyFichaTicket(resource.data)));
     }
 
     function supportTicketMensagemValida(data) {
@@ -708,13 +788,18 @@ service cloud.firestore {
 
     match /supportTickets/{ticketId}/messages/{messageId} {
       allow read: if isAuth() && (
-        get(/databases/$(database)/documents/supportTickets/$(ticketId)).data.userId == request.auth.uid ||
-        isAdmin()
+        isAdmin() ||
+        (get(/databases/$(database)/documents/supportTickets/$(ticketId)).data.userId == request.auth.uid &&
+         (isFichaPlayerTicketSource(get(/databases/$(database)/documents/supportTickets/$(ticketId)).data) ||
+          isLegacyFichaTicket(get(/databases/$(database)/documents/supportTickets/$(ticketId)).data)))
       );
       allow create: if isAuth() && (
+        isAdmin() ||
         (request.resource.data.userId == request.auth.uid &&
-         get(/databases/$(database)/documents/supportTickets/$(ticketId)).data.userId == request.auth.uid) ||
-        isAdmin()
+         get(/databases/$(database)/documents/supportTickets/$(ticketId)).data.userId == request.auth.uid &&
+         (isFichaPlayerTicketSource(get(/databases/$(database)/documents/supportTickets/$(ticketId)).data) ||
+          isLegacyFichaTicket(get(/databases/$(database)/documents/supportTickets/$(ticketId)).data))
+        )
       ) && supportTicketMensagemValida(request.resource.data);
       allow update: if isAdmin();
       allow delete: if isAdmin();
