@@ -45,6 +45,27 @@ import {
 } from './storage';
 
 describe('support ticket write contract', () => {
+  beforeEach(() => {
+    vi.mocked(addDoc).mockClear();
+  });
+
+  it('grava a categoria pelo id padronizado e adminResponse nulo', async () => {
+    vi.mocked(addDoc).mockResolvedValue({ id: 'ticket-2' });
+
+    await addSupportTicket({ userId: 'u1', category: 'question', title: 't', description: 'd' });
+
+    const payloadEnviado = vi.mocked(addDoc).mock.calls[0][1];
+    expect(payloadEnviado).toMatchObject({ category: 'question', adminResponse: null });
+  });
+
+  it('converte o rótulo antigo da categoria para o id padronizado', async () => {
+    vi.mocked(addDoc).mockResolvedValue({ id: 'ticket-3' });
+
+    await addSupportTicket({ userId: 'u1', category: 'Sugestão', title: 't', description: 'd' });
+
+    expect(vi.mocked(addDoc).mock.calls[0][1].category).toBe('suggestion');
+  });
+
   it('não repassa timestamps do cliente e usa o serverTimestamp do Firestore', async () => {
     vi.mocked(addDoc).mockResolvedValue({ id: 'ticket-1' });
 
@@ -55,12 +76,12 @@ describe('support ticket write contract', () => {
       sourceApp: 'player-sheet',
       sourceAppName: 'Ficha de Jogador',
       sourceUrl: 'https://ficha.test',
-      category: 'Bug',
+      category: 'bug',
       title: 'Erro ao salvar',
       description: 'Não salva',
       attachments: ['https://example.com/anexo'],
       status: 'open',
-      adminResponse: '',
+      adminResponse: null,
       respondedAt: null,
       createdAt: new Date('2024-01-01T00:00:00.000Z'),
       updatedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -71,9 +92,9 @@ describe('support ticket write contract', () => {
     const payloadEnviado = vi.mocked(addDoc).mock.calls[0][1];
     expect(payloadEnviado).toMatchObject({
       userId: 'u1',
-      category: 'Bug',
+      category: 'bug',
       status: 'open',
-      adminResponse: '',
+      adminResponse: null,
       respondedAt: null,
       createdAt: 'server-ts',
       updatedAt: 'server-ts',

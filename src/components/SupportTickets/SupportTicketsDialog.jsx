@@ -32,21 +32,34 @@ import SupportAgentOutlinedIcon from '@mui/icons-material/SupportAgentOutlined';
 
 import { useAuth } from 'context/AuthContext';
 import {
+  DEFAULT_SUPPORT_TICKET_CATEGORY,
+  SUPPORT_TICKET_CATEGORIES,
+  getSupportTicketCategoryLabel,
+  normalizeSupportTicketCategory,
+} from 'common/utils/supportTickets';
+import {
   addSupportTicket,
   getSupportAppContext,
   getSupportTicketsByUser,
 } from 'service/storage';
 
-const CATEGORIAS = ['Bug', 'Sugestão', 'Dúvida', 'Problema', 'Outro'];
-const DEFAULT_FORM = { category: 'Bug', title: '', description: '', attachments: [''] };
-
-const CATEGORY_META = {
-  Bug: { icon: BugReportOutlinedIcon, color: '#00D9FF' },
-  Sugestão: { icon: LightbulbOutlinedIcon, color: '#A78BFA' },
-  Dúvida: { icon: HelpOutlineOutlinedIcon, color: '#7DD3FC' },
-  Problema: { icon: ReportProblemOutlinedIcon, color: '#F59E0B' },
-  Outro: { icon: MoreHorizOutlinedIcon, color: '#C4B5FD' },
+const DEFAULT_FORM = {
+  category: DEFAULT_SUPPORT_TICKET_CATEGORY,
+  title: '',
+  description: '',
+  attachments: [''],
 };
+
+// Chaveado pelo id da categoria (ver common/utils/supportTickets).
+const CATEGORY_META = {
+  bug: { icon: BugReportOutlinedIcon, color: '#00D9FF' },
+  suggestion: { icon: LightbulbOutlinedIcon, color: '#A78BFA' },
+  question: { icon: HelpOutlineOutlinedIcon, color: '#7DD3FC' },
+  'system-problem': { icon: ReportProblemOutlinedIcon, color: '#F59E0B' },
+  other: { icon: MoreHorizOutlinedIcon, color: '#C4B5FD' },
+};
+
+const getCategoryMeta = category => CATEGORY_META[normalizeSupportTicketCategory(category)];
 
 const STATUS_META = {
   open: { label: 'Aberto', color: '#00D9FF', background: 'rgba(0, 217, 255, 0.12)', border: 'rgba(0, 217, 255, 0.32)' },
@@ -219,12 +232,12 @@ const SupportTicketsDialog = ({ open, onClose }) => {
         sourceApp: appContext.sourceApp,
         sourceAppName: appContext.sourceAppName,
         sourceUrl: appContext.sourceUrl,
-        category: form.category,
+        category: normalizeSupportTicketCategory(form.category),
         title: dadosValidados.title,
         description: dadosValidados.description,
         attachments: dadosValidados.attachments,
         status: 'open',
-        adminResponse: '',
+        adminResponse: null,
         respondedAt: null,
       };
 
@@ -382,15 +395,15 @@ const SupportTicketsDialog = ({ open, onClose }) => {
                   gap: 1,
                 }}
               >
-                {CATEGORIAS.map(categoria => {
-                  const selecionada = form.category === categoria;
-                  const Icon = CATEGORY_META[categoria].icon;
+                {SUPPORT_TICKET_CATEGORIES.map(categoria => {
+                  const selecionada = form.category === categoria.id;
+                  const { icon: Icon, color } = CATEGORY_META[categoria.id];
 
                   return (
                     <Button
-                      key={categoria}
+                      key={categoria.id}
                       variant={selecionada ? 'contained' : 'outlined'}
-                      onClick={() => atualizarCampo('category', categoria)}
+                      onClick={() => atualizarCampo('category', categoria.id)}
                       sx={{
                         justifyContent: 'flex-start',
                         alignItems: 'center',
@@ -425,9 +438,9 @@ const SupportTicketsDialog = ({ open, onClose }) => {
                           border: '1px solid rgba(255,255,255,0.08)',
                         }}
                       >
-                        <Icon sx={{ color: CATEGORY_META[categoria].color, fontSize: 16 }} />
+                        <Icon sx={{ color, fontSize: 16 }} />
                       </Box>
-                      <Typography sx={{ fontWeight: 700, fontSize: 13 }}>{categoria}</Typography>
+                      <Typography sx={{ fontWeight: 700, fontSize: 13 }}>{categoria.label}</Typography>
                     </Button>
                   );
                 })}
@@ -679,8 +692,8 @@ const SupportTicketsDialog = ({ open, onClose }) => {
                                   flexShrink: 0,
                                 }}
                               >
-                                {React.createElement(CATEGORY_META[ticket.category]?.icon ?? MoreHorizOutlinedIcon, {
-                                  sx: { fontSize: 18, color: CATEGORY_META[ticket.category]?.color ?? '#C4B5FD' },
+                                {React.createElement(getCategoryMeta(ticket.category).icon, {
+                                  sx: { fontSize: 18, color: getCategoryMeta(ticket.category).color },
                                 })}
                               </Box>
 
@@ -689,7 +702,7 @@ const SupportTicketsDialog = ({ open, onClose }) => {
                                   {ticket.title}
                                 </Typography>
                                 <Typography variant="caption" sx={{ color: 'rgba(214, 222, 245, 0.7)', display: 'block', mt: 0.25 }}>
-                                  {ticket.category} · {formatarData(ticket.createdAt)}
+                                  {getSupportTicketCategoryLabel(ticket.category)} · {formatarData(ticket.createdAt)}
                                 </Typography>
                               </Box>
                             </Box>
@@ -753,7 +766,7 @@ const SupportTicketsDialog = ({ open, onClose }) => {
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.25, color: 'rgba(214, 222, 245, 0.76)' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                       <InsertDriveFileOutlinedIcon sx={{ fontSize: 16, color: '#8AEAFF' }} />
-                      <Typography variant="caption">{selectedTicket.category}</Typography>
+                      <Typography variant="caption">{getSupportTicketCategoryLabel(selectedTicket.category)}</Typography>
                     </Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                       <ScheduleOutlinedIcon sx={{ fontSize: 16, color: '#8AEAFF' }} />

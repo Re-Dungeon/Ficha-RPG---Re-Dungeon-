@@ -19,6 +19,7 @@ import {
 } from 'firebase/firestore';
 import { db } from 'service/firebase';
 import { mesclarTresVias } from 'common/utils/mesclaTresVias';
+import { normalizeSupportTicketCategory } from 'common/utils/supportTickets';
 import { CHAT_JANELA_MENSAGENS, CHAT_PAGINA_ANTERIORES } from 'common/utils/chat';
 
 export const getFirestoreItems = async (collectionName, ...queryConstraints) => {
@@ -230,8 +231,9 @@ export const addSupportTicket = async payload => {
     attachments: Array.isArray(payloadSemTimestamps.attachments)
       ? payloadSemTimestamps.attachments.filter(item => typeof item === 'string' ? item.trim() : Boolean(item))
       : [],
+    category: normalizeSupportTicketCategory(payloadSemTimestamps.category),
     status: payloadSemTimestamps.status || 'open',
-    adminResponse: payloadSemTimestamps.adminResponse || '',
+    adminResponse: payloadSemTimestamps.adminResponse || null,
     respondedAt: payloadSemTimestamps.respondedAt ?? null,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
