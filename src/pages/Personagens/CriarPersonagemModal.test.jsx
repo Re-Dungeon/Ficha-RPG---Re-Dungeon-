@@ -66,4 +66,24 @@ describe('CriarPersonagemModal', () => {
     );
     expect(onCreated).toHaveBeenCalledTimes(1);
   });
+
+  it('não mostra universos inativos na criação, mas mantém os legados ativos', async () => {
+    getUniverso.mockResolvedValue([
+      { id: 'u1', Nome: 'Abyssal', ativo: true },
+      { id: 'u2', Nome: 'Obscuro', ativo: false },
+      { id: 'u3', Nome: 'Legado' },
+    ]);
+
+    render(
+      <CriarPersonagemModal open onClose={vi.fn()} onCreated={vi.fn()} />,
+    );
+
+    const input = await screen.findByRole('combobox', { name: /universo/i });
+    fireEvent.focus(input);
+    fireEvent.change(input, { target: { value: '' } });
+
+    await waitFor(() => expect(screen.getByText('Abyssal')).toBeInTheDocument());
+    expect(screen.getByText('Legado')).toBeInTheDocument();
+    expect(screen.queryByText('Obscuro')).not.toBeInTheDocument();
+  });
 });

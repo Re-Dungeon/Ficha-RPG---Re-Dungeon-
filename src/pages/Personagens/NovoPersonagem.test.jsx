@@ -72,4 +72,28 @@ describe('NovoPersonagem — fluxo de criação', () => {
     await screen.findByText(/universo é obrigatório/i);
     expect(addPersonagem).not.toHaveBeenCalled();
   });
+
+  it('mostra só universos ativos e mantém universos legados sem campo ativo', async () => {
+    getUniverso.mockResolvedValue([
+      { id: 'u1', Nome: 'Ativo', ativo: true },
+      { id: 'u2', Nome: 'Inativo', ativo: false },
+      { id: 'u3', Nome: 'Legado' },
+    ]);
+
+    render(
+      <MemoryRouter initialEntries={['/personagens/novo']}>
+        <Routes>
+          <Route path="/personagens/novo" element={<NovoPersonagem />} />
+          <Route path="/personagens/:id" element={<div>Ficha aberta</div>} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    fireEvent.mouseDown(screen.getByLabelText(/^universo$/i));
+    const listbox = await screen.findByRole('listbox');
+
+    expect(within(listbox).getByText('Ativo')).toBeInTheDocument();
+    expect(within(listbox).getByText('Legado')).toBeInTheDocument();
+    expect(within(listbox).queryByText('Inativo')).not.toBeInTheDocument();
+  });
 });

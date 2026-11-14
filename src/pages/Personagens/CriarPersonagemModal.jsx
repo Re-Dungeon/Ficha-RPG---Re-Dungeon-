@@ -35,6 +35,9 @@ const novoPersonagemSchema = yup.object({
   campanhas: yup.array().of(yup.string()),
 });
 
+const filtrarUniversosDisponiveis = lista =>
+  (lista ?? []).filter(item => item && item.ativo !== false);
+
 const CriarPersonagemModal = ({ open, onClose, onCreated }) => {
   const { currentUser } = useAuth();
   const [universos, setUniversos] = useState([]);
@@ -52,7 +55,7 @@ const CriarPersonagemModal = ({ open, onClose, onCreated }) => {
     getUniverso()
       .then(items => {
         if (isMounted) {
-          setUniversos(items);
+          setUniversos(filtrarUniversosDisponiveis(items));
         }
       })
       .catch(error => {

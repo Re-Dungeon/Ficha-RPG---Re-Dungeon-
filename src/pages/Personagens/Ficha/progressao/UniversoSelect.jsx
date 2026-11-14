@@ -6,17 +6,32 @@ import TextField from '@mui/material/TextField';
 import { getUniverso } from 'service/storage';
 import { getNome } from 'common/utils/resolveNome';
 
+const filtrarUniversosDisponiveis = lista =>
+  (lista ?? []).filter(item => item && item.ativo !== false);
+
+const getOpcoesUniversos = (universos, universoAtual) => {
+  const ativos = filtrarUniversosDisponiveis(universos);
+  const universoAtualItem = (universos ?? []).find(item => item?.id === universoAtual);
+
+  if (universoAtualItem && universoAtualItem.ativo === false) {
+    const jaExiste = ativos.some(item => item.id === universoAtualItem.id);
+    return jaExiste ? ativos : [...ativos, universoAtualItem];
+  }
+
+  return ativos;
+};
+
 const UniversoSelect = ({ personagem, onSave }) => {
   const [opcoes, setOpcoes] = useState([]);
 
   useEffect(() => {
     getUniverso()
-      .then(setOpcoes)
+      .then(items => setOpcoes(getOpcoesUniversos(items, personagem.universo)))
       .catch(erro => {
         // eslint-disable-next-line no-console
         console.error('Falha ao carregar universos:', erro);
       });
-  }, []);
+  }, [personagem.universo]);
 
   const opcoesComNenhum = useMemo(
     () => [{ id: '', Nome: 'Nenhum' }, ...opcoes],
