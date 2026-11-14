@@ -29,6 +29,9 @@ const novoPersonagemSchema = yup.object({
   campanhas: yup.array().of(yup.string()),
 });
 
+const filtrarUniversosDisponiveis = lista =>
+  (lista ?? []).filter(item => item && item.ativo !== false);
+
 const NovoPersonagem = () => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
@@ -39,7 +42,7 @@ const NovoPersonagem = () => {
 
   useEffect(() => {
     getUniverso()
-      .then(setUniversos)
+      .then(itens => setUniversos(filtrarUniversosDisponiveis(itens)))
       .catch(error => {
         // eslint-disable-next-line no-console
         console.error('Falha ao carregar universos:', error);
