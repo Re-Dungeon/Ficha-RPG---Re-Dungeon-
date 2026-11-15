@@ -333,7 +333,8 @@ const Ficha = () => {
           )}
 
           <FichaMain>
-            <StatusFaixa personagem={personagem} />
+            {/* A aba Atributos já tem os cards de status — a faixa seria repetida. */}
+            {aba !== 'atributos' && <StatusFaixa personagem={personagem} />}
 
             <ErrorBoundary
               key={aba}
