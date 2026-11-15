@@ -202,4 +202,22 @@ describe('Ficha — navegação no celular x desktop', () => {
     fireEvent.click(screen.getByRole('tab', { name: 'Atributos' }));
     expect(await screen.findByText('Aba atributos')).toBeInTheDocument();
   });
+
+  it('faixa de status aparece nas outras abas, mas não em Atributos', async () => {
+    useIsMobile.mockReturnValue(false);
+    getPersonagem.mockResolvedValue({
+      id: 'p1',
+      uid: 'u1',
+      nome: 'Aria',
+      status: { hp: { atual: 8 }, energia: { atual: 3 }, fadiga: { atual: 10 } },
+      statusMaximos: { hp: 10, energia: 5, fadiga: 10 },
+    });
+    renderFicha();
+    await screen.findByText('Aba atributos');
+    expect(screen.queryByTestId('faixa-pv')).not.toBeInTheDocument();
+
+    fireEvent.click(await screen.findByRole('tab', { name: 'Artes' }));
+    await screen.findByText('Aba arts');
+    expect(screen.getByTestId('faixa-pv')).toBeInTheDocument();
+  });
 });
