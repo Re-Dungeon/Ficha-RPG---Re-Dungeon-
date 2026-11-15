@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   AUDIO_ESTADOS,
   audioTerminou,
+  ehAparelhoIOS,
   extrairVideoYoutube,
   mensagemErroYoutube,
   montarAudioPausado,
@@ -10,6 +11,7 @@ import {
   montarAudioRetomado,
   montarAudioTocar,
   posicaoAtual,
+  volumeDoPlayer,
 } from './audioMesa';
 
 const ID = 'dQw4w9WgXcQ';
@@ -123,5 +125,35 @@ describe('mensagemErroYoutube', () => {
     expect(mensagemErroYoutube(150)).toMatch(/fora do YouTube/);
     expect(mensagemErroYoutube(100)).toMatch(/não encontrado/);
     expect(mensagemErroYoutube(5)).toMatch(/não conseguiu/);
+  });
+});
+
+describe('ehAparelhoIOS', () => {
+  it('reconhece iPhone e iPad (inclusive iPadOS como MacIntel)', () => {
+    expect(ehAparelhoIOS({ userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0)' })).toBe(true);
+    expect(ehAparelhoIOS({ userAgent: 'Mozilla/5.0 (Macintosh)', platform: 'MacIntel', maxTouchPoints: 5 })).toBe(true);
+  });
+
+  it('não confunde Mac, Android ou ausência de navigator', () => {
+    expect(ehAparelhoIOS({ userAgent: 'Mozilla/5.0 (Macintosh)', platform: 'MacIntel', maxTouchPoints: 0 })).toBe(false);
+    expect(ehAparelhoIOS({ userAgent: 'Mozilla/5.0 (Linux; Android 14)', platform: 'Linux armv8l' })).toBe(false);
+    expect(ehAparelhoIOS(null)).toBe(false);
+  });
+});
+
+describe('volumeDoPlayer', () => {
+  it('sobe pela curva quadrática', () => {
+    expect(volumeDoPlayer(0)).toBe(0);
+    expect(volumeDoPlayer(1)).toBe(1);
+    expect(volumeDoPlayer(5)).toBe(1);
+    expect(volumeDoPlayer(10)).toBe(1);
+    expect(volumeDoPlayer(50)).toBe(25);
+    expect(volumeDoPlayer(100)).toBe(100);
+  });
+
+  it('limita a 0..100 e trata lixo como 0', () => {
+    expect(volumeDoPlayer(150)).toBe(100);
+    expect(volumeDoPlayer(-5)).toBe(0);
+    expect(volumeDoPlayer('abc')).toBe(0);
   });
 });

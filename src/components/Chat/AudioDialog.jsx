@@ -16,6 +16,8 @@ import Typography from '@mui/material/Typography';
 import VolumeOffIcon from '@mui/icons-material/VolumeOff';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 
+import { ehAparelhoIOS } from 'common/utils/audioMesa';
+
 import { audioPropType } from './audioPropType';
 
 // Música da mesa: todos veem o que está tocando e ajustam o próprio volume
@@ -26,6 +28,8 @@ const AudioDialog = ({ open, onClose, audio }) => {
   const [repetirNovo, setRepetirNovo] = useState(true);
   const [erroLink, setErroLink] = useState(null);
   const [enviando, setEnviando] = useState(false);
+  // No iPhone/iPad o volume do player é ignorado: só o mudo funciona.
+  const [ios] = useState(() => ehAparelhoIOS());
 
   const repetir = audio.tocando ? audio.repetir : repetirNovo;
 
@@ -143,33 +147,41 @@ const AudioDialog = ({ open, onClose, audio }) => {
           >
             {audio.mudo ? <VolumeOffIcon /> : <VolumeUpIcon />}
           </IconButton>
-          <Slider
-            aria-label="Volume da música"
-            min={0}
-            max={100}
-            value={audio.volume}
-            onChange={(_event, valor) => audio.setVolume(valor)}
-            disabled={audio.mudo}
-            sx={{
-              color: '#e8cb85',
-              '& .MuiSlider-thumb': {
-                width: 16,
-                height: 16,
-                background: '#f3e5b3',
-                border: '2px solid rgba(26, 23, 39, 1)',
-                boxShadow: '0 0 0 4px rgba(232, 203, 133, 0.12)',
-              },
-              '& .MuiSlider-track': { height: 4, borderRadius: 999 },
-              '& .MuiSlider-rail': { height: 4, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.18)' },
-              '& .MuiSlider-valueLabel': { background: 'rgba(255,255,255,0.08)' },
-            }}
-          />
-          <Typography
-            variant="body2"
-            sx={{ color: '#f3ebc9', minWidth: 38, fontWeight: 700, textAlign: 'right' }}
-          >
-            {audio.volume}%
-          </Typography>
+          {ios ? (
+            <Typography variant="body2" sx={{ color: 'var(--text-secondary)', flex: 1 }}>
+              No iPhone/iPad, use o volume do aparelho.
+            </Typography>
+          ) : (
+            <>
+              <Slider
+                aria-label="Volume da música"
+                min={0}
+                max={100}
+                value={audio.volume}
+                onChange={(_event, valor) => audio.setVolume(valor)}
+                disabled={audio.mudo}
+                sx={{
+                  color: '#e8cb85',
+                  '& .MuiSlider-thumb': {
+                    width: 16,
+                    height: 16,
+                    background: '#f3e5b3',
+                    border: '2px solid rgba(26, 23, 39, 1)',
+                    boxShadow: '0 0 0 4px rgba(232, 203, 133, 0.12)',
+                  },
+                  '& .MuiSlider-track': { height: 4, borderRadius: 999 },
+                  '& .MuiSlider-rail': { height: 4, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.18)' },
+                  '& .MuiSlider-valueLabel': { background: 'rgba(255,255,255,0.08)' },
+                }}
+              />
+              <Typography
+                variant="body2"
+                sx={{ color: '#f3ebc9', minWidth: 38, fontWeight: 700, textAlign: 'right' }}
+              >
+                {audio.volume}%
+              </Typography>
+            </>
+          )}
         </Box>
         <Typography variant="caption" sx={{ color: 'var(--text-muted)', mt: -1.5, letterSpacing: '0.02em' }}>
           O volume vale só para você, neste aparelho.

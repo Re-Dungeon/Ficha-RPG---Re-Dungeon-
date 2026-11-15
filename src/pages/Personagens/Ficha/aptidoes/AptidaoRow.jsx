@@ -4,6 +4,7 @@ import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import CloseIcon from '@mui/icons-material/Close';
 
+import RolarAptidao from './RolarAptidao';
 import {
   AcaoIconButton,
   TabelaAcoes,
@@ -21,6 +22,7 @@ const AptidaoRow = ({ nome, nivel, nivelMaximo, bonus, limiteAtingido, onUpgrade
     </TabelaNivel>
     <TabelaBonus>+{bonus}</TabelaBonus>
     <TabelaAcoes>
+      <RolarAptidao nome={nome} bonus={bonus} />
       <AcaoIconButton
         type="button"
         aria-label={`Upar ${nome}`}
