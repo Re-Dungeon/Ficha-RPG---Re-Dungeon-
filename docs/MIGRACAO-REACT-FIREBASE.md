@@ -26,6 +26,14 @@ Decisões que mudam como a ficha grava (valem para código novo):
 - `npm run check:shared` confere as cópias compartilhadas com o Re:Master.
 - `firestore.rules`: o mestre também apaga `chatMembros` (exclusão de campanha no Re:Master) — **precisa de deploy pelo Re:Master**.
 
+### Imagem do PC no chat (2026-11-14)
+
+- Envio de imagem por arquivo (botão "Escolher do PC", Ctrl+V e arrastar e soltar no painel do chat), nos dois apps. Nada sobe sem a prévia e o "Enviar"; com várias imagens, usa a primeira e avisa.
+- Hospedagem: **Cloudinary**, upload *unsigned* direto do navegador (`VITE_CLOUDINARY_CLOUD_NAME` + `VITE_CLOUDINARY_UPLOAD_PRESET`, no `.env` local e nos secrets do GitHub usados pelo `deploy.yml`). O Imgur (primeira tentativa) não aceita mais novos apps, e o Firebase Storage exigiria o plano Blaze. Sem as variáveis, só o envio por link.
+- O nome do preset é público (vai no bundle): o preset é que restringe formatos, tamanho máximo e pasta no painel do Cloudinary.
+- Compressão no navegador (`common/utils/imagemUpload.js`) e upload em `service/uploadImagem.js`, ambos compartilhados com o Re:Master. A mensagem gravada é a mesma `tipo: 'imagem'` (URL `https://res.cloudinary.com/...`), então **sem mudança em `firestore.rules`**.
+- Apagar a mensagem não apaga a imagem no Cloudinary, e quem tiver o link consegue vê-la (o diálogo avisa).
+
 ### QOL leva 2 (2026-11-09)
 
 Convenções novas (valem para código novo):
