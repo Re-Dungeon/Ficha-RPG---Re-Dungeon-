@@ -13,7 +13,7 @@ import CriarPersonagemModal from './CriarPersonagemModal';
 
 import { useAuth } from 'context/AuthContext';
 import { useSelecao } from 'context/selecaoContext';
-import { getPersonagens, getFirestoreItem } from 'service/storage';
+import { getPersonagens, getCatalogoItem } from 'service/storage';
 import ErrorSnackbar from 'components/ErrorSnackbar/ErrorSnackbar';
 
 import PersonagemCardItem from './PersonagemCardItem';
@@ -208,7 +208,7 @@ const Personagens = () => {
     Promise.all(
       ids.map(id => {
         if (id === '__NO_UNIVERSE__') return Promise.resolve({ id: '__NO_UNIVERSE__', nome: 'Sem mesa' });
-        return getFirestoreItem('Universo', id)
+        return getCatalogoItem('Universo', id)
           .then(item => ({ id, nome: getNome(item) || 'Sem mesa' }))
           .catch(() => ({ id, nome: 'Sem mesa' }));
       }),

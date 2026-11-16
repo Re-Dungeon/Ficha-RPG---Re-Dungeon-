@@ -80,6 +80,38 @@ describe('ChatModal (menu Social da ficha)', () => {
     });
   });
 
+  it('fechado não monta o chat: nenhuma escuta nem leitura de campanha', () => {
+    render(
+      <MemoryRouter>
+        <ChatModal open={false} onClose={vi.fn()} personagem={{ id: 'wesley', nome: 'Wesley Chase', campanhas: ['torre'] }} />
+      </MemoryRouter>,
+    );
+
+    expect(subscribeChatMensagens).not.toHaveBeenCalled();
+    expect(getRmCampanha).not.toHaveBeenCalled();
+    expect(setChatMembro).not.toHaveBeenCalled();
+  });
+
+  it('não relê a campanha quando o personagem chega como objeto novo com as mesmas campanhas', async () => {
+    const personagem = { id: 'wesley', nome: 'Wesley Chase', campanhas: ['torre'] };
+    const { rerender } = render(
+      <MemoryRouter>
+        <ChatModal open onClose={vi.fn()} personagem={personagem} />
+      </MemoryRouter>,
+    );
+    expect(await screen.findByText('Na torre.')).toBeInTheDocument();
+    expect(getRmCampanha).toHaveBeenCalledTimes(1);
+
+    rerender(
+      <MemoryRouter>
+        <ChatModal open onClose={vi.fn()} personagem={{ ...personagem, campanhas: ['torre'], status: { hp: { atual: 4 } } }} />
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText('Na torre.')).toBeInTheDocument();
+    expect(getRmCampanha).toHaveBeenCalledTimes(1);
+  });
+
   it('abre o chat da campanha do personagem falando como ele', async () => {
     renderModal({ id: 'wesley', nome: 'Wesley Chase', campanhas: ['torre'] });
 

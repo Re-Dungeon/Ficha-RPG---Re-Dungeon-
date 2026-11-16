@@ -20,7 +20,12 @@ import {
 import { db } from 'service/firebase';
 import { mesclarTresVias } from 'common/utils/mesclaTresVias';
 import { normalizeSupportTicketCategory } from 'common/utils/supportTickets';
-import { CHAT_JANELA_MENSAGENS, CHAT_PAGINA_ANTERIORES } from 'common/utils/chat';
+import {
+  CHAT_JANELA_MENSAGENS,
+  CHAT_LIMITE_SECRETAS_MEMBRO,
+  CHAT_PAGINA_ANTERIORES,
+  membroChatAtivo,
+} from 'common/utils/chat';
 
 export const getFirestoreItems = async (collectionName, ...queryConstraints) => {
   const itemsQuery = query(collection(db, collectionName), ...queryConstraints);
@@ -811,8 +816,15 @@ const comCacheCatalogo = async (chave, carregar) => {
       if (cacheCatalogos.get(chave) === entrada) cacheCatalogos.delete(chave);
     });
   }
-  return [...(await entrada.promessa)];
+  const resultado = await entrada.promessa;
+  if (Array.isArray(resultado)) return [...resultado];
+  return resultado ? { ...resultado } : resultado;
 };
+
+// Um documento de catálogo (raça, classe, universo...) pelo id, pelo mesmo cache
+// dos catálogos. Somente leitura. Devolve uma cópia, ou null se não existir.
+export const getCatalogoItem = (collectionName, id) =>
+  comCacheCatalogo(`${collectionName}|id:${id}`, () => getFirestoreItem(collectionName, id));
 
 const getColecaoPorUniverso = (collectionName, universoId) =>
   comCacheCatalogo(`${collectionName}|${universoId}`, () =>
@@ -920,7 +932,7 @@ export const getRegrasPorUniverso = universoId =>
 // consultas redundantes e erros de permissão em coleções antigas.
 export const getBeneficios = async () => {
   try {
-    return await getFirestoreItems('tricksterCoin');
+    return await comCacheCatalogo('tricksterCoin|', () => getFirestoreItems('tricksterCoin'));
   } catch {
     return [];
   }
@@ -955,7 +967,9 @@ export const getReinosCultivo = (universoId, subUniverso = '') => {
   if (subUniverso) {
     constraints.push(where('subUniverso', '==', subUniverso));
   }
-  return getFirestoreItems('reinosCultivo', ...constraints);
+  return comCacheCatalogo(`reinosCultivo|${universoId}|${subUniverso}`, () =>
+    getFirestoreItems('reinosCultivo', ...constraints),
+  );
 };
 
 // ── Chat da campanha — rmCampanhas/{id}/chatMembros e chatMensagens ───────
@@ -1045,12 +1059,18 @@ const rolagensSecretasRef = (campanhaId, donoUid) =>
 // Mensagens chegam marcadas com `secreta: true` e `donoUid` (necessário para
 // apagar). Ordem: mais recente primeiro (quem consome mescla com
 // `mesclarMensagens` de common/utils/chat.js).
-export const subscribeChatSecretasDoUsuario = (campanhaId, donoUid, onChange, onError) =>
+export const subscribeChatSecretasDoUsuario = (
+  campanhaId,
+  donoUid,
+  onChange,
+  onError,
+  limite = CHAT_LIMITE_SECRETAS,
+) =>
   onSnapshot(
     query(
       rolagensSecretasRef(campanhaId, donoUid),
       orderBy('createdAt', 'desc'),
-      limit(CHAT_LIMITE_SECRETAS),
+      limit(limite),
     ),
     snapshot =>
       onChange(
@@ -1064,8 +1084,10 @@ export const subscribeChatSecretasDoUsuario = (campanhaId, donoUid, onChange, on
     onError,
   );
 
-// Mestre: ouve as próprias secretas e as de cada jogador em `chatMembros`
-// (acompanha membros novos em tempo real). Devolve um único `unsubscribe`.
+// Mestre: ouve as próprias secretas e as dos jogadores de `chatMembros` com
+// atividade recente (`membroChatAtivo`; um listener por pasta, limite menor que
+// o da própria). Membro novo ou que voltou a usar o chat entra em tempo real;
+// quem sai da janela segue ouvido até o cleanup. Devolve um único `unsubscribe`.
 export const subscribeChatSecretasDoMestre = (
   campanhaId,
   mestreUid,
@@ -1075,7 +1097,7 @@ export const subscribeChatSecretasDoMestre = (
   const porDono = new Map();
   const emitir = () =>
     onChange([...porDono.values()].flatMap(entrada => entrada.mensagens));
-  const ouvir = donoUid => {
+  const ouvir = (donoUid, limite = CHAT_LIMITE_SECRETAS) => {
     if (porDono.has(donoUid)) return;
     const entrada = { mensagens: [], unsubscribe: () => {} };
     porDono.set(donoUid, entrada);
@@ -1087,13 +1109,19 @@ export const subscribeChatSecretasDoMestre = (
         emitir();
       },
       onError,
+      limite,
     );
   };
 
   ouvir(mestreUid);
   const pararMembros = onSnapshot(
     collection(db, 'rmCampanhas', campanhaId, 'chatMembros'),
-    snapshot => snapshot.docs.forEach(docSnapshot => ouvir(docSnapshot.id)),
+    snapshot =>
+      snapshot.docs.forEach(docSnapshot => {
+        // Só quem usou o chat há pouco (CHAT_MEMBRO_ATIVO_DIAS) ganha listener.
+        if (membroChatAtivo(docSnapshot.data({ serverTimestamps: 'estimate' })))
+          ouvir(docSnapshot.id, CHAT_LIMITE_SECRETAS_MEMBRO);
+      }),
     onError,
   );
 
@@ -1127,12 +1155,18 @@ const sussurrosRef = (campanhaId, jogadorUid) =>
 
 // As mensagens chegam com `donoUid` (a pasta — necessário para apagar). Ordem:
 // mais recente primeiro (quem consome mescla com `mesclarMensagens`).
-export const subscribeChatSussurros = (campanhaId, jogadorUid, onChange, onError) =>
+export const subscribeChatSussurros = (
+  campanhaId,
+  jogadorUid,
+  onChange,
+  onError,
+  limite = CHAT_LIMITE_SUSSURROS,
+) =>
   onSnapshot(
     query(
       sussurrosRef(campanhaId, jogadorUid),
       orderBy('createdAt', 'desc'),
-      limit(CHAT_LIMITE_SUSSURROS),
+      limit(limite),
     ),
     snapshot =>
       onChange(
@@ -1145,13 +1179,14 @@ export const subscribeChatSussurros = (campanhaId, jogadorUid, onChange, onError
     onError,
   );
 
-// Mestre: ouve a pasta de cada jogador em `chatMembros` (acompanha membros
-// novos em tempo real). Devolve um único `unsubscribe`.
+// Mestre: ouve a pasta dos jogadores de `chatMembros` com atividade recente
+// (`membroChatAtivo`), no mesmo esquema das secretas. Devolve um único
+// `unsubscribe`.
 export const subscribeChatSussurrosDoMestre = (campanhaId, onChange, onError) => {
   const porJogador = new Map();
   const emitir = () =>
     onChange([...porJogador.values()].flatMap(entrada => entrada.mensagens));
-  const ouvir = jogadorUid => {
+  const ouvir = (jogadorUid, limite = CHAT_LIMITE_SUSSURROS) => {
     if (porJogador.has(jogadorUid)) return;
     const entrada = { mensagens: [], unsubscribe: () => {} };
     porJogador.set(jogadorUid, entrada);
@@ -1163,12 +1198,17 @@ export const subscribeChatSussurrosDoMestre = (campanhaId, onChange, onError) =>
         emitir();
       },
       onError,
+      limite,
     );
   };
 
   const pararMembros = onSnapshot(
     collection(db, 'rmCampanhas', campanhaId, 'chatMembros'),
-    snapshot => snapshot.docs.forEach(docSnapshot => ouvir(docSnapshot.id)),
+    snapshot =>
+      snapshot.docs.forEach(docSnapshot => {
+        if (membroChatAtivo(docSnapshot.data({ serverTimestamps: 'estimate' })))
+          ouvir(docSnapshot.id, CHAT_LIMITE_SECRETAS_MEMBRO);
+      }),
     onError,
   );
 
@@ -1198,7 +1238,7 @@ export const removeChatSussurro = (campanhaId, jogadorUid, sussurroId) =>
 // (common/utils/macros.js). Executar uma macro nunca grava aqui.
 const macrosRef = campanhaId => collection(db, 'rmCampanhas', campanhaId, 'macros');
 
-export const getChatMacros = async (
+const lerChatMacros = async (
   campanhaId,
   { incluirSomenteMestre = false } = {},
 ) => {
@@ -1210,23 +1250,55 @@ export const getChatMacros = async (
   }));
 };
 
+// Cache por sessão da página (campanha + modo), com a promise guardada: reabrir
+// o chat/mesa não relê a coleção inteira. add/update/removeChatMacro invalidam.
+const MACROS_CACHE_MS = 5 * 60 * 1000;
+const macrosCache = new Map();
+
+export const limparCacheMacros = campanhaId =>
+  [...macrosCache.keys()].forEach(chave => {
+    if (campanhaId === undefined || chave.startsWith(`${campanhaId}|`)) {
+      macrosCache.delete(chave);
+    }
+  });
+
+export const getChatMacros = (campanhaId, { incluirSomenteMestre = false } = {}) => {
+  const chave = `${campanhaId}|${incluirSomenteMestre}`;
+  let guardado = macrosCache.get(chave);
+  if (!guardado || Date.now() - guardado.em > MACROS_CACHE_MS) {
+    const promessa = lerChatMacros(campanhaId, { incluirSomenteMestre });
+    guardado = { promessa, em: Date.now() };
+    macrosCache.set(chave, guardado);
+    promessa.catch(() => {
+      if (macrosCache.get(chave)?.promessa === promessa) macrosCache.delete(chave);
+    });
+  }
+  // Cópia: quem chama pode ordenar/alterar a lista sem sujar o cache.
+  return guardado.promessa.then(macros => macros.map(macro => ({ ...macro })));
+};
+
 export const addChatMacro = async (campanhaId, macro) => {
   const docRef = await addDoc(macrosRef(campanhaId), {
     ...macro,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
+  limparCacheMacros(campanhaId);
   return docRef.id;
 };
 
-export const updateChatMacro = (campanhaId, macroId, patch) =>
-  updateDoc(doc(db, 'rmCampanhas', campanhaId, 'macros', macroId), {
+export const updateChatMacro = async (campanhaId, macroId, patch) => {
+  await updateDoc(doc(db, 'rmCampanhas', campanhaId, 'macros', macroId), {
     ...patch,
     updatedAt: serverTimestamp(),
   });
+  limparCacheMacros(campanhaId);
+};
 
-export const removeChatMacro = (campanhaId, macroId) =>
-  deleteDoc(doc(db, 'rmCampanhas', campanhaId, 'macros', macroId));
+export const removeChatMacro = async (campanhaId, macroId) => {
+  await deleteDoc(doc(db, 'rmCampanhas', campanhaId, 'macros', macroId));
+  limparCacheMacros(campanhaId);
+};
 
 // ── Grid da campanha — rmCampanhas/{id}/grid/atual e gridCenas ────────────
 // Em CENAS: `gridCenas/{cenaId}` (nome, imagem, grade) com os próprios tokens
@@ -1349,9 +1421,15 @@ const gridAreasRef = (campanhaId, cenaId) =>
 
 // Templates de área da cena (common/utils/gridAreas.js). Chama
 // `onChange([{ id, ...dados }])`; quem lê normaliza (normalizarArea).
+// Tetos de segurança (limit) acima dos limites de UI: AREAS_POR_CENA_MAX = 50,
+// MARCADORES_POR_CENA_MAX = 100, DESENHOS_POR_USUARIO_MAX = 50 por pessoa.
+export const GRID_LIMITE_AREAS = 50;
+export const GRID_LIMITE_MARCADORES = 100;
+export const GRID_LIMITE_DESENHOS = 300;
+
 export const subscribeGridAreas = (campanhaId, cenaId, onChange, onError) =>
   onSnapshot(
-    gridAreasRef(campanhaId, cenaId),
+    query(gridAreasRef(campanhaId, cenaId), limit(GRID_LIMITE_AREAS)),
     snapshot =>
       onChange(snapshot.docs.map(docSnapshot => ({ id: docSnapshot.id, ...docSnapshot.data() }))),
     onError,
@@ -1480,9 +1558,11 @@ export const subscribeGridMarcadores = (
   onError,
 ) =>
   onSnapshot(
-    incluirSecretos
-      ? gridMarcadoresRef(campanhaId, cenaId)
-      : query(gridMarcadoresRef(campanhaId, cenaId), where('secreto', '==', false)),
+    query(
+      gridMarcadoresRef(campanhaId, cenaId),
+      ...(incluirSecretos ? [] : [where('secreto', '==', false)]),
+      limit(GRID_LIMITE_MARCADORES),
+    ),
     snapshot =>
       onChange(snapshot.docs.map(docSnapshot => ({ id: docSnapshot.id, ...docSnapshot.data() }))),
     onError,
@@ -1509,7 +1589,7 @@ export const removeGridMarcador = (campanhaId, cenaId, marcadorId) =>
 // Um doc por traço. Chama `onChange([{ id, ...dados }])`, sem ordenação.
 export const subscribeGridDesenhos = (campanhaId, cenaId, onChange, onError) =>
   onSnapshot(
-    gridDesenhosRef(campanhaId, cenaId),
+    query(gridDesenhosRef(campanhaId, cenaId), limit(GRID_LIMITE_DESENHOS)),
     snapshot =>
       onChange(snapshot.docs.map(docSnapshot => ({ id: docSnapshot.id, ...docSnapshot.data() }))),
     onError,

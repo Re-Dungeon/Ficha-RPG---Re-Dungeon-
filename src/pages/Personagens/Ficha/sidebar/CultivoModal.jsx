@@ -24,7 +24,7 @@ import LockRoundedIcon from '@mui/icons-material/LockRounded';
 import HeartBrokenIcon from '@mui/icons-material/HeartBroken';
 import AddCircleOutlineRoundedIcon from '@mui/icons-material/AddCircleOutlineRounded';
 
-import { getFirestoreItem, getReinosCultivo } from 'service/storage';
+import { getCatalogoItem, getReinosCultivo } from 'service/storage';
 import {
   aplicarFalhaTribulacao,
   aplicarXpCultivo,
@@ -455,7 +455,7 @@ const CultivoModal = ({ open, onClose, personagem, onSave }) => {
     }
     let isMounted = true;
     setCarregandoSistemas(true);
-    getFirestoreItem('Universo', universoId)
+    getCatalogoItem('Universo', universoId)
       .then(doc => {
         if (isMounted) {
           setSubUniversos(doc?.SubUniversos ?? doc?.subUniversos ?? []);

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { getFirestoreItem } from 'service/storage';
+import { getCatalogoItem } from 'service/storage';
 import { getNome } from 'common/utils/resolveNome';
 
 export const useRacaClasseNomes = personagem => {
@@ -10,7 +10,7 @@ export const useRacaClasseNomes = personagem => {
 
   useEffect(() => {
     if (personagem.raca) {
-      getFirestoreItem('racas', personagem.raca)
+      getCatalogoItem('racas', personagem.raca)
         .then(item => {
           setRacaNome(getNome(item));
           setRacaLinkImagem(item?.linkImagem ?? '');
@@ -25,14 +25,19 @@ export const useRacaClasseNomes = personagem => {
     }
   }, [personagem.raca]);
 
+  // `personagem.classes` é um array novo a cada snapshot da ficha ao vivo; a
+  // chave em texto só muda quando os ids mudam de verdade.
+  const classesChave = (personagem.classes ?? []).join('|');
+
   useEffect(() => {
-    Promise.all((personagem.classes ?? []).map(id => getFirestoreItem('classes', id)))
+    const ids = classesChave ? classesChave.split('|') : [];
+    Promise.all(ids.map(id => getCatalogoItem('classes', id)))
       .then(itens => setClassesNomes(itens.filter(Boolean).map(getNome)))
       .catch(erro => {
         // eslint-disable-next-line no-console
         console.error('Falha ao carregar nomes das classes:', erro);
       });
-  }, [personagem.classes]);
+  }, [classesChave]);
 
   return { racaNome, racaLinkImagem, classesNomes };
 };

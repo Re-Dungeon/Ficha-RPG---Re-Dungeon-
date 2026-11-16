@@ -21,7 +21,7 @@ import UpdateIcon from '@mui/icons-material/Update';
 import CasinoIcon from '@mui/icons-material/Casino';
 import TimerIcon from '@mui/icons-material/Timer';
 
-import { getArtesPorUniverso, getFirestoreItem } from 'service/storage';
+import { getArtesPorUniverso, getCatalogoItem } from 'service/storage';
 import { campoCurtoSchema, descricaoSchema, nomeSchema, urlImagemSchema } from 'common/utils/yupSchemas';
 import { getNome } from 'common/utils/resolveNome';
 import { MOBILE } from 'common/styles/breakpoints';
@@ -220,17 +220,21 @@ const CriarArtDialog = ({ open, onClose, personagem, nucleos, condicoes, onCreat
     setBusca('');
   }, [open]);
 
+  // Chave em texto: `personagem.classes` é um array novo a cada snapshot da ficha.
+  const classesChave = (personagem.classes ?? []).join('|');
+
   useEffect(() => {
     if (!open || origem !== 'classe') {
       return;
     }
-    Promise.all((personagem.classes ?? []).map(id => getFirestoreItem('classes', id)))
+    const ids = classesChave ? classesChave.split('|') : [];
+    Promise.all(ids.map(id => getCatalogoItem('classes', id)))
       .then(itens => setClassesDetalhes(itens.filter(Boolean)))
       .catch(erro => {
         // eslint-disable-next-line no-console
         console.error('Falha ao carregar classes:', erro);
       });
-  }, [open, origem, personagem.classes]);
+  }, [open, origem, classesChave]);
 
   useEffect(() => {
     if (!open || origem !== 'catalogo' || !personagem.universo) {

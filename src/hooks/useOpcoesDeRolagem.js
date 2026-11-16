@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { getArts, getCombosAtaque, getCombosDefesa } from 'service/storage';
 import { converterPotencialEmDados } from 'common/utils/ataque';
@@ -11,8 +11,8 @@ import {
 // Opções do "Rolar…" de um token que é ficha minha (SÓ no site dos jogadores —
 // o Re:Master não tem esta cópia): combos de ataque e de defesa salvos na ficha
 // e Artes com dados. Lê as subcoleções do personagem (getCombosAtaque,
-// getCombosDefesa, getArts) uma vez, quando `ativo` vira true para aquele
-// personagem; falha → sem grupos. Retorna
+// getCombosDefesa, getArts) uma vez por personagem enquanto o hook está
+// montado (reabrir o diálogo não relê); falha → sem grupos. Retorna
 // `{ carregando, grupos: [{ id: 'ataque'|'defesa'|'arte', titulo, itens }] }`,
 // itens = { id, rotulo (nome), rotuloChat ("Ataque: nome"), expressao,
 // desabilitado, motivo }. Combo cuja fórmula não tem dado (ex.: só "12") ou
@@ -75,32 +75,43 @@ const montarGrupos = ({ ataques, defesas, arts }) =>
     { id: 'arte', titulo: 'Artes', itens: arts.map(itemDaArte).filter(Boolean) },
   ].filter(grupo => grupo.itens.length);
 
+const SEM_RESULTADOS = {};
+
 const useOpcoesDeRolagem = (personagemId, { ativo = false } = {}) => {
   const chave = ativo && personagemId ? personagemId : null;
-  // Resultado guardado junto do personagem de que veio (sem setState síncrono
-  // no efeito: `carregando` é derivado).
-  const [recebido, setRecebido] = useState({ chave: null, grupos: SEM_GRUPOS });
+  // Grupos já lidos, por personagem. A leitura (3 subcoleções) acontece uma vez
+  // por personagem enquanto este hook está montado: fechar e reabrir o "Rolar…"
+  // (a chave volta a null e depois ao mesmo id) reaproveita o resultado.
+  // Sem setState síncrono no efeito: `carregando` é derivado.
+  const [resultados, setResultados] = useState(SEM_RESULTADOS);
+  const buscadosRef = useRef(new Set());
+  const montadoRef = useRef(false);
 
   useEffect(() => {
-    if (!chave) return undefined;
-    let cancelado = false;
+    montadoRef.current = true;
+    return () => {
+      montadoRef.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!chave || buscadosRef.current.has(chave)) return;
+    buscadosRef.current.add(chave);
     const ler = leitura => leitura(chave).catch(() => []);
     Promise.all([ler(getCombosAtaque), ler(getCombosDefesa), ler(getArts)]).then(
       ([ataques, defesas, arts]) => {
-        if (cancelado) return;
-        setRecebido({ chave, grupos: montarGrupos({ ataques, defesas, arts }) });
+        if (!montadoRef.current) return;
+        const grupos = montarGrupos({ ataques, defesas, arts });
+        setResultados(atual => ({ ...atual, [chave]: grupos }));
       },
     );
-    return () => {
-      cancelado = true;
-    };
   }, [chave]);
 
   return useMemo(() => {
     if (!chave) return { carregando: false, grupos: SEM_GRUPOS };
-    if (recebido.chave !== chave) return { carregando: true, grupos: SEM_GRUPOS };
-    return { carregando: false, grupos: recebido.grupos };
-  }, [chave, recebido]);
+    if (!(chave in resultados)) return { carregando: true, grupos: SEM_GRUPOS };
+    return { carregando: false, grupos: resultados[chave] };
+  }, [chave, resultados]);
 };
 
 export default useOpcoesDeRolagem;

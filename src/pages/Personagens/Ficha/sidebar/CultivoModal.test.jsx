@@ -2,7 +2,7 @@ import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 
-import { getFirestoreItem, getReinosCultivo } from 'service/storage';
+import { getCatalogoItem, getReinosCultivo } from 'service/storage';
 import { SavingProvider } from 'context/SavingContext';
 
 import CultivoModal from './CultivoModal';
@@ -10,7 +10,7 @@ import CultivoModal from './CultivoModal';
 vi.mock('service/firebase', () => ({ auth: {}, db: {} }));
 
 vi.mock('service/storage', () => ({
-  getFirestoreItem: vi.fn(),
+  getCatalogoItem: vi.fn(),
   getReinosCultivo: vi.fn(),
 }));
 
@@ -34,7 +34,7 @@ const renderModal = (personagem, onSave = vi.fn().mockResolvedValue()) => {
 
 describe('CultivoModal — trilhas paralelas sem SubUniversos', () => {
   beforeEach(() => {
-    vi.mocked(getFirestoreItem).mockResolvedValue({ id: 'u1', Nome: 'Crônica' });
+    vi.mocked(getCatalogoItem).mockResolvedValue({ id: 'u1', Nome: 'Crônica' });
     vi.mocked(getReinosCultivo).mockResolvedValue(REINOS);
   });
 

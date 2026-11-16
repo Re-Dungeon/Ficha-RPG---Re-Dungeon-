@@ -67,6 +67,33 @@ describe('useOpcoesDeRolagem', () => {
     expect(getCombosAtaque).toHaveBeenCalledTimes(1);
   });
 
+  it('lê uma vez por personagem mesmo ao fechar e reabrir (null → id → null → id)', async () => {
+    const { result, rerender } = renderHook(
+      ({ id, ativo }) => useOpcoesDeRolagem(id, { ativo }),
+      { initialProps: { id: null, ativo: false } },
+    );
+    expect(getCombosAtaque).not.toHaveBeenCalled();
+
+    rerender({ id: 'p1', ativo: true });
+    await waitFor(() => expect(result.current.carregando).toBe(false));
+    expect(result.current.grupos.length).toBeGreaterThan(0);
+
+    rerender({ id: null, ativo: false });
+    expect(result.current).toEqual({ carregando: false, grupos: [] });
+
+    rerender({ id: 'p1', ativo: true });
+    expect(result.current.carregando).toBe(false);
+    expect(result.current.grupos.length).toBeGreaterThan(0);
+
+    expect(getCombosAtaque).toHaveBeenCalledTimes(1);
+    expect(getCombosDefesa).toHaveBeenCalledTimes(1);
+    expect(getArts).toHaveBeenCalledTimes(1);
+
+    // Outro personagem lê de novo.
+    rerender({ id: 'p2', ativo: true });
+    await waitFor(() => expect(getArts).toHaveBeenCalledTimes(2));
+  });
+
   it('falha de leitura não derruba: grupos vazios', async () => {
     getCombosAtaque.mockRejectedValue(new Error('x'));
     getCombosDefesa.mockRejectedValue(new Error('x'));

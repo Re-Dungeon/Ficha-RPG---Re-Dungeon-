@@ -35,7 +35,7 @@ vi.mock('context/AuthContext', () => ({ useAuth: () => ({ currentUser: null }) }
 vi.mock('service/storage', () => ({
   addChatMensagem: vi.fn().mockResolvedValue(null),
   getRmCampanha: vi.fn(),
-  getFirestoreItem: vi.fn().mockResolvedValue(null),
+  getCatalogoItem: vi.fn().mockResolvedValue(null),
   getArts: vi.fn().mockResolvedValue([]),
   getItensInventario: vi.fn().mockResolvedValue([]),
   getVariantes: vi.fn().mockResolvedValue([]),

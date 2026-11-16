@@ -4,7 +4,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 import {
   getCorposEspeciaisPorUniverso,
-  getFirestoreItem,
+  getCatalogoItem,
   getOrigensPorUniverso,
   getRmCampanhasPorUniverso,
   getUniverso,
@@ -14,7 +14,7 @@ import { SavingProvider } from 'context/SavingContext';
 import InfoModal from './InfoModal';
 
 vi.mock('service/storage', () => ({
-  getFirestoreItem: vi.fn(),
+  getCatalogoItem: vi.fn(),
   getOrigens: vi.fn(),
   getOrigensPorUniverso: vi.fn(),
   getRmCampanhasPorUniverso: vi.fn(),
@@ -33,7 +33,7 @@ const personagem = {
 
 describe('InfoModal / PerfilTab', () => {
   beforeEach(() => {
-    getFirestoreItem.mockResolvedValue(null);
+    getCatalogoItem.mockResolvedValue(null);
     getOrigensPorUniverso.mockResolvedValue([]);
     getRmCampanhasPorUniverso.mockResolvedValue([]);
     getUniverso.mockResolvedValue([{ id: 'universo-1', Nome: 'Re-Dungeon' }]);

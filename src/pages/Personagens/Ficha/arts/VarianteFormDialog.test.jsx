@@ -2,12 +2,12 @@ import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-const getFirestoreItemMock = vi.fn(() => Promise.resolve(null));
+const getCatalogoItemMock = vi.fn(() => Promise.resolve(null));
 
 // Mock service/storage to avoid initializing real Firebase during import.
 vi.mock('service/storage', () => ({
   getArtesPorUniverso: vi.fn(() => Promise.resolve([])),
-  getFirestoreItem: getFirestoreItemMock,
+  getCatalogoItem: getCatalogoItemMock,
 }));
 
 describe('VarianteFormDialog', () => {
@@ -88,7 +88,7 @@ describe('VarianteFormDialog', () => {
     const { default: VarianteFormDialog } = await import('./VarianteFormDialog');
     const onSubmit = vi.fn();
 
-    getFirestoreItemMock.mockResolvedValueOnce({
+    getCatalogoItemMock.mockResolvedValueOnce({
       id: 'c1',
       nome: 'Classe A',
       habilidadesBasicas: [{

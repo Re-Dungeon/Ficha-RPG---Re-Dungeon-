@@ -195,10 +195,20 @@ const Ficha = () => {
 
   const fecharModal = useCallback(() => setModalAtivo(null), []);
 
-  const abrirModalDaGaveta = useCallback(chave => {
-    setGavetaAberta(false);
+  // Só uma sala de chat por vez: abrir o modal do chat fecha o painel lateral
+  // (senão dois `ChatModalConteudo` ouviriam a mesma campanha ao mesmo tempo).
+  const abrirModal = useCallback(chave => {
+    if (chave === 'chat') setChatLateralCampanhaId(null);
     setModalAtivo(chave);
   }, []);
+
+  const abrirModalDaGaveta = useCallback(
+    chave => {
+      setGavetaAberta(false);
+      abrirModal(chave);
+    },
+    [abrirModal],
+  );
 
   const abrirChatLateral = useCallback(campanhaId => {
     setChatLateralCampanhaId(campanhaId);
@@ -328,7 +338,7 @@ const Ficha = () => {
             <FichaSidebar
               expandida={sidebarExpandida}
               onAlternar={() => setSidebarExpandida(current => !current)}
-              onAbrirModal={setModalAtivo}
+              onAbrirModal={abrirModal}
             />
           )}
 
