@@ -357,7 +357,8 @@ const ProntidaoModal = ({ open, onClose, personagem, onSave = null, prontidaoVal
   }, [open, personagem, ppMaximo]);
 
   useEffect(() => {
-    if (!open || !personagem?.id) return;
+    // O modal "info" só mostra regras; os itens usáveis são só da Central.
+    if (!open || tipo !== 'central' || !personagem?.id) return;
 
     let ativo = true;
     const carregarItensInventario = async () => {
@@ -375,7 +376,7 @@ const ProntidaoModal = ({ open, onClose, personagem, onSave = null, prontidaoVal
     return () => {
       ativo = false;
     };
-  }, [open, personagem?.id]);
+  }, [open, tipo, personagem?.id]);
 
   const itensUsaveis = useMemo(
     () => itensInventario.filter(item => itemEhElegivelParaUso(item)),

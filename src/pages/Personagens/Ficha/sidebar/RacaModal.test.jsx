@@ -2,13 +2,13 @@ import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 
-import { getFirestoreItem, getRacasPorUniverso } from 'service/storage';
+import { getCatalogoItem, getRacasPorUniverso } from 'service/storage';
 import { SavingProvider } from 'context/SavingContext';
 
 import RacaModal from './RacaModal';
 
 vi.mock('service/storage', () => ({
-  getFirestoreItem: vi.fn(),
+  getCatalogoItem: vi.fn(),
   getRacasPorUniverso: vi.fn(),
 }));
 
@@ -24,7 +24,7 @@ const personagem = {
 describe('RacaModal', () => {
   beforeEach(() => {
     getRacasPorUniverso.mockResolvedValue([raca]);
-    getFirestoreItem.mockResolvedValue({ Nome: 'Re-Dungeon' });
+    getCatalogoItem.mockResolvedValue({ Nome: 'Re-Dungeon' });
   });
 
   it('escolhe uma raça e salva o id no personagem', async () => {

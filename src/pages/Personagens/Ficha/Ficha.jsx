@@ -33,6 +33,7 @@ import { useSelecao } from 'context/selecaoContext';
 import { SavingProvider } from 'context/SavingContext';
 
 import useIsMobile from 'hooks/useIsMobile';
+import { sincronizarMembrosDoChat } from 'hooks/sincronizarMembrosDoChat';
 import ErrorBoundary from 'components/ErrorBoundary/ErrorBoundary';
 import ErrorSnackbar from 'components/ErrorSnackbar/ErrorSnackbar';
 
@@ -181,6 +182,14 @@ const Ficha = () => {
   const handleExcluir = useCallback(async () => {
     setExcluindo(true);
     try {
+      // Sai do chat das campanhas (apaga o ponteiro, que as regras usam para
+      // liberar o acesso). Melhor esforço: não impede a exclusão.
+      await sincronizarMembrosDoChat({
+        uid: personagem?.uid,
+        personagemId: id,
+        antes: personagem?.campanhas ?? [],
+        depois: [],
+      });
       await removePersonagem(id);
       navigate('/personagens', { replace: true });
     } catch (error) {
@@ -191,14 +200,24 @@ const Ficha = () => {
       );
       setExcluindo(false);
     }
-  }, [id, navigate]);
+  }, [id, navigate, personagem?.uid, personagem?.campanhas]);
 
   const fecharModal = useCallback(() => setModalAtivo(null), []);
 
-  const abrirModalDaGaveta = useCallback(chave => {
-    setGavetaAberta(false);
+  // Só uma sala de chat por vez: abrir o modal do chat fecha o painel lateral
+  // (senão dois `ChatModalConteudo` ouviriam a mesma campanha ao mesmo tempo).
+  const abrirModal = useCallback(chave => {
+    if (chave === 'chat') setChatLateralCampanhaId(null);
     setModalAtivo(chave);
   }, []);
+
+  const abrirModalDaGaveta = useCallback(
+    chave => {
+      setGavetaAberta(false);
+      abrirModal(chave);
+    },
+    [abrirModal],
+  );
 
   const abrirChatLateral = useCallback(campanhaId => {
     setChatLateralCampanhaId(campanhaId);
@@ -328,7 +347,7 @@ const Ficha = () => {
             <FichaSidebar
               expandida={sidebarExpandida}
               onAlternar={() => setSidebarExpandida(current => !current)}
-              onAbrirModal={setModalAtivo}
+              onAbrirModal={abrirModal}
             />
           )}
 

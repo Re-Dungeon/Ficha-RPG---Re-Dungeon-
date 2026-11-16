@@ -25,7 +25,7 @@ import { campoCurtoSchema, descricaoSchema, nomeSchema, urlImagemSchema } from '
 import { dominioVarianteValido } from 'common/utils/formulas';
 import { getNome } from 'common/utils/resolveNome';
 import { MOBILE } from 'common/styles/breakpoints';
-import { getArtesPorUniverso, getFirestoreItem } from 'service/storage';
+import { getArtesPorUniverso, getCatalogoItem } from 'service/storage';
 
 import {
   AcaoBadge,
@@ -377,17 +377,21 @@ const VarianteFormDialog = ({ open, onClose, variante = null, arts, condicoes, o
     setBusca('');
   }, [open, variante, arts]);
 
+  // Chave em texto: `personagem.classes` é um array novo a cada snapshot da ficha.
+  const classesChave = (personagem.classes ?? []).join('|');
+
   useEffect(() => {
     if (!open || origem !== 'classe') {
       return;
     }
-    Promise.all((personagem.classes ?? []).map(id => getFirestoreItem('classes', id)))
+    const ids = classesChave ? classesChave.split('|') : [];
+    Promise.all(ids.map(id => getCatalogoItem('classes', id)))
       .then(itens => setClassesDetalhes(itens.filter(Boolean)))
       .catch(erro => {
         // eslint-disable-next-line no-console
         console.error('Falha ao carregar classes para a variante:', erro);
       });
-  }, [open, origem, personagem.classes]);
+  }, [open, origem, classesChave]);
 
   useEffect(() => {
     if (!open || origem !== 'catalogo' || !personagem.universo) {

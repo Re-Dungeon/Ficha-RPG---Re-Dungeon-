@@ -6,12 +6,12 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import Personagens from './Personagens';
 import { useAuth } from 'context/AuthContext';
 import { useSelecao } from 'context/selecaoContext';
-import { getFirestoreItem, getPersonagens } from 'service/storage';
+import { getCatalogoItem, getPersonagens } from 'service/storage';
 
 vi.mock('context/AuthContext', () => ({ useAuth: vi.fn() }));
 vi.mock('context/selecaoContext', () => ({ useSelecao: vi.fn() }));
 vi.mock('service/storage', () => ({
-  getFirestoreItem: vi.fn(),
+  getCatalogoItem: vi.fn(),
   getPersonagens: vi.fn(),
 }));
 
@@ -19,7 +19,7 @@ describe('Personagens', () => {
   beforeEach(() => {
     useAuth.mockReturnValue({ currentUser: { uid: 'uid-1' } });
     useSelecao.mockReturnValue({ limparPersonagem: vi.fn() });
-    getFirestoreItem.mockImplementation(async (collectionName, id) => ({
+    getCatalogoItem.mockImplementation(async (collectionName, id) => ({
       id,
       nome: `${collectionName} ${id}`,
     }));

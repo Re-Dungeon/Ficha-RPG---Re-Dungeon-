@@ -24,7 +24,7 @@ import {
   addNucleo,
   getArts,
   getClassesPorUniverso,
-  getFirestoreItem,
+  getCatalogoItem,
   getNucleos,
   getVariantes,
   removeArt,
@@ -201,7 +201,7 @@ const ClasseModal = ({ open, onClose, personagem, onSave }) => {
       return undefined;
     }
     let isMounted = true;
-    getFirestoreItem('Universo', personagem.universo)
+    getCatalogoItem('Universo', personagem.universo)
       .then(item => {
         if (isMounted) {
           setUniversoNome(getNome(item));

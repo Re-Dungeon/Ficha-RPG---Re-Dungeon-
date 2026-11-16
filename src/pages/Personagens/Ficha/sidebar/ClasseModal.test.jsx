@@ -6,7 +6,7 @@ import {
   addNucleo,
   getArts,
   getClassesPorUniverso,
-  getFirestoreItem,
+  getCatalogoItem,
   getNucleos,
   getVariantes,
   removeArt,
@@ -19,7 +19,7 @@ import ClasseModal from './ClasseModal';
 
 vi.mock('service/storage', () => ({
   getClassesPorUniverso: vi.fn(),
-  getFirestoreItem: vi.fn(),
+  getCatalogoItem: vi.fn(),
   getNucleos: vi.fn(),
   getArts: vi.fn(),
   getVariantes: vi.fn(),
@@ -49,7 +49,7 @@ const personagem = {
 describe('ClasseModal', () => {
   beforeEach(() => {
     getClassesPorUniverso.mockResolvedValue([classe, classe2, classe3]);
-    getFirestoreItem.mockResolvedValue({ Nome: 'Re-Dungeon' });
+    getCatalogoItem.mockResolvedValue({ Nome: 'Re-Dungeon' });
     getNucleos.mockResolvedValue([]);
     getArts.mockResolvedValue([]);
     getVariantes.mockResolvedValue([]);

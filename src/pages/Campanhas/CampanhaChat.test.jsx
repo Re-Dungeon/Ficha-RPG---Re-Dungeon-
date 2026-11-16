@@ -37,6 +37,7 @@ import {
 import { executarMacro as rodarMacroNoWorker } from 'common/lua/executarMacro';
 import useIsMobile from 'hooks/useIsMobile';
 import CampanhaChat from './CampanhaChat';
+import { limparRegistroMembroDoChat } from 'hooks/useMembroDoChat';
 
 vi.mock('context/AuthContext', () => ({ useAuth: vi.fn() }));
 vi.mock('hooks/useIsMobile', () => ({ default: vi.fn(() => false) }));
@@ -190,6 +191,7 @@ describe('CampanhaChat', () => {
       },
       { id: 'p-2', nome: 'Outro', campanhas: ['camp-9'] },
     ]);
+    limparRegistroMembroDoChat();
     setChatMembro.mockResolvedValue();
     subscribeAudioMesa.mockImplementation((_campanhaId, onChange) => {
       onChange(null);
@@ -1229,8 +1231,11 @@ describe('CampanhaChat', () => {
         const cartao = container.querySelector('[data-detalhe]');
         expect(within(cartao).getByLabelText('PV atual')).toHaveValue('5');
         fireEvent.click(within(cartao).getByRole('button', { name: 'Aumentar PV' }));
-        await waitFor(() =>
-          expect(atualizarRecursoAtualPersonagem).toHaveBeenCalledWith('p-1', 'pv', 6),
+        // Os cliques de −/+ são acumulados: a escrita sai ~0,8 s depois.
+        await waitFor(
+          () =>
+            expect(atualizarRecursoAtualPersonagem).toHaveBeenCalledWith('p-1', 'pv', 6),
+          { timeout: 3000 },
         );
 
         const campo = within(cartao).getByLabelText('PV atual');

@@ -18,11 +18,15 @@ const PostarEmSelect = ({
   sx = null,
 }) => {
   const [nomes, setNomes] = useState({});
+  // Quem chama costuma passar um array novo a cada snapshot da ficha ao vivo;
+  // a chave em texto evita reler as campanhas se os ids são os mesmos.
+  const idsChave = campanhaIds.join('|');
 
   useEffect(() => {
     let ativo = true;
+    const ids = idsChave ? idsChave.split('|') : [];
     Promise.all(
-      campanhaIds.map(id =>
+      ids.map(id =>
         getRmCampanha(id)
           .then(campanha => [id, campanha?.nome ?? id])
           .catch(() => [id, id]),
@@ -33,7 +37,7 @@ const PostarEmSelect = ({
     return () => {
       ativo = false;
     };
-  }, [campanhaIds]);
+  }, [idsChave]);
 
   return (
     <TextField

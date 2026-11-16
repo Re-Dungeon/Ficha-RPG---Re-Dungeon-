@@ -46,12 +46,35 @@ const art = { id: 'a1', nome: 'Golpe Certeiro', nucleoId: 'n1', ativa: true };
 
 describe('ArtsTab', () => {
   beforeEach(() => {
+    vi.clearAllMocks();
     getNucleos.mockResolvedValue([nucleo]);
     getArts.mockResolvedValue([art]);
     getVariantes.mockResolvedValue([]);
     getCondicoesPorUniverso.mockResolvedValue([]);
     addNucleo.mockResolvedValue();
     updateArt.mockResolvedValue();
+  });
+
+  it('não relê arts/núcleos/variantes quando o personagem muda mas o id é o mesmo', async () => {
+    const { rerender } = render(
+      <SavingProvider>
+        <ArtsTab personagem={personagem} />
+      </SavingProvider>,
+    );
+    await screen.findByRole('button', { name: /^ativa$/i });
+    expect(getArts).toHaveBeenCalledTimes(1);
+
+    // Snapshot ao vivo da ficha: objeto novo, mesmo personagem.
+    rerender(
+      <SavingProvider>
+        <ArtsTab personagem={{ ...personagem, status: { hp: { atual: 5 } } }} />
+      </SavingProvider>,
+    );
+    await screen.findByRole('button', { name: /^ativa$/i });
+
+    expect(getArts).toHaveBeenCalledTimes(1);
+    expect(getNucleos).toHaveBeenCalledTimes(1);
+    expect(getVariantes).toHaveBeenCalledTimes(1);
   });
 
   it('bloqueia uma art ativa ao clicar no botão de status', async () => {

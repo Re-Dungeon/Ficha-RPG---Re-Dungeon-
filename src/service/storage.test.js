@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { addDoc, collection, doc, getDocs, runTransaction, where } from 'firebase/firestore';
+import { addDoc, collection, doc, getDoc, getDocs, runTransaction, where } from 'firebase/firestore';
 
 vi.mock('service/firebase', () => ({
   auth: { currentUser: { uid: 'user-1', email: 'user@example.com' } },
@@ -17,6 +17,7 @@ vi.mock('firebase/firestore', async () => {
     query: vi.fn((...args) => args),
     serverTimestamp: vi.fn(() => 'server-ts'),
     where: vi.fn((field, op, value) => ({ field, op, value })),
+    getDoc: vi.fn(),
     getDocs: vi.fn(),
     runTransaction: vi.fn(async (_db, callback) => {
       const transaction = {
@@ -34,7 +35,10 @@ import {
   atualizarRecursoAtualPersonagem,
   getChatMensagensAntes,
   consumirRecursosPersonagem,
+  getBeneficios,
   getBeneficiosPorUniverso,
+  getCatalogoItem,
+  getReinosCultivo,
   getClassesPorUniverso,
   getDivindades,
   getOrigensPorUniverso,
@@ -122,6 +126,61 @@ describe('storage benefit catalog', () => {
     expect(collection).toHaveBeenNthCalledWith(2, expect.any(Object), 'tricksterCoin');
     expect(where).toHaveBeenCalledTimes(2);
     expect(getDocs).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('cache de documentos e consultas de catálogo', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    limparCacheCatalogos();
+  });
+
+  it('getCatalogoItem lê o documento uma vez e devolve cópias', async () => {
+    vi.mocked(getDoc).mockResolvedValue({
+      exists: () => true,
+      id: 'r1',
+      data: () => ({ Nome: 'Elfo' }),
+    });
+
+    const primeira = await getCatalogoItem('racas', 'r1');
+    primeira.Nome = 'Alterado';
+    const segunda = await getCatalogoItem('racas', 'r1');
+
+    expect(segunda).toEqual({ id: 'r1', Nome: 'Elfo' });
+    expect(getDoc).toHaveBeenCalledTimes(1);
+    expect(doc).toHaveBeenCalledWith(expect.any(Object), 'racas', 'r1');
+  });
+
+  it('getCatalogoItem separa coleções e ids, e devolve null se o documento não existe', async () => {
+    vi.mocked(getDoc).mockResolvedValue({ exists: () => false });
+
+    expect(await getCatalogoItem('classes', 'c1')).toBeNull();
+    expect(await getCatalogoItem('classes', 'c1')).toBeNull();
+    await getCatalogoItem('classes', 'c2');
+    await getCatalogoItem('racas', 'c1');
+
+    expect(getDoc).toHaveBeenCalledTimes(3);
+  });
+
+  it('getCatalogoItem descarta a falha e tenta de novo na chamada seguinte', async () => {
+    vi.mocked(getDoc).mockRejectedValueOnce(new Error('offline'));
+    vi.mocked(getDoc).mockResolvedValueOnce({ exists: () => true, id: 'r1', data: () => ({ Nome: 'Elfo' }) });
+
+    await expect(getCatalogoItem('racas', 'r1')).rejects.toThrow('offline');
+    expect(await getCatalogoItem('racas', 'r1')).toEqual({ id: 'r1', Nome: 'Elfo' });
+  });
+
+  it('getBeneficios e getReinosCultivo passam pelo cache', async () => {
+    vi.mocked(getDocs).mockResolvedValue({ docs: [{ id: 'x1', data: () => ({ nome: 'X' }) }] });
+
+    await getBeneficios();
+    await getBeneficios();
+    await getReinosCultivo('u1', 'sub');
+    await getReinosCultivo('u1', 'sub');
+    await getReinosCultivo('u1', 'outro');
+
+    // 1 de tricksterCoin + 2 reinosCultivo (subUniversos diferentes)
+    expect(getDocs).toHaveBeenCalledTimes(3);
   });
 });
 

@@ -224,7 +224,6 @@ const AtributoCard = ({ label, total, baseName, extraName, bonusName, personagem
           open={calculadoraAberta}
           onClose={() => setCalculadoraAberta(false)}
           personagem={personagem}
-          onSave={onSave}
           contexto={isDefesa ? 'defesa' : 'ataque'}
         />
       )}

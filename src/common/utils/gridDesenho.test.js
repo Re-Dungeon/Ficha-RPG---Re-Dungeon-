@@ -3,7 +3,11 @@ import { describe, expect, it } from 'vitest';
 import { PING_COORDENADA_MAX } from 'common/utils/grid';
 import {
   DESENHO_PONTOS_MAX,
+  DESENHO_VALIDADE_MS,
+  DESENHOS_POR_USUARIO_MAX,
   ajustarTraco,
+  desenhoVigente,
+  filtrarDesenhosVigentes,
   normalizarDesenho,
   ordenarDesenhos,
   pontosDoDesenho,
@@ -144,5 +148,41 @@ describe('pontosDoDesenho', () => {
   it('ignora sobra ímpar e entrada ausente', () => {
     expect(pontosDoDesenho({ pontos: [1, 2, 3] })).toBe('1,2');
     expect(pontosDoDesenho(null)).toBe('');
+  });
+});
+
+describe('validade dos desenhos', () => {
+  const agora = 10 * DESENHO_VALIDADE_MS;
+
+  it('são temporários (2 h) e o limite por pessoa é 20', () => {
+    expect(DESENHO_VALIDADE_MS).toBe(2 * 60 * 60 * 1000);
+    expect(DESENHOS_POR_USUARIO_MAX).toBe(20);
+  });
+
+  it('vale dentro da janela e expira depois dela', () => {
+    expect(desenhoVigente({ createdAt: agora - 1000 }, agora)).toBe(true);
+    expect(desenhoVigente({ createdAt: agora - DESENHO_VALIDADE_MS + 1 }, agora)).toBe(true);
+    expect(desenhoVigente({ createdAt: agora - DESENHO_VALIDADE_MS }, agora)).toBe(false);
+    expect(desenhoVigente({ createdAt: agora - DESENHO_VALIDADE_MS - 1 }, agora)).toBe(false);
+  });
+
+  it('aceita Timestamp do Firestore e Date', () => {
+    const velho = agora - DESENHO_VALIDADE_MS - 5;
+    expect(desenhoVigente({ createdAt: { toMillis: () => velho } }, agora)).toBe(false);
+    expect(desenhoVigente({ createdAt: new Date(agora - 5) }, agora)).toBe(true);
+  });
+
+  it('createdAt pendente (null) conta como recém-criado', () => {
+    expect(desenhoVigente({ createdAt: null }, agora)).toBe(true);
+    expect(desenhoVigente({}, agora)).toBe(true);
+  });
+
+  it('filtrarDesenhosVigentes tira só os vencidos', () => {
+    const lista = [
+      { id: 'velho', createdAt: agora - DESENHO_VALIDADE_MS - 1 },
+      { id: 'novo', createdAt: agora - 1 },
+      { id: 'pendente', createdAt: null },
+    ];
+    expect(filtrarDesenhosVigentes(lista, agora).map(d => d.id)).toEqual(['novo', 'pendente']);
   });
 });

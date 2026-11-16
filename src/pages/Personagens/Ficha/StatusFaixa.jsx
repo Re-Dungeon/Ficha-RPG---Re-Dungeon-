@@ -1,10 +1,11 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
 import { atualizarRecursoAtualPersonagem } from 'service/storage';
 import { ajustarRecursoAtual, corDaBarra, fracaoDaBarra, recursosDaFicha } from 'common/utils/grid';
 import { MOBILE } from 'common/styles/breakpoints';
+import useAcumuladorRecurso from 'hooks/useAcumuladorRecurso';
 import ErrorSnackbar from 'components/ErrorSnackbar/ErrorSnackbar';
 
 import { calcularPpMaximo, normalizarEstadoCombate, prontidaoMaximaDaFicha } from './prontidao/config';
@@ -123,48 +124,80 @@ const Passo = styled.button`
   }
 `;
 
-// Faixa de PV/Energia/Fadiga/PP no topo da ficha, em todas as abas. −/+ gravam
-// na hora (atualizarRecursoAtualPersonagem limita a 0..máximo e só mexe no
-// `atual`); o valor volta pelo subscribePersonagem da Ficha. O PP é só
-// leitura aqui — gasta-se pela Central de Ações.
+// Um recurso da faixa: −/+ acumulam os cliques (hooks/useAcumuladorRecurso) —
+// o valor aparece na hora e uma única escrita sai ~0,8 s depois do último
+// clique (ou ao desmontar a faixa, ao trocar de aba/ficha). Se falhar, volta ao
+// valor da ficha e avisa.
+const ItemRecurso = ({ personagemId, id, rotulo, recurso, onErro }) => {
+  const gravar = useCallback(
+    valor => atualizarRecursoAtualPersonagem(personagemId, id, valor),
+    [personagemId, id],
+  );
+  const aoFalhar = useCallback(
+    () => onErro('Não foi possível atualizar o valor. Tente novamente.'),
+    [onErro],
+  );
+  const { valor: atual, definir } = useAcumuladorRecurso(recurso.atual, gravar, {
+    onFalha: aoFalhar,
+  });
+  const fracao = fracaoDaBarra(id, { ...recurso, atual });
+
+  const alterar = delta => {
+    const novo = ajustarRecursoAtual({ ...recurso, atual }, delta);
+    if (novo !== null && novo !== atual) definir(novo);
+  };
+
+  return (
+    <Item data-testid={`faixa-${id}`}>
+      <Topo>
+        <Rotulo>{rotulo}</Rotulo>
+        <Valor>
+          {atual}/{recurso.max}
+        </Valor>
+      </Topo>
+      <Controles>
+        <Passo
+          type="button"
+          aria-label={`Diminuir ${rotulo}`}
+          disabled={atual <= 0}
+          onClick={() => alterar(-1)}
+        >
+          −
+        </Passo>
+        <Barra aria-hidden="true">
+          <span style={{ width: `${fracao * 100}%`, background: corDaBarra(id, fracao) }} />
+        </Barra>
+        <Passo
+          type="button"
+          aria-label={`Aumentar ${rotulo}`}
+          disabled={atual >= recurso.max}
+          onClick={() => alterar(1)}
+        >
+          +
+        </Passo>
+      </Controles>
+    </Item>
+  );
+};
+
+ItemRecurso.propTypes = {
+  personagemId: PropTypes.string.isRequired,
+  id: PropTypes.string.isRequired,
+  rotulo: PropTypes.string.isRequired,
+  recurso: PropTypes.shape({ atual: PropTypes.number, max: PropTypes.number }).isRequired,
+  onErro: PropTypes.func.isRequired,
+};
+
+// Faixa de PV/Energia/Fadiga/PP no topo da ficha, em todas as abas. −/+
+// acumulam e gravam uma vez (atualizarRecursoAtualPersonagem limita a
+// 0..máximo e só mexe no `atual`); o valor volta pelo subscribePersonagem da
+// Ficha. O PP é só leitura aqui — gasta-se pela Central de Ações.
 const StatusFaixa = ({ personagem }) => {
   const recursos = useMemo(() => recursosDaFicha(personagem), [personagem]);
-  const [otimista, setOtimista] = useState({});
-  const [ocupados, setOcupados] = useState({});
   const [erro, setErro] = useState(null);
-
-  const atualPv = recursos.pv?.atual;
-  const atualEnergia = recursos.energia?.atual;
-  const atualFadiga = recursos.fadiga?.atual;
-
-  // Chegou um valor novo da ficha (a gravação voltou ou outra fonte mexeu):
-  // o valor otimista deixa de valer.
-  useEffect(() => {
-    setOtimista(current => (Object.keys(current).length ? {} : current));
-  }, [atualPv, atualEnergia, atualFadiga]);
 
   const ppMaximo = calcularPpMaximo(prontidaoMaximaDaFicha(personagem));
   const ppAtual = normalizarEstadoCombate(personagem, ppMaximo).ppAtual;
-
-  const alterar = async (id, delta) => {
-    const recurso = recursos[id];
-    const exibido = otimista[id] ?? recurso.atual;
-    const novo = ajustarRecursoAtual({ ...recurso, atual: exibido }, delta);
-    if (novo === null || novo === exibido) return;
-
-    setOtimista(current => ({ ...current, [id]: novo }));
-    setOcupados(current => ({ ...current, [id]: true }));
-    try {
-      await atualizarRecursoAtualPersonagem(personagem.id, id, novo);
-    } catch {
-      setOtimista(current =>
-        Object.fromEntries(Object.entries(current).filter(([chave]) => chave !== id)),
-      );
-      setErro('Não foi possível atualizar o valor. Tente novamente.');
-    } finally {
-      setOcupados(current => ({ ...current, [id]: false }));
-    }
-  };
 
   // Ficha ainda sem máximos gravados (nunca salva) e sem Prontidão: nada a mostrar.
   if (!recursos.pv && !recursos.energia && !recursos.fadiga && ppMaximo <= 0) {
@@ -173,43 +206,18 @@ const StatusFaixa = ({ personagem }) => {
 
   return (
     <Faixa aria-label="Recursos do personagem">
-      {RECURSOS.map(({ id, rotulo }) => {
-        const recurso = recursos[id];
-        if (!recurso) return null;
-        const atual = otimista[id] ?? recurso.atual;
-        const fracao = fracaoDaBarra(id, { ...recurso, atual });
-        return (
-          <Item key={id} data-testid={`faixa-${id}`}>
-            <Topo>
-              <Rotulo>{rotulo}</Rotulo>
-              <Valor>
-                {atual}/{recurso.max}
-              </Valor>
-            </Topo>
-            <Controles>
-              <Passo
-                type="button"
-                aria-label={`Diminuir ${rotulo}`}
-                disabled={ocupados[id] || atual <= 0}
-                onClick={() => alterar(id, -1)}
-              >
-                −
-              </Passo>
-              <Barra aria-hidden="true">
-                <span style={{ width: `${fracao * 100}%`, background: corDaBarra(id, fracao) }} />
-              </Barra>
-              <Passo
-                type="button"
-                aria-label={`Aumentar ${rotulo}`}
-                disabled={ocupados[id] || atual >= recurso.max}
-                onClick={() => alterar(id, 1)}
-              >
-                +
-              </Passo>
-            </Controles>
-          </Item>
-        );
-      })}
+      {RECURSOS.map(({ id, rotulo }) =>
+        recursos[id] ? (
+          <ItemRecurso
+            key={id}
+            personagemId={personagem.id}
+            id={id}
+            rotulo={rotulo}
+            recurso={recursos[id]}
+            onErro={setErro}
+          />
+        ) : null,
+      )}
       {ppMaximo > 0 && (
         <Item data-testid="faixa-pp">
           <Topo>

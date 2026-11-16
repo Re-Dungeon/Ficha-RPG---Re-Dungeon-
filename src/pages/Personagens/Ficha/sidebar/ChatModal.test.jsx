@@ -14,6 +14,7 @@ import {
 } from 'service/storage';
 import ChatModal, { ChatModalConteudo } from './ChatModal';
 import { AudioMesaProvider, useAudioMesaGlobal } from 'context/AudioMesaContext';
+import { limparRegistroMembroDoChat } from 'hooks/useMembroDoChat';
 
 vi.mock('components/Chat/PlayerAudioMesa', () => ({
   default: ({ atual, volume, mudo }) => (
@@ -72,12 +73,45 @@ describe('ChatModal (menu Social da ficha)', () => {
     vi.clearAllMocks();
     useAuth.mockReturnValue({ currentUser: { uid: 'uid-jogador' } });
     getRmCampanha.mockImplementation(id => Promise.resolve(CAMPANHAS[id] ?? null));
+    limparRegistroMembroDoChat();
     setChatMembro.mockResolvedValue();
     addChatMensagem.mockResolvedValue();
     subscribeChatMensagens.mockImplementation((campanhaId, onChange) => {
       onChange(MENSAGENS_POR_CAMPANHA[campanhaId]);
       return vi.fn();
     });
+  });
+
+  it('fechado não monta o chat: nenhuma escuta nem leitura de campanha', () => {
+    render(
+      <MemoryRouter>
+        <ChatModal open={false} onClose={vi.fn()} personagem={{ id: 'wesley', nome: 'Wesley Chase', campanhas: ['torre'] }} />
+      </MemoryRouter>,
+    );
+
+    expect(subscribeChatMensagens).not.toHaveBeenCalled();
+    expect(getRmCampanha).not.toHaveBeenCalled();
+    expect(setChatMembro).not.toHaveBeenCalled();
+  });
+
+  it('não relê a campanha quando o personagem chega como objeto novo com as mesmas campanhas', async () => {
+    const personagem = { id: 'wesley', nome: 'Wesley Chase', campanhas: ['torre'] };
+    const { rerender } = render(
+      <MemoryRouter>
+        <ChatModal open onClose={vi.fn()} personagem={personagem} />
+      </MemoryRouter>,
+    );
+    expect(await screen.findByText('Na torre.')).toBeInTheDocument();
+    expect(getRmCampanha).toHaveBeenCalledTimes(1);
+
+    rerender(
+      <MemoryRouter>
+        <ChatModal open onClose={vi.fn()} personagem={{ ...personagem, campanhas: ['torre'], status: { hp: { atual: 4 } } }} />
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText('Na torre.')).toBeInTheDocument();
+    expect(getRmCampanha).toHaveBeenCalledTimes(1);
   });
 
   it('abre o chat da campanha do personagem falando como ele', async () => {

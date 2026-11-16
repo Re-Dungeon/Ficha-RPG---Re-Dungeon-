@@ -1,6 +1,11 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import {
+  getFirestore,
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+} from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -25,4 +30,17 @@ if (!hasFirebaseConfig && !isTestEnvironment) {
 const app = hasFirebaseConfig ? initializeApp(firebaseConfig) : null;
 
 export const auth = app ? getAuth(app) : { currentUser: null };
-export const db = app ? getFirestore(app) : null;
+// Cache persistente (IndexedDB, várias abas): leituras repetidas e reconexões
+// servem o que já foi baixado em vez de cobrar de novo. Se o navegador não
+// suportar (ou o Firestore já tiver sido inicializado), cai no cache em memória.
+const criarFirestore = firebaseApp => {
+  try {
+    return initializeFirestore(firebaseApp, {
+      localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
+    });
+  } catch {
+    return getFirestore(firebaseApp);
+  }
+};
+
+export const db = app ? criarFirestore(app) : null;

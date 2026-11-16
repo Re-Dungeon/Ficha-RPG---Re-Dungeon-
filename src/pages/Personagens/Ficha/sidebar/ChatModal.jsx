@@ -29,15 +29,22 @@ import { DialogFecharButton, DialogHeaderRow, DialogHeaderTitle } from '../style
 
 const textoMutedSx = { color: 'var(--text-secondary)', textAlign: 'center', py: 4 };
 
-// Conteúdo só é montado com o modal aberto (Dialog não renderiza os filhos
-// fechado) — a escuta em tempo real do chat vive só enquanto ele está visível.
+// Conteúdo só é montado com o modal aberto (Dialog sem `keepMounted` não
+// renderiza os filhos fechado) — a escuta em tempo real do chat vive só
+// enquanto ele está visível. A música da mesa segue no player global do
+// `AudioMesaProvider`, que não depende do chat montado.
 export const ChatModalConteudo = ({ personagem, modo = 'modal', onAbrirPainelLateral, onClose = null, campanhaIdInicial = null, onCampanhaChange = null }) => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   const isMobile = useMediaQuery('(max-width: 599.95px)');
+  // A ficha assina o personagem ao vivo: `personagem` é um objeto novo a cada
+  // snapshot (PV mudou no grid, por exemplo). A lista de campanhas só muda
+  // quando os ids mudam, então a memoização é pela chave em texto — assim o
+  // `getRmCampanha` não roda de novo a cada snapshot.
+  const campanhaIdsChave = campanhaIdsDosPersonagens([personagem]).join('|');
   const campanhaIds = useMemo(
-    () => campanhaIdsDosPersonagens([personagem]),
-    [personagem],
+    () => (campanhaIdsChave ? campanhaIdsChave.split('|') : []),
+    [campanhaIdsChave],
   );
 
   const [campanhas, setCampanhas] = useState(null);
@@ -348,7 +355,6 @@ const ChatModal = ({ open, onClose, personagem, onAbrirPainelLateral, onCampanha
       fullScreen={isMobile}
       fullWidth
       maxWidth="md"
-      keepMounted
       sx={{
         '& .MuiDialog-paper': {
           minHeight: isMobile ? '100dvh' : { xs: 560, sm: 700 },

@@ -16,6 +16,7 @@ import { normalizeBackgroundDoc, backgroundDocToPlainText } from 'common/utils/b
 import { useCampanhasPorUniverso } from 'hooks/useCampanhasPorUniverso';
 import { useDraftLocalStorage } from 'hooks/useDraftLocalStorage';
 import { useRacaClasseNomes } from 'hooks/useRacaClasseNomes';
+import { sincronizarMembrosDoChat } from 'hooks/sincronizarMembrosDoChat';
 import DraftBanner from 'components/DraftBanner/DraftBanner';
 import { MOBILE } from 'common/styles/breakpoints';
 
@@ -779,6 +780,18 @@ const PerfilTab = ({ personagem, onSave, aba }) => {
             backgroundRich: JSON.stringify(backgroundDoc),
           },
         });
+        // Campanha desmarcada: apaga o ponteiro do chat (as regras só conferem
+        // que ele existe). Melhor esforço — a ficha já foi salva.
+        const falhas = await sincronizarMembrosDoChat({
+          uid: personagem.uid,
+          personagemId: personagem.id,
+          antes: personagem.campanhas ?? [],
+          depois: resto.campanhas ?? [],
+        });
+        if (falhas.length > 0) {
+          // eslint-disable-next-line no-console
+          console.error('Falha ao sair do chat da campanha:', falhas);
+        }
         limparRascunho();
         setRascunhoDisponivel(null);
       } catch {
@@ -788,7 +801,7 @@ const PerfilTab = ({ personagem, onSave, aba }) => {
         setSubmitting(false);
       }
     },
-    [onSave, limparRascunho, origens, personagem.universo],
+    [onSave, limparRascunho, origens, personagem.universo, personagem.uid, personagem.id, personagem.campanhas],
   );
 
   return (

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 
-import { getFirestoreItem } from 'service/storage';
+import { getCatalogoItem } from 'service/storage';
 import { getNome } from 'common/utils/resolveNome';
 
 import {
@@ -27,21 +27,21 @@ const PersonagemCardItem = ({ personagem, onClick, isSelected = false }) => {
 
   useEffect(() => {
     if (personagem.raca) {
-      getFirestoreItem('racas', personagem.raca).then(item => setRacaNome(getNome(item)));
+      getCatalogoItem('racas', personagem.raca).then(item => setRacaNome(getNome(item)));
     } else {
       setRacaNome('');
     }
   }, [personagem.raca]);
 
   useEffect(() => {
-    Promise.all((personagem.classes ?? []).map(id => getFirestoreItem('classes', id))).then(itens =>
+    Promise.all((personagem.classes ?? []).map(id => getCatalogoItem('classes', id))).then(itens =>
       setClassesNomes(itens.filter(Boolean).map(getNome)),
     );
   }, [personagem.classes]);
 
   useEffect(() => {
     if (personagem.universo) {
-      getFirestoreItem('Universo', personagem.universo).then(item => setUniversoNome(getNome(item)));
+      getCatalogoItem('Universo', personagem.universo).then(item => setUniversoNome(getNome(item)));
     } else {
       setUniversoNome('');
     }

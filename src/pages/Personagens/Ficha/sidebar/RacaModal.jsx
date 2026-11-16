@@ -20,7 +20,7 @@ import UpdateIcon from '@mui/icons-material/Update';
 import CasinoIcon from '@mui/icons-material/Casino';
 import TimerIcon from '@mui/icons-material/Timer';
 
-import { getFirestoreItem, getRacasPorUniverso } from 'service/storage';
+import { getCatalogoItem, getRacasPorUniverso } from 'service/storage';
 import { calcularLimiteHabilidadesBasicas } from 'common/utils/formulas';
 import { getNome } from 'common/utils/resolveNome';
 import { PAPER_TELA_CHEIA } from 'common/styles/breakpoints';
@@ -118,7 +118,7 @@ const RacaModal = ({ open, onClose, personagem, onSave }) => {
       return undefined;
     }
     let isMounted = true;
-    getFirestoreItem('Universo', personagem.universo)
+    getCatalogoItem('Universo', personagem.universo)
       .then(item => {
         if (isMounted) {
           setUniversoNome(getNome(item));

@@ -6,7 +6,7 @@ import { SavingProvider } from 'context/SavingContext';
 import InfoModal from './InfoModal';
 
 vi.mock('service/storage', () => ({
-  getFirestoreItem: vi.fn(),
+  getCatalogoItem: vi.fn(),
   getOrigens: vi.fn().mockResolvedValue([]),
   getOrigensPorUniverso: vi.fn().mockResolvedValue([]),
   getRmCampanhasPorUniverso: vi.fn().mockResolvedValue([]),

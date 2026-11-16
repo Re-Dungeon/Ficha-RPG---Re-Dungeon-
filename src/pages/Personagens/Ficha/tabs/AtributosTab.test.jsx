@@ -35,7 +35,7 @@ vi.mock('context/AuthContext', () => ({ useAuth: () => ({ currentUser: null }) }
 vi.mock('service/storage', () => ({
   addChatMensagem: vi.fn().mockResolvedValue(null),
   getRmCampanha: vi.fn(),
-  getFirestoreItem: vi.fn().mockResolvedValue(null),
+  getCatalogoItem: vi.fn().mockResolvedValue(null),
   getArts: vi.fn().mockResolvedValue([]),
   getItensInventario: vi.fn().mockResolvedValue([]),
   getVariantes: vi.fn().mockResolvedValue([]),
@@ -1400,17 +1400,15 @@ describe('AtributosTab — fluxo de edição', () => {
 
 
   it('solicita confirmação antes de excluir uma combinação salva', async () => {
-    vi.mocked(getCombosAtaque)
-      .mockResolvedValueOnce([
-        {
-          id: 'combo-1',
-          nome: 'Explosão',
-          tipoDano: 'Contundente',
-          potencialBase: 18,
-          updatedAt: { seconds: 1700000000 },
-        },
-      ])
-      .mockResolvedValueOnce([]);
+    vi.mocked(getCombosAtaque).mockResolvedValueOnce([
+      {
+        id: 'combo-1',
+        nome: 'Explosão',
+        tipoDano: 'Contundente',
+        potencialBase: 18,
+        updatedAt: { seconds: 1700000000 },
+      },
+    ]);
     vi.mocked(removeComboAtaque).mockResolvedValue(undefined);
 
     const onSave = vi.fn().mockResolvedValue();
@@ -1428,6 +1426,45 @@ describe('AtributosTab — fluxo de edição', () => {
 
     await waitFor(() => expect(removeComboAtaque).toHaveBeenCalledWith('p1', 'combo-1'));
     await waitFor(() => expect(screen.queryByText('Explosão')).not.toBeInTheDocument());
+    // A lista local é filtrada: a subcoleção não é relida depois de excluir.
+    expect(getCombosAtaque).toHaveBeenCalledTimes(1);
+  });
+
+  it('salva a edição de uma combinação sem reler a lista de combinações', async () => {
+    vi.mocked(getCombosAtaque).mockResolvedValue([
+      {
+        id: 'combo-1',
+        nome: 'Soco do Jose',
+        tipoDano: 'Contundente',
+        potencializacao: 10,
+        costResourceType: 'energia',
+        updatedAt: { seconds: 1700000000 },
+      },
+    ]);
+
+    renderComProvider(
+      <AtributosTab personagem={personagem} onSave={vi.fn().mockResolvedValue()} onExcluir={vi.fn()} />,
+    );
+
+    fireEvent.contextMenu(screen.getByRole('button', { name: /ataque/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /calculadora de ataque/i }));
+
+    const dialog = await screen.findByRole('dialog', { name: /calculadora de ataque/i });
+    fireEvent.click(within(dialog).getByRole('button', { name: /^selecionar$/i }));
+    fireEvent.change(within(dialog).getByLabelText(/nome da combinação/i), {
+      target: { value: 'Soco renomeado' },
+    });
+    fireEvent.click(within(dialog).getByRole('button', { name: /^salvar$/i }));
+
+    await waitFor(() =>
+      expect(updateComboAtaque).toHaveBeenCalledWith(
+        'p1',
+        'combo-1',
+        expect.objectContaining({ nome: 'Soco renomeado' }),
+      ),
+    );
+    expect((await within(dialog).findAllByText('Soco renomeado')).length).toBeGreaterThan(0);
+    expect(getCombosAtaque).toHaveBeenCalledTimes(1);
   });
 
   it('desvincula a combinação selecionada ao clicar em nova combinação e salva como criação nova', async () => {
@@ -1515,7 +1552,7 @@ describe('AtributosTab — fluxo de edição', () => {
 
   it('salva combinação com Fadiga e persiste o recurso selecionado', async () => {
     vi.mocked(getCombosAtaque).mockResolvedValue([]);
-    vi.mocked(addComboAtaque).mockResolvedValue('combo-fadiga');
+    vi.mocked(addComboAtaque).mockResolvedValue({ id: 'combo-fadiga' });
 
     const personagemComRecursos = {
       ...personagem,
@@ -1550,6 +1587,9 @@ describe('AtributosTab — fluxo de edição', () => {
         potencializacao: 19,
       }),
     ));
+    // A nova combinação entra na lista local; nada de reler a subcoleção.
+    expect((await within(dialog).findAllByText('Corte Carmesim')).length).toBeGreaterThan(0);
+    expect(getCombosAtaque).toHaveBeenCalledTimes(1);
   });
 
   it('cria uma nova combinação quando o nome igual existe em outro registro com ID diferente', async () => {
@@ -2057,12 +2097,53 @@ describe('AtributosTab — fluxo de edição', () => {
     fireEvent.click(within(confirmDialog).getByRole('button', { name: /confirmar uso/i }));
 
     await waitFor(() => expect(consumirRecursosPersonagem).toHaveBeenCalledWith('p1', { energia: 0, fadiga: 9, saude: 0 }));
-    await waitFor(() => expect(onSave).toHaveBeenCalledWith(expect.objectContaining({
-      status: expect.objectContaining({
-        energia: expect.objectContaining({ atual: 100 }),
-        fadiga: expect.objectContaining({ atual: 25 }),
-      }),
-    })));
+    // A transação já gravou os recursos: não há segundo updatePersonagem (onSave).
+    await screen.findByText(/combo utilizado/i);
+    expect(consumirRecursosPersonagem).toHaveBeenCalledTimes(1);
+    expect(onSave).not.toHaveBeenCalled();
+  });
+
+  it('usar uma combinação sem custo não consome recursos nem grava a ficha', async () => {
+    vi.mocked(getCombosAtaque).mockResolvedValueOnce([
+      {
+        id: 'combo-0',
+        nome: 'Golpe Simples',
+        tipoDano: 'Contundente',
+        perfilDano: '1d6',
+        potencializacao: 0,
+        custoEnergia: 0,
+        custoFadiga: 0,
+        updatedAt: { seconds: 1700000000 },
+      },
+    ]);
+
+    const onSave = vi.fn().mockResolvedValue();
+    const personagemComEnergia = {
+      ...personagem,
+      id: 'p1',
+      status: {
+        energia: { atual: 100, base: 0, extra: 0, bonus: 0, maximo: 100 },
+        fadiga: { atual: 30, base: 0, extra: 0, bonus: 0, maximo: 40 },
+      },
+      statusMaximos: { energia: 100, fadiga: 40 },
+    };
+
+    renderComProvider(
+      <AtributosTab personagem={personagemComEnergia} onSave={onSave} onExcluir={vi.fn()} />,
+    );
+
+    fireEvent.contextMenu(screen.getByRole('button', { name: /ataque/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /calculadora de ataque/i }));
+
+    const dialog = await screen.findByRole('dialog', { name: /calculadora de ataque/i });
+    fireEvent.click(within(dialog).getByRole('button', { name: /^usar$/i }));
+
+    const confirmDialog = await screen.findByRole('dialog', { name: /utilizar combinação/i });
+    fireEvent.click(within(confirmDialog).getByRole('button', { name: /confirmar uso/i }));
+
+    await screen.findByText(/combo utilizado/i);
+    expect(consumirRecursosPersonagem).not.toHaveBeenCalled();
+    expect(onSave).not.toHaveBeenCalled();
   });
 
   it('consolida energia, fadiga e saúde no uso de uma combinação salva e consome tudo em uma operação', async () => {
