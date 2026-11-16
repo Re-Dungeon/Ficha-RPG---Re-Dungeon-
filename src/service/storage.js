@@ -507,7 +507,7 @@ const getSubcolecaoItems = async (parentCollection, parentId, subcollectionName)
 // guardada (aberturas simultâneas dividem a leitura; falha sai do cache) e quem
 // chama recebe cópias. Escritas feitas em outro dispositivo só aparecem depois
 // do TTL. Chave "personagemId|subcolecao".
-const SUBCOLECAO_TTL_MS = 5 * 60 * 1000;
+const SUBCOLECAO_TTL_MS = 60 * 60 * 1000;
 const cacheSubcolecoes = new Map();
 
 export const limparCacheSubcolecoes = personagemId =>

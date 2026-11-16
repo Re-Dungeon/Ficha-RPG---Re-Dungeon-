@@ -105,10 +105,10 @@ describe('subcoleções do personagem (cache de leitura)', () => {
     const agora = vi.spyOn(Date, 'now');
     agora.mockReturnValue(1_000_000);
     await getArts('p1');
-    agora.mockReturnValue(1_000_000 + 4 * 60 * 1000);
+    agora.mockReturnValue(1_000_000 + 59 * 60 * 1000);
     await getArts('p1');
     expect(getDocs).toHaveBeenCalledTimes(1);
-    agora.mockReturnValue(1_000_000 + 6 * 60 * 1000);
+    agora.mockReturnValue(1_000_000 + 61 * 60 * 1000);
     await getArts('p1');
     expect(getDocs).toHaveBeenCalledTimes(2);
     agora.mockRestore();
