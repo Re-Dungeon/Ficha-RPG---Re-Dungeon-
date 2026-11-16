@@ -14,6 +14,7 @@ import {
 } from 'service/storage';
 import ChatModal, { ChatModalConteudo } from './ChatModal';
 import { AudioMesaProvider, useAudioMesaGlobal } from 'context/AudioMesaContext';
+import { limparRegistroMembroDoChat } from 'hooks/useMembroDoChat';
 
 vi.mock('components/Chat/PlayerAudioMesa', () => ({
   default: ({ atual, volume, mudo }) => (
@@ -72,6 +73,7 @@ describe('ChatModal (menu Social da ficha)', () => {
     vi.clearAllMocks();
     useAuth.mockReturnValue({ currentUser: { uid: 'uid-jogador' } });
     getRmCampanha.mockImplementation(id => Promise.resolve(CAMPANHAS[id] ?? null));
+    limparRegistroMembroDoChat();
     setChatMembro.mockResolvedValue();
     addChatMensagem.mockResolvedValue();
     subscribeChatMensagens.mockImplementation((campanhaId, onChange) => {

@@ -13,11 +13,13 @@ import {
   runTransaction,
   serverTimestamp,
   setDoc,
+  Timestamp,
   updateDoc,
   where,
   writeBatch,
 } from 'firebase/firestore';
 import { db } from 'service/firebase';
+import { DESENHO_VALIDADE_MS } from 'common/utils/gridDesenho';
 import { mesclarTresVias } from 'common/utils/mesclaTresVias';
 import { normalizeSupportTicketCategory } from 'common/utils/supportTickets';
 import {
@@ -496,6 +498,51 @@ const getSubcolecaoItems = async (parentCollection, parentId, subcollectionName)
   }));
 };
 
+// Cache em memória (só leitura) das subcoleções que a calculadora de ataque/
+// defesa, a Central de Ações e as rolagens do chat leem a cada abertura: arts,
+// variantes, itensInventario, combosAtaque e combosDefesa. Exceção à regra de
+// que subcoleções nunca passam por cache — por isso a invalidação é obrigatória:
+// TODA escrita dessas subcoleções neste app vive aqui no storage.js e chama
+// `comInvalidacaoSubcolecao` (add/update/remove/duplicate). A promise fica
+// guardada (aberturas simultâneas dividem a leitura; falha sai do cache) e quem
+// chama recebe cópias. Escritas feitas em outro dispositivo só aparecem depois
+// do TTL. Chave "personagemId|subcolecao".
+const SUBCOLECAO_TTL_MS = 5 * 60 * 1000;
+const cacheSubcolecoes = new Map();
+
+export const limparCacheSubcolecoes = personagemId =>
+  [...cacheSubcolecoes.keys()].forEach(chave => {
+    if (personagemId === undefined || chave.startsWith(`${personagemId}|`)) {
+      cacheSubcolecoes.delete(chave);
+    }
+  });
+
+const getSubcolecaoPersonagemComCache = (personagemId, subcolecao) => {
+  const chave = `${personagemId}|${subcolecao}`;
+  let guardado = cacheSubcolecoes.get(chave);
+  if (!guardado || Date.now() - guardado.em > SUBCOLECAO_TTL_MS) {
+    const promessa = getSubcolecaoItems('personagens', personagemId, subcolecao);
+    guardado = { promessa, em: Date.now() };
+    cacheSubcolecoes.set(chave, guardado);
+    promessa.catch(() => {
+      if (cacheSubcolecoes.get(chave)?.promessa === promessa) cacheSubcolecoes.delete(chave);
+    });
+  }
+  return guardado.promessa.then(itens => itens.map(item => ({ ...item })));
+};
+
+// Invalida antes (leitura que comece durante a escrita não fica com a lista
+// velha) e de novo ao terminar (leitura que terminou no meio da escrita).
+const comInvalidacaoSubcolecao = async (personagemId, subcolecao, escrever) => {
+  const chave = `${personagemId}|${subcolecao}`;
+  cacheSubcolecoes.delete(chave);
+  try {
+    return await escrever();
+  } finally {
+    cacheSubcolecoes.delete(chave);
+  }
+};
+
 // ── aptidoesAdquiridas — subcoleção personagens/{id}/aptidoesAdquiridas (§9) ─
 // Doc id = id da aptidão no catálogo `aptidoes`; campo `nivel` só (sem bônus).
 
@@ -538,24 +585,29 @@ export const removeNucleo = (personagemId, nucleoId) =>
 // correspondentes a essa origem, e sempre um `nucleoId` (obrigatório em
 // qualquer origem — ver MIGRACAO-REACT-FIREBASE.md §5.1).
 
-export const getArts = personagemId =>
-  getSubcolecaoItems('personagens', personagemId, 'arts');
+export const getArts = personagemId => getSubcolecaoPersonagemComCache(personagemId, 'arts');
 
 export const addArt = (personagemId, data) =>
-  addDoc(collection(db, 'personagens', personagemId, 'arts'), {
-    ...data,
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  });
+  comInvalidacaoSubcolecao(personagemId, 'arts', () =>
+    addDoc(collection(db, 'personagens', personagemId, 'arts'), {
+      ...data,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    }),
+  );
 
 export const updateArt = (personagemId, artId, data) =>
-  updateDoc(doc(db, 'personagens', personagemId, 'arts', artId), {
-    ...data,
-    updatedAt: serverTimestamp(),
-  });
+  comInvalidacaoSubcolecao(personagemId, 'arts', () =>
+    updateDoc(doc(db, 'personagens', personagemId, 'arts', artId), {
+      ...data,
+      updatedAt: serverTimestamp(),
+    }),
+  );
 
 export const removeArt = (personagemId, artId) =>
-  deleteDoc(doc(db, 'personagens', personagemId, 'arts', artId));
+  comInvalidacaoSubcolecao(personagemId, 'arts', () =>
+    deleteDoc(doc(db, 'personagens', personagemId, 'arts', artId)),
+  );
 
 // ── variantes — subcoleção personagens/{id}/variantes (§10) ─────────────────
 // Sub-versão de uma Art (`artId`), domínio sempre menor que o da Art base
@@ -563,23 +615,29 @@ export const removeArt = (personagemId, artId) =>
 // Arts ativas por viver numa coleção própria.
 
 export const getVariantes = personagemId =>
-  getSubcolecaoItems('personagens', personagemId, 'variantes');
+  getSubcolecaoPersonagemComCache(personagemId, 'variantes');
 
 export const addVariante = (personagemId, data) =>
-  addDoc(collection(db, 'personagens', personagemId, 'variantes'), {
-    ...data,
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  });
+  comInvalidacaoSubcolecao(personagemId, 'variantes', () =>
+    addDoc(collection(db, 'personagens', personagemId, 'variantes'), {
+      ...data,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    }),
+  );
 
 export const updateVariante = (personagemId, varianteId, data) =>
-  updateDoc(doc(db, 'personagens', personagemId, 'variantes', varianteId), {
-    ...data,
-    updatedAt: serverTimestamp(),
-  });
+  comInvalidacaoSubcolecao(personagemId, 'variantes', () =>
+    updateDoc(doc(db, 'personagens', personagemId, 'variantes', varianteId), {
+      ...data,
+      updatedAt: serverTimestamp(),
+    }),
+  );
 
 export const removeVariante = (personagemId, varianteId) =>
-  deleteDoc(doc(db, 'personagens', personagemId, 'variantes', varianteId));
+  comInvalidacaoSubcolecao(personagemId, 'variantes', () =>
+    deleteDoc(doc(db, 'personagens', personagemId, 'variantes', varianteId)),
+  );
 
 // ── itensInventario — subcoleção personagens/{id}/itensInventario (§14) ─────
 // Cada doc é uma cópia própria do personagem (nunca uma referência viva ao
@@ -589,23 +647,29 @@ export const removeVariante = (personagemId, varianteId) =>
 // personagem, que passa a ser livremente editável sem tocar o catálogo.
 
 export const getItensInventario = personagemId =>
-  getSubcolecaoItems('personagens', personagemId, 'itensInventario');
+  getSubcolecaoPersonagemComCache(personagemId, 'itensInventario');
 
 export const addItemInventario = (personagemId, data) =>
-  addDoc(collection(db, 'personagens', personagemId, 'itensInventario'), {
-    ...data,
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  });
+  comInvalidacaoSubcolecao(personagemId, 'itensInventario', () =>
+    addDoc(collection(db, 'personagens', personagemId, 'itensInventario'), {
+      ...data,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    }),
+  );
 
 export const updateItemInventario = (personagemId, itemInventarioId, data) =>
-  updateDoc(doc(db, 'personagens', personagemId, 'itensInventario', itemInventarioId), {
-    ...data,
-    updatedAt: serverTimestamp(),
-  });
+  comInvalidacaoSubcolecao(personagemId, 'itensInventario', () =>
+    updateDoc(doc(db, 'personagens', personagemId, 'itensInventario', itemInventarioId), {
+      ...data,
+      updatedAt: serverTimestamp(),
+    }),
+  );
 
 export const removeItemInventario = (personagemId, itemInventarioId) =>
-  deleteDoc(doc(db, 'personagens', personagemId, 'itensInventario', itemInventarioId));
+  comInvalidacaoSubcolecao(personagemId, 'itensInventario', () =>
+    deleteDoc(doc(db, 'personagens', personagemId, 'itensInventario', itemInventarioId)),
+  );
 
 // ── materiaisInventario — subcoleção personagens/{id}/materiaisInventario ──
 // Mesmo padrão de itensInventario: cópia própria do personagem, nunca uma
@@ -707,7 +771,7 @@ export const duplicateNota = async (personagemId, notaId) => {
 
 // ── combosAtaque — subcoleção personagens/{id}/combosAtaque ──
 export const getCombosAtaque = personagemId =>
-  getSubcolecaoItems('personagens', personagemId, 'combosAtaque');
+  getSubcolecaoPersonagemComCache(personagemId, 'combosAtaque');
 
 export const getComboAtaque = async (personagemId, comboId) => {
   const snapshot = await getDoc(doc(db, 'personagens', personagemId, 'combosAtaque', comboId));
@@ -715,20 +779,26 @@ export const getComboAtaque = async (personagemId, comboId) => {
 };
 
 export const addComboAtaque = (personagemId, data) =>
-  addDoc(collection(db, 'personagens', personagemId, 'combosAtaque'), {
-    ...data,
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  });
+  comInvalidacaoSubcolecao(personagemId, 'combosAtaque', () =>
+    addDoc(collection(db, 'personagens', personagemId, 'combosAtaque'), {
+      ...data,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    }),
+  );
 
 export const updateComboAtaque = (personagemId, comboId, data) =>
-  updateDoc(doc(db, 'personagens', personagemId, 'combosAtaque', comboId), {
-    ...data,
-    updatedAt: serverTimestamp(),
-  });
+  comInvalidacaoSubcolecao(personagemId, 'combosAtaque', () =>
+    updateDoc(doc(db, 'personagens', personagemId, 'combosAtaque', comboId), {
+      ...data,
+      updatedAt: serverTimestamp(),
+    }),
+  );
 
 export const removeComboAtaque = (personagemId, comboId) =>
-  deleteDoc(doc(db, 'personagens', personagemId, 'combosAtaque', comboId));
+  comInvalidacaoSubcolecao(personagemId, 'combosAtaque', () =>
+    deleteDoc(doc(db, 'personagens', personagemId, 'combosAtaque', comboId)),
+  );
 
 export const duplicateComboAtaque = async (personagemId, comboId) => {
   const combo = await getComboAtaque(personagemId, comboId);
@@ -737,19 +807,21 @@ export const duplicateComboAtaque = async (personagemId, comboId) => {
   delete rest.id;
   delete rest.createdAt;
   delete rest.updatedAt;
-  const ref = await addDoc(collection(db, 'personagens', personagemId, 'combosAtaque'), {
-    ...rest,
-    nome: `${rest.nome ?? 'Combinação'} (cópia)`,
-    custoFadiga: Number(rest.custoFadiga ?? 0),
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  });
+  const ref = await comInvalidacaoSubcolecao(personagemId, 'combosAtaque', () =>
+    addDoc(collection(db, 'personagens', personagemId, 'combosAtaque'), {
+      ...rest,
+      nome: `${rest.nome ?? 'Combinação'} (cópia)`,
+      custoFadiga: Number(rest.custoFadiga ?? 0),
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    }),
+  );
   return ref.id;
 };
 
 // ── combosDefesa — subcoleção personagens/{id}/combosDefesa ──
 export const getCombosDefesa = personagemId =>
-  getSubcolecaoItems('personagens', personagemId, 'combosDefesa');
+  getSubcolecaoPersonagemComCache(personagemId, 'combosDefesa');
 
 export const getComboDefesa = async (personagemId, comboId) => {
   const snapshot = await getDoc(doc(db, 'personagens', personagemId, 'combosDefesa', comboId));
@@ -757,20 +829,26 @@ export const getComboDefesa = async (personagemId, comboId) => {
 };
 
 export const addComboDefesa = (personagemId, data) =>
-  addDoc(collection(db, 'personagens', personagemId, 'combosDefesa'), {
-    ...data,
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  });
+  comInvalidacaoSubcolecao(personagemId, 'combosDefesa', () =>
+    addDoc(collection(db, 'personagens', personagemId, 'combosDefesa'), {
+      ...data,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    }),
+  );
 
 export const updateComboDefesa = (personagemId, comboId, data) =>
-  updateDoc(doc(db, 'personagens', personagemId, 'combosDefesa', comboId), {
-    ...data,
-    updatedAt: serverTimestamp(),
-  });
+  comInvalidacaoSubcolecao(personagemId, 'combosDefesa', () =>
+    updateDoc(doc(db, 'personagens', personagemId, 'combosDefesa', comboId), {
+      ...data,
+      updatedAt: serverTimestamp(),
+    }),
+  );
 
 export const removeComboDefesa = (personagemId, comboId) =>
-  deleteDoc(doc(db, 'personagens', personagemId, 'combosDefesa', comboId));
+  comInvalidacaoSubcolecao(personagemId, 'combosDefesa', () =>
+    deleteDoc(doc(db, 'personagens', personagemId, 'combosDefesa', comboId)),
+  );
 
 export const duplicateComboDefesa = async (personagemId, comboId) => {
   const combo = await getComboDefesa(personagemId, comboId);
@@ -779,13 +857,15 @@ export const duplicateComboDefesa = async (personagemId, comboId) => {
   delete rest.id;
   delete rest.createdAt;
   delete rest.updatedAt;
-  const ref = await addDoc(collection(db, 'personagens', personagemId, 'combosDefesa'), {
-    ...rest,
-    nome: `${rest.nome ?? 'Combinação'} (cópia)`,
-    custoFadiga: Number(rest.custoFadiga ?? 0),
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  });
+  const ref = await comInvalidacaoSubcolecao(personagemId, 'combosDefesa', () =>
+    addDoc(collection(db, 'personagens', personagemId, 'combosDefesa'), {
+      ...rest,
+      nome: `${rest.nome ?? 'Combinação'} (cópia)`,
+      custoFadiga: Number(rest.custoFadiga ?? 0),
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    }),
+  );
   return ref.id;
 };
 
@@ -980,7 +1060,11 @@ export const getReinosCultivo = (universoId, subUniverso = '') => {
 // usado pela regra de leitura — criado ao abrir o chat, sem migração.
 export const CHAT_LIMITE_MENSAGENS = CHAT_JANELA_MENSAGENS;
 
-export const getRmCampanha = id => getFirestoreItem('rmCampanhas', id);
+// Doc da campanha (nome, mestreId, universoId — mudam raramente e só o mestre
+// edita, pelo Re:Master): lido pelo cache dos catálogos (10 min, promise
+// compartilhada, cópia, falha não fica). Somente leitura.
+export const getRmCampanha = id =>
+  comCacheCatalogo(`rmCampanhas|id:${id}`, () => getFirestoreItem('rmCampanhas', id));
 
 export const setChatMembro = (campanhaId, uid, personagemId) =>
   setDoc(doc(db, 'rmCampanhas', campanhaId, 'chatMembros', uid), {
@@ -988,6 +1072,19 @@ export const setChatMembro = (campanhaId, uid, personagemId) =>
     personagemId,
     updatedAt: serverTimestamp(),
   });
+
+// Apaga o ponteiro chatMembros/{uid} se ele aponta para este personagem. As
+// regras do chat/grid conferem só a existência do ponteiro (o personagem é
+// validado quando ele é gravado), então desmarcar a campanha na ficha ou
+// excluir o personagem precisa apagá-lo para cortar o acesso. Ponteiro de
+// outro personagem do mesmo usuário fica (ele continua na campanha).
+export const removerChatMembroDoPersonagem = async (campanhaId, uid, personagemId) => {
+  const ref = doc(db, 'rmCampanhas', campanhaId, 'chatMembros', uid);
+  const snapshot = await getDoc(ref);
+  if (!snapshot.exists() || snapshot.data().personagemId !== personagemId) return false;
+  await deleteDoc(ref);
+  return true;
+};
 
 // Primeiro listener em tempo real do projeto: devolve o `unsubscribe` do
 // `onSnapshot` — chame-o no cleanup do `useEffect`. As mensagens chegam em
@@ -1422,7 +1519,7 @@ const gridAreasRef = (campanhaId, cenaId) =>
 // Templates de área da cena (common/utils/gridAreas.js). Chama
 // `onChange([{ id, ...dados }])`; quem lê normaliza (normalizarArea).
 // Tetos de segurança (limit) acima dos limites de UI: AREAS_POR_CENA_MAX = 50,
-// MARCADORES_POR_CENA_MAX = 100, DESENHOS_POR_USUARIO_MAX = 50 por pessoa.
+// MARCADORES_POR_CENA_MAX = 100, DESENHOS_POR_USUARIO_MAX = 20 por pessoa.
 export const GRID_LIMITE_AREAS = 50;
 export const GRID_LIMITE_MARCADORES = 100;
 export const GRID_LIMITE_DESENHOS = 300;
@@ -1586,28 +1683,69 @@ export const updateGridMarcador = (campanhaId, cenaId, marcadorId, patch) =>
 export const removeGridMarcador = (campanhaId, cenaId, marcadorId) =>
   deleteDoc(doc(gridMarcadoresRef(campanhaId, cenaId), marcadorId));
 
-// Um doc por traço. Chama `onChange([{ id, ...dados }])`, sem ordenação.
+// Um doc por traço, só os RECENTES (`createdAt` > agora − DESENHO_VALIDADE_MS):
+// os antigos nem são lidos nem cobrados. Faixa de um único campo — índice
+// automático; `orderBy` desc + `limit` mantêm os mais novos se passar do teto.
+// Chama `onChange([{ id, ...dados }])`, sem ordenação. O traço que acabo de
+// criar só entra aqui depois da confirmação do servidor (o serverTimestamp
+// pendente não casa com o filtro no cache local) — o hook cuida do eco local.
 export const subscribeGridDesenhos = (campanhaId, cenaId, onChange, onError) =>
   onSnapshot(
-    query(gridDesenhosRef(campanhaId, cenaId), limit(GRID_LIMITE_DESENHOS)),
+    query(
+      gridDesenhosRef(campanhaId, cenaId),
+      where('createdAt', '>', Timestamp.fromMillis(Date.now() - DESENHO_VALIDADE_MS)),
+      orderBy('createdAt', 'desc'),
+      limit(GRID_LIMITE_DESENHOS),
+    ),
     snapshot =>
       onChange(snapshot.docs.map(docSnapshot => ({ id: docSnapshot.id, ...docSnapshot.data() }))),
     onError,
   );
 
+// `expiraEm` (Timestamp) alimenta a política de TTL do Firestore sobre o grupo
+// de coleções `desenhos` (apaga o doc de verdade). Se as regras publicadas
+// ainda não aceitam o campo (app novo antes das regras), a escrita volta a ser
+// feita sem ele e o app lembra disso — o desenho continua funcionando e some
+// pela validade de `createdAt`, só não é apagado fisicamente.
+let desenhoAceitaExpiraEm = true;
+
 // Cria o traço `{ uid, cor, pontos }` e, no mesmo lote, apaga `idsParaApagar`
-// (o excedente do limite por pessoa). Devolve o id do novo.
+// (o excedente do limite por pessoa). Devolve o id do novo. `aoCriarLocal(id)`
+// roda antes do envio, para quem chama mostrar o traço sem esperar o servidor.
 export const addGridDesenho = async (
   campanhaId,
   cenaId,
   { uid, cor, pontos },
   idsParaApagar = [],
+  { aoCriarLocal } = {},
 ) => {
-  const lote = writeBatch(db);
   const novoRef = doc(gridDesenhosRef(campanhaId, cenaId));
-  lote.set(novoRef, { uid, cor, pontos, createdAt: serverTimestamp() });
-  idsParaApagar.forEach(id => lote.delete(doc(gridDesenhosRef(campanhaId, cenaId), id)));
-  await lote.commit();
+  const enviar = async comExpiraEm => {
+    const lote = writeBatch(db);
+    lote.set(novoRef, {
+      uid,
+      cor,
+      pontos,
+      createdAt: serverTimestamp(),
+      ...(comExpiraEm
+        ? { expiraEm: Timestamp.fromMillis(Date.now() + DESENHO_VALIDADE_MS) }
+        : {}),
+    });
+    idsParaApagar.forEach(id => lote.delete(doc(gridDesenhosRef(campanhaId, cenaId), id)));
+    await lote.commit();
+  };
+  aoCriarLocal?.(novoRef.id);
+  if (!desenhoAceitaExpiraEm) {
+    await enviar(false);
+    return novoRef.id;
+  }
+  try {
+    await enviar(true);
+  } catch (error) {
+    if (error?.code !== 'permission-denied') throw error;
+    await enviar(false); // regras antigas: sem `expiraEm`
+    desenhoAceitaExpiraEm = false;
+  }
   return novoRef.id;
 };
 

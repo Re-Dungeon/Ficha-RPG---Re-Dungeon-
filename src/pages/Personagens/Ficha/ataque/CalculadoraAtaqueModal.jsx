@@ -1449,7 +1449,15 @@ const resetAttackCombinationForm = ({ setForm, setSelectedComboId, setResourceSe
   setConfirmarNovaCombinacao(false);
 };
 
-const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave = null, contexto = 'ataque' }) => {
+const ordenarCombosPorEdicao = lista =>
+  [...lista].sort((a, b) => (b.updatedAt?.seconds ?? 0) - (a.updatedAt?.seconds ?? 0));
+
+// Depois de salvar/excluir, a lista local é remendada em vez de reler a
+// subcoleção inteira. `updatedAt` aqui é só um carimbo local (segundos, como o
+// Timestamp do Firestore) para a ordenação — o valor real fica no servidor.
+const carimboAgora = () => ({ seconds: Math.floor(Date.now() / 1000), nanoseconds: 0 });
+
+const CalculadoraAtaqueModal = ({ open, onClose, personagem, contexto = 'ataque' }) => {
   const contextConfig = getContextConfig(contexto);
   const isDefesaContexto = contexto === 'defesa';
   const tiposDanoOptions = useMemo(
@@ -2271,22 +2279,36 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave = null, cont
 
     try {
       const comboAPI = isDefesaContexto
-        ? { add: addComboDefesa, update: updateComboDefesa, remove: removeComboDefesa, getAll: getCombosDefesa }
-        : { add: addComboAtaque, update: updateComboAtaque, remove: removeComboAtaque, getAll: getCombosAtaque };
+        ? { add: addComboDefesa, update: updateComboDefesa, remove: removeComboDefesa }
+        : { add: addComboAtaque, update: updateComboAtaque, remove: removeComboAtaque };
 
       let comboAtualizadoId = comboIdParaSalvar;
 
       if (comboIdParaSalvar) {
         await comboAPI.update(personagem.id, comboIdParaSalvar, payload);
         setSelectedComboId(comboIdParaSalvar);
+        setCombos(atuais =>
+          ordenarCombosPorEdicao(
+            atuais.map(item =>
+              item.id === comboIdParaSalvar
+                ? { ...item, ...payload, updatedAt: carimboAgora() }
+                : item,
+            ),
+          ),
+        );
       } else {
         const novoCombo = await comboAPI.add(personagem.id, payload);
         comboAtualizadoId = novoCombo?.id || '';
         setSelectedComboId(comboAtualizadoId);
+        const comboCriado = {
+          ...payload,
+          id: comboAtualizadoId,
+          createdAt: carimboAgora(),
+          updatedAt: carimboAgora(),
+        };
+        setCombos(atuais => ordenarCombosPorEdicao([comboCriado, ...atuais]));
       }
 
-      const atualizados = await comboAPI.getAll(personagem.id);
-      setCombos((atualizados ?? []).sort((a, b) => (b.updatedAt?.seconds ?? 0) - (a.updatedAt?.seconds ?? 0)));
       setErro('');
       setForm(current => ({
         ...current,
@@ -2457,53 +2479,16 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave = null, cont
         saude: custoSaudeFinal,
       };
 
-      const resultado = await consumirRecursosPersonagem(personagem.id, payloadConsumo);
+      // A transação grava status/statusMaximos e a ficha (listener ao vivo)
+      // recebe o resultado de volta — nada de segundo updatePersonagem. Sem
+      // custo nenhum não há o que consumir, então nem a transação roda.
+      const temCusto = Object.values(payloadConsumo).some(valor => Number(valor) > 0);
+      const resultado = temCusto
+        ? await consumirRecursosPersonagem(personagem.id, payloadConsumo)
+        : null;
       const proximaEnergia = Number(resultado?.energia?.atual ?? Math.max(0, energiaAtualAntes - custoFinal));
       const proximaFadiga = Number(resultado?.fadiga?.atual ?? Math.max(0, fadigaAtualAntes - custoFadigaFinal));
       const proximaSaude = Number(resultado?.saude?.atual ?? Math.max(0, saudeAtualAntes - custoSaudeFinal));
-
-      const statusAtual = personagem?.status ?? {};
-      const proximaStatus = {
-        ...statusAtual,
-        hp: {
-          ...((statusAtual.hp ?? statusAtual.saude ?? {})),
-          atual: custoSaudeFinal > 0 ? proximaSaude : Number(statusAtual?.hp?.atual ?? statusAtual?.saude?.atual ?? saudeAtualAntes),
-          maximo: saudeMaximaCombo || Number(statusAtual?.hp?.maximo ?? statusAtual?.saude?.maximo ?? 0),
-        },
-        ...(Object.prototype.hasOwnProperty.call(statusAtual, 'saude') || Object.prototype.hasOwnProperty.call(statusAtual, 'hp')
-          ? {
-              saude: {
-                ...((statusAtual.saude ?? statusAtual.hp ?? {})),
-                atual: custoSaudeFinal > 0 ? proximaSaude : Number(statusAtual?.saude?.atual ?? statusAtual?.hp?.atual ?? saudeAtualAntes),
-                maximo: saudeMaximaCombo || Number(statusAtual?.saude?.maximo ?? statusAtual?.hp?.maximo ?? 0),
-              },
-            }
-          : {}),
-        energia: {
-          ...((statusAtual.energia ?? {})),
-          atual: custoFinal > 0 ? proximaEnergia : Number(statusAtual?.energia?.atual ?? energiaAtualAntes),
-          maximo: energiaMaximaCombo || Number(statusAtual?.energia?.maximo ?? 0),
-        },
-        fadiga: {
-          ...((statusAtual.fadiga ?? {})),
-          atual: custoFadigaFinal > 0 ? proximaFadiga : Number(statusAtual?.fadiga?.atual ?? fadigaAtualAntes),
-          maximo: fadigaMaximaCombo || Number(statusAtual?.fadiga?.maximo ?? 0),
-        },
-      };
-
-      const proximoStatusMaximos = {
-        ...(personagem?.statusMaximos ?? {}),
-        hp: custoSaudeFinal > 0 ? (saudeMaximaCombo || Number(personagem?.statusMaximos?.hp ?? personagem?.statusMaximos?.saude ?? statusAtual?.hp?.maximo ?? statusAtual?.saude?.maximo ?? 0)) : Number(personagem?.statusMaximos?.hp ?? personagem?.statusMaximos?.saude ?? statusAtual?.hp?.maximo ?? statusAtual?.saude?.maximo ?? 0),
-        ...(Object.prototype.hasOwnProperty.call(personagem?.statusMaximos ?? {}, 'saude') || Object.prototype.hasOwnProperty.call(statusAtual, 'saude')
-          ? {
-              saude: custoSaudeFinal > 0 ? (saudeMaximaCombo || Number(personagem?.statusMaximos?.saude ?? personagem?.statusMaximos?.hp ?? statusAtual?.saude?.maximo ?? statusAtual?.hp?.maximo ?? 0)) : Number(personagem?.statusMaximos?.saude ?? personagem?.statusMaximos?.hp ?? statusAtual?.saude?.maximo ?? statusAtual?.hp?.maximo ?? 0),
-            }
-          : {}),
-        energia: custoFinal > 0 ? (energiaMaximaCombo || Number(personagem?.statusMaximos?.energia ?? statusAtual?.energia?.maximo ?? 0)) : Number(personagem?.statusMaximos?.energia ?? statusAtual?.energia?.maximo ?? 0),
-        fadiga: custoFadigaFinal > 0 ? (fadigaMaximaCombo || Number(personagem?.statusMaximos?.fadiga ?? statusAtual?.fadiga?.maximo ?? 0)) : Number(personagem?.statusMaximos?.fadiga ?? statusAtual?.fadiga?.maximo ?? 0),
-      };
-
-      await onSave?.({ status: proximaStatus, statusMaximos: proximoStatusMaximos });
 
       const campanhaId = campanhaResolvida ?? (campanhaEscolhida || null);
       const expressaoCombo = expressaoDoCombo(combo, isDefesaContexto ? 'defesa' : 'ataque');
@@ -2557,12 +2542,11 @@ const CalculadoraAtaqueModal = ({ open, onClose, personagem, onSave = null, cont
 
     try {
       const comboAPI = isDefesaContexto
-        ? { add: addComboDefesa, update: updateComboDefesa, remove: removeComboDefesa, getAll: getCombosDefesa }
-        : { add: addComboAtaque, update: updateComboAtaque, remove: removeComboAtaque, getAll: getCombosAtaque };
+        ? { add: addComboDefesa, update: updateComboDefesa, remove: removeComboDefesa }
+        : { add: addComboAtaque, update: updateComboAtaque, remove: removeComboAtaque };
 
       await comboAPI.remove(personagem.id, comboId);
-      const atualizados = await comboAPI.getAll(personagem.id);
-      setCombos((atualizados ?? []).sort((a, b) => (b.updatedAt?.seconds ?? 0) - (a.updatedAt?.seconds ?? 0)));
+      setCombos(atuais => atuais.filter(item => item.id !== comboId));
 
       if (selectedComboId === comboId) {
         setSelectedComboId('');
@@ -3591,7 +3575,6 @@ CalculadoraAtaqueModal.propTypes = {
   open: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   personagem: PropTypes.object.isRequired,
-  onSave: PropTypes.func,
 };
 
 export default CalculadoraAtaqueModal;

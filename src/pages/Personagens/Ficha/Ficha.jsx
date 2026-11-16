@@ -33,6 +33,7 @@ import { useSelecao } from 'context/selecaoContext';
 import { SavingProvider } from 'context/SavingContext';
 
 import useIsMobile from 'hooks/useIsMobile';
+import { sincronizarMembrosDoChat } from 'hooks/sincronizarMembrosDoChat';
 import ErrorBoundary from 'components/ErrorBoundary/ErrorBoundary';
 import ErrorSnackbar from 'components/ErrorSnackbar/ErrorSnackbar';
 
@@ -181,6 +182,14 @@ const Ficha = () => {
   const handleExcluir = useCallback(async () => {
     setExcluindo(true);
     try {
+      // Sai do chat das campanhas (apaga o ponteiro, que as regras usam para
+      // liberar o acesso). Melhor esforço: não impede a exclusão.
+      await sincronizarMembrosDoChat({
+        uid: personagem?.uid,
+        personagemId: id,
+        antes: personagem?.campanhas ?? [],
+        depois: [],
+      });
       await removePersonagem(id);
       navigate('/personagens', { replace: true });
     } catch (error) {
@@ -191,7 +200,7 @@ const Ficha = () => {
       );
       setExcluindo(false);
     }
-  }, [id, navigate]);
+  }, [id, navigate, personagem?.uid, personagem?.campanhas]);
 
   const fecharModal = useCallback(() => setModalAtivo(null), []);
 
